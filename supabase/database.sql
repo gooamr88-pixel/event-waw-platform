@@ -195,7 +195,7 @@ BEGIN
   INTO v_tier FROM ticket_tiers tt JOIN events e ON e.id = tt.event_id WHERE tt.id = p_tier_id FOR UPDATE OF tt;
   IF v_tier IS NULL THEN RAISE EXCEPTION 'Ticket tier not found'; END IF;
   IF v_tier.available < p_quantity THEN RAISE EXCEPTION 'Not enough tickets. Only % remaining.', v_tier.available; END IF;
-  v_expires := NOW() + INTERVAL '10 minutes';
+  v_expires := NOW() + INTERVAL '35 minutes';
   INSERT INTO reservations (user_id, ticket_tier_id, quantity, expires_at, status)
   VALUES (p_user_id, p_tier_id, p_quantity, v_expires, 'active') RETURNING id INTO v_reservation_id;
   RETURN QUERY SELECT v_reservation_id, v_expires, v_tier.name, v_tier.price, v_tier.event_title, v_tier.event_id;

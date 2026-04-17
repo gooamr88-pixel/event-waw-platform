@@ -99,7 +99,7 @@ serve(async (req) => {
       },
       success_url: `${req.headers.get('origin')}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get('origin')}/event-detail.html?id=${res.event_id}`,
-      expires_at: Math.floor(Date.now() / 1000) + 600, // 10 minutes to match reservation
+      expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes (Stripe requires minimum 30)
     });
 
     return new Response(
