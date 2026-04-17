@@ -1,5 +1,6 @@
+// @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Create Checkout Edge Function
+// EVENT WAW — Create Checkout Edge Function (Hardened)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy create-checkout --no-verify-jwt
@@ -11,11 +12,19 @@ import Stripe from 'https://esm.sh/stripe@13?target=deno';
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2023-10-16' });
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': allowedOrigin,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+function errorResponse(status: number, message: string) {
+  return new Response(JSON.stringify({ error: message }), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -24,32 +33,31 @@ serve(async (req) => {
   }
 
   try {
-    // Get authenticated user
-    const authHeader = req.headers.get('Authorization')!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    // Authenticate user via their JWT
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return errorResponse(401, 'Missing Authorization header');
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseAuth = createClient(supabaseUrl, supabaseServiceKey);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(401, 'Unauthorized');
     }
 
     const { tier_id, quantity = 1 } = await req.json();
 
     if (!tier_id) {
-      return new Response(JSON.stringify({ error: 'tier_id is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(400, 'tier_id is required');
     }
 
-    // Create atomic reservation (locks the row, checks capacity)
+    if (quantity < 1 || quantity > 10) {
+      return errorResponse(400, 'Quantity must be between 1 and 10');
+    }
+
+    // Create atomic reservation using admin client (locks the row, checks capacity)
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: reservation, error: resError } = await adminClient
       .rpc('create_reservation', {
@@ -59,10 +67,7 @@ serve(async (req) => {
       });
 
     if (resError) {
-      return new Response(JSON.stringify({ error: resError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(400, resError.message);
     }
 
     const res = reservation[0];

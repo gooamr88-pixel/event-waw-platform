@@ -32,8 +32,14 @@ function initTheme() {
 }
 
 function updateThemeIcon(theme) {
+  const icon = theme === 'dark' ? '☀️' : '🌙';
+  const label = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
   document.querySelectorAll('.theme-toggle, #theme-toggle').forEach(btn => {
-    btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+    if (btn.classList.contains('mobile-theme-toggle')) {
+      btn.textContent = `${icon} ${label}`;
+    } else {
+      btn.textContent = icon;
+    }
   });
 }
 

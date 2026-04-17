@@ -319,18 +319,11 @@
             }
           }
 
-          // 3. Generate OTP via DB RPC
-          const { data: otpData, error: otpErr } = await supabase.rpc('generate_login_otp');
-          if (otpErr) throw new Error(otpErr.message);
+          // 3. Send OTP via Edge Function (generates + sends server-side)
+          const otpResult = await sendOTPEmail(firstName, 'register');
 
-          const otpCode = otpData[0].otp_code;
-          const maskedEmail = otpData[0].masked_email;
-
-          // 4. Send OTP via Brevo
-          await sendOTPEmail(email, otpCode, firstName, 'register');
-
-          // 5. Show OTP step
-          document.getElementById('otp-email-display').textContent = maskedEmail;
+          // 4. Show OTP step
+          document.getElementById('otp-email-display').textContent = otpResult.masked_email || (email.substring(0,2) + '***@' + email.split('@')[1]);
           document.getElementById('step-2').style.display = 'none';
           document.getElementById('step-3').style.display = 'block';
           setProgress(3);
@@ -387,28 +380,67 @@
       // ═══ Resend ═══
       document.getElementById('resend-btn').addEventListener('click', async () => {
         try {
-          const { data, error } = await supabase.rpc('generate_login_otp');
-          if (error) throw new Error(error.message);
-          await sendOTPEmail(registeredEmail, data[0].otp_code, document.getElementById('reg-first').value.trim(), 'register');
+          await sendOTPEmail(document.getElementById('reg-first').value.trim(), 'register');
           showMsg('success', '✓ New code sent!');
           startResendTimer();
           document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
           document.querySelector('.otp-digit[data-index="0"]')?.focus();
           document.getElementById('otp-submit').disabled = true;
-        } catch (e) { showMsg('error', 'Failed to resend.'); }
+        } catch (e) { showMsg('error', e.message || 'Failed to resend.'); }
       });
 
       // Google OAuth
       document.getElementById('google-signup')?.addEventListener('click', async () => {
         try {
-          const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/events.html` } });
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: `${window.location.origin}/events.html`,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+              },
+            },
+          });
           if (error) showMsg('error', error.message);
-        } catch (e) { showMsg('error', 'OAuth not configured.'); }
+        } catch (e) { showMsg('error', 'Google sign-up failed. Please try again.'); }
       });
     });
 
-    // ══════ Send OTP via Edge Function (server-side Brevo) ══════
-    async function sendOTPEmail(toEmail, code, name, type) {
+    // ══════ Handle Google OAuth return (if user lands back on register page with session) ══════
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // User returned from Google OAuth — ensure profile exists
+        const user = session.user;
+        const meta = user.user_metadata || {};
+
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!existingProfile) {
+          await supabase.from('profiles').insert({
+            id: user.id,
+            email: user.email,
+            full_name: meta.full_name || meta.name || '',
+            avatar_url: meta.avatar_url || null,
+            role: 'attendee',
+          });
+        }
+
+        // Mark OTP verified (Google users skip OTP)
+        const { markOTPVerified } = await import('./src/lib/guard.js');
+        await markOTPVerified();
+        window.location.href = '/events.html';
+      }
+    })();
+
+    // ══════ Send OTP via Edge Function (server-side generation + Brevo) ══════
+    // The code is generated and sent entirely on the server — never exposed to the client
+    async function sendOTPEmail(name, type) {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp-email`, {
         method: 'POST',
@@ -416,12 +448,13 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ email: toEmail, code, name, type }),
+        body: JSON.stringify({ name, type }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || 'Failed to send verification email');
       }
+      return await res.json();
     }
 
     // ══════ Helpers ══════

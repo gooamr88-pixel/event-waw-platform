@@ -179,7 +179,7 @@
       const saved = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', saved);
 
-      const auth = await protectPage({ requireOTP: true, requireRole: 'organizer' });
+      const auth = await protectPage({ requireRole: 'organizer' });
       if (!auth) return; // Redirecting...
 
       initScanner();

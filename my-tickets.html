@@ -28,7 +28,10 @@
 
   <div class="mobile-menu" id="mobile-menu">
     <button class="close-btn" id="mobile-close">✕</button>
-    <a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a><a href="dashboard.html">Dashboard</a>
+    <a href="events.html">Events</a>
+    <a href="my-tickets.html">My Tickets</a>
+    <a href="dashboard.html">Dashboard</a>
+    <button class="mobile-theme-toggle theme-toggle" aria-label="Toggle theme">🌙 Toggle Theme</button>
   </div>
 
   <!-- ══════ CONTENT ══════ -->
@@ -138,12 +141,17 @@
     import { supabase, getCurrentUser } from './src/lib/supabase.js';
     import { getMyTickets } from './src/lib/tickets.js';
     import { protectPage, performSignOut } from './src/lib/guard.js';
+    import { initUI } from './src/lib/ui.js';
+    import { escapeHTML } from './src/lib/utils.js';
     import QRCode from 'qrcode';
 
+    // Store ticket data in memory — avoids passing JSON through onclick attrs
+    const ticketCache = new Map();
+
     document.addEventListener('DOMContentLoaded', async () => {
-      initThemeFromStorage(); initNavScroll(); initMobileMenu(); initThemeToggle();
+      initUI();
       
-      const auth = await protectPage({ requireOTP: true });
+      const auth = await protectPage();
       if (!auth) return; // Redirecting...
 
       document.getElementById('signout-btn').style.display = 'inline-flex';
@@ -172,23 +180,26 @@
           const tier = ticket.ticket_tiers;
           const eventDate = event?.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
           
+          // Cache full ticket data — never pass qr_hash through onclick strings
+          ticketCache.set(ticket.id, ticket);
+
           return `
             <div class="ticket-card">
               <div class="ticket-card-image">
-                <img src="${event?.cover_image || 'images/event-concert.png'}" alt="${event?.title || 'Event'}" />
+                <img src="${escapeHTML(event?.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event?.title || 'Event')}" />
               </div>
               <div class="ticket-card-body">
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                  <span class="ticket-status ${ticket.status}">${ticket.status}</span>
+                  <span class="ticket-status ${ticket.status}">${ticket.status === 'valid' ? '✦ Valid' : ticket.status === 'scanned' ? '✓ Scanned' : ticket.status}</span>
                 </div>
                 <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:4px;">
-                  ${event?.title || 'Event'}
+                  ${escapeHTML(event?.title || 'Event')}
                 </h3>
-                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">${tier?.name || 'General'} · ${Number(tier?.price || 0).toLocaleString()} EGP</p>
-                <p style="font-size:0.8rem;color:var(--text-muted);">${eventDate} · ${event?.venue || ''}</p>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">${escapeHTML(tier?.name || 'General')} · ${Number(tier?.price || 0).toLocaleString()} EGP</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);">${eventDate} · ${escapeHTML(event?.venue || '')}</p>
               </div>
               <div class="ticket-card-actions">
-                <button class="btn btn-primary btn-sm" onclick="showQR('${ticket.id}', '${ticket.qr_hash}', '${(event?.title || '').replace(/'/g,"\\'")}', '${(tier?.name || '').replace(/'/g,"\\'")}', '${ticket.status}')">
+                <button class="btn btn-primary btn-sm" data-ticket-id="${ticket.id}" onclick="showQR(this.dataset.ticketId)">
                   Show QR
                 </button>
               </div>
@@ -202,31 +213,37 @@
       }
     }
 
-    window.showQR = async function(ticketId, qrHash, eventTitle, tierName, status) {
+    window.showQR = async function(ticketId) {
+      const ticket = ticketCache.get(ticketId);
+      if (!ticket) return;
+
+      const event = ticket.ticket_tiers?.events;
+      const tier = ticket.ticket_tiers;
       const modal = document.getElementById('qr-modal');
       const codeContainer = document.getElementById('qr-modal-code');
       
-      document.getElementById('qr-modal-event').textContent = eventTitle;
-      document.getElementById('qr-modal-tier').textContent = tierName;
+      document.getElementById('qr-modal-event').textContent = event?.title || 'Event';
+      document.getElementById('qr-modal-tier').textContent = tier?.name || 'General';
       document.getElementById('qr-modal-id').textContent = `Ticket: ${ticketId.substring(0, 8)}…`;
       
       const statusEl = document.getElementById('qr-modal-status');
-      if (status === 'scanned') {
+      if (ticket.status === 'scanned') {
         statusEl.innerHTML = '<span class="ticket-status scanned">✓ Already Scanned</span>';
-      } else if (status === 'valid') {
-        statusEl.innerHTML = '<span class="ticket-status valid">✓ Valid Ticket</span>';
+      } else if (ticket.status === 'valid') {
+        statusEl.innerHTML = '<span class="ticket-status valid">✦ Valid Ticket</span>';
       } else {
-        statusEl.innerHTML = `<span class="ticket-status ${status}">${status}</span>`;
+        statusEl.innerHTML = `<span class="ticket-status ${ticket.status}">${ticket.status}</span>`;
       }
 
       // Generate QR code
       codeContainer.innerHTML = '';
       try {
         const canvas = document.createElement('canvas');
-        await QRCode.toCanvas(canvas, qrHash || ticketId, {
+        await QRCode.toCanvas(canvas, ticket.qr_hash || ticketId, {
           width: 220,
           margin: 2,
-          color: { dark: '#000000', light: '#ffffff' }
+          color: { dark: '#000000', light: '#ffffff' },
+          errorCorrectionLevel: 'H',
         });
         codeContainer.appendChild(canvas);
       } catch (e) {
@@ -242,11 +259,7 @@
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
     }
 
-    // ── Utilities ──
-    function initThemeFromStorage() { const s = localStorage.getItem('theme')||'dark'; document.documentElement.setAttribute('data-theme',s); document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(b=>b.textContent=s==='dark'?'☀️':'🌙'); }
-    function initThemeToggle() { document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(b=>{b.addEventListener('click',()=>{const n=(document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(x=>x.textContent=n==='dark'?'☀️':'🌙');})}); }
-    function initNavScroll() { const n=document.querySelector('.navbar');if(!n)return;window.addEventListener('scroll',()=>n.classList.toggle('scrolled',window.scrollY>50),{passive:true});n.classList.toggle('scrolled',window.scrollY>50); }
-    function initMobileMenu() { const t=document.getElementById('nav-toggle'),m=document.getElementById('mobile-menu'),c=document.getElementById('mobile-close');if(!t||!m)return;t.addEventListener('click',()=>m.classList.add('active'));if(c)c.addEventListener('click',()=>m.classList.remove('active'));m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>m.classList.remove('active'))); }
+    // ── Shared utilities imported from src/lib/ui.js ──
   </script>
 </body>
 </html>

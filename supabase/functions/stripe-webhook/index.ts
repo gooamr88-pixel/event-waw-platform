@@ -1,5 +1,6 @@
+// @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Webhook Edge Function
+// EVENT WAW — Stripe Webhook Edge Function (Hardened)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy stripe-webhook --no-verify-jwt
@@ -8,12 +9,16 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@13?target=deno';
 import { encode as base64url } from 'https://deno.land/std@0.177.0/encoding/base64url.ts';
+import { ticketConfirmationEmail } from '../_shared/email-templates.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2023-10-16' });
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
 const hmacSecret = Deno.env.get('HMAC_SECRET')!;
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') || '';
+const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventwaw.com';
+const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Event Waw';
 
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature')!;
@@ -42,6 +47,22 @@ serve(async (req) => {
     const qty = parseInt(quantity || '1');
 
     console.log(`Payment completed: reservation=${reservation_id}, user=${user_id}`);
+
+    // ── Idempotency Guard ──
+    // Prevent duplicate processing if Stripe retries the webhook
+    const { data: existingOrder } = await supabase
+      .from('orders')
+      .select('id')
+      .eq('stripe_session_id', session.id)
+      .maybeSingle();
+
+    if (existingOrder) {
+      console.log(`Order already exists for session ${session.id}, skipping duplicate`);
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Check reservation is still valid
     const { data: reservation, error: resError } = await supabase
@@ -88,15 +109,39 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Failed to create order' }), { status: 500 });
     }
 
-    // ── Generate Tickets with QR Hashes ──
+    // ── Fetch event + tier details for ticket/email ──
+    const { data: tierInfo } = await supabase
+      .from('ticket_tiers')
+      .select('name, price, events(id, title, venue, date, cover_image)')
+      .eq('id', tier_id)
+      .single();
+
+    const eventTitle = tierInfo?.events?.title || 'Event';
+    const tierName = tierInfo?.name || 'General';
+    const eventVenue = tierInfo?.events?.venue || '';
+    const eventDate = tierInfo?.events?.date || '';
+
+    // ── Fetch user email ──
+    const { data: { user: userRecord } } = await supabase.auth.admin.getUserById(user_id);
+    const userEmail = userRecord?.email || session.customer_email || '';
+    const userName = userRecord?.user_metadata?.full_name || '';
+
+    // ── Generate Tickets with HMAC-SHA256 Signed QR ──
     const tickets = [];
     for (let i = 0; i < qty; i++) {
+      const ticketId = crypto.randomUUID();
       const nonce = crypto.randomUUID();
+
+      // Enhanced payload with event/user context + version
       const payload = JSON.stringify({
-        ticket_id: crypto.randomUUID(),
+        v: 2,
+        ticket_id: ticketId,
         order_id: order.id,
+        event_id,
+        user_id,
         tier_id,
         nonce,
+        iat: Math.floor(Date.now() / 1000),
       });
 
       // HMAC-SHA256 signature
@@ -116,7 +161,7 @@ serve(async (req) => {
       });
 
       tickets.push({
-        id: JSON.parse(payload).ticket_id,
+        id: ticketId,
         order_id: order.id,
         ticket_tier_id: tier_id,
         user_id,
@@ -145,6 +190,47 @@ serve(async (req) => {
       p_amount: qty,
     });
 
+    // ── Send Confirmation Email ──
+    if (BREVO_API_KEY && userEmail) {
+      try {
+        const formattedDate = eventDate
+          ? new Date(eventDate).toLocaleDateString('en-US', {
+              weekday: 'long', month: 'long', day: 'numeric',
+              year: 'numeric', hour: 'numeric', minute: '2-digit',
+            })
+          : 'TBD';
+
+        await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'accept': 'application/json',
+            'api-key': BREVO_API_KEY,
+            'content-type': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+            to: [{ email: userEmail }],
+            subject: `🎫 Your tickets for ${eventTitle} are confirmed!`,
+            htmlContent: ticketConfirmationEmail({
+              userName,
+              eventTitle,
+              tierName,
+              quantity: qty,
+              totalAmount: (session.amount_total || 0) / 100,
+              eventVenue,
+              eventDate: formattedDate,
+              orderId: order.id,
+              ticketLink: `https://eventwaw.com/my-tickets.html`,
+            }),
+          }),
+        });
+        console.log(`✉️ Confirmation email sent to ${userEmail}`);
+      } catch (emailErr) {
+        console.error('Failed to send confirmation email:', emailErr);
+        // Don't fail the webhook — email is best-effort
+      }
+    }
+
     console.log(`✅ Order ${order.id} created with ${qty} tickets`);
   }
 
@@ -153,3 +239,6 @@ serve(async (req) => {
     headers: { 'Content-Type': 'application/json' },
   });
 });
+
+
+// Email templates are now imported from ../_shared/email-templates.ts

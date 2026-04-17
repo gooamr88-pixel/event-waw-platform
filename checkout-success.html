@@ -85,7 +85,7 @@
       const saved = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', saved);
 
-      const auth = await protectPage({ requireOTP: true });
+      const auth = await protectPage();
       if (!auth) return; // Redirecting...
 
       // Init particles

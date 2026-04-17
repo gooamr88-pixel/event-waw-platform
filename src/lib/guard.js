@@ -103,14 +103,14 @@ export async function isOTPVerified() {
  * Protect a page — requires authentication and OTP verification.
  *
  * @param {Object} options
- * @param {boolean} options.requireOTP — Require OTP verification (default: true)
+ * @param {boolean} options.requireOTP — Require OTP verification (default: false)
  * @param {string|null} options.requireRole — Require specific role e.g. 'organizer'
  * @param {string} options.loginRedirect — Where to redirect if not logged in
  * @returns {Promise<{user, profile}|null>} — User + profile if authorized, null if redirecting
  */
 export async function protectPage(options = {}) {
   const {
-    requireOTP = true,
+    requireOTP = false,
     requireRole = null,
     loginRedirect = '/login.html',
   } = options;
@@ -174,17 +174,9 @@ export async function guestOnlyPage(options = {}) {
       return true; // Guest — show the page
     }
 
-    // User is logged in — check if OTP is also verified
-    const otpOk = await isOTPVerified();
-    if (otpOk) {
-      // Fully authenticated → redirect away from guest page
-      window.location.href = redirectTo;
-      return false;
-    }
-
-    // Logged in but no OTP — allow showing the page (they may need to verify)
-    hideLoadingOverlay();
-    return true;
+    // User is logged in → redirect away from guest page
+    window.location.href = redirectTo;
+    return false;
   } catch (err) {
     console.error('Guest guard error:', err);
     hideLoadingOverlay();
@@ -206,9 +198,8 @@ export async function semiProtectPage() {
     }
 
     const profile = await getCurrentProfile();
-    const otpOk = await isOTPVerified();
 
-    return { user, profile, isFullyAuth: otpOk };
+    return { user, profile, isFullyAuth: true };
   } catch (err) {
     return { user: null, profile: null, isFullyAuth: false };
   }

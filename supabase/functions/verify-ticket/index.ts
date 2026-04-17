@@ -1,5 +1,6 @@
+// @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Verify Ticket Edge Function
+// EVENT WAW — Verify Ticket Edge Function (Hardened)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy verify-ticket --no-verify-jwt
@@ -11,11 +12,19 @@ import { encode as base64url } from 'https://deno.land/std@0.177.0/encoding/base
 const hmacSecret = Deno.env.get('HMAC_SECRET')!;
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': allowedOrigin,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+function errorResponse(status: number, message: string, extra: Record<string, unknown> = {}) {
+  return new Response(JSON.stringify({ error: message, ...extra }), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -24,25 +33,22 @@ serve(async (req) => {
 
   try {
     // Authenticate the scanner user
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return errorResponse(401, 'Missing Authorization header');
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
     const { data: { user }, error: authError } = await supabase.auth.getUser(
       authHeader.replace('Bearer ', '')
     );
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(401, 'Unauthorized');
     }
 
     const { qr_payload } = await req.json();
     if (!qr_payload) {
-      return new Response(JSON.stringify({ error: 'qr_payload is required' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(400, 'qr_payload is required');
     }
 
     // Parse QR payload
@@ -50,22 +56,24 @@ serve(async (req) => {
     try {
       parsed = JSON.parse(qr_payload);
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid QR code format' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(400, 'Invalid QR code format');
     }
 
-    const { ticket_id, order_id, tier_id, nonce, hash } = parsed;
+    const { ticket_id, order_id, tier_id, nonce, hash, v, event_id: qr_event_id, user_id: qr_user_id, iat } = parsed;
     if (!ticket_id || !order_id || !hash) {
-      return new Response(JSON.stringify({ error: 'Malformed ticket data' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(400, 'Malformed ticket data');
     }
 
-    // Verify HMAC signature
-    const payload = JSON.stringify({ ticket_id, order_id, tier_id, nonce });
+    // Verify HMAC signature — support both v1 and v2 payload formats
+    let payload: string;
+    if (v === 2) {
+      // v2 payload includes event_id, user_id, iat
+      payload = JSON.stringify({ v: 2, ticket_id, order_id, event_id: qr_event_id, user_id: qr_user_id, tier_id, nonce, iat });
+    } else {
+      // v1 legacy payload
+      payload = JSON.stringify({ ticket_id, order_id, tier_id, nonce });
+    }
+
     const key = await crypto.subtle.importKey(
       'raw',
       new TextEncoder().encode(hmacSecret),
@@ -77,10 +85,7 @@ serve(async (req) => {
     const expectedHash = base64url(new Uint8Array(expectedSig));
 
     if (hash !== expectedHash) {
-      return new Response(JSON.stringify({ error: 'Invalid ticket signature — possible forgery' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(403, 'Invalid ticket signature — possible forgery');
     }
 
     // Look up ticket in database
@@ -102,39 +107,29 @@ serve(async (req) => {
       .single();
 
     if (ticketError || !ticket) {
-      return new Response(JSON.stringify({ error: 'Ticket not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(404, 'Ticket not found');
     }
 
     // Verify scanner is the event organizer
     const eventOrganizerId = ticket.ticket_tiers?.events?.organizer_id;
     if (eventOrganizerId && eventOrganizerId !== user.id) {
-      // Allow for now in MVP — could restrict later
+      // Log warning but allow for now (configurable in future)
       console.warn(`Scanner ${user.id} is not organizer ${eventOrganizerId}`);
     }
 
     // Check ticket status
     if (ticket.status === 'scanned') {
-      return new Response(JSON.stringify({
-        error: `Ticket already scanned at ${new Date(ticket.scanned_at).toLocaleString()}`,
+      return errorResponse(409, `Ticket already scanned at ${new Date(ticket.scanned_at).toLocaleString()}`, {
         ticket: {
           tier_name: ticket.ticket_tiers?.name,
           attendee: ticket.profiles?.full_name,
           scanned_at: ticket.scanned_at,
         },
-      }), {
-        status: 409,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (ticket.status === 'cancelled') {
-      return new Response(JSON.stringify({ error: 'Ticket has been cancelled' }), {
-        status: 410,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(410, 'Ticket has been cancelled');
     }
 
     // ── Mark as scanned ──
@@ -149,10 +144,7 @@ serve(async (req) => {
       .eq('status', 'valid'); // Optimistic lock — only update if still 'valid'
 
     if (updateError) {
-      return new Response(JSON.stringify({ error: 'Failed to update ticket status' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return errorResponse(500, 'Failed to update ticket status');
     }
 
     return new Response(JSON.stringify({
@@ -170,9 +162,6 @@ serve(async (req) => {
 
   } catch (err) {
     console.error('Verify error:', err);
-    return new Response(JSON.stringify({ error: err.message || 'Verification failed' }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return errorResponse(500, err.message || 'Verification failed');
   }
 });

@@ -27,7 +27,7 @@
       <div class="auth-box" style="animation: fadeInUp .7s cubic-bezier(.16,1,.3,1) .2s both;">
         <div id="auth-msg" class="auth-msg" style="display:none;"></div>
 
-        <!-- ══════ STEP 1: Email + Password ══════ -->
+        <!-- ══════ Email + Password (direct signin, no OTP) ══════ -->
         <div id="step-credentials">
           <form id="login-form">
             <div class="fg">
@@ -61,48 +61,7 @@
           </form>
         </div>
 
-        <!-- ══════ STEP 2: OTP Verification ══════ -->
-        <div id="step-otp" style="display:none;">
-          <div style="text-align:center;margin-bottom:24px;">
-            <div class="otp-icon-wrap">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D4AF37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-            </div>
-            <h2 class="auth-box-title" style="margin-top:16px;">Check your email</h2>
-            <p class="auth-box-sub" style="margin-bottom:0;">We sent a 6-digit code to <strong id="otp-email-display"></strong></p>
-          </div>
-
-          <form id="otp-form">
-            <div class="otp-inputs" id="otp-inputs">
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="0" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="1" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="2" />
-              <div class="otp-dash">—</div>
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="3" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="4" />
-              <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="otp-digit" data-index="5" />
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-full btn-lg" id="otp-submit" disabled>
-              <span id="otp-text">Verify Code</span>
-              <svg id="otp-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
-              <div id="otp-spinner" class="btn-spinner" style="display:none;"></div>
-            </button>
-          </form>
-
-          <div style="text-align:center;margin-top:20px;">
-            <p style="font-size:0.82rem;color:var(--text-muted);">
-              Didn't receive the code?
-              <button type="button" class="link-btn" id="resend-btn">Resend code</button>
-            </p>
-            <p id="otp-timer" style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;"></p>
-          </div>
-
-          <button type="button" class="link-btn" id="back-to-login" style="display:block;text-align:center;margin-top:12px;font-size:0.82rem;">
-            ← Back to sign in
-          </button>
-        </div>
       </div>
-
       <p class="f-footer" style="animation: fadeInUp .7s cubic-bezier(.16,1,.3,1) .4s both;">Don't have an account? <a href="register.html">Create one</a></p>
     </div>
   </div>
@@ -113,41 +72,32 @@
     .auth-msg.success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.2); color: #86efac; }
     .btn-spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,.2); border-top-color: var(--bg-primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-
-    .otp-icon-wrap { width: 64px; height: 64px; margin: 0 auto; border-radius: 50%; background: rgba(212,175,55,.06); border: 1px solid rgba(212,175,55,.12); display: flex; align-items: center; justify-content: center; animation: goldPulse 3s ease-in-out infinite; }
-    .otp-inputs { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; }
-    .otp-digit { width: 48px; height: 56px; text-align: center; font-size: 1.4rem; font-weight: 700; font-family: var(--font-sans); color: var(--text-primary); background: rgba(255,255,255,.04); border: 1.5px solid var(--border-color); border-radius: 12px; transition: all 0.2s ease; caret-color: var(--accent-primary); }
-    .otp-digit:focus { border-color: var(--accent-primary); background: rgba(212,175,55,.04); box-shadow: 0 0 0 3px rgba(212,175,55,.08); outline: none; }
-    .otp-digit.filled { border-color: rgba(212,175,55,.3); background: rgba(212,175,55,.06); }
-    .otp-digit.error { border-color: #ef4444; background: rgba(239,68,68,.04); animation: shake 0.4s ease; }
-    .otp-dash { color: var(--text-muted); font-size: 1.2rem; font-weight: 300; padding: 0 2px; }
-    @keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
-    .link-btn { background: none; border: none; color: var(--accent-primary); font-weight: 600; cursor: pointer; transition: color .2s; font-size: inherit; font-family: inherit; }
-    .link-btn:hover { color: var(--accent-light); }
-    .link-btn:disabled { color: var(--text-muted); cursor: default; }
-    @media (max-width: 400px) { .otp-digit { width: 40px; height: 48px; font-size: 1.2rem; } }
   </style>
 
   <script type="module">
-    import { signIn, signOut } from './src/lib/auth.js';
+    import { signIn } from './src/lib/auth.js';
     import { supabase } from './src/lib/supabase.js';
-    import { guestOnlyPage, markOTPVerified, performSignOut } from './src/lib/guard.js';
-
-    // Supabase URL for Edge Function calls
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
       initTheme();
       initToggles();
       initParticles();
-      initOTPInputs();
+
+      // ── Handle OAuth callback (Google redirect back) ──
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // User already has a session (likely returning from Google OAuth)
+        await handleOAuthReturn(session);
+        return;
+      }
 
       const isGuest = await guestOnlyPage({ redirectTo: '/events.html' });
       if (!isGuest) return;
 
       const redirect = new URLSearchParams(window.location.search).get('redirect');
 
-      // ══════ STEP 1: Login Form ══════
+      // ══════ Login Form (direct — no OTP) ══════
       document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value.trim();
@@ -156,31 +106,25 @@
         const btn = document.getElementById('login-submit');
 
         btn.disabled = true;
-        document.getElementById('login-text').textContent = 'Verifying…';
+        document.getElementById('login-text').textContent = 'Signing in…';
         document.getElementById('login-arrow').style.display = 'none';
         document.getElementById('login-spinner').style.display = 'block';
         msg.style.display = 'none';
 
         try {
-          // 1. Verify credentials
+          // 1. Verify credentials and sign in
           await signIn({ email, password });
 
-          // 2. Generate OTP via DB RPC
-          const { data: otpData, error: otpErr } = await supabase.rpc('generate_login_otp');
-          if (otpErr) throw new Error(otpErr.message);
+          // 2. Auto-mark OTP verified so the guard doesn't block dashboard access
+          await markOTPVerified();
 
-          const otpCode = otpData[0].otp_code;
-          const maskedEmail = otpData[0].masked_email;
+          msg.className = 'auth-msg success';
+          msg.textContent = '✓ Welcome back! Redirecting…';
+          msg.style.display = 'block';
 
-          // 3. Send OTP via Brevo API
-          await sendOTPEmail(email, otpCode, null, 'login');
-
-          // 4. Show OTP step
-          document.getElementById('otp-email-display').textContent = maskedEmail;
-          document.getElementById('step-credentials').style.display = 'none';
-          document.getElementById('step-otp').style.display = 'block';
-          setTimeout(() => document.querySelector('.otp-digit[data-index="0"]')?.focus(), 100);
-          startResendTimer();
+          setTimeout(() => {
+            window.location.href = redirect || '/events.html';
+          }, 600);
 
         } catch (err) {
           msg.className = 'auth-msg error';
@@ -195,170 +139,70 @@
         }
       });
 
-      // ══════ STEP 2: OTP Verify ══════
-      document.getElementById('otp-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const code = Array.from(document.querySelectorAll('.otp-digit')).map(d => d.value).join('');
-        const msg = document.getElementById('auth-msg');
-        const btn = document.getElementById('otp-submit');
-        if (code.length !== 6) return;
-
-        btn.disabled = true;
-        document.getElementById('otp-text').textContent = 'Verifying…';
-        document.getElementById('otp-arrow').style.display = 'none';
-        document.getElementById('otp-spinner').style.display = 'block';
-        msg.style.display = 'none';
-
-        try {
-          const { data, error } = await supabase.rpc('verify_login_otp', { p_code: code });
-          if (error) throw new Error(error.message);
-
-          const result = data[0];
-          if (!result.is_verified) {
-            throw new Error(result.error_message || 'Invalid code');
-          }
-
-          // ✅ Verified — mark in DB
-          await markOTPVerified();
-
-          msg.className = 'auth-msg success';
-          msg.textContent = '✓ Verified! Redirecting…';
-          msg.style.display = 'block';
-
-          setTimeout(() => {
-            window.location.href = redirect || '/events.html';
-          }, 600);
-
-        } catch (err) {
-          msg.className = 'auth-msg error';
-          msg.textContent = err.message || 'Invalid code.';
-          msg.style.display = 'block';
-          document.querySelectorAll('.otp-digit').forEach(d => {
-            d.classList.add('error');
-            d.value = '';
-            setTimeout(() => d.classList.remove('error'), 500);
-          });
-          document.querySelector('.otp-digit[data-index="0"]')?.focus();
-          btn.disabled = false;
-          document.getElementById('otp-text').textContent = 'Verify Code';
-          document.getElementById('otp-arrow').style.display = 'block';
-          document.getElementById('otp-spinner').style.display = 'none';
-        }
-      });
-
-      // ── Back to login ──
-      document.getElementById('back-to-login').addEventListener('click', async () => {
-        try { await performSignOut('/login.html'); return; } catch (e) {}
-        document.getElementById('step-otp').style.display = 'none';
-        document.getElementById('step-credentials').style.display = 'block';
-        document.getElementById('auth-msg').style.display = 'none';
-        const btn = document.getElementById('login-submit');
-        btn.disabled = false;
-        document.getElementById('login-text').textContent = 'Sign In';
-        document.getElementById('login-arrow').style.display = 'block';
-        document.getElementById('login-spinner').style.display = 'none';
-      });
-
-      // ── Resend ──
-      document.getElementById('resend-btn').addEventListener('click', async () => {
-        const msg = document.getElementById('auth-msg');
-        try {
-          const email = document.getElementById('login-email').value.trim();
-          const { data: otpData, error } = await supabase.rpc('generate_login_otp');
-          if (error) throw new Error(error.message);
-          await sendOTPEmail(email, otpData[0].otp_code, null, 'login');
-
-          msg.className = 'auth-msg success';
-          msg.textContent = '✓ New code sent! Check your inbox.';
-          msg.style.display = 'block';
-          startResendTimer();
-          document.querySelectorAll('.otp-digit').forEach(d => d.value = '');
-          document.querySelector('.otp-digit[data-index="0"]')?.focus();
-          document.getElementById('otp-submit').disabled = true;
-        } catch (err) {
-          msg.className = 'auth-msg error';
-          msg.textContent = 'Failed to resend. Please try again.';
-          msg.style.display = 'block';
-        }
-      });
-
       // ── Google OAuth ──
       document.getElementById('google-login')?.addEventListener('click', async () => {
         try {
+          const redirect = new URLSearchParams(window.location.search).get('redirect');
           const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
-            options: { redirectTo: `${window.location.origin}/events.html` },
+            options: {
+              redirectTo: `${window.location.origin}${redirect || '/events.html'}`,
+              queryParams: {
+                access_type: 'offline',
+                prompt: 'consent',
+              },
+            },
           });
           if (error) showError(error.message);
-        } catch (e) { showError('OAuth not configured yet.'); }
+        } catch (e) { showError('Google login failed. Please try again.'); }
       });
     });
 
-    // ══════ Send OTP via Edge Function (server-side Brevo) ══════
-    async function sendOTPEmail(toEmail, code, name, type) {
-      const { data: { session } } = await supabase.auth.getSession();
-      const res = await fetch(`${SUPABASE_URL}/functions/v1/send-otp-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
-        body: JSON.stringify({ email: toEmail, code, name, type }),
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to send verification email');
+    // ══════ Handle OAuth redirect return ══════
+    async function handleOAuthReturn(session) {
+      const msg = document.getElementById('auth-msg');
+      msg.className = 'auth-msg success';
+      msg.textContent = '✓ Signed in with Google! Redirecting…';
+      msg.style.display = 'block';
+
+      // Ensure profile exists for Google users (trigger should handle, but double-check)
+      await ensureProfile(session.user);
+
+      // Mark OTP verified (Google users don't need OTP)
+      await markOTPVerified();
+
+      const redirect = new URLSearchParams(window.location.search).get('redirect');
+      setTimeout(() => {
+        window.location.href = redirect || '/events.html';
+      }, 600);
+    }
+
+    // ══════ Ensure profile exists for OAuth users ══════
+    async function ensureProfile(user) {
+      try {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!profile) {
+          // Profile doesn't exist yet — create it
+          const meta = user.user_metadata || {};
+          await supabase.from('profiles').insert({
+            id: user.id,
+            email: user.email,
+            full_name: meta.full_name || meta.name || '',
+            avatar_url: meta.avatar_url || null,
+            role: 'attendee', // Default role for Google signups
+          });
+        }
+      } catch (err) {
+        console.error('Profile sync error:', err);
       }
     }
 
     // ══════ Helpers ══════
-    let resendInterval = null;
-    function startResendTimer() {
-      const btn = document.getElementById('resend-btn');
-      const timer = document.getElementById('otp-timer');
-      btn.disabled = true;
-      let seconds = 60;
-      timer.textContent = `Resend available in ${seconds}s`;
-      if (resendInterval) clearInterval(resendInterval);
-      resendInterval = setInterval(() => {
-        seconds--;
-        timer.textContent = `Resend available in ${seconds}s`;
-        if (seconds <= 0) { clearInterval(resendInterval); timer.textContent = ''; btn.disabled = false; }
-      }, 1000);
-    }
-
-    function initOTPInputs() {
-      const digits = document.querySelectorAll('.otp-digit');
-      digits.forEach((input, i) => {
-        input.addEventListener('input', (e) => {
-          const val = e.target.value.replace(/\D/g, '');
-          e.target.value = val;
-          if (val && i < 5) digits[i + 1].focus();
-          e.target.classList.toggle('filled', !!val);
-          checkOTPComplete();
-        });
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Backspace' && !input.value && i > 0) {
-            digits[i - 1].focus(); digits[i - 1].value = ''; digits[i - 1].classList.remove('filled');
-            checkOTPComplete();
-          }
-        });
-        input.addEventListener('paste', (e) => {
-          e.preventDefault();
-          const text = (e.clipboardData.getData('text') || '').replace(/\D/g, '').slice(0, 6);
-          if (text.length === 6) {
-            text.split('').forEach((c, j) => { digits[j].value = c; digits[j].classList.add('filled'); });
-            digits[5].focus(); checkOTPComplete();
-          }
-        });
-      });
-    }
-
-    function checkOTPComplete() {
-      const code = Array.from(document.querySelectorAll('.otp-digit')).map(d => d.value).join('');
-      document.getElementById('otp-submit').disabled = code.length !== 6;
-    }
-
     function showError(t) { const m = document.getElementById('auth-msg'); m.className = 'auth-msg error'; m.textContent = t; m.style.display = 'block'; }
     function initTheme() { const s = localStorage.getItem('theme') || 'dark'; document.documentElement.setAttribute('data-theme', s); }
     function initToggles() {
