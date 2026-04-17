@@ -385,8 +385,18 @@ CREATE POLICY "otps_update_own" ON login_otps FOR UPDATE USING (auth.uid() = use
 
 -- ════════════ PHASE 9: GRANTS & STORAGE ════════════
 
+-- Anonymous users: read-only access to public event data
 GRANT SELECT ON events TO anon;
 GRANT SELECT ON ticket_tiers TO anon;
+
+-- Authenticated users: full access to all tables
+GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+GRANT ALL ON ALL ROUTINES IN SCHEMA public TO authenticated;
+
+-- Ensure future tables also get the same grants
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
 
 INSERT INTO storage.buckets (id, name, public) VALUES ('event-covers', 'event-covers', true) ON CONFLICT (id) DO NOTHING;
 
