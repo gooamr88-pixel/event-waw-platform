@@ -175,6 +175,13 @@
     let scanHistory = [];
     let isProcessing = false;
 
+    // XSS protection for QR data displayed in history
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = String(str || '');
+      return d.innerHTML;
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       const saved = localStorage.getItem('theme') || 'dark';
       document.documentElement.setAttribute('data-theme', saved);
@@ -261,8 +268,8 @@
         <div class="scan-entry">
           <div class="scan-entry-icon ${entry.type}">${entry.type === 'valid' ? '✓' : entry.type === 'duplicate' ? '⚠' : '✕'}</div>
           <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:0.85rem;">${entry.label}</div>
-            <div style="font-size:0.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${entry.data.substring(0, 32)}…</div>
+            <div style="font-weight:600;font-size:0.85rem;">${escapeHtml(entry.label)}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(entry.data).substring(0, 32)}…</div>
           </div>
           <div style="font-size:0.7rem;color:var(--text-muted);flex-shrink:0;">${entry.time}</div>
         </div>

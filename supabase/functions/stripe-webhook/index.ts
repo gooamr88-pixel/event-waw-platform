@@ -28,16 +28,13 @@ serve(async (req) => {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
-    console.warn('Signature verification failed, trying direct parse:', err.message);
-    // Fallback for test mode: parse the body directly
-    try {
-      event = JSON.parse(body);
-      if (!event?.type || !event?.data?.object) {
-        return new Response(JSON.stringify({ error: 'Invalid event payload' }), { status: 400 });
-      }
-    } catch {
-      return new Response(JSON.stringify({ error: 'Invalid signature and body' }), { status: 400 });
-    }
+    console.error('⛔ Webhook signature verification FAILED:', err.message);
+    // SECURITY: Never fall back to raw JSON parsing.
+    // Use Stripe CLI for local testing: stripe listen --forward-to <url>
+    return new Response(
+      JSON.stringify({ error: 'Invalid webhook signature' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);

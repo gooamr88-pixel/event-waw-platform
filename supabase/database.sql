@@ -68,6 +68,7 @@ CREATE TABLE profiles (
   email TEXT NOT NULL,
   full_name TEXT,
   phone TEXT,
+  national_id TEXT,
   role user_role DEFAULT 'attendee',
   avatar_url TEXT,
   stripe_customer_id TEXT,
@@ -363,9 +364,8 @@ CREATE POLICY "tiers_update" ON ticket_tiers FOR UPDATE USING (
 CREATE POLICY "tiers_delete" ON ticket_tiers FOR DELETE USING (
   EXISTS (SELECT 1 FROM events e WHERE e.id = ticket_tiers.event_id AND e.organizer_id = auth.uid()));
 
--- reservations
+-- reservations (NO INSERT policy — only created via create_reservation() RPC which is SECURITY DEFINER)
 CREATE POLICY "reservations_select_own" ON reservations FOR SELECT USING (user_id = auth.uid());
-CREATE POLICY "reservations_insert" ON reservations FOR INSERT WITH CHECK (user_id = auth.uid());
 
 -- orders
 CREATE POLICY "orders_select_own" ON orders FOR SELECT USING (user_id = auth.uid());
@@ -398,6 +398,20 @@ GRANT ALL ON ALL ROUTINES IN SCHEMA public TO authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
 
+
+-- ════════════ PHASE 9b: SECURITY — REVOKE SENSITIVE RPCs ════════════
+-- These functions should ONLY be callable by service_role (Edge Functions).
+-- Revoking from authenticated prevents direct client-side RPC calls.
+
+REVOKE EXECUTE ON FUNCTION generate_login_otp() FROM authenticated, anon;
+REVOKE EXECUTE ON FUNCTION generate_login_otp_for_user(UUID) FROM authenticated, anon;
+REVOKE EXECUTE ON FUNCTION get_organizer_revenue(UUID) FROM anon;
+REVOKE EXECUTE ON FUNCTION get_event_tier_revenue(UUID, UUID) FROM anon;
+REVOKE EXECUTE ON FUNCTION get_daily_revenue(UUID, INT) FROM anon;
+REVOKE EXECUTE ON FUNCTION increment_sold_count(UUID, INT) FROM authenticated, anon;
+REVOKE EXECUTE ON FUNCTION expire_stale_reservations() FROM authenticated, anon;
+
+
 INSERT INTO storage.buckets (id, name, public) VALUES ('event-covers', 'event-covers', true) ON CONFLICT (id) DO NOTHING;
 
 DROP POLICY IF EXISTS "covers_insert" ON storage.objects;
@@ -428,4 +442,6 @@ END $$;
 -- ════════════ ✅ DONE ════════════
 -- Profile creation is handled by the client code (self-healing).
 -- No trigger needed on auth.users.
+-- Sensitive RPCs are now restricted to service_role only.
+-- Reservations can only be created via the create_reservation() SECURITY DEFINER RPC.
 -- Next: Register a new account and it will work automatically.

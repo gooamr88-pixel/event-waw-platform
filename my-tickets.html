@@ -219,35 +219,78 @@
 
       const event = ticket.ticket_tiers?.events;
       const tier = ticket.ticket_tiers;
-      const modal = document.getElementById('qr-modal');
-      const codeContainer = document.getElementById('qr-modal-code');
-      
-      document.getElementById('qr-modal-event').textContent = event?.title || 'Event';
-      document.getElementById('qr-modal-tier').textContent = tier?.name || 'General';
-      document.getElementById('qr-modal-id').textContent = `Ticket: ${ticketId.substring(0, 8)}…`;
-      
-      const statusEl = document.getElementById('qr-modal-status');
-      if (ticket.status === 'scanned') {
-        statusEl.innerHTML = '<span class="ticket-status scanned">✓ Already Scanned</span>';
-      } else if (ticket.status === 'valid') {
-        statusEl.innerHTML = '<span class="ticket-status valid">✦ Valid Ticket</span>';
-      } else {
-        statusEl.innerHTML = `<span class="ticket-status ${ticket.status}">${ticket.status}</span>`;
-      }
+      const eventDate = event?.date 
+        ? new Date(event.date).toLocaleDateString('en-US', { 
+            weekday: 'short', month: 'short', day: 'numeric', 
+            hour: 'numeric', minute: '2-digit' 
+          }) 
+        : '';
 
-      // Generate QR code
-      codeContainer.innerHTML = '';
+      const modal = document.getElementById('qr-modal');
+      const content = modal.querySelector('.qr-modal-content');
+
+      content.innerHTML = `
+        <button class="qr-modal-close" id="qr-modal-close-inner">✕</button>
+        
+        <!-- Premium Ticket Card -->
+        <div style="background:linear-gradient(145deg, #18181b 0%, #09090b 100%);border:1px solid rgba(212,175,55,.15);border-radius:20px;overflow:hidden;">
+          
+          <!-- Gold Header Bar -->
+          <div style="background:linear-gradient(135deg,#D4AF37,#b8941f);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-size:0.7rem;font-weight:800;letter-spacing:0.15em;color:#09090b;text-transform:uppercase;">Event Waw Ticket</span>
+            <span style="font-size:0.65rem;font-weight:600;color:rgba(9,9,11,.5);">${ticket.id.substring(0, 8).toUpperCase()}</span>
+          </div>
+          
+          <!-- Event Info -->
+          <div style="padding:20px 20px 0;text-align:left;">
+            <div style="font-size:0.72rem;color:#D4AF37;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;">
+              ${escapeHTML(tier?.name || 'General')}
+            </div>
+            <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;color:#f4f4f5;margin-bottom:12px;">
+              ${escapeHTML(event?.title || 'Event')}
+            </h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.78rem;">
+              <div><span style="color:#71717a;">📅</span> <span style="color:#a1a1aa;">${eventDate}</span></div>
+              <div><span style="color:#71717a;">📍</span> <span style="color:#a1a1aa;">${escapeHTML(event?.venue || '')}</span></div>
+            </div>
+          </div>
+          
+          <!-- Dashed Divider (tear-off effect) -->
+          <div style="margin:16px 0;border-top:2px dashed rgba(255,255,255,.08);position:relative;">
+            <div style="position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:var(--bg-primary);"></div>
+            <div style="position:absolute;right:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:var(--bg-primary);"></div>
+          </div>
+          
+          <!-- QR Code -->
+          <div style="text-align:center;padding:0 20px 20px;">
+            <div id="qr-render-target" style="display:inline-block;background:#fff;padding:16px;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,.3);"></div>
+            <div style="margin-top:12px;">
+              <span class="ticket-status ${ticket.status}" style="font-size:0.75rem;">
+                ${ticket.status === 'valid' ? '✦ Valid — Present at entrance' : ticket.status === 'scanned' ? '✓ Already Scanned' : ticket.status}
+              </span>
+            </div>
+            <div style="margin-top:8px;font-size:0.7rem;color:#52525b;font-family:monospace;">
+              ${ticket.id.substring(0, 12)}…
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Close handler
+      content.querySelector('#qr-modal-close-inner').addEventListener('click', () => modal.style.display = 'none');
+
+      // Render QR
+      const target = content.querySelector('#qr-render-target');
       try {
         const canvas = document.createElement('canvas');
         await QRCode.toCanvas(canvas, ticket.qr_hash || ticketId, {
-          width: 220,
-          margin: 2,
+          width: 200, margin: 2,
           color: { dark: '#000000', light: '#ffffff' },
           errorCorrectionLevel: 'H',
         });
-        codeContainer.appendChild(canvas);
+        target.appendChild(canvas);
       } catch (e) {
-        codeContainer.innerHTML = '<p style="color:#999;padding:40px;">QR generation failed</p>';
+        target.innerHTML = '<p style="color:#999;padding:40px;">QR generation failed</p>';
       }
 
       modal.style.display = 'flex';

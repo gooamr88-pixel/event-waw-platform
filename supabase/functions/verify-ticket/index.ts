@@ -96,7 +96,7 @@ serve(async (req) => {
         ticket_tiers (
           name, price,
           events (
-            id, title, organizer_id
+            id, title, organizer_id, date
           )
         ),
         profiles (
@@ -110,11 +110,28 @@ serve(async (req) => {
       return errorResponse(404, 'Ticket not found');
     }
 
-    // Verify scanner is the event organizer
+    // ── Verify scanner is the event organizer (or admin) ──
     const eventOrganizerId = ticket.ticket_tiers?.events?.organizer_id;
     if (eventOrganizerId && eventOrganizerId !== user.id) {
-      // Log warning but allow for now (configurable in future)
-      console.warn(`Scanner ${user.id} is not organizer ${eventOrganizerId}`);
+      const { data: scannerProfile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (scannerProfile?.role !== 'admin') {
+        return errorResponse(403, 'You are not authorized to scan tickets for this event');
+      }
+    }
+
+    // ── Check if event has ended (24h grace period) ──
+    const eventDate = ticket.ticket_tiers?.events?.date;
+    if (eventDate) {
+      const eventEnd = new Date(eventDate);
+      eventEnd.setHours(eventEnd.getHours() + 24);
+      if (new Date() > eventEnd) {
+        return errorResponse(410, 'Event has ended. Ticket no longer valid for entry.');
+      }
     }
 
     // Check ticket status

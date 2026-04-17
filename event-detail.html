@@ -521,13 +521,14 @@
         payBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Processing…';
 
         try {
-          // Update profile with latest info
+          // Update profile with latest info (including national_id)
           await supabase.from('profiles').update({
             full_name: name,
             phone: phone || null,
-          }).eq('id', user.id);
+            national_id: nid,
+          }).eq('id', authState.user.id);
 
-          // Save NID in user metadata
+          // Also save NID in user metadata as backup
           await supabase.auth.updateUser({
             data: { national_id: nid }
           });

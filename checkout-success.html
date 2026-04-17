@@ -117,14 +117,59 @@
         if (order && order.tickets?.length > 0) {
           const ticket = order.tickets[0];
           const event = ticket?.ticket_tiers?.events;
+          const tierName = ticket?.ticket_tiers?.name || 'General';
+          const eventTitle = event?.title || 'Event';
+          const eventVenue = event?.venue || '';
+          const eventDate = event?.date
+            ? new Date(event.date).toLocaleDateString('en-US', {
+                weekday: 'short', month: 'short', day: 'numeric',
+                hour: 'numeric', minute: '2-digit'
+              })
+            : '';
           
-          document.getElementById('order-event').textContent = event?.title || 'Event';
-          document.getElementById('order-tier').textContent = ticket?.ticket_tiers?.name || 'General';
+          document.getElementById('order-event').textContent = eventTitle;
+          document.getElementById('order-tier').textContent = tierName;
           document.getElementById('order-amount').textContent = `${Number(order.amount).toLocaleString()} EGP`;
           document.getElementById('order-id').textContent = order.id.substring(0, 12) + '…';
 
-          // Generate QR for first ticket
+          // Generate premium QR card
           if (ticket?.qr_hash) {
+            const container = document.getElementById('qr-container');
+            container.style.background = 'transparent';
+            container.style.padding = '0';
+            container.innerHTML = `
+              <div style="background:linear-gradient(145deg, #18181b 0%, #09090b 100%);border:1px solid rgba(212,175,55,.15);border-radius:20px;overflow:hidden;max-width:320px;margin:0 auto;">
+                <!-- Gold Header -->
+                <div style="background:linear-gradient(135deg,#D4AF37,#b8941f);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:0.65rem;font-weight:800;letter-spacing:0.15em;color:#09090b;text-transform:uppercase;">Event Waw Ticket</span>
+                  <span style="font-size:0.6rem;font-weight:600;color:rgba(9,9,11,.5);">${ticket.id.substring(0, 8).toUpperCase()}</span>
+                </div>
+                
+                <!-- Event Info -->
+                <div style="padding:16px 16px 0;text-align:left;">
+                  <div style="font-size:0.68rem;color:#D4AF37;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">${tierName}</div>
+                  <h3 style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:#f4f4f5;margin-bottom:8px;">${eventTitle}</h3>
+                  <div style="display:flex;gap:16px;font-size:0.72rem;">
+                    <span style="color:#a1a1aa;">📅 ${eventDate}</span>
+                    <span style="color:#a1a1aa;">📍 ${eventVenue}</span>
+                  </div>
+                </div>
+                
+                <!-- Tear-off -->
+                <div style="margin:12px 0;border-top:2px dashed rgba(255,255,255,.08);position:relative;">
+                  <div style="position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:rgba(9,9,11,.95);"></div>
+                  <div style="position:absolute;right:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:rgba(9,9,11,.95);"></div>
+                </div>
+                
+                <!-- QR -->
+                <div style="text-align:center;padding:0 16px 16px;">
+                  <div id="qr-code" style="display:inline-block;background:#fff;padding:14px;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.3);"></div>
+                  <div style="margin-top:10px;">
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:50px;font-size:0.7rem;font-weight:600;background:rgba(34,197,94,.1);color:#22c55e;">✦ Valid</span>
+                  </div>
+                </div>
+              </div>
+            `;
             await generateQR(ticket.qr_hash);
           } else {
             generatePlaceholderQR();
