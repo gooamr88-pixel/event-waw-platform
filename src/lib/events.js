@@ -9,6 +9,9 @@ import { supabase } from './supabase.js';
  * Works for both authenticated and anonymous users.
  */
 export async function getEvents({ limit = 20, offset = 0 } = {}) {
+  // Show events from 24 hours ago onward (so today's events still appear)
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
   const { data, error } = await supabase
     .from('events')
     .select(`
@@ -18,7 +21,7 @@ export async function getEvents({ limit = 20, offset = 0 } = {}) {
       )
     `)
     .eq('status', 'published')
-    .gte('date', new Date().toISOString())
+    .gte('date', yesterday)
     .order('date', { ascending: true })
     .range(offset, offset + limit - 1);
 
