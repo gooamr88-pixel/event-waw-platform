@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Organizer Dashboard — Event Waw</title>
+  <meta name="description" content="Manage your events, view analytics, and access the ticket scanner." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+</head>
+<body>
+
+  <!-- ══════ NAVBAR ══════ -->
+  <nav class="navbar" id="main-nav">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
+        <span class="nav-logo-text shimmer">Event Waw</span>
+      </a>
+      <div class="nav-links"><a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a><a href="dashboard.html" class="active">Dashboard</a></div>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+        <button class="btn btn-outline btn-sm" id="signout-btn">Sign Out</button>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <button class="close-btn" id="mobile-close">✕</button>
+    <a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a><a href="dashboard.html">Dashboard</a>
+  </div>
+
+  <!-- ══════ DASHBOARD ══════ -->
+  <div style="padding-top: 120px; min-height: 100vh; padding-bottom: 80px;">
+    <div class="container">
+
+      <!-- Header -->
+      <div class="section-header" data-reveal>
+        <div class="section-header-flex">
+          <div>
+            <div class="section-label">Organizer</div>
+            <h1 style="font-family:var(--font-serif);font-size:clamp(1.9rem,4vw,2.75rem);font-weight:700;letter-spacing:-0.5px;line-height:1.2;">
+              Your <span class="gold" style="font-style:italic">Dashboard</span>
+            </h1>
+          </div>
+          <div style="display:flex;gap:12px;">
+            <a href="scanner.html" class="btn btn-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/></svg>
+              Scanner
+            </a>
+            <button class="btn btn-primary" id="create-event-btn">
+              + Create Event
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="dash-stats" id="dash-stats">
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">📅</div>
+          <div>
+            <p class="dash-stat-value" id="stat-events">0</p>
+            <p class="dash-stat-label">Total Events</p>
+          </div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">🎫</div>
+          <div>
+            <p class="dash-stat-value" id="stat-tickets">0</p>
+            <p class="dash-stat-label">Tickets Sold</p>
+          </div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">💰</div>
+          <div>
+            <p class="dash-stat-value" id="stat-revenue">0 EGP</p>
+            <p class="dash-stat-label">Total Revenue</p>
+          </div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-icon">📊</div>
+          <div>
+            <p class="dash-stat-value" id="stat-scan-rate">0%</p>
+            <p class="dash-stat-label">Scan Rate</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Events Table -->
+      <div class="dash-section">
+        <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:20px;">Your Events</h2>
+        <div id="events-table-wrap">
+          <div id="events-loading" style="text-align:center;padding:40px 0;">
+            <div class="spinner"></div>
+            <p style="color:var(--text-muted);font-size:0.9rem;margin-top:12px;">Loading events…</p>
+          </div>
+          <div id="events-list"></div>
+        </div>
+      </div>
+
+      <!-- Create Event Modal -->
+      <div id="create-modal" class="create-modal" style="display:none;">
+        <div class="create-modal-content">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+            <h2 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;">Create New Event</h2>
+            <button class="create-modal-close" id="create-modal-close">✕</button>
+          </div>
+
+          <form id="create-event-form">
+            <div class="fg">
+              <label class="fl" for="ev-title">Event Title *</label>
+              <input type="text" class="fi" id="ev-title" placeholder="e.g. Summer Music Festival" required />
+            </div>
+            <div class="fg">
+              <label class="fl" for="ev-desc">Description</label>
+              <textarea class="fi" id="ev-desc" rows="3" placeholder="Tell attendees about your event…" style="resize:vertical;"></textarea>
+            </div>
+            <div class="f-row">
+              <div class="fg">
+                <label class="fl" for="ev-venue">Venue *</label>
+                <input type="text" class="fi" id="ev-venue" placeholder="Stadium, Hotel…" required />
+              </div>
+              <div class="fg">
+                <label class="fl" for="ev-city">City</label>
+                <input type="text" class="fi" id="ev-city" value="Cairo" />
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl" for="ev-address">Venue Address</label>
+              <input type="text" class="fi" id="ev-address" placeholder="Full address…" />
+            </div>
+            <div class="f-row">
+              <div class="fg">
+                <label class="fl" for="ev-date">Date & Time *</label>
+                <input type="datetime-local" class="fi" id="ev-date" required />
+              </div>
+              <div class="fg">
+                <label class="fl" for="ev-category">Category</label>
+                <select class="fi" id="ev-category">
+                  <option value="general">General</option>
+                  <option value="music">Music</option>
+                  <option value="gala">Gala</option>
+                  <option value="conference">Conference</option>
+                  <option value="sports">Sports</option>
+                  <option value="workshop">Workshop</option>
+                </select>
+              </div>
+            </div>
+
+            <h3 style="font-size:0.9rem;font-weight:600;margin:24px 0 12px;color:var(--text-secondary);">Ticket Tiers</h3>
+            <div id="tiers-container">
+              <div class="tier-row" id="tier-row-0">
+                <div class="f-row" style="grid-template-columns:1fr 120px 100px;">
+                  <div class="fg"><input type="text" class="fi" placeholder="Tier name (e.g. General)" data-tier="name" required /></div>
+                  <div class="fg"><input type="number" class="fi" placeholder="Price" data-tier="price" min="0" required /></div>
+                  <div class="fg"><input type="number" class="fi" placeholder="Qty" data-tier="capacity" min="1" required /></div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" id="add-tier-btn" style="margin-top:8px;">+ Add Tier</button>
+
+            <div style="display:flex;gap:12px;margin-top:24px;">
+              <button type="submit" class="btn btn-primary btn-full btn-lg">Create Event</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <style>
+    .spinner { width:32px;height:32px;border:3px solid var(--border-color);border-top-color:var(--accent-primary);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .dash-stats {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px; margin-bottom: 40px;
+    }
+    .dash-stat-card {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--card-radius); padding: 20px;
+      transition: var(--transition);
+    }
+    .dash-stat-card:hover { border-color: rgba(212,175,55,.2); transform: translateY(-2px); }
+    .dash-stat-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      background: rgba(212,175,55,.08); display: flex;
+      align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
+    }
+    .dash-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
+    .dash-stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
+
+    .dash-section {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--card-radius); padding: 24px;
+    }
+
+    .dash-event-row {
+      display: grid; grid-template-columns: 60px 1fr 120px 120px 100px;
+      align-items: center; gap: 16px; padding: 16px 0;
+      border-bottom: 1px solid var(--border-light); font-size: 0.9rem;
+    }
+    .dash-event-row:last-child { border-bottom: none; }
+    .dash-event-img {
+      width: 60px; height: 40px; border-radius: 8px;
+      object-fit: cover;
+    }
+    .dash-event-title { font-weight: 600; }
+    .dash-event-date { color: var(--text-muted); font-size: 0.82rem; }
+    .dash-event-status {
+      display: inline-flex; padding: 4px 10px; border-radius: 50px;
+      font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .status-published { background: rgba(34,197,94,.1); color: #22c55e; }
+    .status-draft { background: rgba(234,179,8,.1); color: #eab308; }
+    .status-completed { background: rgba(59,130,246,.1); color: #3b82f6; }
+    .status-cancelled { background: rgba(239,68,68,.1); color: #ef4444; }
+
+    .create-modal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(12px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; overflow-y: auto;
+    }
+    .create-modal-content {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 32px; max-width: 560px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .create-modal-close {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 1.3rem; cursor: pointer; transition: color .2s;
+    }
+    .create-modal-close:hover { color: var(--text-primary); }
+    .tier-row { margin-bottom: 8px; }
+    .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 500px) { .f-row { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) {
+      .dash-event-row { grid-template-columns: 1fr; gap: 8px; padding: 12px 0; }
+      .dash-event-img { display: none; }
+    }
+  </style>
+
+  <script type="module">
+    import { supabase, getCurrentUser, getCurrentProfile } from './src/lib/supabase.js';
+    import { getOrganizerEvents, createEvent } from './src/lib/events.js';
+    import { protectPage, performSignOut } from './src/lib/guard.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initThemeFromStorage(); initNavScroll(); initMobileMenu(); initThemeToggle();
+
+      const auth = await protectPage({ requireOTP: true, requireRole: 'organizer' });
+      if (!auth) return; // Redirecting...
+
+      document.getElementById('signout-btn').addEventListener('click', () => performSignOut('/index.html'));
+
+      await loadDashboard();
+      initCreateModal();
+    });
+
+    async function loadDashboard() {
+      const loading = document.getElementById('events-loading');
+      const list = document.getElementById('events-list');
+
+      try {
+        const events = await getOrganizerEvents();
+        loading.style.display = 'none';
+
+        // Calculate stats
+        let totalTickets = 0, totalRevenue = 0, totalSold = 0;
+        const allTierIds = [];
+        events.forEach(e => {
+          e.ticket_tiers?.forEach(t => {
+            totalTickets += t.sold_count || 0;
+            totalRevenue += (t.sold_count || 0) * t.price;
+            totalSold += t.sold_count || 0;
+            allTierIds.push(t.id);
+          });
+        });
+
+        // Get actual scan count from tickets table
+        let totalScanned = 0;
+        if (allTierIds.length > 0) {
+          const { count } = await supabase
+            .from('tickets')
+            .select('*', { count: 'exact', head: true })
+            .in('tier_id', allTierIds)
+            .eq('status', 'scanned');
+          totalScanned = count || 0;
+        }
+
+        document.getElementById('stat-events').textContent = events.length;
+        document.getElementById('stat-tickets').textContent = totalTickets.toLocaleString();
+        document.getElementById('stat-revenue').textContent = totalRevenue.toLocaleString() + ' EGP';
+        document.getElementById('stat-scan-rate').textContent = totalSold > 0 ? Math.round((totalScanned / totalSold) * 100) + '%' : '—';
+
+        if (events.length === 0) {
+          list.innerHTML = `<p style="text-align:center;padding:32px 0;color:var(--text-muted);">No events yet. Create your first event!</p>`;
+          return;
+        }
+
+        list.innerHTML = events.map(event => {
+          const date = new Date(event.date);
+          const sold = event.ticket_tiers?.reduce((sum, t) => sum + (t.sold_count || 0), 0) || 0;
+          const cap = event.ticket_tiers?.reduce((sum, t) => sum + t.capacity, 0) || 0;
+
+          return `
+            <div class="dash-event-row">
+              <img class="dash-event-img" src="${event.cover_image || 'images/event-concert.png'}" alt="" />
+              <div>
+                <div class="dash-event-title">${event.title}</div>
+                <div class="dash-event-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+              </div>
+              <div>${sold} / ${cap} sold</div>
+              <div><span class="dash-event-status status-${event.status}">${event.status}</span></div>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;" onclick="togglePublish('${event.id}', '${event.status}')">
+                  ${event.status === 'published' ? 'Unpublish' : 'Publish'}
+                </button>
+                <a href="scanner.html?event=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">Scan</a>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+        loading.style.display = 'none';
+        list.innerHTML = `<p style="text-align:center;padding:32px 0;color:var(--text-muted);">Connect Supabase to see your events.</p>`;
+      }
+    }
+
+    let tierCount = 1;
+
+    function initCreateModal() {
+      const modal = document.getElementById('create-modal');
+      document.getElementById('create-event-btn').addEventListener('click', () => modal.style.display = 'flex');
+      document.getElementById('create-modal-close').addEventListener('click', () => modal.style.display = 'none');
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+      document.getElementById('add-tier-btn').addEventListener('click', () => {
+        const container = document.getElementById('tiers-container');
+        const row = document.createElement('div');
+        row.className = 'tier-row';
+        row.id = `tier-row-${tierCount}`;
+        row.innerHTML = `
+          <div class="f-row" style="grid-template-columns:1fr 120px 100px;">
+            <div class="fg"><input type="text" class="fi" placeholder="Tier name" data-tier="name" required /></div>
+            <div class="fg"><input type="number" class="fi" placeholder="Price" data-tier="price" min="0" required /></div>
+            <div class="fg"><input type="number" class="fi" placeholder="Qty" data-tier="capacity" min="1" required /></div>
+          </div>
+        `;
+        container.appendChild(row);
+        tierCount++;
+      });
+
+      document.getElementById('create-event-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        const eventData = {
+          organizer_id: user.id,
+          title: document.getElementById('ev-title').value,
+          description: document.getElementById('ev-desc').value,
+          venue: document.getElementById('ev-venue').value,
+          venue_address: document.getElementById('ev-address').value,
+          city: document.getElementById('ev-city').value,
+          date: new Date(document.getElementById('ev-date').value).toISOString(),
+          category: document.getElementById('ev-category').value,
+          status: 'published',
+        };
+
+        try {
+          const event = await createEvent(eventData);
+
+          // Create tiers
+          const tierRows = document.querySelectorAll('.tier-row');
+          for (const row of tierRows) {
+            const name = row.querySelector('[data-tier="name"]').value;
+            const price = parseFloat(row.querySelector('[data-tier="price"]').value) || 0;
+            const capacity = parseInt(row.querySelector('[data-tier="capacity"]').value) || 100;
+            
+            if (name) {
+              await supabase.from('ticket_tiers').insert({
+                event_id: event.id,
+                name,
+                price,
+                capacity,
+              });
+            }
+          }
+
+          modal.style.display = 'none';
+          await loadDashboard();
+        } catch (err) {
+          alert('Error creating event: ' + err.message);
+        }
+      });
+    }
+
+    // ── Publish / Unpublish ──
+    window.togglePublish = async function(eventId, currentStatus) {
+      const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+      try {
+        const { error } = await supabase
+          .from('events')
+          .update({ status: newStatus })
+          .eq('id', eventId);
+
+        if (error) throw error;
+        await loadDashboard();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // ── Utilities ──
+    function initThemeFromStorage() { const s=localStorage.getItem('theme')||'dark';document.documentElement.setAttribute('data-theme',s);document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(b=>b.textContent=s==='dark'?'☀️':'🌙'); }
+    function initThemeToggle() { document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(b=>{b.addEventListener('click',()=>{const n=(document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(x=>x.textContent=n==='dark'?'☀️':'🌙');})}); }
+    function initNavScroll() { const n=document.querySelector('.navbar');if(!n)return;window.addEventListener('scroll',()=>n.classList.toggle('scrolled',window.scrollY>50),{passive:true});n.classList.toggle('scrolled',window.scrollY>50); }
+    function initMobileMenu() { const t=document.getElementById('nav-toggle'),m=document.getElementById('mobile-menu'),c=document.getElementById('mobile-close');if(!t||!m)return;t.addEventListener('click',()=>m.classList.add('active'));if(c)c.addEventListener('click',()=>m.classList.remove('active'));m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>m.classList.remove('active'))); }
+  </script>
+</body>
+</html>

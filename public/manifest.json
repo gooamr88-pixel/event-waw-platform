@@ -1,0 +1,17 @@
+{
+  "name": "Event Waw Scanner",
+  "short_name": "Scanner",
+  "description": "Scan and validate event tickets with QR codes",
+  "start_url": "/scanner.html",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#D4AF37",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

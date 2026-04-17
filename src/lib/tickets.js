@@ -1,0 +1,124 @@
+/* ═══════════════════════════════════
+   EVENT WAW — Tickets API
+   ═══════════════════════════════════ */
+
+import { supabase } from './supabase.js';
+
+/**
+ * Get all tickets for the current user, grouped by event.
+ */
+export async function getMyTickets() {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select(`
+      *,
+      orders (
+        id, amount, status, created_at
+      ),
+      ticket_tiers (
+        id, name, price,
+        events (
+          id, title, cover_image, venue, venue_address, date, status
+        )
+      )
+    `)
+    .in('status', ['valid', 'scanned'])
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Get a single ticket by ID.
+ */
+export async function getTicket(ticketId) {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select(`
+      *,
+      orders (id, amount, status, created_at),
+      ticket_tiers (
+        id, name, price,
+        events (id, title, cover_image, venue, venue_address, date)
+      )
+    `)
+    .eq('id', ticketId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Verify a ticket via the Edge Function (used by scanner).
+ */
+export async function verifyTicket(qrPayload) {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-ticket`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ qr_payload: qrPayload }),
+    }
+  );
+
+  const result = await response.json();
+  
+  if (!response.ok) {
+    return { valid: false, error: result.error || 'Verification failed' };
+  }
+
+  return { valid: true, ticket: result.ticket };
+}
+
+/**
+ * Get attendee list for an event (organizer only).
+ */
+export async function getEventAttendees(eventId) {
+  const { data, error } = await supabase
+    .from('tickets')
+    .select(`
+      id, qr_hash, status, scanned_at, created_at,
+      ticket_tiers!inner (
+        id, name, price,
+        events!inner ( id )
+      ),
+      profiles (
+        full_name, email, phone
+      )
+    `)
+    .eq('ticket_tiers.events.id', eventId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Get order details by Stripe session ID (used on success page).
+ */
+export async function getOrderBySession(sessionId) {
+  const { data, error } = await supabase
+    .from('orders')
+    .select(`
+      *,
+      tickets (
+        id, qr_hash, status,
+        ticket_tiers (
+          name, price,
+          events (title, venue, date, cover_image)
+        )
+      )
+    `)
+    .eq('stripe_session_id', sessionId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}

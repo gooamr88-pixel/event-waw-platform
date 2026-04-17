@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Ticket Scanner — Event Waw</title>
+  <meta name="description" content="Scan QR codes to validate event tickets." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+</head>
+<body>
+
+  <!-- ══════ SCANNER UI ══════ -->
+  <div class="scanner-app">
+
+    <!-- Header -->
+    <div class="scanner-header">
+      <a href="dashboard.html" class="scanner-back">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+      </a>
+      <div>
+        <h1 style="font-size:1.1rem;font-weight:700;font-family:var(--font-serif);">Ticket Scanner</h1>
+        <p id="scanner-event-name" style="font-size:0.75rem;color:var(--text-muted);">Select an event</p>
+      </div>
+      <div id="scanner-stats" style="text-align:right;">
+        <p style="font-size:1.5rem;font-weight:800;color:var(--accent-primary);" id="scan-count">0</p>
+        <p style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;">Scanned</p>
+      </div>
+    </div>
+
+    <!-- Camera View -->
+    <div class="scanner-camera-wrap">
+      <div id="scanner-viewfinder" class="scanner-viewfinder">
+        <!-- html5-qrcode renders here -->
+      </div>
+      <div class="scanner-overlay">
+        <div class="scanner-frame"></div>
+      </div>
+      <p class="scanner-hint">Point camera at QR code</p>
+    </div>
+
+    <!-- Result Flash -->
+    <div id="scanner-result" class="scanner-result" style="display:none;">
+      <div id="result-icon" class="result-icon">✓</div>
+      <h2 id="result-title">Valid Ticket</h2>
+      <p id="result-detail">General Admission — John Doe</p>
+      <button class="btn btn-outline" id="result-dismiss" style="margin-top:20px;">Scan Next</button>
+    </div>
+
+    <!-- Manual Entry -->
+    <div class="scanner-manual">
+      <button class="btn btn-outline btn-sm" id="manual-toggle">Manual Entry</button>
+      <div id="manual-form" style="display:none;margin-top:12px;">
+        <div style="display:flex;gap:8px;">
+          <input type="text" class="fi" id="manual-input" placeholder="Enter ticket ID…" style="flex:1;" />
+          <button class="btn btn-primary btn-sm" id="manual-submit">Verify</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scan History -->
+    <div class="scanner-history">
+      <h3 style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.06em;">Recent Scans</h3>
+      <div id="scan-history-list">
+        <p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:16px 0;">No scans yet</p>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .scanner-app {
+      min-height: 100vh; display: flex; flex-direction: column;
+      max-width: 480px; margin: 0 auto; padding: 0 16px;
+    }
+    .scanner-header {
+      display: flex; align-items: center; gap: 16px;
+      padding: 16px 0; position: sticky; top: 0; z-index: 10;
+      background: var(--bg-primary);
+    }
+    .scanner-back {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--bg-glass); border: 1px solid var(--border-color);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-secondary); transition: var(--transition); flex-shrink: 0;
+    }
+    .scanner-back:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .scanner-header > div:first-of-type { flex: 1; }
+
+    .scanner-camera-wrap {
+      position: relative; width: 100%; aspect-ratio: 1;
+      border-radius: 20px; overflow: hidden;
+      background: #000; margin-bottom: 16px;
+    }
+    .scanner-viewfinder { width: 100%; height: 100%; }
+    .scanner-viewfinder video { width: 100% !important; height: 100% !important; object-fit: cover !important; }
+    .scanner-overlay {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      pointer-events: none; z-index: 2;
+    }
+    .scanner-frame {
+      width: 200px; height: 200px;
+      border: 2px solid var(--accent-primary);
+      border-radius: 16px;
+      box-shadow: 0 0 0 9999px rgba(0,0,0,.4);
+      animation: scanPulse 2s ease-in-out infinite;
+    }
+    @keyframes scanPulse {
+      0%,100% { border-color: rgba(212,175,55,.5); box-shadow: 0 0 0 9999px rgba(0,0,0,.4), 0 0 20px rgba(212,175,55,.1); }
+      50% { border-color: var(--accent-primary); box-shadow: 0 0 0 9999px rgba(0,0,0,.4), 0 0 30px rgba(212,175,55,.25); }
+    }
+    .scanner-hint {
+      position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%);
+      z-index: 3; color: rgba(255,255,255,.7); font-size: 0.8rem;
+      background: rgba(0,0,0,.5); padding: 6px 16px; border-radius: 50px;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Result Flash */
+    .scanner-result {
+      position: fixed; inset: 0; z-index: 1000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 24px;
+      animation: resultIn 0.3s ease;
+    }
+    .scanner-result.valid { background: rgba(16, 80, 30, 0.97); }
+    .scanner-result.invalid { background: rgba(130, 20, 20, 0.97); }
+    .scanner-result.duplicate { background: rgba(130, 90, 10, 0.97); }
+    @keyframes resultIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
+
+    .result-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; margin-bottom: 20px; font-weight: bold;
+    }
+    .scanner-result.valid .result-icon { background: rgba(34,197,94,.2); border: 2px solid #22c55e; color: #22c55e; }
+    .scanner-result.invalid .result-icon { background: rgba(239,68,68,.2); border: 2px solid #ef4444; color: #ef4444; }
+    .scanner-result.duplicate .result-icon { background: rgba(234,179,8,.2); border: 2px solid #eab308; color: #eab308; }
+
+    .scanner-result h2 { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+    .scanner-result p { color: rgba(255,255,255,.7); font-size: 0.95rem; }
+
+    .scanner-manual { padding: 8px 0; text-align: center; }
+
+    .scanner-history {
+      flex: 1; padding: 16px 0 24px;
+    }
+    .scan-entry {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 12px; margin-bottom: 8px; font-size: 0.85rem;
+    }
+    .scan-entry-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem; flex-shrink: 0;
+    }
+    .scan-entry-icon.valid { background: rgba(34,197,94,.1); color: #22c55e; }
+    .scan-entry-icon.invalid { background: rgba(239,68,68,.1); color: #ef4444; }
+    .scan-entry-icon.duplicate { background: rgba(234,179,8,.1); color: #eab308; }
+  </style>
+
+  <script type="module">
+    import { getCurrentUser } from './src/lib/supabase.js';
+    import { verifyTicket } from './src/lib/tickets.js';
+    import { protectPage } from './src/lib/guard.js';
+    import { Html5Qrcode } from 'html5-qrcode';
+
+    let scanner = null;
+    let scanCount = 0;
+    let scanHistory = [];
+    let isProcessing = false;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const saved = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+
+      const auth = await protectPage({ requireOTP: true, requireRole: 'organizer' });
+      if (!auth) return; // Redirecting...
+
+      initScanner();
+      initManualEntry();
+      initResultDismiss();
+    });
+
+    async function initScanner() {
+      try {
+        scanner = new Html5Qrcode('scanner-viewfinder');
+        await scanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 200, height: 200 }, aspectRatio: 1 },
+          onScanSuccess,
+          () => {} // ignore failures
+        );
+      } catch (err) {
+        console.error('Camera error:', err);
+        document.querySelector('.scanner-hint').textContent = 'Camera access denied. Use manual entry below.';
+      }
+    }
+
+    async function onScanSuccess(decodedText) {
+      if (isProcessing) return;
+      isProcessing = true;
+
+      // Haptic feedback
+      if (navigator.vibrate) navigator.vibrate(100);
+
+      try {
+        const result = await verifyTicket(decodedText);
+        
+        if (result.valid) {
+          showResult('valid', 'Valid Ticket', result.ticket?.tier_name || 'Admission Granted');
+          playSound('success');
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+          scanCount++;
+          document.getElementById('scan-count').textContent = scanCount;
+          addToHistory('valid', result.ticket?.tier_name || 'Valid', decodedText);
+        } else if (result.error?.includes('already scanned') || result.error?.includes('duplicate')) {
+          showResult('duplicate', 'Already Scanned', result.error);
+          playSound('warning');
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          addToHistory('duplicate', 'Duplicate', decodedText);
+        } else {
+          showResult('invalid', 'Invalid Ticket', result.error || 'Ticket not recognized');
+          playSound('error');
+          if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+          addToHistory('invalid', result.error || 'Invalid', decodedText);
+        }
+      } catch (err) {
+        showResult('invalid', 'Error', err.message || 'Verification failed');
+        addToHistory('invalid', 'Error', decodedText);
+      }
+    }
+
+    function showResult(type, title, detail) {
+      const el = document.getElementById('scanner-result');
+      el.className = `scanner-result ${type}`;
+      document.getElementById('result-icon').textContent = type === 'valid' ? '✓' : type === 'duplicate' ? '⚠' : '✕';
+      document.getElementById('result-title').textContent = title;
+      document.getElementById('result-detail').textContent = detail;
+      el.style.display = 'flex';
+    }
+
+    function initResultDismiss() {
+      document.getElementById('result-dismiss').addEventListener('click', () => {
+        document.getElementById('scanner-result').style.display = 'none';
+        isProcessing = false;
+      });
+    }
+
+    function addToHistory(type, label, data) {
+      const time = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+      scanHistory.unshift({ type, label, data, time });
+      
+      const list = document.getElementById('scan-history-list');
+      list.innerHTML = scanHistory.slice(0, 20).map(entry => `
+        <div class="scan-entry">
+          <div class="scan-entry-icon ${entry.type}">${entry.type === 'valid' ? '✓' : entry.type === 'duplicate' ? '⚠' : '✕'}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:0.85rem;">${entry.label}</div>
+            <div style="font-size:0.7rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${entry.data.substring(0, 32)}…</div>
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-muted);flex-shrink:0;">${entry.time}</div>
+        </div>
+      `).join('');
+    }
+
+    function initManualEntry() {
+      document.getElementById('manual-toggle').addEventListener('click', () => {
+        const form = document.getElementById('manual-form');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        if (form.style.display === 'block') document.getElementById('manual-input').focus();
+      });
+
+      document.getElementById('manual-submit').addEventListener('click', async () => {
+        const input = document.getElementById('manual-input');
+        const val = input.value.trim();
+        if (val) {
+          await onScanSuccess(val);
+          input.value = '';
+        }
+      });
+
+      document.getElementById('manual-input').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') document.getElementById('manual-submit').click();
+      });
+    }
+
+    // Simple audio feedback
+    function playSound(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        gain.gain.value = 0.15;
+
+        if (type === 'success') {
+          osc.frequency.value = 880; osc.type = 'sine';
+          osc.start(); osc.stop(ctx.currentTime + 0.15);
+        } else if (type === 'error') {
+          osc.frequency.value = 200; osc.type = 'square';
+          osc.start(); osc.stop(ctx.currentTime + 0.3);
+        } else {
+          osc.frequency.value = 440; osc.type = 'triangle';
+          osc.start(); osc.stop(ctx.currentTime + 0.2);
+        }
+      } catch(e) {}
+    }
+
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('[SW] Registered:', reg.scope))
+        .catch(err => console.warn('[SW] Registration failed:', err));
+    }
+  </script>
+</body>
+</html>

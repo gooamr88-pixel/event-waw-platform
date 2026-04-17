@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Via — Premium Event Ticketing Platform
 
-## Getting Started
+A production-ready event ticketing & FinTech SaaS with zero-overbooking guarantees, secure Stripe payments, and real-time QR access control.
 
-First, run the development server:
+## Tech Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Frontend:** Vanilla HTML5, CSS, JavaScript (Phase 1 → Vite + ES Modules from Phase 2)
+- **Backend:** Supabase (PostgreSQL, Auth, RLS, Edge Functions)
+- **Payments:** Stripe Connect + Checkout
+- **Hosting:** Vercel (Frontend) + Supabase (Cloud Backend)
+
+## Project Structure
+
+```
+├── index.html              # Landing page
+├── login.html              # Sign in
+├── register.html           # Create account
+├── forgot-password.html    # Password reset
+├── css/
+│   └── styles.css          # Design system
+├── js/
+│   └── main.js             # Shared JavaScript
+└── images/                 # Event assets
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Open `index.html` in your browser, or serve locally:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx serve .
+```
 
-## Learn More
+## Phases
 
-To learn more about Next.js, take a look at the following resources:
+| Phase | Status | Description |
+|-------|--------|-------------|
+| 1 — Demo & Deposit | ✅ In Progress | Premium UI prototype |
+| 2 — Core DB & Auth | ⬜ Planned | Supabase schema + RLS + Auth |
+| 2.5 — Organizer Dashboard | ⬜ Planned | Event CRUD, tier management |
+| 3 — FinTech Engine | ⬜ Planned | Stripe + concurrency control |
+| 4 — Scanner PWA | ⬜ Planned | QR ticket validation |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## License
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Proprietary — All rights reserved.

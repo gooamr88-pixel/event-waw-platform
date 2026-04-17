@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Event Details — Event Waw</title>
+  <meta name="description" content="View event details and book your tickets on Event Waw." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+</head>
+<body>
+
+  <!-- ══════ NAVBAR ══════ -->
+  <nav class="navbar" id="main-nav">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
+        <span class="nav-logo-text shimmer">Event Waw</span>
+      </a>
+      <div class="nav-links"><a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a></div>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+        <a href="login.html" class="btn btn-outline btn-sm" id="nav-signin">Sign In</a>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <button class="close-btn" id="mobile-close">✕</button>
+    <a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a><a href="login.html">Sign In</a>
+  </div>
+
+  <!-- ══════ EVENT DETAIL ══════ -->
+  <div style="padding-top: 100px; min-height: 100vh;">
+
+    <!-- Hero Banner -->
+    <div id="event-hero" class="event-detail-hero">
+      <img id="event-cover" src="images/event-concert.png" alt="" />
+      <div class="event-detail-hero-overlay"></div>
+      <div class="container" style="position:relative;z-index:2;">
+        <a href="events.html" class="btn btn-outline btn-sm" style="margin-bottom:24px;width:fit-content;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
+          Back to Events
+        </a>
+        <div class="event-detail-badge" id="event-category">Music</div>
+        <h1 id="event-title" style="font-family:var(--font-serif);font-size:clamp(2rem,5vw,3rem);font-weight:700;line-height:1.15;margin:12px 0 16px;max-width:700px;">Loading…</h1>
+        <div style="display:flex;flex-wrap:wrap;gap:24px;color:var(--text-secondary);font-size:0.95rem;">
+          <span id="event-date" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            —
+          </span>
+          <span id="event-venue" style="display:flex;align-items:center;gap:8px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+            —
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container" style="padding-top:48px;padding-bottom:80px;">
+      <div class="event-detail-grid">
+        
+        <!-- Left: Description -->
+        <div class="event-detail-main">
+          <div class="event-detail-section">
+            <h2 style="font-family:var(--font-serif);font-size:1.3rem;font-weight:700;margin-bottom:16px;">About This Event</h2>
+            <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
+          </div>
+
+          <div class="event-detail-section">
+            <h2 style="font-family:var(--font-serif);font-size:1.3rem;font-weight:700;margin-bottom:16px;">Venue</h2>
+            <div style="display:flex;align-items:flex-start;gap:12px;padding:20px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--card-radius);">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(212,175,55,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+              </div>
+              <div>
+                <p id="event-venue-name" style="font-weight:600;margin-bottom:4px;">—</p>
+                <p id="event-venue-address" style="color:var(--text-muted);font-size:0.85rem;">—</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="event-detail-section">
+            <h2 style="font-family:var(--font-serif);font-size:1.3rem;font-weight:700;margin-bottom:16px;">Organized By</h2>
+            <div id="event-organizer" style="display:flex;align-items:center;gap:12px;">
+              <div style="width:44px;height:44px;border-radius:50%;background:var(--accent-gradient);display:flex;align-items:center;justify-content:center;color:var(--bg-primary);font-weight:700;font-size:1.1rem;" id="organizer-avatar">E</div>
+              <div>
+                <p id="organizer-name" style="font-weight:600;">Event Waw</p>
+                <p style="color:var(--text-muted);font-size:0.82rem;">Event Organizer</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Ticket Selection -->
+        <div class="event-detail-sidebar">
+          <div class="ticket-selector" id="ticket-selector">
+            <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:20px;">Select Tickets</h2>
+            
+            <div id="tiers-list">
+              <!-- Tiers loaded dynamically -->
+            </div>
+
+            <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light);">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
+                <span id="total-price" style="font-size:1.3rem;font-weight:700;">0 EGP</span>
+              </div>
+              <button class="btn btn-primary btn-full btn-lg" id="checkout-btn" disabled>
+                Reserve & Pay
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+              </button>
+              <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
+                🔒 Secure checkout powered by Stripe
+              </p>
+            </div>
+          </div>
+
+          <!-- Reservation Timer (hidden until active) -->
+          <div id="reservation-timer" style="display:none;margin-top:16px;padding:16px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:var(--card-radius);text-align:center;">
+            <p style="font-size:0.82rem;color:var(--accent-primary);font-weight:600;margin-bottom:4px;">Reservation held for</p>
+            <p id="timer-display" style="font-size:1.8rem;font-weight:700;font-family:var(--font-sans);">10:00</p>
+            <p style="font-size:0.75rem;color:var(--text-muted);">Complete payment before time expires</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .event-detail-hero {
+      position: relative; width: 100%; height: 400px; overflow: hidden;
+      display: flex; align-items: flex-end; padding-bottom: 48px;
+    }
+    .event-detail-hero img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s; 
+    }
+    .event-detail-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--bg-primary) 0%, rgba(9,9,11,.7) 50%, rgba(9,9,11,.3) 100%);
+      z-index: 1;
+    }
+    .event-detail-badge {
+      display: inline-flex; padding: 6px 16px; border-radius: 50px;
+      background: rgba(212,175,55,.12); border: 1px solid rgba(212,175,55,.2);
+      color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .event-detail-grid {
+      display: grid; grid-template-columns: 1fr 380px; gap: 48px; align-items: flex-start;
+    }
+    .event-detail-section { margin-bottom: 40px; }
+    .ticket-selector {
+      position: sticky; top: 100px;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--card-radius); padding: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    }
+    .tier-option {
+      padding: 16px; border: 1px solid var(--border-color); border-radius: 12px;
+      margin-bottom: 12px; cursor: pointer; transition: var(--transition);
+    }
+    .tier-option:hover { border-color: rgba(212,175,55,.3); background: rgba(212,175,55,.03); }
+    .tier-option.selected { border-color: var(--accent-primary); background: rgba(212,175,55,.06); }
+    .tier-option.sold-out { opacity: 0.5; cursor: not-allowed; }
+    .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .tier-name { font-weight: 600; font-size: 0.95rem; }
+    .tier-price { font-weight: 700; color: var(--accent-primary); }
+    .tier-info { font-size: 0.8rem; color: var(--text-muted); }
+    .tier-qty { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .tier-qty button {
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: var(--bg-glass); color: var(--text-primary); font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; transition: var(--transition);
+    }
+    .tier-qty button:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .tier-qty span { font-weight: 600; min-width: 24px; text-align: center; }
+
+    @media (max-width: 900px) {
+      .event-detail-grid { grid-template-columns: 1fr; }
+      .ticket-selector { position: static; }
+      .event-detail-hero { height: 300px; }
+    }
+    @media (max-width: 768px) {
+      .event-detail-hero { height: 250px; padding-bottom: 32px; }
+    }
+
+    [data-theme="light"] .event-detail-hero-overlay {
+      background: linear-gradient(to top, var(--bg-primary) 0%, rgba(250,250,250,.7) 50%, rgba(250,250,250,.3) 100%);
+    }
+  </style>
+
+  <script type="module">
+    import { supabase, getCurrentUser } from './src/lib/supabase.js';
+    import { getEvent, createCheckout } from './src/lib/events.js';
+    import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
+
+    let eventData = null;
+    let selectedTier = null;
+    let quantities = {};
+    let authState = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initThemeFromStorage();
+      initNavScroll();
+      initMobileMenu();
+      initThemeToggle();
+
+      authState = await semiProtectPage();
+      updateNavForAuth(authState);
+      
+      const params = new URLSearchParams(window.location.search);
+      const eventId = params.get('id');
+      
+      if (!eventId) {
+        window.location.href = 'events.html';
+        return;
+      }
+
+      await loadEvent(eventId);
+    });
+
+    async function loadEvent(eventId) {
+      try {
+        eventData = await getEvent(eventId);
+        renderEvent(eventData);
+      } catch (err) {
+        console.error('Error loading event:', err);
+        renderDemoEvent(eventId);
+      }
+    }
+
+    function renderEvent(event) {
+      document.title = `${event.title} — Event Waw`;
+      document.getElementById('event-cover').src = event.cover_image || 'images/event-concert.png';
+      document.getElementById('event-title').textContent = event.title;
+      document.getElementById('event-category').textContent = event.category || 'Event';
+      document.getElementById('event-description').textContent = event.description || 'No description available.';
+      document.getElementById('event-venue-name').textContent = event.venue;
+      document.getElementById('event-venue-address').textContent = event.venue_address || '';
+      
+      const date = new Date(event.date);
+      document.getElementById('event-date').innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        ${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+      `;
+      document.getElementById('event-venue').innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+        ${event.venue}
+      `;
+
+      if (event.profiles) {
+        document.getElementById('organizer-name').textContent = event.profiles.full_name || 'Event Waw';
+        document.getElementById('organizer-avatar').textContent = (event.profiles.full_name || 'E')[0].toUpperCase();
+      }
+
+      renderTiers(event.ticket_tiers || []);
+    }
+
+    function renderTiers(tiers) {
+      const sorted = [...tiers].sort((a, b) => a.sort_order - b.sort_order);
+      const list = document.getElementById('tiers-list');
+      
+      list.innerHTML = sorted.map(tier => {
+        const avail = tier.capacity - tier.sold_count;
+        const soldOut = avail <= 0;
+        quantities[tier.id] = 0;
+        
+        return `
+          <div class="tier-option ${soldOut ? 'sold-out' : ''}" id="tier-${tier.id}" data-tier-id="${tier.id}">
+            <div class="tier-header">
+              <span class="tier-name">${tier.name}</span>
+              <span class="tier-price">${Number(tier.price).toLocaleString()} EGP</span>
+            </div>
+            <div class="tier-info">${tier.description || ''} · ${soldOut ? 'Sold Out' : `${avail} available`}</div>
+            ${!soldOut ? `
+              <div class="tier-qty">
+                <button onclick="changeQty('${tier.id}', -1)">−</button>
+                <span id="qty-${tier.id}">0</span>
+                <button onclick="changeQty('${tier.id}', 1)">+</button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Expose to window for onclick handlers
+    window.changeQty = function(tierId, delta) {
+      const tier = eventData?.ticket_tiers?.find(t => t.id === tierId);
+      if (!tier) return;
+      
+      const avail = tier.capacity - tier.sold_count;
+      const newQty = Math.max(0, Math.min(10, Math.min(avail, (quantities[tierId] || 0) + delta)));
+      quantities[tierId] = newQty;
+      
+      document.getElementById(`qty-${tierId}`).textContent = newQty;
+      
+      // Update selected state
+      document.getElementById(`tier-${tierId}`).classList.toggle('selected', newQty > 0);
+      
+      updateTotal();
+    };
+
+    function updateTotal() {
+      let total = 0;
+      let hasSelection = false;
+      
+      for (const [tierId, qty] of Object.entries(quantities)) {
+        if (qty > 0) {
+          hasSelection = true;
+          const tier = eventData?.ticket_tiers?.find(t => t.id === tierId);
+          if (tier) total += tier.price * qty;
+        }
+      }
+
+      document.getElementById('total-price').textContent = `${total.toLocaleString()} EGP`;
+      document.getElementById('checkout-btn').disabled = !hasSelection;
+    }
+
+    // ── Checkout ──
+    document.getElementById('checkout-btn').addEventListener('click', async () => {
+      // Check auth + OTP before allowing checkout
+      if (!authState?.user) {
+        window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+        return;
+      }
+      if (!authState?.isFullyAuth) {
+        window.location.href = `login.html?otp_required=true&redirect=${encodeURIComponent(window.location.href)}`;
+        return;
+      }
+
+      // Collect selected tiers info
+      const selectedItems = [];
+      for (const [tierId, qty] of Object.entries(quantities)) {
+        if (qty > 0) {
+          const tier = eventData.ticket_tiers.find(t => t.id === tierId);
+          if (tier) selectedItems.push({ tierId, qty, tier });
+        }
+      }
+      if (selectedItems.length === 0) return;
+
+      const totalPrice = selectedItems.reduce((sum, item) => sum + (item.tier.price * item.qty), 0);
+      const totalQty = selectedItems.reduce((sum, item) => sum + item.qty, 0);
+      const profile = authState.profile || {};
+
+      // Show confirmation modal
+      showConfirmModal({
+        event: eventData,
+        items: selectedItems,
+        totalPrice,
+        totalQty,
+        profile,
+        user: authState.user,
+      });
+    });
+
+    function showConfirmModal({ event, items, totalPrice, totalQty, profile, user }) {
+      // Remove existing modal
+      document.getElementById('confirm-modal')?.remove();
+
+      const tiersSummary = items.map(i => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-light);">
+          <div>
+            <div style="font-weight:600;font-size:0.9rem;">${i.tier.name} × ${i.qty}</div>
+          </div>
+          <div style="font-weight:700;color:var(--accent-primary);">${(i.tier.price * i.qty).toLocaleString()} EGP</div>
+        </div>
+      `).join('');
+
+      const modal = document.createElement('div');
+      modal.id = 'confirm-modal';
+      modal.innerHTML = `
+        <style>
+          #confirm-modal {
+            position:fixed;inset:0;z-index:99999;
+            background:rgba(0,0,0,.7);
+            backdrop-filter:blur(8px);
+            display:flex;align-items:center;justify-content:center;
+            padding:20px;
+            animation:fadeIn .3s ease;
+          }
+          .confirm-box {
+            max-width:480px;width:100%;
+            background:var(--bg-card);
+            border:1px solid rgba(212,175,55,.12);
+            border-radius:20px;padding:28px 24px;
+            box-shadow:0 30px 80px rgba(0,0,0,.4);
+            max-height:90vh;overflow-y:auto;
+            animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;
+          }
+          .confirm-box h3 {
+            font-family:var(--font-serif);font-size:1.2rem;
+            font-weight:700;margin-bottom:4px;
+          }
+          .confirm-section {
+            margin-top:20px;padding:16px;
+            background:rgba(255,255,255,.02);
+            border:1px solid var(--border-color);
+            border-radius:14px;
+          }
+          .confirm-section-title {
+            font-size:0.75rem;text-transform:uppercase;
+            letter-spacing:0.06em;color:var(--accent-primary);
+            font-weight:700;margin-bottom:12px;
+          }
+          .confirm-field {
+            margin-bottom:12px;
+          }
+          .confirm-field label {
+            display:block;font-size:0.78rem;
+            color:var(--text-muted);margin-bottom:4px;font-weight:500;
+          }
+          .confirm-field input {
+            width:100%;padding:10px 14px;
+            background:rgba(255,255,255,.04);
+            border:1px solid var(--border-color);
+            border-radius:10px;color:var(--text-primary);
+            font-size:0.88rem;font-family:var(--font-sans);
+            transition:border-color .2s;
+          }
+          .confirm-field input:focus {
+            outline:none;border-color:var(--accent-primary);
+            box-shadow:0 0 0 3px rgba(212,175,55,.08);
+          }
+          .confirm-total {
+            display:flex;justify-content:space-between;
+            align-items:center;margin-top:16px;
+            padding-top:12px;border-top:1.5px solid var(--border-color);
+          }
+          .confirm-total-label { font-size:0.9rem;color:var(--text-secondary); }
+          .confirm-total-price {
+            font-size:1.3rem;font-weight:800;
+            background:var(--accent-gradient);
+            -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+            background-clip:text;
+          }
+          .confirm-btns { display:flex;gap:10px;margin-top:20px; }
+          .confirm-btns .btn { flex:1; }
+          .confirm-note {
+            margin-top:14px;padding:10px 14px;
+            background:rgba(212,175,55,.04);
+            border:1px solid rgba(212,175,55,.1);
+            border-radius:10px;font-size:0.78rem;
+            color:var(--text-muted);line-height:1.6;
+            display:flex;align-items:flex-start;gap:8px;
+          }
+          @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+        </style>
+        <div class="confirm-box">
+          <h3>Confirm Your <span style="color:var(--accent-primary);">Booking</span></h3>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0;">${event.title}</p>
+
+          <div class="confirm-section">
+            <div class="confirm-section-title">🎫 Tickets</div>
+            ${tiersSummary}
+            <div class="confirm-total">
+              <span class="confirm-total-label">${totalQty} ticket${totalQty > 1 ? 's' : ''} · Total</span>
+              <span class="confirm-total-price">${totalPrice.toLocaleString()} EGP</span>
+            </div>
+          </div>
+
+          <div class="confirm-section">
+            <div class="confirm-section-title">👤 Attendee Information</div>
+            <div class="confirm-field">
+              <label>Full Name</label>
+              <input type="text" id="confirm-name" value="${profile.full_name || user.user_metadata?.full_name || ''}" required />
+            </div>
+            <div class="confirm-field">
+              <label>Email</label>
+              <input type="email" id="confirm-email" value="${user.email || ''}" readonly style="opacity:0.6;cursor:not-allowed;" />
+            </div>
+            <div class="confirm-field">
+              <label>Phone</label>
+              <input type="tel" id="confirm-phone" value="${profile.phone || user.user_metadata?.phone || ''}" placeholder="+20 1XX XXX XXXX" />
+            </div>
+            <div class="confirm-field" style="margin-bottom:0;">
+              <label>National ID <span style="color:var(--accent-primary);">*</span></label>
+              <input type="text" id="confirm-nid" placeholder="Enter your national ID number" required maxlength="14" />
+            </div>
+          </div>
+
+          <div class="confirm-note">
+            <span style="flex-shrink:0;">🔒</span>
+            <span>Your data is encrypted and linked to your QR code. The ticket cannot be transferred or forged. You must present a valid ID matching this information at the venue.</span>
+          </div>
+
+          <div class="confirm-btns">
+            <button class="btn btn-outline btn-lg" id="confirm-cancel">Cancel</button>
+            <button class="btn btn-primary btn-lg" id="confirm-pay">
+              Confirm & Pay
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Close
+      document.getElementById('confirm-cancel').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      // Confirm & Pay
+      document.getElementById('confirm-pay').addEventListener('click', async () => {
+        const name = document.getElementById('confirm-name').value.trim();
+        const phone = document.getElementById('confirm-phone').value.trim();
+        const nid = document.getElementById('confirm-nid').value.trim();
+
+        if (!name) { alert('Please enter your full name.'); return; }
+        if (!nid || nid.length < 10) { alert('Please enter a valid National ID.'); return; }
+
+        const payBtn = document.getElementById('confirm-pay');
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Processing…';
+
+        try {
+          // Update profile with latest info
+          await supabase.from('profiles').update({
+            full_name: name,
+            phone: phone || null,
+          }).eq('id', user.id);
+
+          // Save NID in user metadata
+          await supabase.auth.updateUser({
+            data: { national_id: nid }
+          });
+
+          // Process checkout for the first selected tier
+          // (Stripe checkout handles one line item at a time with our Edge Function)
+          const firstItem = items[0];
+          const result = await createCheckout({ tierId: firstItem.tierId, quantity: firstItem.qty });
+
+          if (result.checkout_url) {
+            // Show reservation timer before redirect
+            modal.remove();
+            startReservationTimer();
+            // Redirect to Stripe
+            window.location.href = result.checkout_url;
+          }
+        } catch (err) {
+          alert(err.message || 'Failed to process. Please try again.');
+          payBtn.disabled = false;
+          payBtn.innerHTML = 'Confirm & Pay <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+        }
+      });
+    }
+
+    // ── Demo fallback ──
+    function renderDemoEvent(id) {
+      const demos = {
+        'demo-1': { title: 'Neon Pulse Music Festival', description: 'Experience the ultimate music festival featuring top international and local artists. Three stages, immersive light shows, and unforgettable performances under the Cairo sky.', cover_image: 'images/event-concert.png', category: 'music', venue: 'Cairo International Stadium', venue_address: 'Nasr City, Cairo, Egypt', date: '2026-05-17T20:00:00+02:00', ticket_tiers: [{ id:'t1', name:'General Admission', description:'Access to all main areas', price:850, capacity:500, sold_count:477, sort_order:1 }, { id:'t2', name:'VIP', description:'Premium viewing area, complimentary drinks', price:2500, capacity:100, sold_count:72, sort_order:2 }, { id:'t3', name:'VVIP', description:'Front row, private area, full service', price:5000, capacity:30, sold_count:28, sort_order:3 }] },
+        'demo-2': { title: 'The Golden Gala 2026', description: 'An evening of elegance and sophistication. Black-tie charity gala featuring live jazz, gourmet dining, and exclusive art exhibitions.', cover_image: 'images/event-gala.png', category: 'gala', venue: 'Royal Maxim Palace', venue_address: 'First Settlement, New Cairo, Egypt', date: '2026-06-06T19:30:00+02:00', ticket_tiers: [{ id:'t4', name:'Standard', description:'Dinner, drinks, and entertainment', price:2500, capacity:200, sold_count:192, sort_order:1 }, { id:'t5', name:'Premium Table', description:'Reserved table for 8, premium wine selection', price:15000, capacity:25, sold_count:17, sort_order:2 }] },
+        'demo-3': { title: 'Future Tech Summit 2026', description: 'Two days of cutting-edge technology talks, workshops, and networking. Featuring speakers from Google, Meta, and leading Egyptian tech startups.', cover_image: 'images/event-conference.png', category: 'conference', venue: 'GrEEK Campus', venue_address: 'Downtown Cairo, Egypt', date: '2026-06-15T09:00:00+02:00', ticket_tiers: [{ id:'t6', name:'Day Pass', description:'Single day access', price:450, capacity:300, sold_count:158, sort_order:1 }, { id:'t7', name:'Full Pass', description:'Both days + networking dinner', price:750, capacity:200, sold_count:89, sort_order:2 }, { id:'t8', name:'Speaker Access', description:'Full pass + speaker lounge', price:1500, capacity:50, sold_count:31, sort_order:3 }] },
+      };
+      const demo = demos[id];
+      if (demo) {
+        eventData = demo;
+        renderEvent(demo);
+      } else {
+        document.getElementById('event-title').textContent = 'Event Not Found';
+      }
+    }
+
+    // ── Reservation Timer (10 minutes) ──
+    function startReservationTimer() {
+      const timerWrap = document.getElementById('reservation-timer');
+      const timerDisplay = document.getElementById('timer-display');
+      if (!timerWrap || !timerDisplay) return;
+
+      timerWrap.style.display = 'block';
+      let seconds = 600; // 10 minutes
+
+      const interval = setInterval(() => {
+        seconds--;
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        timerDisplay.textContent = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+        if (seconds <= 60) {
+          timerDisplay.style.color = '#ef4444';
+        }
+        if (seconds <= 0) {
+          clearInterval(interval);
+          timerDisplay.textContent = 'Expired';
+        }
+      }, 1000);
+    }
+
+    // ── Utilities ──
+    function initThemeFromStorage() {
+      const saved = localStorage.getItem('theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      document.querySelectorAll('.theme-toggle, #theme-toggle').forEach(btn => btn.textContent = saved === 'dark' ? '☀️' : '🌙');
+    }
+    function initThemeToggle() {
+      document.querySelectorAll('.theme-toggle, #theme-toggle').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const next = (document.documentElement.getAttribute('data-theme') || 'dark') === 'dark' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', next);
+          localStorage.setItem('theme', next);
+          document.querySelectorAll('.theme-toggle, #theme-toggle').forEach(b => b.textContent = next === 'dark' ? '☀️' : '🌙');
+        });
+      });
+    }
+    function initNavScroll() {
+      const nav = document.querySelector('.navbar');
+      if (!nav) return;
+      window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 50), { passive: true });
+      nav.classList.toggle('scrolled', window.scrollY > 50);
+    }
+    function initMobileMenu() {
+      const t = document.getElementById('nav-toggle'), m = document.getElementById('mobile-menu'), c = document.getElementById('mobile-close');
+      if (!t || !m) return;
+      t.addEventListener('click', () => m.classList.add('active'));
+      if (c) c.addEventListener('click', () => m.classList.remove('active'));
+      m.querySelectorAll('a').forEach(a => a.addEventListener('click', () => m.classList.remove('active')));
+    }
+  </script>
+
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</body>
+</html>

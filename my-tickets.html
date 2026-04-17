@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Tickets — Event Waw</title>
+  <meta name="description" content="View your event tickets and QR codes on Event Waw." />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+</head>
+<body>
+
+  <!-- ══════ NAVBAR ══════ -->
+  <nav class="navbar" id="main-nav">
+    <div class="container">
+      <a href="index.html" class="nav-logo">
+        <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
+        <span class="nav-logo-text shimmer">Event Waw</span>
+      </a>
+      <div class="nav-links"><a href="events.html">Events</a><a href="my-tickets.html" class="active">My Tickets</a><a href="dashboard.html">Dashboard</a></div>
+      <div class="nav-actions">
+        <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+        <button class="btn btn-outline btn-sm" id="signout-btn" style="display:none">Sign Out</button>
+        <button class="nav-toggle" id="nav-toggle" aria-label="Menu">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <button class="close-btn" id="mobile-close">✕</button>
+    <a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a><a href="dashboard.html">Dashboard</a>
+  </div>
+
+  <!-- ══════ CONTENT ══════ -->
+  <div style="padding-top: 120px; min-height: 100vh;">
+    <div class="container">
+      <div class="section-header" data-reveal>
+        <div class="section-label">Your Collection</div>
+        <h1 style="font-family:var(--font-serif);font-size:clamp(1.9rem,4vw,2.75rem);font-weight:700;letter-spacing:-0.5px;line-height:1.2;">
+          My <span class="gold" style="font-style:italic">Tickets</span>
+        </h1>
+        <p class="section-desc">All your event tickets in one place. Show the QR code at the door for instant entry.</p>
+      </div>
+
+      <!-- Tickets List -->
+      <div id="tickets-list" style="display:grid;gap:24px;margin-top:16px;">
+        <!-- Loaded dynamically -->
+      </div>
+
+      <!-- Loading -->
+      <div id="tickets-loading" style="text-align:center;padding:60px 0;">
+        <div class="spinner"></div>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-top:16px;">Loading your tickets…</p>
+      </div>
+
+      <!-- Empty State -->
+      <div id="tickets-empty" style="display:none;text-align:center;padding:80px 0;">
+        <div style="font-size:3rem;margin-bottom:16px;">🎫</div>
+        <h3 style="font-family:var(--font-serif);font-size:1.3rem;margin-bottom:8px;">No tickets yet</h3>
+        <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;">Browse events and grab your first ticket!</p>
+        <a href="events.html" class="btn btn-primary">Browse Events</a>
+      </div>
+
+      <!-- QR Modal -->
+      <div id="qr-modal" class="qr-modal" style="display:none;">
+        <div class="qr-modal-content">
+          <button class="qr-modal-close" id="qr-modal-close">✕</button>
+          <div id="qr-modal-event" style="font-size:0.85rem;color:var(--accent-primary);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:8px;">Event Name</div>
+          <div id="qr-modal-tier" style="font-family:var(--font-serif);font-size:1.3rem;font-weight:700;margin-bottom:24px;">Ticket Tier</div>
+          <div id="qr-modal-code" style="background:#fff;padding:24px;border-radius:16px;margin-bottom:20px;display:inline-block;"></div>
+          <div id="qr-modal-id" style="font-size:0.75rem;color:var(--text-muted);font-family:monospace;word-break:break-all;"></div>
+          <div id="qr-modal-status" style="margin-top:16px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .spinner {
+      width:40px;height:40px;border:3px solid var(--border-color);border-top-color:var(--accent-primary);
+      border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .ticket-card {
+      display: grid; grid-template-columns: 140px 1fr auto;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--card-radius); overflow: hidden;
+      transition: var(--transition);
+    }
+    .ticket-card:hover {
+      border-color: rgba(212,175,55,.3);
+      box-shadow: 0 12px 40px rgba(0,0,0,.2);
+      transform: translateY(-4px);
+    }
+    .ticket-card-image { width: 100%; height: 100%; min-height: 140px; }
+    .ticket-card-image img { width: 100%; height: 100%; object-fit: cover; }
+    .ticket-card-body { padding: 20px; display: flex; flex-direction: column; justify-content: center; }
+    .ticket-card-actions {
+      padding: 20px; display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: 8px; border-left: 1px solid var(--border-light);
+    }
+    .ticket-status {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: 50px; font-size: 0.72rem;
+      font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .ticket-status.valid { background: rgba(34,197,94,.1); color: #22c55e; }
+    .ticket-status.scanned { background: rgba(59,130,246,.1); color: #3b82f6; }
+    .ticket-status.cancelled { background: rgba(239,68,68,.1); color: #ef4444; }
+
+    .qr-modal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,.8); backdrop-filter: blur(20px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .qr-modal-content {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 40px; text-align: center;
+      max-width: 380px; width: 100%; position: relative;
+    }
+    .qr-modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: none; color: var(--text-muted);
+      font-size: 1.3rem; cursor: pointer; transition: color .2s;
+    }
+    .qr-modal-close:hover { color: var(--text-primary); }
+
+    @media (max-width: 768px) {
+      .ticket-card { grid-template-columns: 1fr; }
+      .ticket-card-image { height: 160px; }
+      .ticket-card-actions { border-left: none; border-top: 1px solid var(--border-light); flex-direction: row; padding: 14px 20px; }
+    }
+  </style>
+
+  <script type="module">
+    import { supabase, getCurrentUser } from './src/lib/supabase.js';
+    import { getMyTickets } from './src/lib/tickets.js';
+    import { protectPage, performSignOut } from './src/lib/guard.js';
+    import QRCode from 'qrcode';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initThemeFromStorage(); initNavScroll(); initMobileMenu(); initThemeToggle();
+      
+      const auth = await protectPage({ requireOTP: true });
+      if (!auth) return; // Redirecting...
+
+      document.getElementById('signout-btn').style.display = 'inline-flex';
+      document.getElementById('signout-btn').addEventListener('click', () => performSignOut('/index.html'));
+
+      await loadTickets();
+      initQRModal();
+    });
+
+    async function loadTickets() {
+      const loading = document.getElementById('tickets-loading');
+      const list = document.getElementById('tickets-list');
+      const empty = document.getElementById('tickets-empty');
+
+      try {
+        const tickets = await getMyTickets();
+        loading.style.display = 'none';
+
+        if (!tickets || tickets.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+
+        list.innerHTML = tickets.map(ticket => {
+          const event = ticket.ticket_tiers?.events;
+          const tier = ticket.ticket_tiers;
+          const eventDate = event?.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+          
+          return `
+            <div class="ticket-card">
+              <div class="ticket-card-image">
+                <img src="${event?.cover_image || 'images/event-concert.png'}" alt="${event?.title || 'Event'}" />
+              </div>
+              <div class="ticket-card-body">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <span class="ticket-status ${ticket.status}">${ticket.status}</span>
+                </div>
+                <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:4px;">
+                  ${event?.title || 'Event'}
+                </h3>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">${tier?.name || 'General'} · ${Number(tier?.price || 0).toLocaleString()} EGP</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);">${eventDate} · ${event?.venue || ''}</p>
+              </div>
+              <div class="ticket-card-actions">
+                <button class="btn btn-primary btn-sm" onclick="showQR('${ticket.id}', '${ticket.qr_hash}', '${(event?.title || '').replace(/'/g,"\\'")}', '${(tier?.name || '').replace(/'/g,"\\'")}', '${ticket.status}')">
+                  Show QR
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading tickets:', err);
+        loading.style.display = 'none';
+        empty.style.display = 'block';
+      }
+    }
+
+    window.showQR = async function(ticketId, qrHash, eventTitle, tierName, status) {
+      const modal = document.getElementById('qr-modal');
+      const codeContainer = document.getElementById('qr-modal-code');
+      
+      document.getElementById('qr-modal-event').textContent = eventTitle;
+      document.getElementById('qr-modal-tier').textContent = tierName;
+      document.getElementById('qr-modal-id').textContent = `Ticket: ${ticketId.substring(0, 8)}…`;
+      
+      const statusEl = document.getElementById('qr-modal-status');
+      if (status === 'scanned') {
+        statusEl.innerHTML = '<span class="ticket-status scanned">✓ Already Scanned</span>';
+      } else if (status === 'valid') {
+        statusEl.innerHTML = '<span class="ticket-status valid">✓ Valid Ticket</span>';
+      } else {
+        statusEl.innerHTML = `<span class="ticket-status ${status}">${status}</span>`;
+      }
+
+      // Generate QR code
+      codeContainer.innerHTML = '';
+      try {
+        const canvas = document.createElement('canvas');
+        await QRCode.toCanvas(canvas, qrHash || ticketId, {
+          width: 220,
+          margin: 2,
+          color: { dark: '#000000', light: '#ffffff' }
+        });
+        codeContainer.appendChild(canvas);
+      } catch (e) {
+        codeContainer.innerHTML = '<p style="color:#999;padding:40px;">QR generation failed</p>';
+      }
+
+      modal.style.display = 'flex';
+    };
+
+    function initQRModal() {
+      const modal = document.getElementById('qr-modal');
+      document.getElementById('qr-modal-close').addEventListener('click', () => modal.style.display = 'none');
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+    }
+
+    // ── Utilities ──
+    function initThemeFromStorage() { const s = localStorage.getItem('theme')||'dark'; document.documentElement.setAttribute('data-theme',s); document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(b=>b.textContent=s==='dark'?'☀️':'🌙'); }
+    function initThemeToggle() { document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(b=>{b.addEventListener('click',()=>{const n=(document.documentElement.getAttribute('data-theme')||'dark')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('theme',n);document.querySelectorAll('.theme-toggle,#theme-toggle').forEach(x=>x.textContent=n==='dark'?'☀️':'🌙');})}); }
+    function initNavScroll() { const n=document.querySelector('.navbar');if(!n)return;window.addEventListener('scroll',()=>n.classList.toggle('scrolled',window.scrollY>50),{passive:true});n.classList.toggle('scrolled',window.scrollY>50); }
+    function initMobileMenu() { const t=document.getElementById('nav-toggle'),m=document.getElementById('mobile-menu'),c=document.getElementById('mobile-close');if(!t||!m)return;t.addEventListener('click',()=>m.classList.add('active'));if(c)c.addEventListener('click',()=>m.classList.remove('active'));m.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>m.classList.remove('active'))); }
+  </script>
+</body>
+</html>
