@@ -112,9 +112,10 @@
 
     async function loadOrder(sessionId) {
       try {
+        document.getElementById('order-event').textContent = 'Confirming payment…';
         const order = await getOrderBySession(sessionId);
-        if (order) {
-          const ticket = order.tickets?.[0];
+        if (order && order.tickets?.length > 0) {
+          const ticket = order.tickets[0];
           const event = ticket?.ticket_tiers?.events;
           
           document.getElementById('order-event').textContent = event?.title || 'Event';
@@ -125,7 +126,17 @@
           // Generate QR for first ticket
           if (ticket?.qr_hash) {
             await generateQR(ticket.qr_hash);
+          } else {
+            generatePlaceholderQR();
           }
+        } else {
+          // Order not found after polling — show friendly message
+          document.getElementById('order-event').textContent = 'Payment received!';
+          document.getElementById('order-tier').textContent = 'Processing…';
+          document.getElementById('order-amount').textContent = '—';
+          document.getElementById('order-id').textContent = 'Check My Tickets page';
+          const container = document.getElementById('qr-code');
+          container.innerHTML = '<p style="color:#999;font-size:0.85rem;padding:30px 10px;">Your payment was successful! Your tickets will appear on the <strong>My Tickets</strong> page shortly.</p>';
         }
       } catch (err) {
         console.error('Error loading order:', err);

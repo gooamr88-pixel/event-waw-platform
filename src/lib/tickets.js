@@ -104,21 +104,38 @@ export async function getEventAttendees(eventId) {
  * Get order details by Stripe session ID (used on success page).
  */
 export async function getOrderBySession(sessionId) {
-  const { data, error } = await supabase
-    .from('orders')
-    .select(`
-      *,
-      tickets (
-        id, qr_hash, status,
-        ticket_tiers (
-          name, price,
-          events (title, venue, date, cover_image)
-        )
-      )
-    `)
-    .eq('stripe_session_id', sessionId)
-    .single();
+  // The webhook may not have arrived yet — poll for up to 20 seconds
+  const maxAttempts = 10;
+  const delayMs = 2000;
 
-  if (error) throw error;
-  return data;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        tickets (
+          id, qr_hash, status,
+          ticket_tiers (
+            name, price,
+            events (title, venue, date, cover_image)
+          )
+        )
+      `)
+      .eq('stripe_session_id', sessionId)
+      .maybeSingle();
+
+    if (data) return data;
+
+    // If last attempt, give up
+    if (attempt === maxAttempts) {
+      console.warn('Order not found after polling. Webhook may have failed.');
+      return null;
+    }
+
+    // Wait before retrying
+    console.log(`Waiting for order... attempt ${attempt}/${maxAttempts}`);
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+
+  return null;
 }
