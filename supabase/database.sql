@@ -342,7 +342,7 @@ ALTER TABLE login_otps ENABLE ROW LEVEL SECURITY;
 
 -- profiles
 CREATE POLICY "profiles_select_own" ON profiles FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "profiles_insert" ON profiles FOR INSERT WITH CHECK (true);
+CREATE POLICY "profiles_insert" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "profiles_update_own" ON profiles FOR UPDATE USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
 
 -- events
@@ -389,27 +389,48 @@ CREATE POLICY "otps_update_own" ON login_otps FOR UPDATE USING (auth.uid() = use
 GRANT SELECT ON events TO anon;
 GRANT SELECT ON ticket_tiers TO anon;
 
--- Authenticated users: full access to all tables
-GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO authenticated;
+-- Authenticated users: GRANULAR permissions (NOT GRANT ALL)
+-- profiles: users manage their own
+GRANT SELECT, INSERT, UPDATE ON profiles TO authenticated;
 
--- Ensure future tables also get the same grants
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO authenticated;
-ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO authenticated;
+-- events: organizers create/update, everyone reads (RLS filters)
+GRANT SELECT, INSERT, UPDATE, DELETE ON events TO authenticated;
+
+-- ticket_tiers: organizers manage, everyone reads
+GRANT SELECT, INSERT, UPDATE, DELETE ON ticket_tiers TO authenticated;
+
+-- reservations: read-only (created via SECURITY DEFINER RPC only)
+GRANT SELECT ON reservations TO authenticated;
+
+-- orders: read-only (created by webhook via service_role only)
+GRANT SELECT ON orders TO authenticated;
+
+-- tickets: read-only (created by webhook via service_role only)
+GRANT SELECT ON tickets TO authenticated;
+
+-- login_otps: users can read/update their own (RLS enforced)
+GRANT SELECT, UPDATE ON login_otps TO authenticated;
+
+-- Sequences needed for auto-generated IDs on allowed inserts
+GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 
 
--- ════════════ PHASE 9b: SECURITY — REVOKE SENSITIVE RPCs ════════════
--- These functions should ONLY be callable by service_role (Edge Functions).
--- Revoking from authenticated prevents direct client-side RPC calls.
+-- ════════════ PHASE 9b: SECURITY — GRANT SPECIFIC RPCs ════════════
+-- Since we revoked ALL ROUTINES above, explicitly grant back
+-- only the functions that authenticated users need.
 
-REVOKE EXECUTE ON FUNCTION generate_login_otp() FROM authenticated, anon;
-REVOKE EXECUTE ON FUNCTION generate_login_otp_for_user(UUID) FROM authenticated, anon;
-REVOKE EXECUTE ON FUNCTION get_organizer_revenue(UUID) FROM anon;
-REVOKE EXECUTE ON FUNCTION get_event_tier_revenue(UUID, UUID) FROM anon;
-REVOKE EXECUTE ON FUNCTION get_daily_revenue(UUID, INT) FROM anon;
-REVOKE EXECUTE ON FUNCTION increment_sold_count(UUID, INT) FROM authenticated, anon;
-REVOKE EXECUTE ON FUNCTION expire_stale_reservations() FROM authenticated, anon;
+GRANT EXECUTE ON FUNCTION create_reservation(UUID, UUID, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_tier_availability(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION verify_login_otp(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_organizer_revenue(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_event_tier_revenue(UUID, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION get_daily_revenue(UUID, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION update_updated_at() TO authenticated;
+
+-- These remain service_role only (NOT granted to authenticated/anon):
+-- generate_login_otp(), generate_login_otp_for_user(),
+-- increment_sold_count(), expire_stale_reservations(),
+-- cleanup_expired_otps(), reconcile_sold_counts()
 
 
 INSERT INTO storage.buckets (id, name, public) VALUES ('event-covers', 'event-covers', true) ON CONFLICT (id) DO NOTHING;
@@ -429,11 +450,37 @@ CREATE POLICY "covers_delete" ON storage.objects FOR DELETE
   USING (bucket_id = 'event-covers' AND auth.uid() IS NOT NULL);
 
 
--- ════════════ PHASE 10: CRON (optional) ════════════
+-- ════════════ PHASE 10: RECOVERY INFRASTRUCTURE ════════════
+
+-- Sold count reconciliation — fixes drift between sold_count and actual tickets
+CREATE OR REPLACE FUNCTION reconcile_sold_counts() RETURNS void AS $$
+BEGIN
+  UPDATE ticket_tiers tt SET sold_count = COALESCE((
+    SELECT COUNT(*) FROM tickets t
+    WHERE t.ticket_tier_id = tt.id
+    AND t.status IN ('valid', 'scanned')
+  ), 0);
+END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Webhook failures recovery table (only service_role can access)
+CREATE TABLE IF NOT EXISTS webhook_failures (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  stripe_session_id TEXT,
+  order_id UUID,
+  error TEXT,
+  payload JSONB,
+  resolved BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+ALTER TABLE webhook_failures ENABLE ROW LEVEL SECURITY;
+
+
+-- ════════════ PHASE 11: CRON (optional) ════════════
 
 DO $$ BEGIN
   PERFORM cron.schedule('expire-reservations', '* * * * *', $c$ SELECT expire_stale_reservations(); $c$);
   PERFORM cron.schedule('cleanup-otps', '*/15 * * * *', $c$ SELECT cleanup_expired_otps(); $c$);
+  PERFORM cron.schedule('reconcile-sold', '0 3 * * *', $c$ SELECT reconcile_sold_counts(); $c$);
 EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'pg_cron not enabled — skipping.';
 END $$;
@@ -442,6 +489,9 @@ END $$;
 -- ════════════ ✅ DONE ════════════
 -- Profile creation is handled by the client code (self-healing).
 -- No trigger needed on auth.users.
--- Sensitive RPCs are now restricted to service_role only.
+-- Sensitive RPCs remain service_role only (never granted to authenticated/anon).
 -- Reservations can only be created via the create_reservation() SECURITY DEFINER RPC.
+-- Orders and tickets can only be created by the webhook (service_role).
+-- sold_count is reconciled daily at 3am.
+-- Webhook failures are logged for manual recovery.
 -- Next: Register a new account and it will work automatically.

@@ -271,10 +271,17 @@ export async function performSignOut(redirectTo = '/index.html') {
 
 /**
  * Upgrade current user's role to organizer.
+ * NOTE: For production, consider adding admin approval.
+ * The organizer_approved column (if it exists) gates event creation
+ * via the RLS policy on the events table.
  */
 export async function upgradeToOrganizer() {
   const user = await getCurrentUser();
   if (!user) return false;
+
+  // Check if already an organizer
+  const profile = await getCurrentProfile();
+  if (profile?.role === 'organizer') return true;
 
   const { error } = await supabase
     .from('profiles')
@@ -286,11 +293,12 @@ export async function upgradeToOrganizer() {
     return false;
   }
 
-  // Also update user metadata
+  // Sync role to user metadata for consistency
   await supabase.auth.updateUser({
     data: { role: 'organizer' }
   });
 
+  console.log('User upgraded to organizer:', user.id);
   return true;
 }
 

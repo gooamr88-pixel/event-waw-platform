@@ -533,8 +533,15 @@
             data: { national_id: nid }
           });
 
-          // Process checkout for the first selected tier
-          // (Stripe checkout handles one line item at a time with our Edge Function)
+          // Process checkout — one tier per Stripe session.
+          // If multiple tiers selected, warn the user.
+          if (items.length > 1) {
+            alert('Please select tickets from one tier at a time. Multiple tiers require separate purchases.');
+            payBtn.disabled = false;
+            payBtn.innerHTML = 'Confirm & Pay <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+            return;
+          }
+
           const firstItem = items[0];
           const result = await createCheckout({ tierId: firstItem.tierId, quantity: firstItem.qty });
 

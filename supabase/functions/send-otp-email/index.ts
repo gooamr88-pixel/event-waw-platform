@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Send OTP Email Edge Function (Hardened)
+// EVENT WAW — Send OTP Email Edge Function (Hardened v2)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy send-otp-email --no-verify-jwt
@@ -42,7 +42,11 @@ serve(async (req) => {
 
   try {
     // 1. Authenticate the calling user
-    const authHeader = req.headers.get('Authorization')!;
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return errorResponse(401, 'Missing Authorization header');
+    }
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(
@@ -52,8 +56,23 @@ serve(async (req) => {
       return errorResponse(401, 'Unauthorized');
     }
 
-    // 2. Parse request body — code is NO LONGER accepted from the client
-    const { name, type } = await req.json();
+    // 2. Parse and validate request body
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse(400, 'Invalid JSON body');
+    }
+
+    const { name, type } = body;
+
+    // Validate type
+    if (type && !['login', 'register'].includes(type)) {
+      return errorResponse(400, 'Invalid type — must be "login" or "register"');
+    }
+
+    // Sanitize name (prevent injection in email template)
+    const safeName = name ? String(name).substring(0, 100).replace(/[<>"'&]/g, '') : '';
 
     // 3. Generate OTP SERVER-SIDE using the service role (no client involvement)
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
@@ -78,7 +97,7 @@ serve(async (req) => {
     const subject = `${code} — ${isRegistration ? 'Verify your' : 'Your'} Event Waw ${isRegistration ? 'account' : 'verification code'}`;
 
     const htmlContent = isRegistration
-      ? otpRegisterEmail(code, name)
+      ? otpRegisterEmail(code, safeName)
       : otpLoginEmail(code);
 
     // 5. Send via Brevo
@@ -115,6 +134,3 @@ serve(async (req) => {
     );
   }
 });
-
-
-// Email templates are now imported from ../_shared/email-templates.ts

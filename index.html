@@ -290,10 +290,14 @@
     import { semiProtectPage, updateNavForAuth, performSignOut } from './src/lib/guard.js';
     import { getEvents } from './src/lib/events.js';
     import { escapeHTML } from './src/lib/utils.js';
+    import { initUI, initParticles } from './src/lib/ui.js';
 
     let allEvents = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
+      initUI();
+      initParticles();
+
       const authState = await semiProtectPage();
       updateNavForAuth(authState);
 

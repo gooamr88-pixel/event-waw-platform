@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Webhook Edge Function (Hardened)
+// EVENT WAW — Stripe Webhook Edge Function (Hardened v2)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy stripe-webhook --no-verify-jwt
@@ -29,8 +29,6 @@ serve(async (req) => {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     console.error('⛔ Webhook signature verification FAILED:', err.message);
-    // SECURITY: Never fall back to raw JSON parsing.
-    // Use Stripe CLI for local testing: stripe listen --forward-to <url>
     return new Response(
       JSON.stringify({ error: 'Invalid webhook signature' }),
       { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -54,7 +52,6 @@ serve(async (req) => {
     console.log(`Payment completed: reservation=${reservation_id}, user=${user_id}`);
 
     // ── Idempotency Guard ──
-    // Prevent duplicate processing if Stripe retries the webhook
     const { data: existingOrder } = await supabase
       .from('orders')
       .select('id')
@@ -69,7 +66,7 @@ serve(async (req) => {
       });
     }
 
-    // Check reservation is still valid
+    // ── Check reservation is still valid ──
     const { data: reservation, error: resError } = await supabase
       .from('reservations')
       .select('*')
@@ -78,7 +75,6 @@ serve(async (req) => {
 
     if (resError || !reservation) {
       console.error('Reservation not found:', reservation_id);
-      // Refund immediately
       if (session.payment_intent) {
         await stripe.refunds.create({ payment_intent: session.payment_intent as string });
       }
@@ -102,7 +98,7 @@ serve(async (req) => {
         reservation_id,
         stripe_session_id: session.id,
         stripe_payment_intent: session.payment_intent,
-        amount: (session.amount_total || 0) / 100, // Convert from cents
+        amount: (session.amount_total || 0) / 100,
         currency: session.currency || 'egp',
         status: 'paid',
       })
@@ -137,7 +133,6 @@ serve(async (req) => {
       const ticketId = crypto.randomUUID();
       const nonce = crypto.randomUUID();
 
-      // Enhanced payload with event/user context + version
       const payload = JSON.stringify({
         v: 2,
         ticket_id: ticketId,
@@ -180,7 +175,20 @@ serve(async (req) => {
       .insert(tickets);
 
     if (ticketError) {
-      console.error('Error creating tickets:', ticketError);
+      console.error('CRITICAL: Ticket creation failed:', ticketError);
+      // ── Dead-letter: log failure for manual recovery ──
+      try {
+        await supabase.from('webhook_failures').insert({
+          stripe_session_id: session.id,
+          order_id: order.id,
+          error: JSON.stringify(ticketError),
+          payload: JSON.stringify(session.metadata),
+        });
+      } catch (dlErr) {
+        console.error('Failed to log webhook failure:', dlErr);
+      }
+      // Don't return 500 — return 200 so Stripe doesn't keep retrying
+      // The idempotency guard will prevent duplicate orders on retry
     }
 
     // ── Mark reservation as converted ──
@@ -244,6 +252,3 @@ serve(async (req) => {
     headers: { 'Content-Type': 'application/json' },
   });
 });
-
-
-// Email templates are now imported from ../_shared/email-templates.ts

@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Create Checkout Edge Function (Hardened)
+// EVENT WAW — Create Checkout Edge Function (Hardened v2)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy create-checkout --no-verify-jwt
@@ -13,6 +13,8 @@ const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': allowedOrigin,
@@ -33,7 +35,7 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate user via their JWT
+    // ── Authenticate user via their JWT ──
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return errorResponse(401, 'Missing Authorization header');
@@ -47,32 +49,48 @@ serve(async (req) => {
       return errorResponse(401, 'Unauthorized');
     }
 
-    const { tier_id, quantity = 1 } = await req.json();
-
-    if (!tier_id) {
-      return errorResponse(400, 'tier_id is required');
+    // ── Parse and validate input ──
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse(400, 'Invalid JSON body');
     }
 
-    if (quantity < 1 || quantity > 10) {
-      return errorResponse(400, 'Quantity must be between 1 and 10');
+    const { tier_id, quantity = 1 } = body;
+
+    if (!tier_id || typeof tier_id !== 'string' || !UUID_REGEX.test(tier_id)) {
+      return errorResponse(400, 'tier_id must be a valid UUID');
     }
 
-    // Create atomic reservation using admin client (locks the row, checks capacity)
+    const qty = Number(quantity);
+    if (!Number.isInteger(qty) || qty < 1 || qty > 10) {
+      return errorResponse(400, 'Quantity must be an integer between 1 and 10');
+    }
+
+    // ── Create atomic reservation (locks the row, checks capacity) ──
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: reservation, error: resError } = await adminClient
       .rpc('create_reservation', {
         p_user_id: user.id,
         p_tier_id: tier_id,
-        p_quantity: quantity,
+        p_quantity: qty,
       });
 
     if (resError) {
+      console.error('Reservation error:', resError.message);
       return errorResponse(400, resError.message);
+    }
+
+    if (!reservation || reservation.length === 0) {
+      return errorResponse(400, 'Failed to create reservation');
     }
 
     const res = reservation[0];
 
-    // Create Stripe Checkout Session
+    // ── Create Stripe Checkout Session ──
+    const originUrl = req.headers.get('origin') || allowedOrigin.replace('*', 'https://eventwaw.com');
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
@@ -83,11 +101,11 @@ serve(async (req) => {
             currency: 'egp',
             product_data: {
               name: `${res.event_title} — ${res.tier_name}`,
-              description: `${quantity}x ticket(s)`,
+              description: `${qty}x ticket(s)`,
             },
-            unit_amount: Math.round(res.tier_price * 100), // Stripe uses cents
+            unit_amount: Math.round(res.tier_price * 100), // Stripe uses cents/piasters
           },
-          quantity,
+          quantity: qty,
         },
       ],
       metadata: {
@@ -95,11 +113,11 @@ serve(async (req) => {
         user_id: user.id,
         event_id: res.event_id,
         tier_id: tier_id,
-        quantity: String(quantity),
+        quantity: String(qty),
       },
-      success_url: `${req.headers.get('origin')}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/event-detail.html?id=${res.event_id}`,
-      expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes (Stripe requires minimum 30)
+      success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
+      expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes
     });
 
     return new Response(

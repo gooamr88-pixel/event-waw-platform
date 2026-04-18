@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Verify Ticket Edge Function (Hardened)
+// EVENT WAW — Verify Ticket Edge Function (Hardened v2)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy verify-ticket --no-verify-jwt
@@ -13,6 +13,8 @@ const hmacSecret = Deno.env.get('HMAC_SECRET')!;
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': allowedOrigin,
@@ -32,7 +34,7 @@ serve(async (req) => {
   }
 
   try {
-    // Authenticate the scanner user
+    // ── Authenticate the scanner user ──
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return errorResponse(401, 'Missing Authorization header');
@@ -46,12 +48,25 @@ serve(async (req) => {
       return errorResponse(401, 'Unauthorized');
     }
 
-    const { qr_payload } = await req.json();
-    if (!qr_payload) {
-      return errorResponse(400, 'qr_payload is required');
+    // ── Parse request body ──
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse(400, 'Invalid JSON body');
     }
 
-    // Parse QR payload
+    const { qr_payload } = body;
+    if (!qr_payload || typeof qr_payload !== 'string') {
+      return errorResponse(400, 'qr_payload is required and must be a string');
+    }
+
+    // Limit payload size to prevent abuse (max 2KB)
+    if (qr_payload.length > 2048) {
+      return errorResponse(400, 'QR payload too large');
+    }
+
+    // ── Parse QR payload ──
     let parsed;
     try {
       parsed = JSON.parse(qr_payload);
@@ -64,13 +79,16 @@ serve(async (req) => {
       return errorResponse(400, 'Malformed ticket data');
     }
 
-    // Verify HMAC signature — support both v1 and v2 payload formats
+    // ── Validate UUIDs ──
+    if (!UUID_REGEX.test(ticket_id) || !UUID_REGEX.test(order_id)) {
+      return errorResponse(400, 'Invalid ticket identifiers');
+    }
+
+    // ── Verify HMAC signature — support both v1 and v2 payload formats ──
     let payload: string;
     if (v === 2) {
-      // v2 payload includes event_id, user_id, iat
       payload = JSON.stringify({ v: 2, ticket_id, order_id, event_id: qr_event_id, user_id: qr_user_id, tier_id, nonce, iat });
     } else {
-      // v1 legacy payload
       payload = JSON.stringify({ ticket_id, order_id, tier_id, nonce });
     }
 
@@ -85,10 +103,11 @@ serve(async (req) => {
     const expectedHash = base64url(new Uint8Array(expectedSig));
 
     if (hash !== expectedHash) {
+      console.warn(`⛔ Forgery attempt by user ${user.id} — hash mismatch`);
       return errorResponse(403, 'Invalid ticket signature — possible forgery');
     }
 
-    // Look up ticket in database
+    // ── Look up ticket in database ──
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
       .select(`
@@ -134,7 +153,7 @@ serve(async (req) => {
       }
     }
 
-    // Check ticket status
+    // ── Check ticket status ──
     if (ticket.status === 'scanned') {
       return errorResponse(409, `Ticket already scanned at ${new Date(ticket.scanned_at).toLocaleString()}`, {
         ticket: {
@@ -149,8 +168,8 @@ serve(async (req) => {
       return errorResponse(410, 'Ticket has been cancelled');
     }
 
-    // ── Mark as scanned ──
-    const { error: updateError } = await supabase
+    // ── Mark as scanned (optimistic lock — only update if still 'valid') ──
+    const { data: updatedRows, error: updateError } = await supabase
       .from('tickets')
       .update({
         status: 'scanned',
@@ -158,10 +177,16 @@ serve(async (req) => {
         scanned_by: user.id,
       })
       .eq('id', ticket_id)
-      .eq('status', 'valid'); // Optimistic lock — only update if still 'valid'
+      .eq('status', 'valid')
+      .select('id');
 
     if (updateError) {
       return errorResponse(500, 'Failed to update ticket status');
+    }
+
+    // If no rows updated, another scanner beat us (race condition)
+    if (!updatedRows || updatedRows.length === 0) {
+      return errorResponse(409, 'Ticket was just scanned by another device');
     }
 
     return new Response(JSON.stringify({
