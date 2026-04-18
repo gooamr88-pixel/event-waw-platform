@@ -11,7 +11,7 @@ if (!allowedOrigin) {
 }
 
 export const CORS_HEADERS: Record<string, string> = {
-  'Access-Control-Allow-Origin': allowedOrigin || 'https://event-waw-platform.vercel.app/',
+  'Access-Control-Allow-Origin': allowedOrigin || 'https://event-waw-platform.vercel.app',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
