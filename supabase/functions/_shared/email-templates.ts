@@ -22,7 +22,7 @@ const BRAND = {
 // ═════════════════════════════════
 // Wrapper — used by all emails
 // ═════════════════════════════════
-function emailWrapper(content, footerLinks = true) {
+function emailWrapper(content: string, footerLinks = true): string {
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -79,7 +79,7 @@ function emailWrapper(content, footerLinks = true) {
 // ═════════════════════════════════
 // 1. OTP — Login Verification
 // ═════════════════════════════════
-export function otpLoginEmail(code) {
+export function otpLoginEmail(code: string): string {
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
       <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(212,175,55,0.08);border-radius:50%;line-height:56px;text-align:center;">
@@ -108,7 +108,7 @@ export function otpLoginEmail(code) {
 // ═════════════════════════════════
 // 2. OTP — Registration Verification
 // ═════════════════════════════════
-export function otpRegisterEmail(code, name) {
+export function otpRegisterEmail(code: string, name: string): string {
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
       <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(212,175,55,0.08);border-radius:50%;line-height:56px;text-align:center;">
@@ -138,7 +138,7 @@ export function otpRegisterEmail(code, name) {
 // ═════════════════════════════════
 // 3. Ticket Confirmation
 // ═════════════════════════════════
-export function ticketConfirmationEmail(data) {
+export function ticketConfirmationEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string }): string {
   const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink } = data;
   const content = `
     <!-- Gold Header -->
@@ -180,7 +180,7 @@ export function ticketConfirmationEmail(data) {
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:14px;color:${BRAND.textDim};font-weight:600;">Total</td>
-              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">${Number(totalAmount).toLocaleString()} EGP</td>
+              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">$${Number(totalAmount).toLocaleString()}</td>
             </tr>
           </table>
         </td></tr>
@@ -213,7 +213,7 @@ export function ticketConfirmationEmail(data) {
 // ═════════════════════════════════
 // 4. Welcome Email (after registration)
 // ═════════════════════════════════
-export function welcomeEmail(name, role) {
+export function welcomeEmail(name: string, role: string): string {
   const isOrganizer = role === 'organizer';
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
