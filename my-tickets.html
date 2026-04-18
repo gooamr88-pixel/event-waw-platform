@@ -7,6 +7,7 @@
   <meta name="description" content="View your event tickets and QR codes on Event Waw." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
 </head>
 <body>
 
@@ -195,7 +196,7 @@
                 <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:4px;">
                   ${escapeHTML(event?.title || 'Event')}
                 </h3>
-                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">${escapeHTML(tier?.name || 'General')} · ${Number(tier?.price || 0).toLocaleString()} EGP</p>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">${escapeHTML(tier?.name || 'General')} · $${Number(tier?.price || 0).toLocaleString()}</p>
                 <p style="font-size:0.8rem;color:var(--text-muted);">${eventDate} · ${escapeHTML(event?.venue || '')}</p>
               </div>
               <div class="ticket-card-actions">

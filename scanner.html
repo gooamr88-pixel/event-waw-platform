@@ -7,6 +7,7 @@
   <meta name="description" content="Scan QR codes to validate event tickets." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#09090b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -297,10 +298,16 @@
       });
     }
 
-    // Simple audio feedback
+    // Simple audio feedback — reuse a single AudioContext to avoid browser limits
+    let _audioCtx = null;
+    function getAudioCtx() {
+      if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return _audioCtx;
+    }
+
     function playSound(type) {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioCtx();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
@@ -319,6 +326,16 @@
         }
       } catch(e) {}
     }
+
+    // Cleanup camera on page leave to prevent background usage
+    window.addEventListener('beforeunload', () => {
+      if (scanner) scanner.stop().catch(() => {});
+    });
+    document.querySelector('.scanner-back')?.addEventListener('click', async (e) => {
+      e.preventDefault();
+      if (scanner) await scanner.stop().catch(() => {});
+      window.location.href = 'dashboard.html';
+    });
 
     // Register Service Worker for PWA
     if ('serviceWorker' in navigator) {

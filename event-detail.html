@@ -7,6 +7,7 @@
   <meta name="description" content="View event details and book your tickets on Event Waw." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
 </head>
 <body>
 
@@ -109,7 +110,7 @@
             <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light);">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
-                <span id="total-price" style="font-size:1.3rem;font-weight:700;">0 EGP</span>
+                <span id="total-price" style="font-size:1.3rem;font-weight:700;">$0</span>
               </div>
               <button class="btn btn-primary btn-full btn-lg" id="checkout-btn" disabled>
                 Reserve & Pay
@@ -246,14 +247,14 @@
       document.getElementById('event-venue-address').textContent = event.venue_address || '';
       
       const date = new Date(event.date);
-      document.getElementById('event-date').innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        ${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
-      `;
-      document.getElementById('event-venue').innerHTML = `
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-        ${event.venue}
-      `;
+      const dateText = `${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+      const dateEl = document.getElementById('event-date');
+      dateEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> `;
+      dateEl.appendChild(document.createTextNode(dateText));
+
+      const venueEl = document.getElementById('event-venue');
+      venueEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg> `;
+      venueEl.appendChild(document.createTextNode(event.venue));
 
       if (event.profiles) {
         document.getElementById('organizer-name').textContent = event.profiles.full_name || 'Event Waw';
@@ -276,7 +277,7 @@
           <div class="tier-option ${soldOut ? 'sold-out' : ''}" id="tier-${tier.id}" data-tier-id="${tier.id}">
             <div class="tier-header">
               <span class="tier-name">${escapeHTML(tier.name)}</span>
-              <span class="tier-price">${Number(tier.price).toLocaleString()} EGP</span>
+              <span class="tier-price">$${Number(tier.price).toLocaleString()}</span>
             </div>
             <div class="tier-info">${escapeHTML(tier.description || '')} · ${soldOut ? 'Sold Out' : `${avail} available`}</div>
             ${!soldOut ? `
@@ -320,7 +321,7 @@
         }
       }
 
-      document.getElementById('total-price').textContent = `${total.toLocaleString()} EGP`;
+      document.getElementById('total-price').textContent = `$${total.toLocaleString()}`;
       document.getElementById('checkout-btn').disabled = !hasSelection;
     }
 
@@ -370,7 +371,7 @@
           <div>
             <div style="font-weight:600;font-size:0.9rem;">${escapeHTML(i.tier.name)} × ${i.qty}</div>
           </div>
-          <div style="font-weight:700;color:var(--accent-primary);">${(i.tier.price * i.qty).toLocaleString()} EGP</div>
+          <div style="font-weight:700;color:var(--accent-primary);">$${(i.tier.price * i.qty).toLocaleString()}</div>
         </div>
       `).join('');
 
@@ -455,14 +456,14 @@
         </style>
         <div class="confirm-box">
           <h3>Confirm Your <span style="color:var(--accent-primary);">Booking</span></h3>
-          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0;">${event.title}</p>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:0;">${escapeHTML(event.title)}</p>
 
           <div class="confirm-section">
             <div class="confirm-section-title">🎫 Tickets</div>
             ${tiersSummary}
             <div class="confirm-total">
               <span class="confirm-total-label">${totalQty} ticket${totalQty > 1 ? 's' : ''} · Total</span>
-              <span class="confirm-total-price">${totalPrice.toLocaleString()} EGP</span>
+              <span class="confirm-total-price">$${totalPrice.toLocaleString()}</span>
             </div>
           </div>
 
@@ -470,15 +471,15 @@
             <div class="confirm-section-title">👤 Attendee Information</div>
             <div class="confirm-field">
               <label>Full Name</label>
-              <input type="text" id="confirm-name" value="${profile.full_name || user.user_metadata?.full_name || ''}" required />
+              <input type="text" id="confirm-name" value="${escapeHTML(profile.full_name || user.user_metadata?.full_name || '')}" required />
             </div>
             <div class="confirm-field">
               <label>Email</label>
-              <input type="email" id="confirm-email" value="${user.email || ''}" readonly style="opacity:0.6;cursor:not-allowed;" />
+              <input type="email" id="confirm-email" value="${escapeHTML(user.email || '')}" readonly style="opacity:0.6;cursor:not-allowed;" />
             </div>
             <div class="confirm-field">
               <label>Phone</label>
-              <input type="tel" id="confirm-phone" value="${profile.phone || user.user_metadata?.phone || ''}" placeholder="+20 1XX XXX XXXX" />
+              <input type="tel" id="confirm-phone" value="${escapeHTML(profile.phone || user.user_metadata?.phone || '')}" placeholder="+1 XXX XXX XXXX" />
             </div>
             <div class="confirm-field" style="margin-bottom:0;">
               <label>National ID <span style="color:var(--accent-primary);">*</span></label>

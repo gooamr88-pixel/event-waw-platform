@@ -14,10 +14,11 @@ export function escapeHTML(str) {
 }
 
 /**
- * Format a number as currency (EGP).
+ * Format a number as currency (USD by default).
  */
-export function formatCurrency(amount, currency = 'EGP') {
-  return `${Number(amount).toLocaleString()} ${currency}`;
+export function formatCurrency(amount, currency = 'USD') {
+  const num = Number(amount).toLocaleString();
+  return currency === 'USD' ? `$${num}` : `${num} ${currency}`;
 }
 
 /**

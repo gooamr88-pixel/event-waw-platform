@@ -7,6 +7,7 @@
   <meta name="description" content="Manage your events, view analytics, and access the ticket scanner." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
 </head>
 <body>
 
@@ -78,7 +79,7 @@
         <div class="dash-stat-card">
           <div class="dash-stat-icon">💰</div>
           <div>
-            <p class="dash-stat-value" id="stat-revenue">0 EGP</p>
+            <p class="dash-stat-value" id="stat-revenue">$0</p>
             <p class="dash-stat-label">Total Revenue</p>
           </div>
         </div>
@@ -312,9 +313,108 @@
 
       document.getElementById('signout-btn').addEventListener('click', () => performSignOut('/index.html'));
 
+      // Attach delegated listener ONCE (prevents leak on reload)
+      initEventActions();
+
       await loadDashboard();
       initCreateModal();
+      checkStripeOnboarding();
     });
+
+    // ── Stripe Connect Onboarding Check ──
+    async function checkStripeOnboarding() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) return;
+
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-onboarding`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ action: 'check-status' }),
+          }
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+
+        // Show onboarding banner if not complete
+        if (!data.onboarding_complete) {
+          showStripeOnboardingBanner();
+        }
+      } catch (e) {
+        // Non-critical — don't block dashboard
+        console.warn('Stripe status check skipped:', e.message);
+      }
+    }
+
+    function showStripeOnboardingBanner() {
+      const banner = document.createElement('div');
+      banner.id = 'stripe-banner';
+      banner.style.cssText = 'padding:16px 20px;background:rgba(99,91,255,.08);border:1px solid rgba(99,91,255,.2);border-radius:14px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;';
+      banner.innerHTML = `
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(99,91,255,.12);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">💳</div>
+        <div style="flex:1;min-width:200px;">
+          <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Set Up Payouts</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">Connect your Stripe account to receive ticket sales directly. Takes ~5 minutes.</div>
+        </div>
+        <button class="btn btn-primary btn-sm" id="stripe-onboard-btn" style="flex-shrink:0;">Connect Stripe →</button>
+      `;
+      const statsEl = document.getElementById('dash-stats');
+      statsEl?.parentElement?.insertBefore(banner, statsEl);
+
+      document.getElementById('stripe-onboard-btn')?.addEventListener('click', async () => {
+        const btn = document.getElementById('stripe-onboard-btn');
+        btn.disabled = true;
+        btn.textContent = 'Redirecting…';
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          const res = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-onboarding`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session.access_token}`,
+              },
+              body: JSON.stringify({ action: 'onboard' }),
+            }
+          );
+          const data = await res.json();
+          if (data.url) window.location.href = data.url;
+          else throw new Error(data.error || 'Failed');
+        } catch (e) {
+          alert('Failed to start Stripe setup: ' + e.message);
+          btn.disabled = false;
+          btn.textContent = 'Connect Stripe →';
+        }
+      });
+    }
+
+    // ── Delegated event listener — attached ONCE to prevent leak ──
+    function initEventActions() {
+      document.getElementById('events-list').addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-action="toggle-publish"]');
+        if (!btn) return;
+        const eventId = btn.dataset.eventId;
+        const currentStatus = btn.dataset.status;
+        const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+        btn.disabled = true;
+        btn.textContent = '…';
+        try {
+          const { error } = await supabase.from('events').update({ status: newStatus }).eq('id', eventId);
+          if (error) throw error;
+          await loadDashboard();
+        } catch (err) {
+          alert('Error: ' + err.message);
+          btn.disabled = false;
+          btn.textContent = currentStatus === 'published' ? 'Unpublish' : 'Publish';
+        }
+      });
+    }
 
     async function loadDashboard() {
       const loading = document.getElementById('events-loading');
@@ -342,7 +442,7 @@
 
         document.getElementById('stat-events').textContent = events.length;
         document.getElementById('stat-tickets').textContent = totalTickets.toLocaleString();
-        document.getElementById('stat-revenue').textContent = totalRevenue.toLocaleString() + ' EGP';
+        document.getElementById('stat-revenue').textContent = '$' + totalRevenue.toLocaleString();
         document.getElementById('stat-scan-rate').textContent = totalTickets > 0 ? scanRate + '%' : '—';
 
         if (events.length === 0) {
@@ -375,21 +475,7 @@
           `;
         }).join('');
 
-        // ── Delegated event listener for publish/unpublish ── 
-        list.addEventListener('click', async (e) => {
-          const btn = e.target.closest('[data-action="toggle-publish"]');
-          if (!btn) return;
-          const eventId = btn.dataset.eventId;
-          const currentStatus = btn.dataset.status;
-          const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-          try {
-            const { error } = await supabase.from('events').update({ status: newStatus }).eq('id', eventId);
-            if (error) throw error;
-            await loadDashboard();
-          } catch (err) {
-            alert('Error: ' + err.message);
-          }
-        });
+        // Listener is attached once in initEventActions() — no leak
 
         // ── Load Revenue Dashboard ──
         loadRevenueDashboard(revenueData, user.id);
@@ -426,13 +512,13 @@
               <div class="dash-event-date">${r.total_tickets_sold} tickets sold</div>
             </div>
             <div style="text-align:right;font-weight:600;font-size:0.85rem;">
-              ${Number(r.gross_revenue).toLocaleString()} EGP
+              $${Number(r.gross_revenue).toLocaleString()}
             </div>
             <div style="text-align:right;color:var(--text-muted);font-size:0.82rem;">
               -${Number(r.platform_fee).toLocaleString()}
             </div>
             <div style="text-align:right;color:var(--accent-primary);font-weight:700;font-size:0.85rem;">
-              ${Number(r.net_revenue).toLocaleString()} EGP
+              $${Number(r.net_revenue).toLocaleString()}
             </div>
             <div style="text-align:center;font-size:0.82rem;">
               ${Number(r.scan_rate)}%
@@ -461,7 +547,7 @@
             const day = new Date(d.day).getDate();
             const formattedRev = Number(d.revenue).toLocaleString();
             return `
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;" title="${formattedRev} EGP · ${d.tickets_sold} tickets">
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;" title="$${formattedRev} · ${d.tickets_sold} tickets">
                 <div style="width:100%;background:linear-gradient(to top, var(--accent-primary), rgba(212,175,55,.3));border-radius:4px 4px 0 0;height:${Math.max(pct, 3)}%;min-height:3px;transition:height .3s;"></div>
                 <span style="font-size:0.55rem;color:var(--text-muted);">${day}</span>
               </div>`;

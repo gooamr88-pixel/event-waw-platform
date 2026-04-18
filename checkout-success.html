@@ -7,6 +7,7 @@
   <meta name="description" content="Your ticket purchase was successful! View your QR code below." />
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
 </head>
 <body>
   <div class="auth-page">
@@ -120,7 +121,7 @@
           
           document.getElementById('order-event').textContent = eventTitle;
           document.getElementById('order-tier').textContent = tierName;
-          document.getElementById('order-amount').textContent = `${Number(order.amount).toLocaleString()} EGP`;
+          document.getElementById('order-amount').textContent = `$${Number(order.amount).toLocaleString()}`;
           document.getElementById('order-id').textContent = order.id.substring(0, 12) + '…';
 
           // Generate premium QR card

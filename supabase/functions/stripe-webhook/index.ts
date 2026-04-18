@@ -1,7 +1,8 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Webhook Edge Function (Hardened v2)
-// Supabase Edge Function (Deno)
+// EVENT WAW — Stripe Webhook Edge Function (Hardened v3)
+// Handles: checkout.session.completed, charge.refunded,
+//          checkout.session.expired, charge.dispute.created
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy stripe-webhook --no-verify-jwt
 
@@ -20,6 +21,14 @@ const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') || '';
 const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventwaw.com';
 const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Event Waw';
 
+// ── Supported webhook event types ──
+const HANDLED_EVENTS = new Set([
+  'checkout.session.completed',
+  'checkout.session.expired',
+  'charge.refunded',
+  'charge.dispute.created',
+]);
+
 serve(async (req) => {
   const signature = req.headers.get('stripe-signature')!;
   const body = await req.text(); // Raw body for signature verification
@@ -37,6 +46,18 @@ serve(async (req) => {
 
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+  // Log unhandled event types for observability
+  if (!HANDLED_EVENTS.has(event.type)) {
+    console.log(`ℹ️ Ignoring event type: ${event.type}`);
+    return new Response(JSON.stringify({ received: true, ignored: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // ════════════════════════════════════════════════
+  // HANDLER: checkout.session.completed
+  // ════════════════════════════════════════════════
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
     const {
@@ -99,7 +120,7 @@ serve(async (req) => {
         stripe_session_id: session.id,
         stripe_payment_intent: session.payment_intent,
         amount: (session.amount_total || 0) / 100,
-        currency: session.currency || 'egp',
+        currency: session.currency || 'usd',
         status: 'paid',
       })
       .select()
@@ -188,7 +209,6 @@ serve(async (req) => {
         console.error('Failed to log webhook failure:', dlErr);
       }
       // Don't return 500 — return 200 so Stripe doesn't keep retrying
-      // The idempotency guard will prevent duplicate orders on retry
     }
 
     // ── Mark reservation as converted ──
@@ -245,6 +265,121 @@ serve(async (req) => {
     }
 
     console.log(`✅ Order ${order.id} created with ${qty} tickets`);
+  }
+
+  // ════════════════════════════════════════════════
+  // HANDLER: checkout.session.expired
+  // Release the reservation immediately instead of waiting for cron
+  // ════════════════════════════════════════════════
+  if (event.type === 'checkout.session.expired') {
+    const session = event.data.object;
+    const reservationId = session.metadata?.reservation_id;
+
+    if (reservationId) {
+      const { error } = await supabase
+        .from('reservations')
+        .update({ status: 'expired' })
+        .eq('id', reservationId)
+        .eq('status', 'active'); // Only expire if still active
+
+      if (error) {
+        console.error('Failed to expire reservation:', error);
+      } else {
+        console.log(`⏱️ Reservation ${reservationId} expired (checkout abandoned)`);
+      }
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // HANDLER: charge.refunded
+  // Cancel tickets and update order status
+  // ════════════════════════════════════════════════
+  if (event.type === 'charge.refunded') {
+    const charge = event.data.object;
+    const paymentIntent = charge.payment_intent;
+
+    if (!paymentIntent) {
+      console.warn('Refund event missing payment_intent');
+      return new Response(JSON.stringify({ received: true }), { status: 200 });
+    }
+
+    // Find the order by payment intent
+    const { data: order, error: orderErr } = await supabase
+      .from('orders')
+      .select('id, event_id')
+      .eq('stripe_payment_intent', paymentIntent)
+      .maybeSingle();
+
+    if (orderErr || !order) {
+      console.warn(`No order found for payment_intent ${paymentIntent}`);
+      return new Response(JSON.stringify({ received: true }), { status: 200 });
+    }
+
+    // Mark order as refunded
+    await supabase
+      .from('orders')
+      .update({ status: 'refunded' })
+      .eq('id', order.id);
+
+    // Cancel all associated tickets
+    const { data: cancelledTickets } = await supabase
+      .from('tickets')
+      .update({ status: 'cancelled' })
+      .eq('order_id', order.id)
+      .eq('status', 'valid') // Only cancel valid (un-scanned) tickets
+      .select('id, ticket_tier_id');
+
+    // Decrement sold_count for affected tiers
+    if (cancelledTickets && cancelledTickets.length > 0) {
+      // Group by tier
+      const tierCounts: Record<string, number> = {};
+      for (const t of cancelledTickets) {
+        tierCounts[t.ticket_tier_id] = (tierCounts[t.ticket_tier_id] || 0) + 1;
+      }
+      for (const [tierId, count] of Object.entries(tierCounts)) {
+        await supabase.rpc('increment_sold_count', {
+          p_tier_id: tierId,
+          p_amount: -count, // Negative to decrement
+        });
+      }
+    }
+
+    console.log(`💸 Refund processed: order ${order.id}, ${cancelledTickets?.length || 0} tickets cancelled`);
+  }
+
+  // ════════════════════════════════════════════════
+  // HANDLER: charge.dispute.created
+  // Immediately cancel tickets for disputed charges
+  // ════════════════════════════════════════════════
+  if (event.type === 'charge.dispute.created') {
+    const dispute = event.data.object;
+    const paymentIntent = dispute.payment_intent;
+
+    if (paymentIntent) {
+      const { data: order } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('stripe_payment_intent', paymentIntent)
+        .maybeSingle();
+
+      if (order) {
+        await supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id);
+        await supabase.from('tickets').update({ status: 'cancelled' }).eq('order_id', order.id);
+        console.warn(`⚠️ DISPUTE: order ${order.id} — tickets cancelled pending resolution`);
+
+        // Log for manual review
+        try {
+          await supabase.from('webhook_failures').insert({
+            stripe_session_id: dispute.id,
+            order_id: order.id,
+            error: `DISPUTE: ${dispute.reason || 'unknown'}`,
+            payload: JSON.stringify({ dispute_id: dispute.id, amount: dispute.amount }),
+          });
+        } catch (e) {
+          console.error('Failed to log dispute:', e);
+        }
+      }
+    }
   }
 
   return new Response(JSON.stringify({ received: true }), {

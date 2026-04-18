@@ -1,52 +1,32 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Create Checkout Edge Function (Hardened v2)
+// EVENT WAW — Create Checkout Edge Function (Hardened v3 — Connect-Ready)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy create-checkout --no-verify-jwt
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@17?target=deno';
+import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
+import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
+import { isValidUUID, isValidQuantity } from '../_shared/validation.ts';
+import { rateLimit } from '../_shared/rate-limit.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': allowedOrigin,
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function errorResponse(status: number, message: string) {
-  return new Response(JSON.stringify({ error: message }), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 serve(async (req) => {
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const corsResponse = handleCORS(req);
+  if (corsResponse) return corsResponse;
 
   try {
     // ── Authenticate user via their JWT ──
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return errorResponse(401, 'Missing Authorization header');
-    }
+    const { user, error: authError } = await authenticateRequest(req);
+    if (!user) return errorResponse(401, authError || 'Unauthorized');
 
-    const token = authHeader.replace('Bearer ', '');
-    const supabaseAuth = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
-
-    if (authError || !user) {
-      return errorResponse(401, 'Unauthorized');
+    // ── Rate Limit: 5 checkout attempts per minute per user ──
+    if (!rateLimit(`checkout:${user.id}`, 5, 60_000)) {
+      return errorResponse(429, 'Too many checkout attempts. Please wait a moment.');
     }
 
     // ── Parse and validate input ──
@@ -59,17 +39,17 @@ serve(async (req) => {
 
     const { tier_id, quantity = 1 } = body;
 
-    if (!tier_id || typeof tier_id !== 'string' || !UUID_REGEX.test(tier_id)) {
+    if (!isValidUUID(tier_id)) {
       return errorResponse(400, 'tier_id must be a valid UUID');
     }
 
     const qty = Number(quantity);
-    if (!Number.isInteger(qty) || qty < 1 || qty > 10) {
+    if (!isValidQuantity(qty)) {
       return errorResponse(400, 'Quantity must be an integer between 1 and 10');
     }
 
     // ── Create atomic reservation (locks the row, checks capacity) ──
-    const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+    const adminClient = createAdminClient();
     const { data: reservation, error: resError } = await adminClient
       .rpc('create_reservation', {
         p_user_id: user.id,
@@ -88,22 +68,36 @@ serve(async (req) => {
 
     const res = reservation[0];
 
-    // ── Create Stripe Checkout Session ──
-    const originUrl = req.headers.get('origin') || allowedOrigin.replace('*', 'https://eventwaw.com');
+    // ── Check if organizer has Stripe Connect (future-ready) ──
+    // When Stripe Connect is active, uncomment this block:
+    /*
+    const { data: organizer } = await adminClient
+      .from('profiles')
+      .select('stripe_account_id, stripe_onboarding_complete')
+      .eq('id', res.organizer_id)
+      .single();
 
-    const session = await stripe.checkout.sessions.create({
+    if (!organizer?.stripe_account_id || !organizer.stripe_onboarding_complete) {
+      return errorResponse(400, 'Organizer has not completed payment setup');
+    }
+    */
+
+    // ── Create Stripe Checkout Session ──
+    const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
+
+    const sessionConfig: any = {
       payment_method_types: ['card'],
       mode: 'payment',
       customer_email: user.email,
       line_items: [
         {
           price_data: {
-            currency: 'egp',
+            currency: 'usd',
             product_data: {
               name: `${res.event_title} — ${res.tier_name}`,
               description: `${qty}x ticket(s)`,
             },
-            unit_amount: Math.round(res.tier_price * 100), // Stripe uses cents/piasters
+            unit_amount: Math.round(res.tier_price * 100), // Stripe uses cents
           },
           quantity: qty,
         },
@@ -118,17 +112,26 @@ serve(async (req) => {
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
       expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes
-    });
+    };
 
-    return new Response(
-      JSON.stringify({ checkout_url: session.url, reservation_id: res.reservation_id }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // ── Stripe Connect: Route payment to organizer (uncomment when ready) ──
+    /*
+    sessionConfig.payment_intent_data = {
+      application_fee_amount: Math.round((res.tier_price * qty * 0.05 + 1) * 100), // 5% + $1
+      transfer_data: {
+        destination: organizer.stripe_account_id,
+      },
+    };
+    */
+
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+
+    return jsonResponse({
+      checkout_url: session.url,
+      reservation_id: res.reservation_id,
+    });
   } catch (err) {
     console.error('Checkout error:', err);
-    return new Response(
-      JSON.stringify({ error: err.message || 'Internal server error' }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(500, err.message || 'Internal server error');
   }
 });

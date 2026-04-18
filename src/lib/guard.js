@@ -81,8 +81,7 @@ export async function isOTPVerified() {
     const profile = await getCurrentProfile();
     if (!profile) return false;
 
-    // If the column doesn't exist yet (DB migration not run), allow access
-    if (!('otp_verified_at' in profile)) return true;
+    // If otp_verified_at is not set, user hasn't verified
     if (!profile.otp_verified_at) return false;
 
     const verifiedAt = new Date(profile.otp_verified_at);
@@ -93,7 +92,7 @@ export async function isOTPVerified() {
     return hoursSinceVerified < 24;
   } catch (err) {
     console.warn('OTP check failed:', err);
-    return true; // Don't block on errors
+    return false; // FAIL CLOSED — deny access on errors
   }
 }
 
@@ -281,12 +280,10 @@ export async function upgradeToOrganizer() {
 
   // Check if already an organizer
   const profile = await getCurrentProfile();
-  if (profile?.role === 'organizer') return true;
+  if (profile?.role === 'organizer' || profile?.role === 'admin') return true;
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({ role: 'organizer' })
-    .eq('id', user.id);
+  // Use the SECURITY DEFINER RPC — only allows attendee → organizer
+  const { error } = await supabase.rpc('request_organizer_upgrade');
 
   if (error) {
     console.error('Upgrade failed:', error);

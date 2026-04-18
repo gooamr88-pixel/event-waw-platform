@@ -1,51 +1,31 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Verify Ticket Edge Function (Hardened v2)
+// EVENT WAW — Verify Ticket Edge Function (Hardened v3)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy verify-ticket --no-verify-jwt
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { encode as base64url } from 'https://deno.land/std@0.177.0/encoding/base64url.ts';
+import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
+import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
+import { isValidUUID } from '../_shared/validation.ts';
+import { rateLimit } from '../_shared/rate-limit.ts';
 
 const hmacSecret = Deno.env.get('HMAC_SECRET')!;
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || '*';
-
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': allowedOrigin,
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
-
-function errorResponse(status: number, message: string, extra: Record<string, unknown> = {}) {
-  return new Response(JSON.stringify({ error: message, ...extra }), {
-    status,
-    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-  });
-}
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const corsResponse = handleCORS(req);
+  if (corsResponse) return corsResponse;
 
   try {
     // ── Authenticate the scanner user ──
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
-      return errorResponse(401, 'Missing Authorization header');
-    }
+    const { user, error: authError } = await authenticateRequest(req);
+    if (!user) return errorResponse(401, authError || 'Unauthorized');
 
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { data: { user }, error: authError } = await supabase.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
-    if (authError || !user) {
-      return errorResponse(401, 'Unauthorized');
+    // ── Rate Limit: 30 scans per minute per user ──
+    if (!rateLimit(`verify:${user.id}`, 30, 60_000)) {
+      return errorResponse(429, 'Too many scan attempts. Please slow down.');
     }
 
     // ── Parse request body ──
@@ -80,7 +60,7 @@ serve(async (req) => {
     }
 
     // ── Validate UUIDs ──
-    if (!UUID_REGEX.test(ticket_id) || !UUID_REGEX.test(order_id)) {
+    if (!isValidUUID(ticket_id) || !isValidUUID(order_id)) {
       return errorResponse(400, 'Invalid ticket identifiers');
     }
 
@@ -108,6 +88,7 @@ serve(async (req) => {
     }
 
     // ── Look up ticket in database ──
+    const supabase = createAdminClient();
     const { data: ticket, error: ticketError } = await supabase
       .from('tickets')
       .select(`
@@ -189,7 +170,7 @@ serve(async (req) => {
       return errorResponse(409, 'Ticket was just scanned by another device');
     }
 
-    return new Response(JSON.stringify({
+    return jsonResponse({
       valid: true,
       ticket: {
         id: ticket.id,
@@ -197,9 +178,6 @@ serve(async (req) => {
         event_title: ticket.ticket_tiers?.events?.title,
         attendee: ticket.profiles?.full_name,
       },
-    }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (err) {
