@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════
-   VIA — Auth Helpers
+   EVENT WAW — Auth Helpers
    ═══════════════════════════════════ */
 
 import { supabase, getCurrentUser } from './supabase.js';
@@ -7,7 +7,8 @@ import { supabase, getCurrentUser } from './supabase.js';
 /**
  * Sign up with email & password.
  * Stores full_name and phone in user metadata,
- * which the DB trigger uses to populate the profiles table.
+ * which the self-healing profile logic uses to auto-create
+ * the profiles row on first access.
  */
 export async function signUp({ email, password, firstName, lastName, phone, role }) {
   const { data, error } = await supabase.auth.signUp({

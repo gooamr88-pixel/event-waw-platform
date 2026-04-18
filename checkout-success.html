@@ -79,25 +79,16 @@
     import { supabase } from './src/lib/supabase.js';
     import { getOrderBySession } from './src/lib/tickets.js';
     import { protectPage } from './src/lib/guard.js';
+    import { initUI, initParticles } from './src/lib/ui.js';
+    import { escapeHTML } from './src/lib/utils.js';
     import QRCode from 'qrcode';
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const saved = localStorage.getItem('theme') || 'dark';
-      document.documentElement.setAttribute('data-theme', saved);
+      initUI();
+      initParticles();
 
       const auth = await protectPage();
       if (!auth) return; // Redirecting...
-
-      // Init particles
-      document.querySelectorAll('.particles').forEach(c => {
-        for (let i = 0; i < 15; i++) {
-          const p = document.createElement('div');
-          p.className = 'particle';
-          const s = Math.random() * 2.5 + 1;
-          p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:-5%;animation-duration:${Math.random()*16+10}s;animation-delay:${Math.random()*12}s;`;
-          c.appendChild(p);
-        }
-      });
 
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
@@ -147,11 +138,11 @@
                 
                 <!-- Event Info -->
                 <div style="padding:16px 16px 0;text-align:left;">
-                  <div style="font-size:0.68rem;color:#D4AF37;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">${tierName}</div>
-                  <h3 style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:#f4f4f5;margin-bottom:8px;">${eventTitle}</h3>
+                  <div style="font-size:0.68rem;color:#D4AF37;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">${escapeHTML(tierName)}</div>
+                  <h3 style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:#f4f4f5;margin-bottom:8px;">${escapeHTML(eventTitle)}</h3>
                   <div style="display:flex;gap:16px;font-size:0.72rem;">
-                    <span style="color:#a1a1aa;">📅 ${eventDate}</span>
-                    <span style="color:#a1a1aa;">📍 ${eventVenue}</span>
+                    <span style="color:#a1a1aa;">📅 ${escapeHTML(eventDate)}</span>
+                    <span style="color:#a1a1aa;">📍 ${escapeHTML(eventVenue)}</span>
                   </div>
                 </div>
                 

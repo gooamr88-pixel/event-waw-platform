@@ -75,7 +75,10 @@ export async function getTierAvailability(tierId) {
  */
 export async function createCheckout({ tierId, quantity }) {
   const { data: { session } } = await supabase.auth.getSession();
-  
+  if (!session?.access_token) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
     {

@@ -55,6 +55,9 @@ export async function getTicket(ticketId) {
  */
 export async function verifyTicket(qrPayload) {
   const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    return { valid: false, error: 'Session expired. Please sign in again.' };
+  }
 
   const response = await fetch(
     `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-ticket`,

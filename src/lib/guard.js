@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════
-   VIA — Centralized Auth Guard
+   EVENT WAW — Centralized Auth Guard
    ═══════════════════════════════════
    Single source of truth for page access
    control, OTP verification, and nav UI.
