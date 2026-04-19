@@ -104,6 +104,33 @@ export async function getEventAttendees(eventId) {
 }
 
 /**
+ * Get order + ticket data by Stripe session ID via RPC.
+ * Works for BOTH guests and authenticated users (SECURITY DEFINER bypasses RLS).
+ * Polls for up to 30 seconds waiting for the webhook to create the order.
+ */
+export async function getOrderBySessionPublic(sessionId) {
+  const maxAttempts = 15;
+  const delayMs = 2000;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const { data, error } = await supabase.rpc('get_order_by_session', {
+      p_session_id: sessionId,
+    });
+
+    if (data) return data;
+
+    if (attempt === maxAttempts) {
+      console.warn('Order not found after polling (RPC). Webhook may be delayed.');
+      return null;
+    }
+
+    console.log(`Waiting for order... attempt ${attempt}/${maxAttempts}`);
+    await new Promise(resolve => setTimeout(resolve, delayMs));
+  }
+  return null;
+}
+
+/**
  * Get order details by Stripe session ID (used on success page).
  */
 export async function getOrderBySession(sessionId) {

@@ -267,7 +267,7 @@ serve(async (req) => {
           p_raw_token: rawToken,
         });
 
-        const originUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
+        const originUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://event-waw-platform.vercel.app';
         guestTicketUrl = `${originUrl}/my-tickets.html?guest_token=${rawToken}`;
         console.log(`🔗 Guest ticket URL generated for ${userEmail}`);
       } catch (tokenErr) {
@@ -307,7 +307,7 @@ serve(async (req) => {
               eventVenue,
               eventDate: formattedDate,
               orderId: order.id,
-              ticketLink: `https://eventwaw.com/my-tickets.html`,
+              ticketLink: `https://event-waw-platform.vercel.app/my-tickets.html`,
             });
 
         await fetch('https://api.brevo.com/v3/smtp/email', {

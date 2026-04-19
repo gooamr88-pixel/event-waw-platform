@@ -8,13 +8,77 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="js/csp.js"></script>
+  <style>
+    .spinner{width:32px;height:32px;border:3px solid #e5e5e5;border-top-color:var(--accent-primary);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+    @keyframes ticketReveal{from{opacity:0;transform:translateY(40px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+    @keyframes badgePop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+    @keyframes qrGlow{0%,100%{box-shadow:0 4px 24px rgba(0,0,0,.3)}50%{box-shadow:0 4px 32px rgba(212,175,55,.2),0 0 60px rgba(212,175,55,.08)}}
+
+    .confetti-piece{position:fixed;width:10px;height:10px;top:-20px;z-index:9999;animation:confettiFall 3s ease-in forwards;pointer-events:none;border-radius:2px}
+
+    /* Ticket Card */
+    .ticket-card{max-width:380px;margin:0 auto;border-radius:24px;overflow:visible;animation:ticketReveal .8s cubic-bezier(.16,1,.3,1) forwards;position:relative}
+    .ticket-inner{background:linear-gradient(165deg,#1a1a1f 0%,#111114 50%,#0d0d10 100%);border:1px solid rgba(212,175,55,.12);border-radius:24px;overflow:hidden;position:relative}
+    .ticket-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(212,175,55,.03),transparent 60%);pointer-events:none;z-index:1}
+
+    .ticket-header{background:linear-gradient(135deg,#D4AF37,#b8941f,#D4AF37);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden}
+    .ticket-header::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);background-size:200% 100%;animation:shimmer 3s linear infinite}
+    .ticket-brand{font-size:.7rem;font-weight:800;letter-spacing:.18em;color:#09090b;text-transform:uppercase}
+    .ticket-id-label{font-size:.6rem;font-weight:700;color:rgba(9,9,11,.45);letter-spacing:.08em;font-family:monospace}
+
+    .ticket-event{padding:20px 20px 16px;position:relative;z-index:2}
+    .ticket-tier-badge{display:inline-block;font-size:.65rem;font-weight:700;color:#D4AF37;text-transform:uppercase;letter-spacing:.12em;padding:4px 12px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.12);border-radius:50px;margin-bottom:10px}
+    .ticket-event h3{font-family:var(--font-serif);font-size:1.15rem;font-weight:700;color:#f4f4f5;margin-bottom:12px;line-height:1.3}
+    .ticket-meta{display:flex;flex-direction:column;gap:6px}
+    .ticket-meta-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#a1a1aa}
+    .ticket-meta-row svg{width:14px;height:14px;color:#D4AF37;flex-shrink:0}
+
+    .ticket-attendee{padding:0 20px 16px;position:relative;z-index:2}
+    .ticket-attendee-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:10px}
+    .ticket-attendee-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
+    .ticket-attendee-value{font-size:.82rem;font-weight:600;color:var(--text-primary)}
+
+    /* Tear-off */
+    .ticket-tear{position:relative;height:2px;margin:0 -1px;z-index:3}
+    .ticket-tear::before{content:'';position:absolute;left:20px;right:20px;top:0;border-top:2px dashed rgba(255,255,255,.06)}
+    .ticket-tear .notch{position:absolute;width:24px;height:24px;border-radius:50%;background:#09090b;top:-12px;border:1px solid rgba(212,175,55,.08)}
+    .ticket-tear .notch-l{left:-13px}.ticket-tear .notch-r{right:-13px}
+
+    /* QR Section */
+    .ticket-qr{padding:16px 20px 20px;text-align:center;position:relative;z-index:2}
+    .ticket-qr-wrap{display:inline-block;background:#fff;padding:14px;border-radius:14px;animation:qrGlow 4s ease-in-out infinite}
+    .ticket-qr-wrap canvas{display:block}
+    .ticket-status{margin-top:12px;display:flex;justify-content:center;gap:8px;align-items:center}
+    .ticket-status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:700;animation:badgePop .5s cubic-bezier(.16,1,.3,1) .6s both}
+    .badge-valid{background:rgba(34,197,94,.08);color:#22c55e;border:1px solid rgba(34,197,94,.15)}
+    .ticket-amount{font-size:.8rem;font-weight:700;color:var(--accent-primary)}
+
+    /* Guest Notice */
+    .guest-notice{margin:20px auto 0;max-width:380px;padding:16px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.1);border-radius:14px;text-align:center}
+    .guest-notice p{color:var(--text-secondary);font-size:.85rem;line-height:1.6;margin:0}
+    .guest-notice strong{color:#22c55e}
+
+    /* Loading State */
+    .loading-state{text-align:center;padding:60px 0}
+    .loading-state p{color:var(--text-muted);font-size:.9rem;margin-top:16px}
+    .loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
+    @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+
+    /* Multi-ticket nav */
+    .ticket-nav{display:flex;justify-content:center;gap:8px;margin-top:16px}
+    .ticket-nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .3s}
+    .ticket-nav-dot.active{background:var(--accent-primary);border-color:var(--accent-primary);box-shadow:0 0 10px rgba(212,175,55,.3)}
+  </style>
 </head>
 <body>
   <div class="auth-page">
     <div class="auth-bg"><div class="auth-bg-ov" style="background:rgba(9,9,11,.95);"></div></div>
     <div class="particles"></div>
+    <div id="confetti-container"></div>
 
-    <div class="auth-wrap" style="max-width:28rem;">
+    <div class="auth-wrap" style="max-width:30rem;">
       <div class="auth-head">
         <a href="index.html" class="nav-logo" style="justify-content:center">
           <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
@@ -22,64 +86,58 @@
         </a>
       </div>
 
-      <div class="auth-box ani-up d2" style="text-align:center;">
-        <!-- Success Icon -->
+      <!-- Loading State -->
+      <div id="loading-view" class="auth-box ani-up d2" style="text-align:center;">
         <div class="auth-ok-ic" style="width:70px;height:70px;margin-bottom:20px;">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
-          </svg>
+          <div class="spinner"></div>
+        </div>
+        <h2 class="auth-box-title" style="font-size:1.3rem;">Confirming Payment<span class="loading-dots"></span></h2>
+        <p class="auth-box-sub">Please wait while we prepare your ticket. This usually takes a few seconds.</p>
+        <div style="width:100%;height:4px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;margin-top:8px;">
+          <div id="progress-bar" style="height:100%;background:var(--accent-gradient);border-radius:4px;width:0%;transition:width .5s ease;"></div>
+        </div>
+      </div>
+
+      <!-- Ticket View (hidden initially) -->
+      <div id="ticket-view" style="display:none;">
+        <div style="text-align:center;margin-bottom:20px;">
+          <div class="auth-ok-ic ani-scale" style="width:60px;height:60px;margin-bottom:14px;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          </div>
+          <h2 class="auth-box-title ani-up" style="font-size:1.3rem;">Payment Successful!</h2>
+          <p class="auth-box-sub ani-up d1" style="margin-bottom:0;">Present this ticket at the entrance</p>
         </div>
 
-        <h2 class="auth-box-title" style="font-size:1.4rem;">Payment Successful!</h2>
-        <p class="auth-box-sub">Your tickets are confirmed. Show this QR code at the event entrance.</p>
+        <div id="tickets-container"></div>
+        <div id="ticket-nav" class="ticket-nav" style="display:none;"></div>
 
-        <!-- QR Code Display -->
-        <div id="qr-container" style="background:#fff;padding:24px;border-radius:16px;display:inline-block;margin:16px 0 24px;">
-          <div id="qr-code" style="width:200px;height:200px;display:flex;align-items:center;justify-content:center;">
-            <div class="spinner"></div>
-          </div>
+        <div id="guest-notice" style="display:none;" class="guest-notice ani-up d3">
+          <p>📧 <strong>Check your email</strong> — we sent a secure link so you can access your tickets anytime. No account needed!</p>
         </div>
 
-        <!-- Order Details -->
-        <div id="order-details" style="text-align:left;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border-color);border-radius:12px;margin-bottom:20px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <span style="color:var(--text-muted);font-size:0.85rem;">Event</span>
-            <span id="order-event" style="font-weight:600;font-size:0.85rem;">Loading…</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <span style="color:var(--text-muted);font-size:0.85rem;">Ticket</span>
-            <span id="order-tier" style="font-weight:600;font-size:0.85rem;">—</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <span style="color:var(--text-muted);font-size:0.85rem;">Amount Paid</span>
-            <span id="order-amount" style="font-weight:600;font-size:0.85rem;color:var(--accent-primary);">—</span>
-          </div>
-          <div style="display:flex;justify-content:space-between;">
-            <span style="color:var(--text-muted);font-size:0.85rem;">Order ID</span>
-            <span id="order-id" style="font-size:0.75rem;font-family:monospace;color:var(--text-muted);">—</span>
-          </div>
-        </div>
-
-        <div style="display:flex;flex-direction:column;gap:10px;">
-          <a href="my-tickets.html" class="btn btn-primary btn-full">View All My Tickets</a>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;" class="ani-up d4">
+          <a id="btn-my-tickets" href="my-tickets.html" class="btn btn-primary btn-full">View All My Tickets</a>
           <a href="events.html" class="btn btn-outline btn-full">Browse More Events</a>
+        </div>
+      </div>
+
+      <!-- Error View -->
+      <div id="error-view" style="display:none;" class="auth-box" style="text-align:center;">
+        <div style="text-align:center;">
+          <div class="auth-ok-ic" style="width:60px;height:60px;margin-bottom:14px;border-color:rgba(239,68,68,.15);background:rgba(239,68,68,.05);">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+          </div>
+          <h2 class="auth-box-title" style="font-size:1.2rem;">Payment Received</h2>
+          <p class="auth-box-sub">Your payment was successful but your ticket is still being prepared. It will appear on the <strong>My Tickets</strong> page shortly.</p>
+          <a href="my-tickets.html" class="btn btn-primary btn-full" style="margin-top:12px;">Go to My Tickets</a>
         </div>
       </div>
     </div>
   </div>
 
-  <style>
-    .spinner {
-      width:32px;height:32px;border:3px solid #e5e5e5;border-top-color:var(--accent-primary);
-      border-radius:50%;animation:spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-
   <script type="module">
     import { supabase } from './src/lib/supabase.js';
-    import { getOrderBySession } from './src/lib/tickets.js';
-    import { protectPage } from './src/lib/guard.js';
+    import { getOrderBySessionPublic } from './src/lib/tickets.js';
     import { initUI, initParticles } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
     import QRCode from 'qrcode';
@@ -92,141 +150,180 @@
       const sessionId = params.get('session_id');
       const isGuest = params.get('guest') === 'true';
 
-      if (isGuest) {
-        // ── GUEST CHECKOUT SUCCESS ──
-        // Don't require auth — guest just completed Stripe payment
-        document.querySelector('.auth-box-sub').textContent =
-          'Your tickets are confirmed! Check your email for a secure link to view your QR code.';
-
-        // Update CTA buttons for guest
-        const buttonsDiv = document.querySelector('[style*="flex-direction:column"]');
-        if (buttonsDiv) {
-          buttonsDiv.innerHTML = `
-            <div style="padding:16px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:14px;margin-bottom:16px;text-align:center;">
-              <p style="color:var(--text-secondary);font-size:0.88rem;line-height:1.6;margin:0;">
-                📧 <strong>Check your email</strong> — we've sent a secure link to view and present your tickets.
-                No account needed!
-              </p>
-            </div>
-            <a href="events.html" class="btn btn-primary btn-full">Browse More Events</a>
-            <a href="register.html" class="btn btn-outline btn-full" style="margin-top:10px;">Create an Account</a>
-          `;
-        }
-
-        // Show a placeholder QR — actual QR is in the emailed link
-        const container = document.getElementById('qr-code');
-        container.innerHTML = '<p style="color:#999;font-size:0.85rem;padding:30px 10px;">Your QR code has been sent to your email.<br/>Use the secure link to view it anytime.</p>';
-
-        document.getElementById('order-event').textContent = 'Payment received!';
-        document.getElementById('order-tier').textContent = 'Guest purchase';
-        document.getElementById('order-amount').textContent = '—';
-        document.getElementById('order-id').textContent = 'Check your email';
+      if (!sessionId) {
+        showError();
         return;
       }
 
-      // ── AUTHENTICATED CHECKOUT SUCCESS ──
-      const auth = await protectPage();
-      if (!auth) return; // Redirecting...
+      // Animate progress bar
+      const progressBar = document.getElementById('progress-bar');
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress = Math.min(progress + 3, 90);
+        progressBar.style.width = progress + '%';
+      }, 600);
 
-      if (sessionId) {
-        await loadOrder(sessionId);
-      } else {
-        // Show placeholder
-        generatePlaceholderQR();
-      }
-    });
-
-    async function loadOrder(sessionId) {
       try {
-        document.getElementById('order-event').textContent = 'Confirming payment…';
-        const order = await getOrderBySession(sessionId);
-        if (order && order.tickets?.length > 0) {
-          const ticket = order.tickets[0];
-          const event = ticket?.ticket_tiers?.events;
-          const tierName = ticket?.ticket_tiers?.name || 'General';
-          const eventTitle = event?.title || 'Event';
-          const eventVenue = event?.venue || '';
-          const eventDate = event?.date
-            ? new Date(event.date).toLocaleDateString('en-US', {
-                weekday: 'short', month: 'short', day: 'numeric',
-                hour: 'numeric', minute: '2-digit'
-              })
-            : '';
-          
-          document.getElementById('order-event').textContent = eventTitle;
-          document.getElementById('order-tier').textContent = tierName;
-          document.getElementById('order-amount').textContent = `$${Number(order.amount).toLocaleString()}`;
-          document.getElementById('order-id').textContent = order.id.substring(0, 12) + '…';
+        const order = await getOrderBySessionPublic(sessionId);
+        clearInterval(progressInterval);
+        progressBar.style.width = '100%';
 
-          // Generate premium QR card
-          if (ticket?.qr_hash) {
-            const container = document.getElementById('qr-container');
-            container.style.background = 'transparent';
-            container.style.padding = '0';
-            container.innerHTML = `
-              <div style="background:linear-gradient(145deg, #18181b 0%, #09090b 100%);border:1px solid rgba(212,175,55,.15);border-radius:20px;overflow:hidden;max-width:320px;margin:0 auto;">
-                <!-- Gold Header -->
-                <div style="background:linear-gradient(135deg,#D4AF37,#b8941f);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:0.65rem;font-weight:800;letter-spacing:0.15em;color:#09090b;text-transform:uppercase;">Event Waw Ticket</span>
-                  <span style="font-size:0.6rem;font-weight:600;color:rgba(9,9,11,.5);">${ticket.id.substring(0, 8).toUpperCase()}</span>
-                </div>
-                
-                <!-- Event Info -->
-                <div style="padding:16px 16px 0;text-align:left;">
-                  <div style="font-size:0.68rem;color:#D4AF37;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:4px;">${escapeHTML(tierName)}</div>
-                  <h3 style="font-family:var(--font-serif);font-size:1rem;font-weight:700;color:#f4f4f5;margin-bottom:8px;">${escapeHTML(eventTitle)}</h3>
-                  <div style="display:flex;gap:16px;font-size:0.72rem;">
-                    <span style="color:#a1a1aa;">📅 ${escapeHTML(eventDate)}</span>
-                    <span style="color:#a1a1aa;">📍 ${escapeHTML(eventVenue)}</span>
-                  </div>
-                </div>
-                
-                <!-- Tear-off -->
-                <div style="margin:12px 0;border-top:2px dashed rgba(255,255,255,.08);position:relative;">
-                  <div style="position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:rgba(9,9,11,.95);"></div>
-                  <div style="position:absolute;right:-10px;top:-10px;width:20px;height:20px;border-radius:50%;background:rgba(9,9,11,.95);"></div>
-                </div>
-                
-                <!-- QR -->
-                <div style="text-align:center;padding:0 16px 16px;">
-                  <div id="qr-code" style="display:inline-block;background:#fff;padding:14px;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.3);"></div>
-                  <div style="margin-top:10px;">
-                    <span style="display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:50px;font-size:0.7rem;font-weight:600;background:rgba(34,197,94,.1);color:#22c55e;">✦ Valid</span>
-                  </div>
-                </div>
-              </div>
-            `;
-            await generateQR(ticket.qr_hash);
-          } else {
-            generatePlaceholderQR();
-          }
+        if (order && order.tickets && order.tickets.length > 0) {
+          setTimeout(() => showTickets(order, isGuest), 400);
         } else {
-          // Order not found after polling — show friendly message
-          document.getElementById('order-event').textContent = 'Payment received!';
-          document.getElementById('order-tier').textContent = 'Processing…';
-          document.getElementById('order-amount').textContent = '—';
-          document.getElementById('order-id').textContent = 'Check My Tickets page';
-          const container = document.getElementById('qr-code');
-          container.innerHTML = '<p style="color:#999;font-size:0.85rem;padding:30px 10px;">Your payment was successful! Your tickets will appear on the <strong>My Tickets</strong> page shortly.</p>';
+          setTimeout(showError, 400);
         }
       } catch (err) {
         console.error('Error loading order:', err);
-        generatePlaceholderQR();
+        clearInterval(progressInterval);
+        showError();
+      }
+    });
+
+    function showError() {
+      document.getElementById('loading-view').style.display = 'none';
+      document.getElementById('error-view').style.display = 'block';
+    }
+
+    async function showTickets(order, isGuest) {
+      document.getElementById('loading-view').style.display = 'none';
+      document.getElementById('ticket-view').style.display = 'block';
+
+      // Confetti celebration
+      launchConfetti();
+
+      const container = document.getElementById('tickets-container');
+      const tickets = order.tickets;
+
+      // Build ticket cards
+      for (let i = 0; i < tickets.length; i++) {
+        const t = tickets[i];
+        const eventDate = t.event_date
+          ? new Date(t.event_date).toLocaleDateString('en-US', {
+              weekday: 'short', month: 'short', day: 'numeric',
+              hour: 'numeric', minute: '2-digit'
+            })
+          : '';
+        const eventVenue = t.event_venue || '';
+        const attendeeName = isGuest
+          ? (order.guest_name || 'Guest')
+          : 'Ticket Holder';
+
+        const card = document.createElement('div');
+        card.className = 'ticket-card';
+        card.style.display = i === 0 ? 'block' : 'none';
+        card.dataset.index = i;
+
+        card.innerHTML = `
+          <div class="ticket-inner">
+            <div class="ticket-header">
+              <span class="ticket-brand">✦ Event Waw Ticket</span>
+              <span class="ticket-id-label">#${t.id.substring(0, 8).toUpperCase()}</span>
+            </div>
+
+            <div class="ticket-event">
+              <div class="ticket-tier-badge">${escapeHTML(t.tier_name)}</div>
+              <h3>${escapeHTML(t.event_title)}</h3>
+              <div class="ticket-meta">
+                ${eventDate ? `<div class="ticket-meta-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  <span>${escapeHTML(eventDate)}</span>
+                </div>` : ''}
+                ${eventVenue ? `<div class="ticket-meta-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <span>${escapeHTML(eventVenue)}</span>
+                </div>` : ''}
+              </div>
+            </div>
+
+            <div class="ticket-attendee">
+              <div class="ticket-attendee-row">
+                <div>
+                  <div class="ticket-attendee-label">Attendee</div>
+                  <div class="ticket-attendee-value">${escapeHTML(attendeeName)}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div class="ticket-attendee-label">Amount</div>
+                  <div class="ticket-attendee-value" style="color:var(--accent-primary);">$${Number(t.tier_price).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="ticket-tear">
+              <div class="notch notch-l"></div>
+              <div class="notch notch-r"></div>
+            </div>
+
+            <div class="ticket-qr">
+              <div class="ticket-qr-wrap">
+                <canvas id="qr-canvas-${i}" width="180" height="180"></canvas>
+              </div>
+              <div class="ticket-status">
+                <span class="ticket-status-badge badge-valid">✦ Valid</span>
+                <span class="ticket-amount">$${Number(order.amount).toLocaleString()}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+
+        // Generate QR code
+        if (t.qr_hash) {
+          try {
+            const canvas = card.querySelector(`#qr-canvas-${i}`);
+            await QRCode.toCanvas(canvas, t.qr_hash, {
+              width: 180, margin: 2,
+              color: { dark: '#000000', light: '#ffffff' },
+              errorCorrectionLevel: 'M'
+            });
+          } catch (qrErr) {
+            console.error('QR generation error:', qrErr);
+          }
+        }
+      }
+
+      // Multi-ticket navigation dots
+      if (tickets.length > 1) {
+        const nav = document.getElementById('ticket-nav');
+        nav.style.display = 'flex';
+        for (let i = 0; i < tickets.length; i++) {
+          const dot = document.createElement('div');
+          dot.className = 'ticket-nav-dot' + (i === 0 ? ' active' : '');
+          dot.onclick = () => {
+            container.querySelectorAll('.ticket-card').forEach(c => c.style.display = 'none');
+            container.querySelector(`[data-index="${i}"]`).style.display = 'block';
+            nav.querySelectorAll('.ticket-nav-dot').forEach(d => d.classList.remove('active'));
+            dot.classList.add('active');
+          };
+          nav.appendChild(dot);
+        }
+      }
+
+      // Guest-specific UI
+      if (isGuest) {
+        document.getElementById('guest-notice').style.display = 'block';
+        const btn = document.getElementById('btn-my-tickets');
+        btn.textContent = 'Create an Account';
+        btn.href = 'register.html';
       }
     }
 
-    async function generateQR(data) {
-      const container = document.getElementById('qr-code');
-      container.innerHTML = '';
-      const canvas = document.createElement('canvas');
-      await QRCode.toCanvas(canvas, data, { width: 200, margin: 2, color: { dark: '#000000', light: '#ffffff' } });
-      container.appendChild(canvas);
-    }
-
-    function generatePlaceholderQR() {
-      const container = document.getElementById('qr-code');
-      container.innerHTML = '<p style="color:#999;font-size:0.85rem;padding:40px 0;">QR code will appear after payment confirmation</p>';
-      document.getElementById('order-event').textContent = 'Awaiting confirmation…';
+    function launchConfetti() {
+      const colors = ['#D4AF37', '#22c55e', '#3b82f6', '#f59e0b', '#ec4899', '#8b5cf6'];
+      const container = document.getElementById('confetti-container');
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+        piece.style.width = (6 + Math.random() * 8) + 'px';
+        piece.style.height = (6 + Math.random() * 8) + 'px';
+        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        container.appendChild(piece);
+      }
+      setTimeout(() => container.innerHTML = '', 5000);
     }
   </script>
 </body>
