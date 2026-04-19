@@ -186,14 +186,15 @@ serve(async (req) => {
     // ── Pre-fetch seat location data if this is a seated checkout ──
     const seatIdsRaw = session.metadata?.seat_ids;
     let seatLookup: Record<string, { section_key: string; row_label: string; seat_number: string }> = {};
+    let orderedSeatIds: string[] = [];
 
     if (seatIdsRaw) {
       try {
-        const parsedSeatIds = JSON.parse(seatIdsRaw);
+        orderedSeatIds = JSON.parse(seatIdsRaw);
         const { data: seatRows } = await supabase
           .from('seats')
           .select('id, section_key, row_label, seat_number')
-          .in('id', parsedSeatIds);
+          .in('id', orderedSeatIds);
 
         if (seatRows) {
           for (const s of seatRows) {
@@ -206,11 +207,9 @@ serve(async (req) => {
         }
       } catch (e) {
         console.warn('Failed to pre-fetch seat data for QR:', e);
+        orderedSeatIds = [];
       }
     }
-
-    // Build ordered seat IDs array (matches ticket index)
-    const orderedSeatIds: string[] = seatIdsRaw ? JSON.parse(seatIdsRaw) : [];
 
     const tickets = [];
     for (let i = 0; i < qty; i++) {

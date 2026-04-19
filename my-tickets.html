@@ -287,9 +287,10 @@
                 <img src="${escapeHTML(event?.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event?.title || 'Event')}" />
               </div>
               <div class="ticket-card-body">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                   <span class="ticket-status ${ticket.status}">${ticket.status === 'valid' ? '✦ Valid' : ticket.status === 'scanned' ? '✓ Scanned' : ticket.status}</span>
                   <span style="font-size:0.7rem;padding:3px 8px;border-radius:50px;background:rgba(99,91,255,.1);color:#635bff;font-weight:600;">Guest</span>
+                  ${(() => { const si = parseSeatFromQR(ticket.qr_hash); return si ? `<span class="seat-badge">💺 ${escapeHTML(si.sec)} · Row ${escapeHTML(si.row)} · Seat ${escapeHTML(si.seat)}</span>` : ''; })()}
                 </div>
                 <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:4px;">
                   ${escapeHTML(event?.title || 'Event')}

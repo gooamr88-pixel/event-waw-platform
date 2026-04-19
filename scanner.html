@@ -329,7 +329,7 @@
 
       // Show seat location box for seated tickets
       const seatBox = document.getElementById('result-seat-box');
-      if (type === 'valid' && ticketData?.section) {
+      if ((type === 'valid' || type === 'duplicate') && ticketData?.section) {
         document.getElementById('result-seat-section').textContent = ticketData.section;
         document.getElementById('result-seat-row').textContent = ticketData.row || '—';
         document.getElementById('result-seat-number').textContent = ticketData.seat || '—';

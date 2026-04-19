@@ -416,7 +416,7 @@ export class SeatingChart {
 
       if (action === 'in') this.panzoomInstance.smoothZoom(cx, cy, 1.5);
       else if (action === 'out') this.panzoomInstance.smoothZoom(cx, cy, 0.67);
-      else if (action === 'reset') this.panzoomInstance.moveTo(0, 0); this.panzoomInstance?.zoomAbs(0, 0, 1);
+      else if (action === 'reset') { this.panzoomInstance.moveTo(0, 0); this.panzoomInstance?.zoomAbs(0, 0, 1); }
     });
 
     this.container.appendChild(controls);

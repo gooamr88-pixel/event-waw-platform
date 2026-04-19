@@ -268,3 +268,79 @@ export async function getVenueMap(eventId) {
   }
   return data;
 }
+
+/**
+ * Delete an event and all its dependent data.
+ * SAFETY: Refuses to delete if ANY tickets exist (sold or valid).
+ * Cascade order: seats → venue_maps → reservations → ticket_tiers → event.
+ *
+ * @param {string} eventId - The event UUID to delete
+ * @returns {{ success: boolean, error?: string }}
+ */
+export async function deleteEvent(eventId) {
+  // 1. Check for existing tickets — BLOCK deletion if any exist
+  const { count: ticketCount, error: countErr } = await supabase
+    .from('tickets')
+    .select('id', { count: 'exact', head: true })
+    .in('ticket_tier_id', 
+      supabase.from('ticket_tiers').select('id').eq('event_id', eventId)
+    );
+
+  // If the subquery approach fails, fall back to a two-step check
+  if (countErr) {
+    const { data: tiers } = await supabase
+      .from('ticket_tiers')
+      .select('id')
+      .eq('event_id', eventId);
+
+    if (tiers && tiers.length > 0) {
+      const tierIds = tiers.map(t => t.id);
+      const { count } = await supabase
+        .from('tickets')
+        .select('id', { count: 'exact', head: true })
+        .in('ticket_tier_id', tierIds);
+
+      if (count && count > 0) {
+        return {
+          success: false,
+          error: `Cannot delete: ${count} ticket(s) have been issued for this event. Cancel all tickets first.`,
+        };
+      }
+    }
+  } else if (ticketCount && ticketCount > 0) {
+    return {
+      success: false,
+      error: `Cannot delete: ${ticketCount} ticket(s) have been issued for this event. Cancel all tickets first.`,
+    };
+  }
+
+  // 2. Delete venue map + seats (seats FK-cascade from venue_maps)
+  const { data: venueMap } = await supabase
+    .from('venue_maps')
+    .select('id')
+    .eq('event_id', eventId)
+    .maybeSingle();
+
+  if (venueMap) {
+    await supabase.from('seats').delete().eq('venue_map_id', venueMap.id);
+    await supabase.from('venue_maps').delete().eq('id', venueMap.id);
+  }
+
+  // 3. Delete expired/active reservations
+  await supabase.from('reservations').delete().eq('event_id', eventId);
+
+  // 4. Delete ticket tiers
+  await supabase.from('ticket_tiers').delete().eq('event_id', eventId);
+
+  // 5. Delete the event itself
+  const { error: deleteErr } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', eventId);
+
+  if (deleteErr) {
+    return { success: false, error: deleteErr.message };
+  }
+
+  return { success: true };
+}
