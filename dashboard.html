@@ -187,8 +187,24 @@
                   <option value="conference">Conference</option>
                   <option value="sports">Sports</option>
                   <option value="workshop">Workshop</option>
+                  <option value="comedy">Comedy</option>
+                  <option value="festival">Festival</option>
                 </select>
               </div>
+            </div>
+            <div class="f-row">
+              <div class="fg">
+                <label class="fl" for="ev-doors">Doors Open At</label>
+                <input type="text" class="fi" id="ev-doors" placeholder="e.g. 7:00 pm" />
+              </div>
+              <div class="fg">
+                <label class="fl" for="ev-language">Language</label>
+                <input type="text" class="fi" id="ev-language" value="English" placeholder="e.g. Arabic, English" />
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl" for="ev-terms">Terms & Conditions / Refund Policy</label>
+              <textarea class="fi" id="ev-terms" rows="3" placeholder="No refunds after purchase. Must present valid ID at venue entrance…" style="resize:vertical;"></textarea>
             </div>
 
             <h3 style="font-size:0.9rem;font-weight:600;margin:24px 0 12px;color:var(--text-secondary);">Ticket Tiers</h3>
@@ -644,6 +660,9 @@
           city: document.getElementById('ev-city').value,
           date: new Date(document.getElementById('ev-date').value).toISOString(),
           category: document.getElementById('ev-category').value,
+          doors_open: document.getElementById('ev-doors').value || null,
+          language: document.getElementById('ev-language').value || 'English',
+          terms_conditions: document.getElementById('ev-terms').value || null,
           status: 'published',
         };
 
