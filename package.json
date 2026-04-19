@@ -15,6 +15,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.103.2",
     "html5-qrcode": "^2.3.8",
+    "panzoom": "^9.4.4",
     "qrcode": "^1.5.4"
   }
 }

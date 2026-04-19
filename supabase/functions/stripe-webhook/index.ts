@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Webhook Edge Function (v4 — Guest + Auth)
+// EVENT WAW — Stripe Webhook Edge Function (v5 — Guest + Auth + Seating)
 // Handles: checkout.session.completed, charge.refunded,
 //          checkout.session.expired, charge.dispute.created
 // ═══════════════════════════════════
@@ -181,22 +181,65 @@ serve(async (req) => {
     // ── Generate Tickets with HMAC-SHA256 Signed QR ──
     // IMPORTANT: QR generation is identical for both guest and auth users.
     // The QR payload contains all data needed for verification.
+    // For seated events, we inject seat location into the signed payload.
+
+    // ── Pre-fetch seat location data if this is a seated checkout ──
+    const seatIdsRaw = session.metadata?.seat_ids;
+    let seatLookup: Record<string, { section_key: string; row_label: string; seat_number: string }> = {};
+
+    if (seatIdsRaw) {
+      try {
+        const parsedSeatIds = JSON.parse(seatIdsRaw);
+        const { data: seatRows } = await supabase
+          .from('seats')
+          .select('id, section_key, row_label, seat_number')
+          .in('id', parsedSeatIds);
+
+        if (seatRows) {
+          for (const s of seatRows) {
+            seatLookup[s.id] = {
+              section_key: s.section_key,
+              row_label: s.row_label,
+              seat_number: s.seat_number,
+            };
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to pre-fetch seat data for QR:', e);
+      }
+    }
+
+    // Build ordered seat IDs array (matches ticket index)
+    const orderedSeatIds: string[] = seatIdsRaw ? JSON.parse(seatIdsRaw) : [];
+
     const tickets = [];
     for (let i = 0; i < qty; i++) {
       const ticketId = crypto.randomUUID();
       const nonce = crypto.randomUUID();
 
-      const payload = JSON.stringify({
+      // Build the base payload
+      const payloadObj: any = {
         v: 2,
         ticket_id: ticketId,
         order_id: order.id,
         event_id,
-        user_id: isGuest ? null : user_id,  // null for guests
+        user_id: isGuest ? null : user_id,
         tier_id,
         nonce,
         is_guest: isGuest,
         iat: Math.floor(Date.now() / 1000),
-      });
+      };
+
+      // ── Inject seat location into the signed payload ──
+      const seatId = orderedSeatIds[i];
+      if (seatId && seatLookup[seatId]) {
+        const loc = seatLookup[seatId];
+        payloadObj.sec = loc.section_key;
+        payloadObj.row = loc.row_label;
+        payloadObj.seat = loc.seat_number;
+      }
+
+      const payload = JSON.stringify(payloadObj);
 
       // HMAC-SHA256 signature
       const key = await crypto.subtle.importKey(
@@ -255,6 +298,22 @@ serve(async (req) => {
       p_tier_id: tier_id,
       p_amount: qty,
     });
+
+    // ── Seated checkout: mark seats as permanently sold ──
+    if (seatIdsRaw) {
+      try {
+        const seatIds = JSON.parse(seatIdsRaw);
+        const ticketIds = tickets.map((t: any) => t.id);
+        await supabase.rpc('confirm_seats_sold', {
+          p_reservation_id: reservation_id,
+          p_ticket_ids: ticketIds,
+        });
+        console.log(`💺 ${seatIds.length} seats marked as sold for reservation ${reservation_id}`);
+      } catch (seatErr) {
+        console.error('Failed to confirm seats sold (non-critical):', seatErr);
+        // Non-critical — seats will remain 'reserved' and can be reconciled
+      }
+    }
 
     // ── Guest: Generate secure retrieval token ──
     let guestTicketUrl = '';
@@ -356,6 +415,19 @@ serve(async (req) => {
       } else {
         console.log(`⏱️ Reservation ${reservationId} expired (checkout abandoned)`);
       }
+
+      // Release any seats tied to this expired reservation
+      const seatIdsRaw = session.metadata?.seat_ids;
+      if (seatIdsRaw) {
+        try {
+          await supabase.rpc('release_seats_for_order', {
+            p_reservation_id: reservationId,
+          });
+          console.log(`💺 Seats released for expired reservation ${reservationId}`);
+        } catch (seatErr) {
+          console.error('Failed to release seats on expiry:', seatErr);
+        }
+      }
     }
   }
 
@@ -410,6 +482,25 @@ serve(async (req) => {
           p_tier_id: tierId,
           p_amount: -count, // Negative to decrement
         });
+      }
+    }
+
+    // Release seats if this was a seated order
+    if (order) {
+      try {
+        const { data: orderDetail } = await supabase
+          .from('orders')
+          .select('reservation_id')
+          .eq('id', order.id)
+          .single();
+        if (orderDetail?.reservation_id) {
+          await supabase.rpc('release_seats_for_order', {
+            p_reservation_id: orderDetail.reservation_id,
+          });
+          console.log(`💺 Seats released for refunded order ${order.id}`);
+        }
+      } catch (seatErr) {
+        console.error('Failed to release seats on refund:', seatErr);
       }
     }
 

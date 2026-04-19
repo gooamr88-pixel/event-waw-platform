@@ -20,6 +20,7 @@ export default defineConfig({
         dashboard: resolve(__dirname, 'dashboard.html'),
         terms: resolve(__dirname, 'terms.html'),
         privacy: resolve(__dirname, 'privacy.html'),
+        venueDesigner: resolve(__dirname, 'venue-designer.html'),
       },
     },
   },

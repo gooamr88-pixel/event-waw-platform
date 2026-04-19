@@ -151,6 +151,9 @@
 
         <!-- Tickets Section -->
         <div>
+          <!-- Seating Chart: shown only if event has a venue_map -->
+          <div id="seating-chart-panel"></div>
+
           <div class="ticket-selector" id="ticket-selector">
             <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:6px;">Get Your Tickets Now!</h2>
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Purchase tickets directly and secure your spot. No account required for guests — quick and easy checkout.</p>
@@ -344,7 +347,8 @@
 
   <script type="module">
     import { supabase, getCurrentUser } from './src/lib/supabase.js';
-    import { getEvent, createCheckout, createGuestCheckout } from './src/lib/events.js';
+    import { getEvent, createCheckout, createGuestCheckout, createSeatedCheckout, createGuestSeatedCheckout } from './src/lib/events.js';
+    import { initSeatingUI } from './src/lib/seating-ui.js';
     import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
@@ -374,14 +378,14 @@
     async function loadEvent(eventId) {
       try {
         eventData = await getEvent(eventId);
-        renderEvent(eventData);
+        await renderEvent(eventData);
       } catch (err) {
         console.error('Error loading event:', err);
         renderDemoEvent(eventId);
       }
     }
 
-    function renderEvent(event) {
+    async function renderEvent(event) {
       document.title = `${event.title} — Event Waw`;
       document.getElementById('event-cover').src = event.cover_image || 'images/event-concert.png';
       document.getElementById('event-cover-main').src = event.cover_image || 'images/event-concert.png';
@@ -448,6 +452,38 @@
       }
 
       renderTiers(event.ticket_tiers || []);
+
+      // ── Seating Chart: init if venue map exists ──
+      const params2 = new URLSearchParams(window.location.search);
+      const currentEventId = params2.get('id');
+      if (currentEventId) {
+        try {
+          const hasSeating = await initSeatingUI(currentEventId, document.getElementById('seating-chart-panel'), {
+            onCheckout: async ({ tierId, seatIds, seats }) => {
+              // Check if user is logged in
+              if (authState?.user) {
+                // Authenticated seated checkout
+                const result = await createSeatedCheckout({ tierId, seatIds });
+                if (result.checkout_url) {
+                  startReservationTimer();
+                  window.location.href = result.checkout_url;
+                }
+              } else {
+                // Guest seated checkout — show guest modal with seat context
+                const tierInfo = eventData?.ticket_tiers?.find(t => t.id === tierId);
+                const totalPrice = seats.reduce((s, seat) => s + Number(seat.tier_price), 0);
+                showGuestSeatedModal({ tierId, seatIds, seats, tierInfo, totalPrice });
+              }
+            },
+          });
+          if (hasSeating) {
+            // Hide the GA ticket selector
+            document.getElementById('ticket-selector').style.display = 'none';
+          }
+        } catch (seatingErr) {
+          console.warn('Seating chart init failed, using GA fallback:', seatingErr);
+        }
+      }
 
       // Tier search filter
       document.getElementById('tier-search').addEventListener('input', (e) => {
@@ -955,6 +991,135 @@
           }
         } catch (err) {
           alert(err.message || 'Failed to process. Please try again.');
+          payBtn.disabled = false;
+          payBtn.innerHTML = 'Pay as Guest <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+        }
+      });
+    }
+
+    // ══════════════════════════════════════════
+    // GUEST SEATED CHECKOUT MODAL
+    // ══════════════════════════════════════════
+    function showGuestSeatedModal({ tierId, seatIds, seats, tierInfo, totalPrice }) {
+      document.getElementById('guest-seated-modal')?.remove();
+
+      const seatsSummary = seats.length <= 6
+        ? seats.map(s => `Row ${escapeHTML(s.row_label)} Seat ${escapeHTML(s.seat_number)}`).join(', ')
+        : `${seats.length} seats selected`;
+
+      const modal = document.createElement('div');
+      modal.id = 'guest-seated-modal';
+      modal.innerHTML = `
+        <style>
+          #guest-seated-modal {
+            position:fixed;inset:0;z-index:99999;
+            background:rgba(0,0,0,.7);
+            backdrop-filter:blur(8px);
+            display:flex;align-items:center;justify-content:center;
+            padding:20px;
+            animation:fadeIn .3s ease;
+          }
+          .guest-seated-box {
+            max-width:480px;width:100%;
+            background:var(--bg-card);
+            border:1px solid rgba(212,175,55,.12);
+            border-radius:20px;padding:28px 24px;
+            box-shadow:0 30px 80px rgba(0,0,0,.4);
+            max-height:90vh;overflow-y:auto;
+            animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;
+          }
+        </style>
+        <div class="guest-seated-box">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">💺</div>
+            <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;margin:0;">Guest <span style="color:var(--accent-primary);">Seated Checkout</span></h3>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.82rem;margin:4px 0 16px;">Complete your details to reserve your selected seats.</p>
+
+          <div class="confirm-section" style="margin-top:0;padding:16px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;">
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent-primary);font-weight:700;margin-bottom:12px;">💺 Your Seats</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-light);">
+              <div style="font-weight:600;font-size:0.9rem;">${escapeHTML(tierInfo?.name || 'Ticket')} × ${seats.length}</div>
+              <div style="font-weight:700;color:var(--accent-primary);">$${totalPrice.toLocaleString()}</div>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">${seatsSummary}</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1.5px solid var(--border-color);">
+              <span style="font-size:0.9rem;color:var(--text-secondary);">${seats.length} seat${seats.length > 1 ? 's' : ''} · Total</span>
+              <span style="font-size:1.3rem;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">$${totalPrice.toLocaleString()}</span>
+            </div>
+          </div>
+
+          <div class="confirm-section" style="margin-top:16px;padding:16px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;">
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent-primary);font-weight:700;margin-bottom:12px;">👤 Your Information</div>
+            <div class="confirm-field" style="margin-bottom:12px;">
+              <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">Full Name <span style="color:var(--accent-primary);">*</span></label>
+              <input type="text" id="gs-name" placeholder="John Doe" required
+                style="width:100%;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-size:0.88rem;font-family:var(--font-sans);" />
+            </div>
+            <div class="confirm-field" style="margin-bottom:12px;">
+              <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">Email <span style="color:var(--accent-primary);">*</span></label>
+              <input type="email" id="gs-email" placeholder="you@example.com" required
+                style="width:100%;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-size:0.88rem;font-family:var(--font-sans);" />
+            </div>
+            <div class="confirm-field" style="margin-bottom:12px;">
+              <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">Phone <span style="color:var(--accent-primary);">*</span></label>
+              <input type="tel" id="gs-phone" placeholder="+1 XXX XXX XXXX" required
+                style="width:100%;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-size:0.88rem;font-family:var(--font-sans);" />
+            </div>
+            <div class="confirm-field" style="margin-bottom:0;">
+              <label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">National ID <span style="color:var(--accent-primary);">*</span></label>
+              <input type="text" id="gs-nid" placeholder="Enter your national ID" required maxlength="14"
+                style="width:100%;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-size:0.88rem;font-family:var(--font-sans);" />
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-outline btn-lg" id="gs-cancel" style="flex:1;">Cancel</button>
+            <button class="btn btn-primary btn-lg" id="gs-pay" style="flex:1;">
+              Pay as Guest
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      document.getElementById('gs-cancel').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      document.getElementById('gs-pay').addEventListener('click', async () => {
+        const name = document.getElementById('gs-name').value.trim();
+        const email = document.getElementById('gs-email').value.trim();
+        const phone = document.getElementById('gs-phone').value.trim();
+        const nid = document.getElementById('gs-nid').value.trim();
+
+        if (!name || name.length < 2) { alert('Please enter your full name.'); return; }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email.'); return; }
+        if (!phone || phone.length < 7) { alert('Please enter a valid phone number.'); return; }
+        if (!nid || nid.length < 10) { alert('Please enter a valid National ID.'); return; }
+
+        const payBtn = document.getElementById('gs-pay');
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving…';
+
+        try {
+          const result = await createGuestSeatedCheckout({
+            tierId,
+            seatIds,
+            guestName: name,
+            guestEmail: email,
+            guestPhone: phone,
+            guestNationalId: nid,
+          });
+
+          if (result.checkout_url) {
+            modal.remove();
+            startReservationTimer();
+            window.location.href = result.checkout_url;
+          }
+        } catch (err) {
+          alert(err.message || 'Failed to reserve seats. Please try again.');
           payBtn.disabled = false;
           payBtn.innerHTML = 'Pay as Guest <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
         }

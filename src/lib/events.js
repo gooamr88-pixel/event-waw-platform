@@ -185,3 +185,86 @@ export async function updateEvent(eventId, updates) {
   if (error) throw error;
   return data;
 }
+
+/**
+ * Create a seated checkout (auth user with specific seat selections).
+ * Sends seat_ids[] to the Edge Function which calls reserve_seats().
+ */
+export async function createSeatedCheckout({ tierId, seatIds }) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.access_token) {
+    throw new Error('Your session has expired. Please sign in again.');
+  }
+
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({
+        tier_id: tierId,
+        quantity: seatIds.length,
+        seat_ids: seatIds,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to create seated checkout');
+  }
+
+  return response.json();
+}
+
+/**
+ * Create a seated guest checkout (no auth, with specific seat selections).
+ */
+export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone, guestNationalId }) {
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        tier_id: tierId,
+        quantity: seatIds.length,
+        seat_ids: seatIds,
+        is_guest: true,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone,
+        guest_national_id: guestNationalId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to create guest seated checkout');
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetch venue map for an event (returns null if no map exists).
+ */
+export async function getVenueMap(eventId) {
+  const { data, error } = await supabase
+    .from('venue_maps')
+    .select('id, layout_json, version')
+    .eq('event_id', eventId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('getVenueMap error:', error);
+    return null;
+  }
+  return data;
+}

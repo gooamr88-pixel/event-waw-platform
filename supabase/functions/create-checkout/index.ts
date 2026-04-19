@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Create Checkout Edge Function (v4 — Guest + Auth)
+// EVENT WAW — Create Checkout Edge Function (v5 — Guest + Auth + Seating)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy create-checkout --no-verify-jwt
@@ -28,15 +28,28 @@ serve(async (req) => {
       return errorResponse(400, 'Invalid JSON body');
     }
 
-    const { tier_id, quantity = 1, is_guest = false } = body;
+    const { tier_id, quantity = 1, is_guest = false, seat_ids } = body;
+
+    // Detect assigned-seating mode: seat_ids is an optional array of UUIDs
+    const isSeatedCheckout = Array.isArray(seat_ids) && seat_ids.length > 0;
 
     if (!isValidUUID(tier_id)) {
       return errorResponse(400, 'tier_id must be a valid UUID');
     }
 
-    const qty = Number(quantity);
+    // For seated checkout, quantity is derived from seat_ids length
+    const qty = isSeatedCheckout ? seat_ids.length : Number(quantity);
     if (!isValidQuantity(qty)) {
       return errorResponse(400, 'Quantity must be an integer between 1 and 10');
+    }
+
+    // Validate each seat_id is a proper UUID
+    if (isSeatedCheckout) {
+      for (const sid of seat_ids) {
+        if (!isValidUUID(sid)) {
+          return errorResponse(400, 'Each seat_id must be a valid UUID');
+        }
+      }
     }
 
     const adminClient = createAdminClient();
@@ -67,24 +80,35 @@ serve(async (req) => {
         return errorResponse(429, 'Too many checkout attempts. Please wait a moment.');
       }
 
-      // ── Create guest reservation (no user_id) ──
-      const { data: reservation, error: resError } = await adminClient
-        .rpc('create_guest_reservation', {
-          p_tier_id: tier_id,
-          p_quantity: qty,
-        });
+      // ── Create guest reservation ──
+      // Seated checkout uses reserve_guest_seats(), GA uses create_guest_reservation()
+      let res: any;
 
-      if (resError) {
-        console.error('Guest reservation error:', resError.message);
-        return errorResponse(400, resError.message);
+      if (isSeatedCheckout) {
+        const { data: reservation, error: resError } = await adminClient
+          .rpc('reserve_guest_seats', {
+            p_seat_ids: seat_ids,
+            p_tier_id: tier_id,
+          });
+        if (resError) {
+          console.error('Guest seat reservation error:', resError.message);
+          return errorResponse(400, resError.message);
+        }
+        if (!reservation) return errorResponse(400, 'Failed to reserve seats');
+        res = reservation;
+      } else {
+        const { data: reservation, error: resError } = await adminClient
+          .rpc('create_guest_reservation', {
+            p_tier_id: tier_id,
+            p_quantity: qty,
+          });
+        if (resError) {
+          console.error('Guest reservation error:', resError.message);
+          return errorResponse(400, resError.message);
+        }
+        if (!reservation) return errorResponse(400, 'Failed to create reservation');
+        res = reservation;
       }
-
-      if (!reservation) {
-        return errorResponse(400, 'Failed to create reservation');
-      }
-
-      // JSONB return — single object, not array
-      const res = reservation;
 
       // ── Create Stripe Checkout Session for Guest ──
       const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
@@ -117,6 +141,8 @@ serve(async (req) => {
           guest_email: sanitizedEmail,
           guest_phone: guest_phone.trim(),
           guest_national_id: guest_national_id.trim(),
+          // Seated checkout: pass seat_ids so webhook can mark them as sold
+          ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
         },
         success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&guest=true`,
         cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
@@ -142,24 +168,40 @@ serve(async (req) => {
       return errorResponse(429, 'Too many checkout attempts. Please wait a moment.');
     }
 
-    // ── Create atomic reservation (locks the row, checks capacity) ──
-    const { data: reservation, error: resError } = await adminClient
-      .rpc('create_reservation', {
-        p_user_id: user.id,
-        p_tier_id: tier_id,
-        p_quantity: qty,
-      });
+    // ── Create atomic reservation ──
+    // Seated checkout uses reserve_seats() with SKIP LOCKED
+    // GA checkout uses the existing create_reservation()
+    let res: any;
 
-    if (resError) {
-      console.error('Reservation error:', resError.message);
-      return errorResponse(400, resError.message);
+    if (isSeatedCheckout) {
+      const { data: reservation, error: resError } = await adminClient
+        .rpc('reserve_seats', {
+          p_user_id: user.id,
+          p_seat_ids: seat_ids,
+          p_tier_id: tier_id,
+        });
+      if (resError) {
+        console.error('Seat reservation error:', resError.message);
+        return errorResponse(400, resError.message);
+      }
+      if (!reservation) return errorResponse(400, 'Failed to reserve seats');
+      res = reservation;
+    } else {
+      const { data: reservation, error: resError } = await adminClient
+        .rpc('create_reservation', {
+          p_user_id: user.id,
+          p_tier_id: tier_id,
+          p_quantity: qty,
+        });
+      if (resError) {
+        console.error('Reservation error:', resError.message);
+        return errorResponse(400, resError.message);
+      }
+      if (!reservation || reservation.length === 0) {
+        return errorResponse(400, 'Failed to create reservation');
+      }
+      res = reservation[0];
     }
-
-    if (!reservation || reservation.length === 0) {
-      return errorResponse(400, 'Failed to create reservation');
-    }
-
-    const res = reservation[0];
 
     // ── Check if organizer has Stripe Connect (future-ready) ──
     // When Stripe Connect is active, uncomment this block:
@@ -202,6 +244,8 @@ serve(async (req) => {
         tier_id: tier_id,
         quantity: String(qty),
         is_guest: 'false',
+        // Seated checkout: pass seat_ids so webhook can mark them as sold
+        ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,

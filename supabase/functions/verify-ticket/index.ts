@@ -54,7 +54,7 @@ serve(async (req) => {
       return errorResponse(400, 'Invalid QR code format');
     }
 
-    const { ticket_id, order_id, tier_id, nonce, hash, v, event_id: qr_event_id, user_id: qr_user_id, iat } = parsed;
+    const { ticket_id, order_id, tier_id, nonce, hash, v, event_id: qr_event_id, user_id: qr_user_id, iat, is_guest: qr_is_guest, sec: qr_sec, row: qr_row, seat: qr_seat } = parsed;
     if (!ticket_id || !order_id || !hash) {
       return errorResponse(400, 'Malformed ticket data');
     }
@@ -67,7 +67,13 @@ serve(async (req) => {
     // ── Verify HMAC signature — support both v1 and v2 payload formats ──
     let payload: string;
     if (v === 2) {
-      payload = JSON.stringify({ v: 2, ticket_id, order_id, event_id: qr_event_id, user_id: qr_user_id, tier_id, nonce, iat });
+      // Build the payload object in the same order as the webhook generated it
+      const payloadObj: any = { v: 2, ticket_id, order_id, event_id: qr_event_id, user_id: qr_user_id, tier_id, nonce, is_guest: qr_is_guest, iat };
+      // Seat fields are only present for seated tickets
+      if (qr_sec !== undefined) payloadObj.sec = qr_sec;
+      if (qr_row !== undefined) payloadObj.row = qr_row;
+      if (qr_seat !== undefined) payloadObj.seat = qr_seat;
+      payload = JSON.stringify(payloadObj);
     } else {
       payload = JSON.stringify({ ticket_id, order_id, tier_id, nonce });
     }
@@ -170,14 +176,24 @@ serve(async (req) => {
       return errorResponse(409, 'Ticket was just scanned by another device');
     }
 
+    // ── Build response with seat location if present ──
+    const responseTicket: any = {
+      id: ticket.id,
+      tier_name: ticket.ticket_tiers?.name,
+      event_title: ticket.ticket_tiers?.events?.title,
+      attendee: ticket.profiles?.full_name,
+    };
+
+    // Attach seat location from the QR payload (already HMAC-verified)
+    if (qr_sec || qr_row || qr_seat) {
+      responseTicket.section = qr_sec || null;
+      responseTicket.row = qr_row || null;
+      responseTicket.seat = qr_seat || null;
+    }
+
     return jsonResponse({
       valid: true,
-      ticket: {
-        id: ticket.id,
-        tier_name: ticket.ticket_tiers?.name,
-        event_title: ticket.ticket_tiers?.events?.title,
-        attendee: ticket.profiles?.full_name,
-      },
+      ticket: responseTicket,
     });
 
   } catch (err) {
