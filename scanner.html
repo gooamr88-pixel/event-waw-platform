@@ -302,10 +302,12 @@
           if (result.ticket?.section) histLabel += ` | ${result.ticket.section} R${result.ticket.row} S${result.ticket.seat}`;
           addToHistory('valid', histLabel, decodedText);
         } else if (result.error?.includes('already scanned') || result.error?.includes('duplicate')) {
-          showResult('duplicate', 'Already Scanned', result.error);
+          showResult('duplicate', 'Already Scanned', result.error, result.ticket);
           playSound('warning');
           if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          addToHistory('duplicate', 'Duplicate', decodedText);
+          let dupLabel = 'Duplicate';
+          if (result.ticket?.section) dupLabel += ` | ${result.ticket.section} R${result.ticket.row} S${result.ticket.seat}`;
+          addToHistory('duplicate', dupLabel, decodedText);
         } else {
           showResult('invalid', 'Invalid Ticket', result.error || 'Ticket not recognized');
           playSound('error');

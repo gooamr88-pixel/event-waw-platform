@@ -136,6 +136,14 @@
       .ticket-card-image { height: 160px; }
       .ticket-card-actions { border-left: none; border-top: 1px solid var(--border-light); flex-direction: row; padding: 14px 20px; }
     }
+
+    .seat-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 50px; font-size: 0.7rem;
+      font-weight: 600; letter-spacing: 0.02em;
+      background: rgba(212,175,55,.08); color: #D4AF37;
+      border: 1px solid rgba(212,175,55,.12);
+    }
   </style>
 
   <script type="module">
@@ -197,14 +205,18 @@
           // Cache full ticket data — never pass qr_hash through onclick strings
           ticketCache.set(ticket.id, ticket);
 
+          // Extract seat data from the QR payload
+          const seatInfo = parseSeatFromQR(ticket.qr_hash);
+
           return `
             <div class="ticket-card">
               <div class="ticket-card-image">
                 <img src="${escapeHTML(event?.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event?.title || 'Event')}" />
               </div>
               <div class="ticket-card-body">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
                   <span class="ticket-status ${ticket.status}">${ticket.status === 'valid' ? '✦ Valid' : ticket.status === 'scanned' ? '✓ Scanned' : ticket.status}</span>
+                  ${seatInfo ? `<span class="seat-badge">💺 ${escapeHTML(seatInfo.sec)} · Row ${escapeHTML(seatInfo.row)} · Seat ${escapeHTML(seatInfo.seat)}</span>` : ''}
                 </div>
                 <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:4px;">
                   ${escapeHTML(event?.title || 'Event')}
@@ -323,6 +335,9 @@
           }) 
         : '';
 
+      // Extract seat data
+      const seatInfo = parseSeatFromQR(ticket.qr_hash);
+
       const modal = document.getElementById('qr-modal');
       const content = modal.querySelector('.qr-modal-content');
 
@@ -351,6 +366,26 @@
               <div><span style="color:#71717a;">📍</span> <span style="color:#a1a1aa;">${escapeHTML(event?.venue || '')}</span></div>
             </div>
           </div>
+
+          ${seatInfo ? `
+          <!-- Seat Assignment -->
+          <div style="margin:14px 20px 0;padding:12px 14px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.12);border-radius:10px;">
+            <div style="font-size:0.6rem;color:#D4AF37;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:8px;">💺 Your Assigned Seat</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
+              <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Section</div>
+                <div style="font-size:1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(seatInfo.sec)}</div>
+              </div>
+              <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Row</div>
+                <div style="font-size:1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(seatInfo.row)}</div>
+              </div>
+              <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Seat</div>
+                <div style="font-size:1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(seatInfo.seat)}</div>
+              </div>
+            </div>
+          </div>` : ''}
           
           <!-- Dashed Divider (tear-off effect) -->
           <div style="margin:16px 0;border-top:2px dashed rgba(255,255,255,.08);position:relative;">
@@ -393,6 +428,21 @@
       modal.style.display = 'flex';
     };
 
+    /**
+     * Parse seat location from the QR hash payload.
+     * Returns { sec, row, seat } or null for GA tickets.
+     */
+    function parseSeatFromQR(qrHash) {
+      if (!qrHash) return null;
+      try {
+        const data = JSON.parse(qrHash);
+        if (data.sec && data.row && data.seat) {
+          return { sec: data.sec, row: data.row, seat: data.seat };
+        }
+      } catch (e) {}
+      return null;
+    }
+
     function initQRModal() {
       const modal = document.getElementById('qr-modal');
       document.getElementById('qr-modal-close').addEventListener('click', () => modal.style.display = 'none');
@@ -403,3 +453,4 @@
   </script>
 </body>
 </html>
+

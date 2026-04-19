@@ -236,6 +236,36 @@
               </div>
             </div>
 
+            ${(() => {
+              // Extract seat data from QR payload
+              if (t.qr_hash) {
+                try {
+                  const qr = JSON.parse(t.qr_hash);
+                  if (qr.sec && qr.row && qr.seat) {
+                    return `
+                    <div style="margin:0 20px;padding:12px 14px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.12);border-radius:10px;">
+                      <div style="font-size:0.6rem;color:#D4AF37;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:8px;">💺 Your Assigned Seat</div>
+                      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
+                        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                          <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Section</div>
+                          <div style="font-size:1.1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(qr.sec)}</div>
+                        </div>
+                        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                          <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Row</div>
+                          <div style="font-size:1.1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(qr.row)}</div>
+                        </div>
+                        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                          <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Seat</div>
+                          <div style="font-size:1.1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(qr.seat)}</div>
+                        </div>
+                      </div>
+                    </div>`;
+                  }
+                } catch(e) {}
+              }
+              return '';
+            })()}
+
             <div class="ticket-attendee">
               <div class="ticket-attendee-row">
                 <div>

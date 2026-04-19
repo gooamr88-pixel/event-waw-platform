@@ -74,7 +74,7 @@ export async function verifyTicket(qrPayload) {
   const result = await response.json();
   
   if (!response.ok) {
-    return { valid: false, error: result.error || 'Verification failed' };
+    return { valid: false, error: result.error || 'Verification failed', ticket: result.ticket || null };
   }
 
   return { valid: true, ticket: result.ticket };

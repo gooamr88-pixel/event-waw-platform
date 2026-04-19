@@ -142,12 +142,19 @@ serve(async (req) => {
 
     // ── Check ticket status ──
     if (ticket.status === 'scanned') {
+      const dupTicket: any = {
+        tier_name: ticket.ticket_tiers?.name,
+        attendee: ticket.profiles?.full_name,
+        scanned_at: ticket.scanned_at,
+      };
+      // Include seat location if present
+      if (qr_sec || qr_row || qr_seat) {
+        dupTicket.section = qr_sec || null;
+        dupTicket.row = qr_row || null;
+        dupTicket.seat = qr_seat || null;
+      }
       return errorResponse(409, `Ticket already scanned at ${new Date(ticket.scanned_at).toLocaleString()}`, {
-        ticket: {
-          tier_name: ticket.ticket_tiers?.name,
-          attendee: ticket.profiles?.full_name,
-          scanned_at: ticket.scanned_at,
-        },
+        ticket: dupTicket,
       });
     }
 
