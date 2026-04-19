@@ -481,10 +481,11 @@
               </div>
               <div>${sold} / ${cap} sold</div>
               <div><span class="dash-event-status status-${event.status}">${event.status}</span></div>
-              <div style="display:flex;gap:6px;">
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
                 <button class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;" data-action="toggle-publish" data-event-id="${event.id}" data-status="${event.status}">
                   ${event.status === 'published' ? 'Unpublish' : 'Publish'}
                 </button>
+                <a href="venue-designer.html?event_id=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">🗺️ Map</a>
                 <a href="scanner.html?event=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">Scan</a>
               </div>
             </div>
