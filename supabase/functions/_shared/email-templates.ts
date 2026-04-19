@@ -211,7 +211,94 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
 }
 
 // ═════════════════════════════════
-// 4. Welcome Email (after registration)
+// 4. Guest Ticket Confirmation
+// ═════════════════════════════════
+export function guestTicketEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string }): string {
+  const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink } = data;
+  const content = `
+    <!-- Gold Header -->
+    <tr><td style="background:linear-gradient(135deg,${BRAND.color},${BRAND.colorDark});padding:20px 36px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+        <td><span style="font-size:11px;font-weight:800;letter-spacing:0.2em;color:${BRAND.bg};text-transform:uppercase;">Guest Booking Confirmed ✓</span></td>
+        <td align="right"><span style="font-size:11px;font-weight:600;color:rgba(9,9,11,.5);">${orderId ? orderId.substring(0, 8) : ''}</span></td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td style="padding:36px;">
+      <p style="margin:0 0 4px;font-size:14px;color:${BRAND.textMuted};">Hi ${userName || 'there'},</p>
+      <p style="margin:0 0 28px;font-size:14px;color:${BRAND.text};line-height:1.6;">
+        Your tickets are confirmed! Since you purchased as a guest, <strong style="color:${BRAND.color};">save this email</strong> — 
+        the link below is your only way to access your tickets and QR code.
+      </p>
+
+      <!-- Event Details Card -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+        style="background:${BRAND.bg};border:1px solid ${BRAND.borderLight};border-radius:14px;">
+        <tr><td style="padding:24px;">
+          <h2 style="margin:0 0 20px;font-size:18px;font-weight:700;color:${BRAND.text};line-height:1.3;">
+            ${eventTitle}
+          </h2>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};width:90px;vertical-align:top;">📅 Date</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.text};font-weight:500;">${eventDate}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};vertical-align:top;">📍 Venue</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.text};font-weight:500;">${eventVenue}</td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};vertical-align:top;">🎫 Ticket</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.color};font-weight:600;">${tierName} × ${quantity}</td>
+            </tr>
+            <tr>
+              <td colspan="2" style="padding-top:16px;border-top:1px solid ${BRAND.borderLight};"></td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;font-size:14px;color:${BRAND.textDim};font-weight:600;">Total</td>
+              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">$${Number(totalAmount).toLocaleString()}</td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+
+      <!-- CTA Button -->
+      <table role="presentation" align="center" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+        <tr><td style="border-radius:12px;background:linear-gradient(135deg,${BRAND.color},${BRAND.colorDark});">
+          <a href="${ticketLink || '#'}" target="_blank"
+            style="display:inline-block;padding:16px 36px;font-size:14px;font-weight:700;color:${BRAND.bg};text-decoration:none;letter-spacing:-0.2px;">
+            View My Tickets &amp; QR Code →
+          </a>
+        </td></tr>
+      </table>
+
+      <!-- Important Note for Guests -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+        <tr><td style="padding:16px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,.1);border-radius:12px;">
+          <p style="margin:0;font-size:12px;color:${BRAND.textMuted};line-height:1.6;">
+            ⚠️ <strong style="color:#ef4444;">Important:</strong> This is a guest purchase — you don't have an account. 
+            The link above is your <strong>secure, personal access link</strong> to view and present your tickets. 
+            Do not share it. This link expires in 90 days. Bookmark it or save this email.
+          </p>
+        </td></tr>
+      </table>
+
+      <!-- Security Badge -->
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
+        <tr><td style="padding:16px;background:rgba(212,175,55,0.04);border:1px solid ${BRAND.border};border-radius:12px;">
+          <p style="margin:0;font-size:12px;color:${BRAND.textMuted};line-height:1.6;">
+            🔒 Your tickets are protected by HMAC-SHA256 signed QR codes and cannot be forged or transferred. 
+            You must present a valid ID matching your booking at the venue.
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  `;
+  return emailWrapper(content);
+}
+
+// ═════════════════════════════════
+// 5. Welcome Email (after registration)
 // ═════════════════════════════════
 export function welcomeEmail(name: string, role: string): string {
   const isOrganizer = role === 'organizer';

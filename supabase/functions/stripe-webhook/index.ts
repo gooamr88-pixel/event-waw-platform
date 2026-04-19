@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Webhook Edge Function (Hardened v3)
+// EVENT WAW — Stripe Webhook Edge Function (v4 — Guest + Auth)
 // Handles: checkout.session.completed, charge.refunded,
 //          checkout.session.expired, charge.dispute.created
 // ═══════════════════════════════════
@@ -10,7 +10,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@17?target=deno';
 import { encode as base64url } from 'https://deno.land/std@0.177.0/encoding/base64url.ts';
-import { ticketConfirmationEmail } from '../_shared/email-templates.ts';
+import { ticketConfirmationEmail, guestTicketEmail } from '../_shared/email-templates.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 const webhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')!;
@@ -66,11 +66,17 @@ serve(async (req) => {
       event_id,
       tier_id,
       quantity,
+      is_guest,
+      guest_name,
+      guest_email,
+      guest_phone,
+      guest_national_id,
     } = session.metadata!;
 
     const qty = parseInt(quantity || '1');
+    const isGuest = is_guest === 'true' || user_id === '__GUEST__';
 
-    console.log(`Payment completed: reservation=${reservation_id}, user=${user_id}`);
+    console.log(`Payment completed: reservation=${reservation_id}, user=${user_id}, guest=${isGuest}`);
 
     // ── Idempotency Guard ──
     const { data: existingOrder } = await supabase
@@ -110,19 +116,35 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Reservation expired, refund issued' }), { status: 200 });
     }
 
+    // ── Build order row ──
+    const orderData: any = {
+      event_id,
+      reservation_id,
+      stripe_session_id: session.id,
+      stripe_payment_intent: session.payment_intent,
+      amount: (session.amount_total || 0) / 100,
+      currency: session.currency || 'usd',
+      status: 'paid',
+    };
+
+    if (isGuest) {
+      // GUEST order: no user_id, store guest info directly
+      orderData.user_id = null;
+      orderData.is_guest = true;
+      orderData.guest_email = guest_email || session.customer_email || '';
+      orderData.guest_name = guest_name || '';
+      orderData.guest_phone = guest_phone || '';
+      orderData.guest_national_id = guest_national_id || '';
+    } else {
+      // AUTHENTICATED order
+      orderData.user_id = user_id;
+      orderData.is_guest = false;
+    }
+
     // ── Create Order ──
     const { data: order, error: orderError } = await supabase
       .from('orders')
-      .insert({
-        user_id,
-        event_id,
-        reservation_id,
-        stripe_session_id: session.id,
-        stripe_payment_intent: session.payment_intent,
-        amount: (session.amount_total || 0) / 100,
-        currency: session.currency || 'usd',
-        status: 'paid',
-      })
+      .insert(orderData)
       .select()
       .single();
 
@@ -143,12 +165,22 @@ serve(async (req) => {
     const eventVenue = tierInfo?.events?.venue || '';
     const eventDate = tierInfo?.events?.date || '';
 
-    // ── Fetch user email ──
-    const { data: { user: userRecord } } = await supabase.auth.admin.getUserById(user_id);
-    const userEmail = userRecord?.email || session.customer_email || '';
-    const userName = userRecord?.user_metadata?.full_name || '';
+    // ── Resolve user info (auth user OR guest metadata) ──
+    let userEmail = '';
+    let userName = '';
+
+    if (isGuest) {
+      userEmail = guest_email || session.customer_email || '';
+      userName = guest_name || '';
+    } else {
+      const { data: { user: userRecord } } = await supabase.auth.admin.getUserById(user_id);
+      userEmail = userRecord?.email || session.customer_email || '';
+      userName = userRecord?.user_metadata?.full_name || '';
+    }
 
     // ── Generate Tickets with HMAC-SHA256 Signed QR ──
+    // IMPORTANT: QR generation is identical for both guest and auth users.
+    // The QR payload contains all data needed for verification.
     const tickets = [];
     for (let i = 0; i < qty; i++) {
       const ticketId = crypto.randomUUID();
@@ -159,9 +191,10 @@ serve(async (req) => {
         ticket_id: ticketId,
         order_id: order.id,
         event_id,
-        user_id,
+        user_id: isGuest ? null : user_id,  // null for guests
         tier_id,
         nonce,
+        is_guest: isGuest,
         iat: Math.floor(Date.now() / 1000),
       });
 
@@ -185,7 +218,7 @@ serve(async (req) => {
         id: ticketId,
         order_id: order.id,
         ticket_tier_id: tier_id,
-        user_id,
+        user_id: isGuest ? null : user_id,  // NULL for guest tickets
         qr_hash: qrData,
         status: 'valid',
       });
@@ -223,6 +256,26 @@ serve(async (req) => {
       p_amount: qty,
     });
 
+    // ── Guest: Generate secure retrieval token ──
+    let guestTicketUrl = '';
+    if (isGuest && userEmail) {
+      try {
+        const rawToken = crypto.randomUUID() + '-' + crypto.randomUUID();
+        await supabase.rpc('create_guest_token', {
+          p_order_id: order.id,
+          p_email: userEmail,
+          p_raw_token: rawToken,
+        });
+
+        const originUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
+        guestTicketUrl = `${originUrl}/my-tickets.html?guest_token=${rawToken}`;
+        console.log(`🔗 Guest ticket URL generated for ${userEmail}`);
+      } catch (tokenErr) {
+        console.error('Failed to create guest token:', tokenErr);
+        // Non-critical — continue
+      }
+    }
+
     // ── Send Confirmation Email ──
     if (BREVO_API_KEY && userEmail) {
       try {
@@ -232,6 +285,30 @@ serve(async (req) => {
               year: 'numeric', hour: 'numeric', minute: '2-digit',
             })
           : 'TBD';
+
+        const emailHtml = isGuest
+          ? guestTicketEmail({
+              userName,
+              eventTitle,
+              tierName,
+              quantity: qty,
+              totalAmount: (session.amount_total || 0) / 100,
+              eventVenue,
+              eventDate: formattedDate,
+              orderId: order.id,
+              ticketLink: guestTicketUrl,
+            })
+          : ticketConfirmationEmail({
+              userName,
+              eventTitle,
+              tierName,
+              quantity: qty,
+              totalAmount: (session.amount_total || 0) / 100,
+              eventVenue,
+              eventDate: formattedDate,
+              orderId: order.id,
+              ticketLink: `https://eventwaw.com/my-tickets.html`,
+            });
 
         await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
@@ -243,28 +320,20 @@ serve(async (req) => {
           body: JSON.stringify({
             sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
             to: [{ email: userEmail }],
-            subject: `🎫 Your tickets for ${eventTitle} are confirmed!`,
-            htmlContent: ticketConfirmationEmail({
-              userName,
-              eventTitle,
-              tierName,
-              quantity: qty,
-              totalAmount: (session.amount_total || 0) / 100,
-              eventVenue,
-              eventDate: formattedDate,
-              orderId: order.id,
-              ticketLink: `https://eventwaw.com/my-tickets.html`,
-            }),
+            subject: isGuest
+              ? `🎫 Your guest tickets for ${eventTitle} are confirmed!`
+              : `🎫 Your tickets for ${eventTitle} are confirmed!`,
+            htmlContent: emailHtml,
           }),
         });
-        console.log(`✉️ Confirmation email sent to ${userEmail}`);
+        console.log(`✉️ Confirmation email sent to ${userEmail} (guest=${isGuest})`);
       } catch (emailErr) {
         console.error('Failed to send confirmation email:', emailErr);
         // Don't fail the webhook — email is best-effort
       }
     }
 
-    console.log(`✅ Order ${order.id} created with ${qty} tickets`);
+    console.log(`✅ Order ${order.id} created with ${qty} tickets (guest=${isGuest})`);
   }
 
   // ════════════════════════════════════════════════

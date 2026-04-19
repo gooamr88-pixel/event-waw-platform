@@ -100,9 +100,48 @@ export async function createCheckout({ tierId, quantity }) {
 }
 
 /**
+ * Create a guest checkout session (no auth required).
+ * Sends guest info + tier selection to the Edge Function.
+ * Returns { checkout_url, reservation_id }.
+ */
+export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, guestNationalId }) {
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // No Authorization header — guest checkout
+      },
+      body: JSON.stringify({
+        tier_id: tierId,
+        quantity,
+        is_guest: true,
+        guest_name: guestName,
+        guest_email: guestEmail,
+        guest_phone: guestPhone,
+        guest_national_id: guestNationalId,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Failed to create guest checkout');
+  }
+
+  return response.json();
+}
+
+/**
  * Get events created by the current organizer.
+ * SECURITY: Explicitly filters by organizer_id (belt-and-suspenders with RLS).
  */
 export async function getOrganizerEvents() {
+  // Get current user for explicit filtering
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Not authenticated');
+
   const { data, error } = await supabase
     .from('events')
     .select(`
@@ -111,6 +150,7 @@ export async function getOrganizerEvents() {
         id, name, price, capacity, sold_count
       )
     `)
+    .eq('organizer_id', user.id)  // Explicit filter + RLS
     .order('created_at', { ascending: false });
 
   if (error) throw error;

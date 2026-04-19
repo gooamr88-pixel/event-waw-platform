@@ -140,7 +140,7 @@
 
   <script type="module">
     import { supabase, getCurrentUser } from './src/lib/supabase.js';
-    import { getMyTickets } from './src/lib/tickets.js';
+    import { getMyTickets, getGuestTickets } from './src/lib/tickets.js';
     import { protectPage, performSignOut } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
@@ -151,7 +151,20 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
-      
+
+      // Check if this is a guest ticket retrieval via token
+      const params = new URLSearchParams(window.location.search);
+      const guestToken = params.get('guest_token');
+
+      if (guestToken) {
+        // ── GUEST TICKET VIEW ──
+        // No auth required — token grants access
+        await loadGuestTickets(guestToken);
+        initQRModal();
+        return;
+      }
+
+      // ── AUTHENTICATED TICKET VIEW ──
       const auth = await protectPage();
       if (!auth) return; // Redirecting...
 
@@ -211,6 +224,89 @@
         console.error('Error loading tickets:', err);
         loading.style.display = 'none';
         empty.style.display = 'block';
+      }
+    }
+
+    // ── Guest Ticket Loading ──
+    async function loadGuestTickets(token) {
+      const loading = document.getElementById('tickets-loading');
+      const list = document.getElementById('tickets-list');
+      const empty = document.getElementById('tickets-empty');
+
+      try {
+        const data = await getGuestTickets(token);
+        loading.style.display = 'none';
+
+        if (!data || !data.tickets || data.tickets.length === 0) {
+          empty.style.display = 'block';
+          return;
+        }
+
+        // Show guest banner
+        const banner = document.createElement('div');
+        banner.style.cssText = 'padding:16px 20px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:14px;margin-bottom:20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;';
+        banner.innerHTML = `
+          <div style="width:40px;height:40px;border-radius:12px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;">🎫</div>
+          <div style="flex:1;min-width:200px;">
+            <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Guest Tickets for ${escapeHTML(data.order.guest_name || 'Guest')}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);">Order #${data.order.id.substring(0, 8)} · $${Number(data.order.amount).toLocaleString()}</div>
+          </div>
+          <a href="register.html" class="btn btn-outline btn-sm" style="flex-shrink:0;">Create Account →</a>
+        `;
+        list.parentElement.insertBefore(banner, list);
+
+        list.innerHTML = data.tickets.map(ticket => {
+          const event = ticket.event;
+          const eventDate = event?.date ? new Date(event.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '';
+
+          // Cache ticket for QR display
+          ticketCache.set(ticket.id, {
+            ...ticket,
+            ticket_tiers: {
+              name: ticket.tier_name,
+              price: ticket.tier_price,
+              events: event,
+            },
+          });
+
+          return `
+            <div class="ticket-card">
+              <div class="ticket-card-image">
+                <img src="${escapeHTML(event?.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event?.title || 'Event')}" />
+              </div>
+              <div class="ticket-card-body">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                  <span class="ticket-status ${ticket.status}">${ticket.status === 'valid' ? '✦ Valid' : ticket.status === 'scanned' ? '✓ Scanned' : ticket.status}</span>
+                  <span style="font-size:0.7rem;padding:3px 8px;border-radius:50px;background:rgba(99,91,255,.1);color:#635bff;font-weight:600;">Guest</span>
+                </div>
+                <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:4px;">
+                  ${escapeHTML(event?.title || 'Event')}
+                </h3>
+                <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:4px;">${escapeHTML(ticket.tier_name || 'General')} · $${Number(ticket.tier_price || 0).toLocaleString()}</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);">${eventDate} · ${escapeHTML(event?.venue || '')}</p>
+              </div>
+              <div class="ticket-card-actions">
+                <button class="btn btn-primary btn-sm" data-ticket-id="${ticket.id}" onclick="showQR(this.dataset.ticketId)">
+                  Show QR
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error('Error loading guest tickets:', err);
+        loading.style.display = 'none';
+        list.innerHTML = `
+          <div style="text-align:center;padding:60px 0;">
+            <div style="font-size:2.5rem;margin-bottom:16px;">⚠️</div>
+            <h3 style="font-family:var(--font-serif);font-size:1.2rem;margin-bottom:8px;">Access Link Invalid</h3>
+            <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto;">
+              This ticket access link may be expired, invalid, or has reached its usage limit.
+              Check your email for the correct link, or contact support.
+            </p>
+            <a href="events.html" class="btn btn-primary">Browse Events</a>
+          </div>
+        `;
       }
     }
 

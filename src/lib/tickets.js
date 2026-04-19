@@ -142,3 +142,29 @@ export async function getOrderBySession(sessionId) {
 
   return null;
 }
+
+/**
+ * Get tickets for a guest purchase via secure token.
+ * The token was sent via email after guest checkout.
+ * This calls an Edge Function that validates the token and returns ticket data.
+ */
+export async function getGuestTickets(guestToken) {
+  const response = await fetch(
+    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-guest-ticket`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        // No Authorization header — guest access
+      },
+      body: JSON.stringify({ guest_token: guestToken }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || 'Invalid or expired access link');
+  }
+
+  return response.json();
+}
