@@ -69,15 +69,59 @@
         <!-- Left: Event Details (Eveenty-style) -->
         <div class="event-detail-main">
 
-          <!-- Cover Image -->
-          <div class="event-detail-section">
+          <!-- Cover + Info side by side -->
+          <div class="ed-hero-row">
+            <!-- Cover Image -->
             <div class="ed-cover-wrap">
               <img id="event-cover-main" src="images/event-concert.png" alt="Event Image" />
             </div>
-          </div>
 
-          <!-- Title (mobile) -->
-          <h2 id="event-title-main" class="ed-title-mobile" style="display:none;font-family:var(--font-serif);font-size:1.5rem;font-weight:700;margin-bottom:16px;"></h2>
+            <!-- Info Cards -->
+            <div class="ed-info-side">
+              <div class="ed-info-card">
+                <div class="ed-info-icon">📅</div>
+                <div>
+                  <div class="ed-info-label">Event Date</div>
+                  <div class="ed-info-value" id="ed-date">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card" id="ed-doors-card" style="display:none;">
+                <div class="ed-info-icon">🚪</div>
+                <div>
+                  <div class="ed-info-label">Doors Open At</div>
+                  <div class="ed-info-value" id="ed-doors">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">🕐</div>
+                <div>
+                  <div class="ed-info-label">Event Time</div>
+                  <div class="ed-info-value" id="ed-time">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">🏛️</div>
+                <div>
+                  <div class="ed-info-label">Venue</div>
+                  <div class="ed-info-value" id="ed-venue-name">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">📍</div>
+                <div>
+                  <div class="ed-info-label">Location</div>
+                  <div class="ed-info-value" id="ed-location">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">👤</div>
+                <div>
+                  <div class="ed-info-label">Organizer</div>
+                  <div class="ed-info-value" id="ed-organizer">Event Waw</div>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <!-- Description with See More -->
           <div class="event-detail-section">
@@ -85,52 +129,6 @@
               <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
             </div>
             <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
-          </div>
-
-          <!-- Info Cards Grid -->
-          <div class="ed-info-grid">
-            <div class="ed-info-card">
-              <div class="ed-info-icon">📅</div>
-              <div>
-                <div class="ed-info-label">Event Date</div>
-                <div class="ed-info-value" id="ed-date">—</div>
-              </div>
-            </div>
-            <div class="ed-info-card" id="ed-doors-card" style="display:none;">
-              <div class="ed-info-icon">🚪</div>
-              <div>
-                <div class="ed-info-label">Doors Open At</div>
-                <div class="ed-info-value" id="ed-doors">—</div>
-              </div>
-            </div>
-            <div class="ed-info-card">
-              <div class="ed-info-icon">🕐</div>
-              <div>
-                <div class="ed-info-label">Event Time</div>
-                <div class="ed-info-value" id="ed-time">—</div>
-              </div>
-            </div>
-            <div class="ed-info-card">
-              <div class="ed-info-icon">🏛️</div>
-              <div>
-                <div class="ed-info-label">Venue</div>
-                <div class="ed-info-value" id="ed-venue-name">—</div>
-              </div>
-            </div>
-            <div class="ed-info-card">
-              <div class="ed-info-icon">📍</div>
-              <div>
-                <div class="ed-info-label">Location</div>
-                <div class="ed-info-value" id="ed-location">—</div>
-              </div>
-            </div>
-            <div class="ed-info-card">
-              <div class="ed-info-icon">👤</div>
-              <div>
-                <div class="ed-info-label">Organizer</div>
-                <div class="ed-info-value" id="ed-organizer">Event Waw</div>
-              </div>
-            </div>
           </div>
 
           <!-- Terms & Conditions -->
@@ -220,15 +218,22 @@
       text-transform: uppercase; letter-spacing: 0.06em;
     }
     .event-detail-grid {
-      display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 720px;
+      display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 900px;
     }
     .event-detail-section { margin-bottom: 24px; }
 
-    /* Cover image in left column */
-    .ed-cover-wrap { border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
-    .ed-cover-wrap img { width: 100%; height: 320px; object-fit: cover; display: block; transition: transform .4s; }
+    /* Hero row — image + info side by side */
+    .ed-hero-row {
+      display: flex; gap: 28px; margin-bottom: 28px;
+    }
+
+    /* Cover image */
+    .ed-cover-wrap { flex: 1; min-width: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
+    .ed-cover-wrap img { width: 100%; height: 100%; min-height: 300px; object-fit: cover; display: block; transition: transform .4s; }
     .ed-cover-wrap:hover img { transform: scale(1.02); }
 
+    /* Info side */
+    .ed-info-side { flex: 0 0 280px; display: flex; flex-direction: column; }
     /* Description expand */
     .ed-desc-wrap { max-height: 120px; overflow: hidden; position: relative; transition: max-height .4s ease; }
     .ed-desc-wrap.expanded { max-height: 2000px; }
@@ -243,23 +248,21 @@
     }
     .ed-see-more:hover { opacity: .7; }
 
-    /* Info Cards Grid */
-    .ed-info-grid { display: grid; grid-template-columns: 1fr; gap: 0; margin-bottom: 24px; }
+    /* Info Cards */
     .ed-info-card {
-      display: flex; align-items: center; gap: 16px;
-      padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0;
       border-bottom: 1px solid var(--border-color);
       transition: background .2s;
     }
     .ed-info-card:first-child { border-top: 1px solid var(--border-color); }
-    .ed-info-card:hover { background: rgba(212,175,55,.02); }
     .ed-info-icon {
-      width: 44px; height: 44px; border-radius: 12px;
+      width: 40px; height: 40px; border-radius: 10px;
       background: rgba(212,175,55,.06); display: flex;
-      align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
+      align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
     }
-    .ed-info-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin-bottom: 2px; }
-    .ed-info-value { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); }
+    .ed-info-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin-bottom: 1px; }
+    .ed-info-value { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
 
     /* Terms accordion */
     .ed-terms-toggle {
@@ -322,6 +325,9 @@
 
     @media (max-width: 900px) {
       .event-detail-hero { height: 300px; }
+      .ed-hero-row { flex-direction: column; }
+      .ed-info-side { flex: none; }
+      .ed-cover-wrap img { min-height: 220px; }
     }
     @media (max-width: 768px) {
       .event-detail-hero { height: 250px; padding-bottom: 32px; }
