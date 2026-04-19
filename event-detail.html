@@ -43,9 +43,9 @@
       <img id="event-cover" src="images/event-concert.png" alt="" />
       <div class="event-detail-hero-overlay"></div>
       <div class="container" style="position:relative;z-index:2;">
-        <a href="events.html" class="btn btn-outline btn-sm" style="margin-bottom:24px;width:fit-content;">
+        <a href="index.html" class="btn btn-outline btn-sm" style="margin-bottom:24px;width:fit-content;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-          Back to Events
+          Back to Home
         </a>
         <div class="event-detail-badge" id="event-category">Music</div>
         <h1 id="event-title" style="font-family:var(--font-serif);font-size:clamp(2rem,5vw,3rem);font-weight:700;line-height:1.15;margin:12px 0 16px;max-width:700px;">Loading…</h1>
@@ -151,8 +151,8 @@
           <span id="organizer-avatar" style="display:none;"></span>
         </div>
 
-        <!-- Right: Ticket Selection -->
-        <div class="event-detail-sidebar">
+        <!-- Tickets Section -->
+        <div>
           <div class="ticket-selector" id="ticket-selector">
             <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:6px;">Get Your Tickets Now!</h2>
             <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Purchase tickets directly and secure your spot. No account required for guests — quick and easy checkout.</p>
@@ -220,7 +220,7 @@
       text-transform: uppercase; letter-spacing: 0.06em;
     }
     .event-detail-grid {
-      display: grid; grid-template-columns: 1fr 380px; gap: 48px; align-items: flex-start;
+      display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 720px;
     }
     .event-detail-section { margin-bottom: 24px; }
 
@@ -273,6 +273,13 @@
     .ed-terms-toggle.open svg { transform: rotate(180deg); }
     .ed-terms-content { padding: 16px 20px; border: 1px solid var(--border-color); border-top: 0; border-radius: 0 0 12px 12px; }
 
+    /* Ticket selector — full width section */
+    .ticket-selector {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--card-radius); padding: 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    }
+
     /* Tier Cards — Eveenty style */
     .tier-card {
       border: 1px solid var(--border-color); border-radius: 14px;
@@ -314,8 +321,6 @@
     }
 
     @media (max-width: 900px) {
-      .event-detail-grid { grid-template-columns: 1fr; }
-      .ticket-selector { position: static; }
       .event-detail-hero { height: 300px; }
     }
     @media (max-width: 768px) {
