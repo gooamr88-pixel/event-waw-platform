@@ -154,7 +154,16 @@
         <!-- Right: Ticket Selection -->
         <div class="event-detail-sidebar">
           <div class="ticket-selector" id="ticket-selector">
-            <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:20px;">Select Tickets</h2>
+            <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:6px;">Get Your Tickets Now!</h2>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Purchase tickets directly and secure your spot. No account required for guests — quick and easy checkout.</p>
+
+            <div class="ed-instant-badge">⚡ INSTANT TICKETS AVAILABLE</div>
+
+            <!-- Search -->
+            <div style="position:relative;margin-bottom:20px;">
+              <input type="text" class="fi" id="tier-search" placeholder="Find your ticket…" style="padding-left:38px;" />
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
             
             <div id="tiers-list">
               <!-- Tiers loaded dynamically -->
@@ -264,24 +273,30 @@
     .ed-terms-toggle.open svg { transform: rotate(180deg); }
     .ed-terms-content { padding: 16px 20px; border: 1px solid var(--border-color); border-top: 0; border-radius: 0 0 12px 12px; }
 
-    /* Ticket selector */
-    .ticket-selector {
-      position: sticky; top: 100px;
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: var(--card-radius); padding: 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    /* Tier Cards — Eveenty style */
+    .tier-card {
+      border: 1px solid var(--border-color); border-radius: 14px;
+      margin-bottom: 16px; overflow: hidden; transition: var(--transition);
+      background: rgba(255,255,255,.01);
     }
-    .tier-option {
-      padding: 16px; border: 1px solid var(--border-color); border-radius: 12px;
-      margin-bottom: 12px; cursor: pointer; transition: var(--transition);
+    .tier-card:hover { border-color: rgba(212,175,55,.2); box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+    .tier-card.tier-sold-out { opacity: 0.55; pointer-events: none; }
+    .tier-card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 0; }
+    .tier-card-name { font-family: var(--font-serif); font-size: 1rem; font-weight: 700; margin: 0; }
+    .tier-sold-badge {
+      padding: 4px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 700;
+      background: rgba(239,68,68,.1); color: #ef4444; text-transform: uppercase; letter-spacing: .04em;
     }
-    .tier-option:hover { border-color: rgba(212,175,55,.3); background: rgba(212,175,55,.03); }
-    .tier-option.selected { border-color: var(--accent-primary); background: rgba(212,175,55,.06); }
-    .tier-option.sold-out { opacity: 0.5; cursor: not-allowed; }
-    .tier-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-    .tier-name { font-weight: 600; font-size: 0.95rem; }
-    .tier-price { font-weight: 700; color: var(--accent-primary); }
-    .tier-info { font-size: 0.8rem; color: var(--text-muted); }
+    .tier-card-price {
+      padding: 4px 18px 12px; font-size: 1.2rem; font-weight: 800;
+      color: var(--accent-primary);
+    }
+    .tier-card-desc { padding: 0 18px 14px; }
+    .tier-card-desc-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; }
+    .tier-card-controls { padding: 0 18px 14px; }
+    .tier-card-qty-wrap { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .tier-card-actions { display: flex; gap: 8px; }
+    .tier-avail-text { padding: 0 18px 14px; font-size: 0.72rem; color: var(--text-muted); }
     .tier-qty { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
     .tier-qty button {
       width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color);
@@ -421,16 +436,15 @@
         });
       }
 
-      // Add instant badge to ticket selector
-      const selectorH2 = document.querySelector('.ticket-selector h2');
-      if (selectorH2) {
-        selectorH2.insertAdjacentHTML('afterend', `
-          <div class="ed-instant-badge">⚡ Instant purchase — no account needed</div>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Purchase tickets directly and secure your spot. No account required for guests.</p>
-        `);
-      }
-
       renderTiers(event.ticket_tiers || []);
+
+      // Tier search filter
+      document.getElementById('tier-search').addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('.tier-card').forEach(card => {
+          card.style.display = card.dataset.name.toLowerCase().includes(q) ? 'block' : 'none';
+        });
+      });
     }
 
     function renderTiers(tiers) {
@@ -441,21 +455,40 @@
         const avail = tier.capacity - tier.sold_count;
         const soldOut = avail <= 0;
         quantities[tier.id] = 0;
+        const desc = tier.description || '';
+        const descLines = desc.split('\n').filter(l => l.trim());
+        const shortDesc = descLines.slice(0, 3).join('\n');
+        const hasMore = descLines.length > 3;
         
         return `
-          <div class="tier-option ${soldOut ? 'sold-out' : ''}" id="tier-${tier.id}" data-tier-id="${tier.id}">
-            <div class="tier-header">
-              <span class="tier-name">${escapeHTML(tier.name)}</span>
-              <span class="tier-price">$${Number(tier.price).toLocaleString()}</span>
+          <div class="tier-card ${soldOut ? 'tier-sold-out' : ''}" id="tier-${tier.id}" data-tier-id="${tier.id}" data-name="${escapeHTML(tier.name)}">
+            <div class="tier-card-header">
+              <h3 class="tier-card-name">${escapeHTML(tier.name)}</h3>
+              ${soldOut ? '<span class="tier-sold-badge">Sold</span>' : ''}
             </div>
-            <div class="tier-info">${escapeHTML(tier.description || '')} · ${soldOut ? 'Sold Out' : `${avail} available`}</div>
-            ${!soldOut ? `
-              <div class="tier-qty">
-                <button onclick="changeQty('${tier.id}', -1)">−</button>
-                <span id="qty-${tier.id}">0</span>
-                <button onclick="changeQty('${tier.id}', 1)">+</button>
+            <div class="tier-card-price">US$${Number(tier.price).toLocaleString()}</div>
+            ${desc ? `
+              <div class="tier-card-desc" id="desc-${tier.id}">
+                <div class="tier-card-desc-text">${escapeHTML(shortDesc).replace(/\n/g, '<br>')}</div>
+                ${hasMore ? `<button class="ed-see-more" onclick="toggleTierDesc('${tier.id}', this)" data-full="${escapeHTML(desc).replace(/"/g, '&quot;')}">See More</button>` : ''}
               </div>
             ` : ''}
+            ${!soldOut ? `
+              <div class="tier-card-controls">
+                <div class="tier-card-qty-wrap">
+                  <span style="font-size:0.82rem;color:var(--text-muted);font-weight:500;">Quantity:</span>
+                  <div class="tier-qty">
+                    <button onclick="changeQty('${tier.id}', -1)">−</button>
+                    <span id="qty-${tier.id}">0</span>
+                    <button onclick="changeQty('${tier.id}', 1)">+</button>
+                  </div>
+                </div>
+                <div class="tier-card-actions">
+                  <button class="btn btn-primary btn-sm btn-full" onclick="buyNow('${tier.id}')">Buy now</button>
+                </div>
+              </div>
+              <div class="tier-avail-text">${avail} remaining</div>
+            ` : '<div class="tier-avail-text" style="color:#ef4444;">This tier is sold out</div>'}
           </div>
         `;
       }).join('');
@@ -472,10 +505,34 @@
       
       document.getElementById(`qty-${tierId}`).textContent = newQty;
       
-      // Update selected state
-      document.getElementById(`tier-${tierId}`).classList.toggle('selected', newQty > 0);
-      
       updateTotal();
+    };
+
+    // Buy Now — sets qty to 1 (if 0) and triggers checkout
+    window.buyNow = function(tierId) {
+      if ((quantities[tierId] || 0) < 1) {
+        // Reset all other tiers
+        for (const k of Object.keys(quantities)) quantities[k] = 0;
+        quantities[tierId] = 1;
+        document.querySelectorAll('[id^="qty-"]').forEach(el => el.textContent = '0');
+        document.getElementById(`qty-${tierId}`).textContent = '1';
+        updateTotal();
+      }
+      // Trigger the main checkout button
+      document.getElementById('checkout-btn').click();
+    };
+
+    // Toggle tier description expand/collapse
+    window.toggleTierDesc = function(tierId, btn) {
+      const descText = btn.closest('.tier-card-desc').querySelector('.tier-card-desc-text');
+      if (btn.textContent === 'See More') {
+        descText.innerHTML = escapeHTML(btn.dataset.full).replace(/\n/g, '<br>');
+        btn.textContent = 'See Less';
+      } else {
+        const lines = btn.dataset.full.split('\n').filter(l => l.trim());
+        descText.innerHTML = escapeHTML(lines.slice(0, 3).join('\n')).replace(/\n/g, '<br>');
+        btn.textContent = 'See More';
+      }
     };
 
     function updateTotal() {
