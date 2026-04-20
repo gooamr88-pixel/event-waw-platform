@@ -152,7 +152,7 @@
     import { protectPage, performSignOut } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
-    import QRCode from 'qrcode';
+    import QRCode from 'https://esm.sh/qrcode@1';
 
     // Store ticket data in memory — avoids passing JSON through onclick attrs
     const ticketCache = new Map();

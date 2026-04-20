@@ -60,7 +60,7 @@ export async function verifyTicket(qrPayload) {
   }
 
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-ticket`,
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/verify-ticket',
     {
       method: 'POST',
       headers: {
@@ -177,7 +177,7 @@ export async function getOrderBySession(sessionId) {
  */
 export async function getGuestTickets(guestToken) {
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-guest-ticket`,
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/verify-guest-ticket',
     {
       method: 'POST',
       headers: {

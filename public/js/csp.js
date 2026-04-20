@@ -22,8 +22,8 @@
     // Default: restrict to same origin
     "default-src 'self'",
     
-    // Scripts: self + inline for Vite HMR (dev only) + module scripts
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com",
+    // Scripts: self + inline + Stripe + Cloudflare analytics + esm.sh CDN
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh",
     
     // Styles: self + inline (needed for our inline <style> blocks)
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
@@ -34,8 +34,8 @@
     // Images: self + supabase storage + data URIs (for QR codes)
     `img-src 'self' ${supabaseUrl} data: blob:`,
     
-    // Connect: API calls to Supabase + Stripe + Brevo
-    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com`,
+    // Connect: API calls to Supabase + Stripe + Brevo + Cloudflare + esm.sh
+    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com https://cloudflareinsights.com https://esm.sh`,
     
     // Frames: Stripe Checkout
     "frame-src https://js.stripe.com https://hooks.stripe.com",

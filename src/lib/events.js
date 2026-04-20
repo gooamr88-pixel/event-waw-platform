@@ -80,7 +80,7 @@ export async function createCheckout({ tierId, quantity }) {
   }
 
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
       method: 'POST',
       headers: {
@@ -106,7 +106,7 @@ export async function createCheckout({ tierId, quantity }) {
  */
 export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, guestNationalId }) {
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
       method: 'POST',
       headers: {
@@ -197,7 +197,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
   }
 
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
       method: 'POST',
       headers: {
@@ -225,7 +225,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
  */
 export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone, guestNationalId }) {
   const response = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout`,
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
       method: 'POST',
       headers: {

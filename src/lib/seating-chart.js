@@ -3,7 +3,7 @@
    SVG-based renderer with panzoom (3.4KB)
    ═══════════════════════════════════ */
 
-import panzoom from 'panzoom';
+import panzoom from 'https://esm.sh/panzoom@9';
 import { supabase } from './supabase.js';
 
 // ── Tier color palette (up to 8 tiers, cyclical) ──
