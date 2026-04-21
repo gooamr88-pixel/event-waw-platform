@@ -944,6 +944,191 @@ button { cursor: pointer; }
 
 
 /* ══════════════════════════════════
+   TRUST & SECURITY
+   ══════════════════════════════════ */
+
+/* ── Trust Badges Row ── */
+.trust-badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+.trust-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  background: var(--bg-glass);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  text-align: center;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+.trust-badge::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.trust-badge:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212,175,55,.2);
+  box-shadow: 0 12px 32px rgba(0,0,0,.2);
+}
+.trust-badge:hover::before { opacity: .3; }
+
+.trust-badge-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  background: rgba(212,175,55,.06);
+  border: 1px solid rgba(212,175,55,.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  transition: var(--transition);
+}
+.trust-badge-icon svg { width: 22px; height: 22px; }
+.trust-badge:hover .trust-badge-icon {
+  transform: scale(1.1);
+  box-shadow: 0 0 16px currentColor;
+}
+
+.trust-badge-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.trust-badge-sub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* ── Trusted By Partners ── */
+.trusted-by {
+  text-align: center;
+  margin-bottom: 48px;
+  padding: 32px 0;
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+.trusted-by-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+.trusted-logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.trusted-logo-item {
+  color: var(--text-muted);
+  opacity: 0.4;
+  transition: opacity 0.3s, color 0.3s;
+  height: 24px;
+}
+.trusted-logo-item:hover {
+  opacity: 0.8;
+  color: var(--text-primary);
+}
+.trusted-logo-item svg { height: 24px; width: auto; }
+
+/* ── Security Cards ── */
+.security-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.security-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--card-radius);
+  padding: 28px;
+  transition: var(--transition);
+  position: relative;
+}
+.security-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212,175,55,.15);
+  box-shadow: 0 16px 40px rgba(0,0,0,.2);
+}
+
+.security-card-icon {
+  width: 50px; height: 50px;
+  border-radius: 14px;
+  background: rgba(212,175,55,.06);
+  border: 1px solid rgba(212,175,55,.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+}
+.security-card-icon svg { width: 24px; height: 24px; color: var(--accent-primary); }
+
+.security-card h3 {
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+.security-card p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+
+.security-card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.security-card-tags span {
+  padding: 4px 10px;
+  border-radius: 50px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  background: rgba(212,175,55,.04);
+  border: 1px solid rgba(212,175,55,.1);
+  color: var(--accent-primary);
+  letter-spacing: 0.02em;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .trust-badges {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .trust-badge { padding: 16px 10px; }
+  .trust-badge-icon { width: 36px; height: 36px; }
+  .trust-badge-icon svg { width: 18px; height: 18px; }
+  .trusted-logos { gap: 20px; }
+  .security-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .trust-badges { grid-template-columns: repeat(2, 1fr); }
+}
+
+
+/* ══════════════════════════════════
    CTA SECTION
    ══════════════════════════════════ */
 
