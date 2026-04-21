@@ -19,9 +19,23 @@ export function initUI() {
 /* ── Theme ── */
 
 export function initThemeFromStorage() {
-  const saved = localStorage.getItem('theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', saved);
-  updateThemeIcons(saved);
+  const saved = localStorage.getItem('theme');
+  let theme = saved;
+  if (!theme) {
+    // Auto-detect from OS preference
+    theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  }
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeIcons(theme);
+
+  // Listen for OS theme changes (if user hasn't manually chosen)
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      const auto = e.matches ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', auto);
+      updateThemeIcons(auto);
+    }
+  });
 }
 
 export function initThemeToggle() {

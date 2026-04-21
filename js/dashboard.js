@@ -86,6 +86,8 @@ function initEventActions() {
       } catch (err) { alert('Error: ' + err.message); pubBtn.disabled = false; pubBtn.textContent = currentStatus === 'published' ? 'Unpublish' : 'Publish'; }
       return;
     }
+    const editBtn = e.target.closest('[data-action="edit-event"]');
+    if (editBtn) { showEditModal(editBtn.dataset.eventId); return; }
     const delBtn = e.target.closest('[data-action="delete-event"]');
     if (delBtn) showDeleteConfirmModal(delBtn.dataset.eventId, delBtn.dataset.eventTitle, Number(delBtn.dataset.sold || 0));
   });
@@ -179,6 +181,7 @@ async function loadDashboard() {
         <div>${sold} / ${cap} sold</div>
         <div><span class="dash-event-status status-${event.status}">${event.status}</span></div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;" data-action="edit-event" data-event-id="${event.id}">✏️ Edit</button>
           <button class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;" data-action="toggle-publish" data-event-id="${event.id}" data-status="${event.status}">${event.status === 'published' ? 'Unpublish' : 'Publish'}</button>
           <a href="venue-designer.html?event_id=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">🗺️ Map</a>
           <a href="scanner.html?event=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">Scan</a>
@@ -327,5 +330,135 @@ function initCreateModal() {
       modal.style.display = 'none';
       await loadDashboard();
     } catch (err) { alert('Error creating event: ' + err.message); }
+  });
+}
+
+// ── Edit Event Modal ──
+async function showEditModal(eventId) {
+  document.getElementById('edit-event-modal')?.remove();
+
+  // Fetch the event data
+  const { data: ev, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single();
+
+  if (error || !ev) { alert('Failed to load event: ' + (error?.message || 'Not found')); return; }
+
+  // Parse existing date/time
+  const evDate = ev.date ? new Date(ev.date) : new Date();
+  const dateStr = evDate.toISOString().slice(0, 10); // YYYY-MM-DD
+  const timeStr = evDate.toTimeString().slice(0, 5);  // HH:MM
+
+  const modal = document.createElement('div');
+  modal.id = 'edit-event-modal';
+  modal.innerHTML = `
+    <style>
+      #edit-event-modal { position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease; }
+      .edit-box { max-width:520px;width:100%;background:var(--bg-card);border:1px solid var(--border-color);border-radius:20px;padding:28px;box-shadow:0 30px 80px rgba(0,0,0,.4);animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;max-height:90vh;overflow-y:auto; }
+      .edit-box h3 { font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:4px; }
+      .edit-box .edit-sub { color:var(--text-muted);font-size:0.82rem;margin-bottom:20px; }
+      .edit-fg { margin-bottom:14px; }
+      .edit-fg label { display:block;font-size:0.8rem;font-weight:600;color:var(--text-secondary);margin-bottom:5px; }
+      .edit-fg input, .edit-fg textarea { width:100%;padding:11px 14px;font-size:0.88rem;color:var(--text-primary);background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:10px;transition:all .2s;font-family:inherit; }
+      .edit-fg input:focus, .edit-fg textarea:focus { border-color:rgba(212,175,55,.25);box-shadow:0 0 0 3px rgba(212,175,55,.06);outline:none; }
+      .edit-fg textarea { min-height:100px;resize:vertical;line-height:1.6; }
+      .edit-row { display:grid;grid-template-columns:1fr 1fr;gap:12px; }
+      .edit-btns { display:flex;gap:10px;margin-top:20px; } .edit-btns .btn { flex:1; }
+      .edit-title-display { font-size:0.95rem;font-weight:600;padding:10px 14px;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.1);border-radius:10px;margin-bottom:16px;display:flex;align-items:center;gap:8px; }
+      #edit-status { margin-top:12px;font-size:0.82rem;text-align:center;display:none; }
+      [data-theme="light"] .edit-box { background:#fff;border-color:rgba(0,0,0,.06);box-shadow:0 30px 80px rgba(0,0,0,.1); }
+      [data-theme="light"] .edit-fg input, [data-theme="light"] .edit-fg textarea { background:#faf9f6;border-color:rgba(0,0,0,.1);color:#1a1a1f; }
+    </style>
+    <div class="edit-box">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(212,175,55,.08);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">✏️</div>
+        <h3>Edit <span style="color:var(--accent-primary);">Event</span></h3>
+      </div>
+      <p class="edit-sub">Update the date, time, and details. Title and ticket tiers cannot be changed.</p>
+      <div class="edit-title-display">📅 ${escapeHTML(ev.title)}</div>
+
+      <div class="edit-row">
+        <div class="edit-fg">
+          <label>Date</label>
+          <input type="date" id="edit-date" value="${dateStr}" />
+        </div>
+        <div class="edit-fg">
+          <label>Time</label>
+          <input type="time" id="edit-time" value="${timeStr}" />
+        </div>
+      </div>
+
+      <div class="edit-fg">
+        <label>Description</label>
+        <textarea id="edit-description" placeholder="Event description…">${escapeHTML(ev.description || '')}</textarea>
+      </div>
+
+      <div class="edit-row">
+        <div class="edit-fg">
+          <label>Location / Venue</label>
+          <input type="text" id="edit-location" value="${escapeHTML(ev.location || '')}" placeholder="e.g. Cairo Stadium" />
+        </div>
+        <div class="edit-fg">
+          <label>City</label>
+          <input type="text" id="edit-city" value="${escapeHTML(ev.city || '')}" placeholder="e.g. Cairo" />
+        </div>
+      </div>
+
+      <div class="edit-btns">
+        <button class="btn btn-outline" id="edit-cancel-btn">Cancel</button>
+        <button class="btn btn-primary" id="edit-save-btn">
+          Save Changes
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+        </button>
+      </div>
+      <p id="edit-status"></p>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Close
+  document.getElementById('edit-cancel-btn').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  // Save
+  document.getElementById('edit-save-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('edit-save-btn');
+    const status = document.getElementById('edit-status');
+    btn.disabled = true; btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Saving…';
+
+    const dateVal = document.getElementById('edit-date').value;
+    const timeVal = document.getElementById('edit-time').value;
+    const description = document.getElementById('edit-description').value.trim();
+    const location = document.getElementById('edit-location').value.trim();
+    const city = document.getElementById('edit-city').value.trim();
+
+    if (!dateVal) {
+      status.textContent = 'Please select a date.'; status.style.color = '#ef4444'; status.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Save Changes'; return;
+    }
+
+    const combinedDate = new Date(`${dateVal}T${timeVal || '00:00'}:00`).toISOString();
+
+    try {
+      const updates = { date: combinedDate, description };
+      if (location) updates.location = location;
+      if (city) updates.city = city;
+
+      const { error: updateError } = await supabase
+        .from('events')
+        .update(updates)
+        .eq('id', eventId);
+
+      if (updateError) throw updateError;
+
+      status.textContent = '✓ Event updated!'; status.style.color = '#22c55e'; status.style.display = 'block';
+      setTimeout(async () => { modal.remove(); await loadDashboard(); }, 800);
+    } catch (err) {
+      status.textContent = '✗ ' + err.message; status.style.color = '#ef4444'; status.style.display = 'block';
+      btn.disabled = false; btn.innerHTML = 'Save Changes';
+    }
   });
 }

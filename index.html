@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Event Waw — Premium Event Ticketing</title>
   <meta name="description" content="Event Waw — Discover and book tickets for the most exclusive events. Seamless ticketing, secure payments, and instant QR access." />
+  <!-- Theme flash prevention: set before CSS renders -->
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'))</script>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="js/csp.js"></script>
@@ -514,6 +516,13 @@
           signupBtn.classList.add('btn-outline');
         }
 
+        // Change nav-links "Events" → "Dashboard"
+        const navLinks = document.getElementById('nav-links');
+        if (navLinks) {
+          const eventsLink = navLinks.querySelector('a[href="#events"]');
+          if (eventsLink) { eventsLink.textContent = 'Dashboard'; eventsLink.href = 'dashboard.html'; }
+        }
+
         const navActions = document.querySelector('.nav-actions');
         if (navActions && !document.getElementById('signout-nav')) {
           const signOutBtn = document.createElement('button');
@@ -531,6 +540,7 @@
           links.forEach(a => {
             if (a.href.includes('login.html')) { a.textContent = 'Events'; a.href = 'events.html'; }
             if (a.href.includes('register.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; }
+            if (a.textContent.trim() === 'Events' && a.getAttribute('href') === '#events') { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; }
           });
         }
 
