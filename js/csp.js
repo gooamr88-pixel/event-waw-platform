@@ -23,19 +23,19 @@
     "default-src 'self'",
     
     // Scripts: self + inline + Stripe + Cloudflare analytics + esm.sh CDN
-    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh",
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net",
     
     // Styles: self + inline (needed for our inline <style> blocks)
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
     
     // Fonts from Google Fonts
     "font-src 'self' https://fonts.gstatic.com",
     
     // Images: self + supabase storage + data URIs (for QR codes)
-    `img-src 'self' ${supabaseUrl} data: blob:`,
+    `img-src 'self' ${supabaseUrl} data: blob: https://*.tile.openstreetmap.org`,
     
     // Connect: API calls to Supabase + Stripe + Brevo + Cloudflare + esm.sh
-    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com https://cloudflareinsights.com https://esm.sh`,
+    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com https://cloudflareinsights.com https://esm.sh https://*.tile.openstreetmap.org https://ipapi.co https://www.cloudflare.com`,
     
     // Frames: Stripe Checkout
     "frame-src https://js.stripe.com https://hooks.stripe.com",

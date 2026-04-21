@@ -6,8 +6,12 @@
   <title>Organizer Dashboard — Event Waw</title>
   <meta name="description" content="Manage your events, view analytics, and access the ticket scanner." />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="js/csp.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 </head>
 <body>
 
@@ -92,39 +96,148 @@
         </div>
       </div>
 
-      <!-- Events Table -->
-      <div class="dash-section">
-        <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:20px;">Your Events</h2>
-        <div id="events-table-wrap">
-          <div id="events-loading" style="text-align:center;padding:40px 0;">
-            <div class="spinner"></div>
-            <p style="color:var(--text-muted);font-size:0.9rem;margin-top:12px;">Loading events…</p>
+      <!-- ══════ DASHBOARD TABS ══════ -->
+      <div class="dash-tabs" id="dash-tabs">
+        <button class="dash-tab active" data-tab="overview"><span class="tab-icon">📊</span> Overview</button>
+        <button class="dash-tab" data-tab="events"><span class="tab-icon">📅</span> Events <span class="tab-badge" id="tab-events-count">0</span></button>
+        <button class="dash-tab" data-tab="attendees"><span class="tab-icon">👥</span> Attendees</button>
+        <button class="dash-tab" data-tab="scanner"><span class="tab-icon">📷</span> Scanner</button>
+      </div>
+
+      <!-- ════ TAB: OVERVIEW (Analytics) ════ -->
+      <div class="dash-tab-panel active" id="panel-overview">
+        <!-- Chart.js Charts -->
+        <div class="chart-grid">
+          <div class="dash-section">
+            <div class="dash-section-header">
+              <div>
+                <h2 class="dash-section-title">Revenue <span class="accent">Trends</span></h2>
+                <p class="dash-section-subtitle">Last 30 days</p>
+              </div>
+              <div class="chart-toggle-group">
+                <button class="chart-toggle active" data-range="30">30d</button>
+                <button class="chart-toggle" data-range="7">7d</button>
+              </div>
+            </div>
+            <div class="chart-container"><canvas id="revenue-line-chart"></canvas></div>
           </div>
-          <div id="events-list"></div>
+          <div class="dash-section">
+            <div class="dash-section-header">
+              <div>
+                <h2 class="dash-section-title">Tickets by <span class="accent">Tier</span></h2>
+                <p class="dash-section-subtitle">Distribution across tiers</p>
+              </div>
+            </div>
+            <div class="chart-container"><canvas id="tickets-doughnut-chart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Revenue Table (preserved) -->
+        <div class="dash-section" style="margin-top:24px;" id="revenue-section">
+          <div class="dash-section-header">
+            <div>
+              <h2 class="dash-section-title">💰 Revenue <span class="accent">Dashboard</span></h2>
+              <p class="dash-section-subtitle">5% platform fee applied</p>
+            </div>
+          </div>
+          <div id="revenue-chart" style="background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;padding:16px;margin-bottom:20px;">
+            <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:24px 0;">Revenue chart loads after first sale</p>
+          </div>
+          <div id="revenue-table">
+            <div style="text-align:center;padding:24px;"><div class="spinner"></div></div>
+          </div>
         </div>
       </div>
 
-      <!-- ══════ REVENUE DASHBOARD ══════ -->
-      <div class="dash-section" style="margin-top:24px;" id="revenue-section">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-          <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;">
-            💰 Revenue <span style="color:var(--accent-primary);font-style:italic;">Dashboard</span>
-          </h2>
-          <div style="font-size:0.78rem;color:var(--text-muted);">5% platform fee applied</div>
-        </div>
-
-        <!-- Revenue Chart -->
-        <div id="revenue-chart" style="background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;padding:16px;margin-bottom:20px;">
-          <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;padding:24px 0;">Revenue chart loads after first sale</p>
-        </div>
-
-        <!-- Per-Event Revenue Table -->
-        <div id="revenue-table">
-          <div style="text-align:center;padding:24px;"><div class="spinner"></div></div>
+      <!-- ════ TAB: EVENTS ════ -->
+      <div class="dash-tab-panel" id="panel-events">
+        <div class="dash-section">
+          <div class="dash-section-header">
+            <h2 class="dash-section-title">Your <span class="accent">Events</span></h2>
+            <div class="events-toolbar">
+              <div class="events-search-wrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="text" class="events-search" id="events-search" placeholder="Search events…" />
+              </div>
+            </div>
+          </div>
+          <div id="events-table-wrap">
+            <div id="events-loading" style="text-align:center;padding:40px 0;">
+              <div class="spinner"></div>
+              <p style="color:var(--text-muted);font-size:0.9rem;margin-top:12px;">Loading events…</p>
+            </div>
+            <div id="events-list"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Create Event Modal -->
+      <!-- ════ TAB: ATTENDEES ════ -->
+      <div class="dash-tab-panel" id="panel-attendees">
+        <div class="dash-section">
+          <div class="dash-section-header">
+            <div>
+              <h2 class="dash-section-title">Attendee <span class="accent">Management</span></h2>
+              <p class="dash-section-subtitle">View and export ticket holders</p>
+            </div>
+            <div class="attendee-toolbar">
+              <select class="event-select" id="attendee-event-select">
+                <option value="">Select an event…</option>
+              </select>
+              <button class="btn btn-outline btn-sm" id="export-csv-btn" disabled>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export CSV
+              </button>
+            </div>
+          </div>
+          <div id="attendees-table-wrap">
+            <div class="empty-state" id="attendees-empty">
+              <div class="empty-state-icon">👥</div>
+              <p class="empty-state-title">Select an Event</p>
+              <p class="empty-state-desc">Choose an event above to view its attendees and export their data.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════ TAB: SCANNER ════ -->
+      <div class="dash-tab-panel" id="panel-scanner">
+        <div class="dash-section">
+          <div class="scanner-tab-wrap">
+            <div class="scanner-preview-box" id="scanner-tab-viewfinder">
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--text-muted);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:.5;">
+                  <path d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/>
+                  <path d="M3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z"/>
+                  <path d="M13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5z"/>
+                  <path d="M13.5 14.625v2.25m0 3v.75m0-3h3.375m-3.375 0h-1.5m4.875 1.5h.75"/>
+                </svg>
+                <p style="font-size:0.9rem;font-weight:600;">QR Check-in Scanner</p>
+                <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px;">Camera activates when you start scanning</p>
+              </div>
+              <div class="scanner-preview-overlay" style="display:none;" id="scanner-overlay-active">
+                <div class="scanner-preview-frame"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:20px;">
+              <select class="event-select" id="scanner-event-select" style="margin-bottom:12px;">
+                <option value="">Select event to scan…</option>
+              </select>
+            </div>
+            <div class="scanner-tab-actions">
+              <button class="btn btn-primary" id="start-scanner-btn" disabled>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                Start Scanning
+              </button>
+              <a href="scanner.html" class="btn btn-outline">Open Full Scanner →</a>
+            </div>
+            <div class="scan-history-mini" id="scanner-tab-history">
+              <p style="color:var(--text-muted);font-size:0.85rem;text-align:center;padding:16px 0;">Scan history will appear here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Create Event Modal (Multi-Step) -->
       <div id="create-modal" class="create-modal" style="display:none;">
         <div class="create-modal-content">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
@@ -132,95 +245,133 @@
             <button class="create-modal-close" id="create-modal-close">✕</button>
           </div>
 
+          <!-- Step Progress -->
+          <div class="step-progress">
+            <div class="step-progress-line"><div class="step-progress-line-fill" id="step-line-fill" style="width:0%;"></div></div>
+            <div class="step-progress-item active" data-step="1">
+              <div class="step-progress-dot">1</div>
+              <span class="step-progress-label">Details</span>
+            </div>
+            <div class="step-progress-item" data-step="2">
+              <div class="step-progress-dot">2</div>
+              <span class="step-progress-label">Location</span>
+            </div>
+            <div class="step-progress-item" data-step="3">
+              <div class="step-progress-dot">3</div>
+              <span class="step-progress-label">Tickets</span>
+            </div>
+          </div>
+
           <form id="create-event-form">
-            <div class="fg">
-              <label class="fl" for="ev-title">Event Title *</label>
-              <input type="text" class="fi" id="ev-title" placeholder="e.g. Summer Music Festival" required />
-            </div>
-            <div class="fg">
-              <label class="fl" for="ev-desc">Description</label>
-              <textarea class="fi" id="ev-desc" rows="3" placeholder="Tell attendees about your event…" style="resize:vertical;"></textarea>
-            </div>
-
-            <!-- Cover Image Upload -->
-            <div class="fg">
-              <label class="fl">Cover Image</label>
-              <div class="cover-upload" id="cover-upload-area">
-                <input type="file" id="ev-cover" accept="image/jpeg,image/png,image/webp" style="display:none;" />
-                <div id="cover-preview" style="display:none;position:relative;">
-                  <img id="cover-preview-img" style="width:100%;height:180px;object-fit:cover;border-radius:12px;" />
-                  <button type="button" id="cover-remove" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">✕</button>
-                </div>
-                <div id="cover-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;cursor:pointer;border:2px dashed var(--border-color);border-radius:12px;transition:all .2s;">
-                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
-                  <p style="color:var(--text-muted);font-size:0.82rem;margin-top:8px;">Click or drag an image here</p>
-                  <p style="color:var(--text-muted);font-size:0.72rem;margin-top:4px;opacity:.6;">JPG, PNG, or WebP · Max 5MB</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="f-row">
+            <!-- Step 1: Event Details -->
+            <div class="form-step active" data-form-step="1">
               <div class="fg">
-                <label class="fl" for="ev-venue">Venue *</label>
-                <input type="text" class="fi" id="ev-venue" placeholder="Stadium, Hotel…" required />
+                <label class="fl" for="ev-title">Event Title *</label>
+                <input type="text" class="fi" id="ev-title" placeholder="e.g. Summer Music Festival" required />
               </div>
               <div class="fg">
-                <label class="fl" for="ev-city">City</label>
-                <input type="text" class="fi" id="ev-city" value="Cairo" />
-              </div>
-            </div>
-            <div class="fg">
-              <label class="fl" for="ev-address">Venue Address</label>
-              <input type="text" class="fi" id="ev-address" placeholder="Full address…" />
-            </div>
-            <div class="f-row">
-              <div class="fg">
-                <label class="fl" for="ev-date">Date & Time *</label>
-                <input type="datetime-local" class="fi" id="ev-date" required />
+                <label class="fl" for="ev-desc">Description</label>
+                <textarea class="fi" id="ev-desc" rows="3" placeholder="Tell attendees about your event…" style="resize:vertical;"></textarea>
               </div>
               <div class="fg">
-                <label class="fl" for="ev-category">Category</label>
-                <select class="fi" id="ev-category">
-                  <option value="general">General</option>
-                  <option value="music">Music</option>
-                  <option value="gala">Gala</option>
-                  <option value="conference">Conference</option>
-                  <option value="sports">Sports</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="comedy">Comedy</option>
-                  <option value="festival">Festival</option>
-                </select>
-              </div>
-            </div>
-            <div class="f-row">
-              <div class="fg">
-                <label class="fl" for="ev-doors">Doors Open At</label>
-                <input type="text" class="fi" id="ev-doors" placeholder="e.g. 7:00 pm" />
-              </div>
-              <div class="fg">
-                <label class="fl" for="ev-language">Language</label>
-                <input type="text" class="fi" id="ev-language" value="English" placeholder="e.g. Arabic, English" />
-              </div>
-            </div>
-            <div class="fg">
-              <label class="fl" for="ev-terms">Terms & Conditions / Refund Policy</label>
-              <textarea class="fi" id="ev-terms" rows="3" placeholder="No refunds after purchase. Must present valid ID at venue entrance…" style="resize:vertical;"></textarea>
-            </div>
-
-            <h3 style="font-size:0.9rem;font-weight:600;margin:24px 0 12px;color:var(--text-secondary);">Ticket Tiers</h3>
-            <div id="tiers-container">
-              <div class="tier-row" id="tier-row-0">
-                <div class="f-row" style="grid-template-columns:1fr 120px 100px;">
-                  <div class="fg"><input type="text" class="fi" placeholder="Tier name (e.g. General)" data-tier="name" required /></div>
-                  <div class="fg"><input type="number" class="fi" placeholder="Price" data-tier="price" min="0" required /></div>
-                  <div class="fg"><input type="number" class="fi" placeholder="Qty" data-tier="capacity" min="1" required /></div>
+                <label class="fl">Cover Image</label>
+                <div class="cover-upload" id="cover-upload-area">
+                  <input type="file" id="ev-cover" accept="image/jpeg,image/png,image/webp" style="display:none;" />
+                  <div id="cover-preview" style="display:none;position:relative;">
+                    <img id="cover-preview-img" style="width:100%;height:180px;object-fit:cover;border-radius:12px;" />
+                    <button type="button" id="cover-remove" style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.7);border:none;color:#fff;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">✕</button>
+                  </div>
+                  <div id="cover-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;cursor:pointer;border:2px dashed var(--border-color);border-radius:12px;transition:all .2s;">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>
+                    <p style="color:var(--text-muted);font-size:0.82rem;margin-top:8px;">Click or drag an image here</p>
+                    <p style="color:var(--text-muted);font-size:0.72rem;margin-top:4px;opacity:.6;">JPG, PNG, or WebP · Max 5MB</p>
+                  </div>
                 </div>
               </div>
+              <div class="f-row">
+                <div class="fg">
+                  <label class="fl" for="ev-date">Date & Time *</label>
+                  <input type="datetime-local" class="fi" id="ev-date" required />
+                </div>
+                <div class="fg">
+                  <label class="fl" for="ev-category">Category</label>
+                  <select class="fi" id="ev-category">
+                    <option value="general">General</option>
+                    <option value="music">Music</option>
+                    <option value="gala">Gala</option>
+                    <option value="conference">Conference</option>
+                    <option value="sports">Sports</option>
+                    <option value="workshop">Workshop</option>
+                    <option value="comedy">Comedy</option>
+                    <option value="festival">Festival</option>
+                  </select>
+                </div>
+              </div>
+              <div class="f-row">
+                <div class="fg">
+                  <label class="fl" for="ev-doors">Doors Open At</label>
+                  <input type="text" class="fi" id="ev-doors" placeholder="e.g. 7:00 pm" />
+                </div>
+                <div class="fg">
+                  <label class="fl" for="ev-language">Language</label>
+                  <input type="text" class="fi" id="ev-language" value="English" placeholder="e.g. Arabic, English" />
+                </div>
+              </div>
+              <div class="form-step-actions">
+                <button type="button" class="btn btn-primary btn-full" id="step-next-1">Next: Location →</button>
+              </div>
             </div>
-            <button type="button" class="btn btn-outline btn-sm" id="add-tier-btn" style="margin-top:8px;">+ Add Tier</button>
 
-            <div style="display:flex;gap:12px;margin-top:24px;">
-              <button type="submit" class="btn btn-primary btn-full btn-lg">Create Event</button>
+            <!-- Step 2: Location & Map -->
+            <div class="form-step" data-form-step="2">
+              <div class="f-row">
+                <div class="fg">
+                  <label class="fl" for="ev-venue">Venue *</label>
+                  <input type="text" class="fi" id="ev-venue" placeholder="Stadium, Hotel…" required />
+                </div>
+                <div class="fg">
+                  <label class="fl" for="ev-city">City</label>
+                  <input type="text" class="fi" id="ev-city" value="Cairo" />
+                </div>
+              </div>
+              <div class="fg">
+                <label class="fl" for="ev-address">Venue Address</label>
+                <input type="text" class="fi" id="ev-address" placeholder="Full address…" />
+              </div>
+              <div class="fg">
+                <label class="fl">📍 Pin Location on Map</label>
+                <div class="map-picker-wrap" id="map-picker"></div>
+                <input type="hidden" id="ev-lat" />
+                <input type="hidden" id="ev-lng" />
+                <p style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;" id="map-coords-display">Click on the map to set venue location</p>
+              </div>
+              <div class="fg">
+                <label class="fl" for="ev-terms">Terms & Conditions / Refund Policy</label>
+                <textarea class="fi" id="ev-terms" rows="3" placeholder="No refunds after purchase. Must present valid ID at venue entrance…" style="resize:vertical;"></textarea>
+              </div>
+              <div class="form-step-actions">
+                <button type="button" class="btn btn-outline" id="step-back-2">← Back</button>
+                <button type="button" class="btn btn-primary btn-full" id="step-next-2">Next: Tickets →</button>
+              </div>
+            </div>
+
+            <!-- Step 3: Ticket Tiers -->
+            <div class="form-step" data-form-step="3">
+              <h3 style="font-size:0.9rem;font-weight:600;margin-bottom:16px;color:var(--text-secondary);">Ticket Tiers</h3>
+              <div id="tiers-container">
+                <div class="tier-row" id="tier-row-0">
+                  <div class="f-row" style="grid-template-columns:1fr 120px 100px;">
+                    <div class="fg"><input type="text" class="fi" placeholder="Tier name (e.g. General)" data-tier="name" required /></div>
+                    <div class="fg"><input type="number" class="fi" placeholder="Price" data-tier="price" min="0" required /></div>
+                    <div class="fg"><input type="number" class="fi" placeholder="Qty" data-tier="capacity" min="1" required /></div>
+                  </div>
+                </div>
+              </div>
+              <button type="button" class="btn btn-outline btn-sm" id="add-tier-btn" style="margin-top:8px;">+ Add Tier</button>
+              <div class="form-step-actions">
+                <button type="button" class="btn btn-outline" id="step-back-3">← Back</button>
+                <button type="submit" class="btn btn-primary btn-full btn-lg btn-pulse">🚀 Create Event</button>
+              </div>
             </div>
           </form>
         </div>
@@ -229,623 +380,7 @@
     </div>
   </div>
 
-  <style>
-    .spinner { width:32px;height:32px;border:3px solid var(--border-color);border-top-color:var(--accent-primary);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto; }
-    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .dash-stats {
-      display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px; margin-bottom: 40px;
-    }
-    .dash-stat-card {
-      display: flex; align-items: center; gap: 16px;
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: var(--card-radius); padding: 20px;
-      transition: var(--transition);
-    }
-    .dash-stat-card:hover { border-color: rgba(212,175,55,.2); transform: translateY(-2px); }
-    .dash-stat-icon {
-      width: 48px; height: 48px; border-radius: 12px;
-      background: rgba(212,175,55,.08); display: flex;
-      align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;
-    }
-    .dash-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); }
-    .dash-stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 2px; }
-
-    .dash-section {
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: var(--card-radius); padding: 24px;
-    }
-
-    .dash-event-row {
-      display: grid; grid-template-columns: 60px 1fr 120px 120px 100px;
-      align-items: center; gap: 16px; padding: 16px 0;
-      border-bottom: 1px solid var(--border-light); font-size: 0.9rem;
-    }
-    .dash-event-row:last-child { border-bottom: none; }
-    .dash-event-img {
-      width: 60px; height: 40px; border-radius: 8px;
-      object-fit: cover;
-    }
-    .dash-event-title { font-weight: 600; }
-    .dash-event-date { color: var(--text-muted); font-size: 0.82rem; }
-    .dash-event-status {
-      display: inline-flex; padding: 4px 10px; border-radius: 50px;
-      font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
-    }
-    .status-published { background: rgba(34,197,94,.1); color: #22c55e; }
-    .status-draft { background: rgba(234,179,8,.1); color: #eab308; }
-    .status-completed { background: rgba(59,130,246,.1); color: #3b82f6; }
-    .status-cancelled { background: rgba(239,68,68,.1); color: #ef4444; }
-
-    .create-modal {
-      position: fixed; inset: 0; z-index: 9999;
-      background: rgba(0,0,0,.7); backdrop-filter: blur(12px);
-      display: flex; align-items: center; justify-content: center;
-      padding: 24px; overflow-y: auto;
-    }
-    .create-modal-content {
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: 20px; padding: 32px; max-width: 560px; width: 100%;
-      max-height: 90vh; overflow-y: auto;
-    }
-    .create-modal-close {
-      background: none; border: none; color: var(--text-muted);
-      font-size: 1.3rem; cursor: pointer; transition: color .2s;
-    }
-    .create-modal-close:hover { color: var(--text-primary); }
-    .tier-row { margin-bottom: 8px; }
-    .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-    @media (max-width: 500px) { .f-row { grid-template-columns: 1fr; } }
-    @media (max-width: 768px) {
-      .dash-event-row { grid-template-columns: 1fr; gap: 8px; padding: 12px 0; }
-      .dash-event-img { display: none; }
-    }
-
-    .cover-upload { position: relative; }
-    .cover-upload.dragover #cover-placeholder {
-      border-color: var(--accent-primary);
-      background: rgba(212,175,55,.04);
-    }
-    .cover-upload-progress {
-      position: absolute; bottom: 0; left: 0; height: 3px;
-      background: linear-gradient(90deg, var(--accent-primary), #b8941f);
-      border-radius: 0 0 12px 12px; transition: width .3s;
-    }
-  </style>
-
-  <script type="module">
-    import { supabase, getCurrentUser, getCurrentProfile } from './src/lib/supabase.js';
-    import { getOrganizerEvents, createEvent, deleteEvent } from './src/lib/events.js';
-    import { protectPage, performSignOut } from './src/lib/guard.js';
-    import { initUI } from './src/lib/ui.js';
-    import { escapeHTML, formatCurrency } from './src/lib/utils.js';
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      initUI();
-
-      const auth = await protectPage({ requireRole: 'organizer' });
-      if (!auth) return; // Redirecting...
-
-      document.getElementById('signout-btn').addEventListener('click', () => performSignOut('/index.html'));
-
-      // Attach delegated listener ONCE (prevents leak on reload)
-      initEventActions();
-
-      await loadDashboard();
-      initCreateModal();
-      checkStripeOnboarding();
-    });
-
-    // ── Stripe Connect Onboarding Check ──
-    async function checkStripeOnboarding() {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session?.access_token) return;
-
-        const res = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-onboarding`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ action: 'check-status' }),
-          }
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-
-        // Show onboarding banner if not complete
-        if (!data.onboarding_complete) {
-          showStripeOnboardingBanner();
-        }
-      } catch (e) {
-        // Non-critical — don't block dashboard
-        console.warn('Stripe status check skipped:', e.message);
-      }
-    }
-
-    function showStripeOnboardingBanner() {
-      const banner = document.createElement('div');
-      banner.id = 'stripe-banner';
-      banner.style.cssText = 'padding:16px 20px;background:rgba(99,91,255,.08);border:1px solid rgba(99,91,255,.2);border-radius:14px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;';
-      banner.innerHTML = `
-        <div style="width:44px;height:44px;border-radius:12px;background:rgba(99,91,255,.12);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">💳</div>
-        <div style="flex:1;min-width:200px;">
-          <div style="font-weight:600;font-size:0.9rem;margin-bottom:2px;">Set Up Payouts</div>
-          <div style="font-size:0.8rem;color:var(--text-muted);">Connect your Stripe account to receive ticket sales directly. Takes ~5 minutes.</div>
-        </div>
-        <button class="btn btn-primary btn-sm" id="stripe-onboard-btn" style="flex-shrink:0;">Connect Stripe →</button>
-      `;
-      const statsEl = document.getElementById('dash-stats');
-      statsEl?.parentElement?.insertBefore(banner, statsEl);
-
-      document.getElementById('stripe-onboard-btn')?.addEventListener('click', async () => {
-        const btn = document.getElementById('stripe-onboard-btn');
-        btn.disabled = true;
-        btn.textContent = 'Redirecting…';
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          const res = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-onboarding`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session.access_token}`,
-              },
-              body: JSON.stringify({ action: 'onboard' }),
-            }
-          );
-          const data = await res.json();
-          if (data.url) window.location.href = data.url;
-          else throw new Error(data.error || 'Failed');
-        } catch (e) {
-          alert('Failed to start Stripe setup: ' + e.message);
-          btn.disabled = false;
-          btn.textContent = 'Connect Stripe →';
-        }
-      });
-    }
-
-    // ── Delegated event listener — attached ONCE to prevent leak ──
-    function initEventActions() {
-      document.getElementById('events-list').addEventListener('click', async (e) => {
-        // ── Toggle Publish/Unpublish ──
-        const pubBtn = e.target.closest('[data-action="toggle-publish"]');
-        if (pubBtn) {
-          const eventId = pubBtn.dataset.eventId;
-          const currentStatus = pubBtn.dataset.status;
-          const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-          pubBtn.disabled = true;
-          pubBtn.textContent = '…';
-          try {
-            const { error } = await supabase.from('events').update({ status: newStatus }).eq('id', eventId);
-            if (error) throw error;
-            await loadDashboard();
-          } catch (err) {
-            alert('Error: ' + err.message);
-            pubBtn.disabled = false;
-            pubBtn.textContent = currentStatus === 'published' ? 'Unpublish' : 'Publish';
-          }
-          return;
-        }
-
-        // ── Delete Event ──
-        const delBtn = e.target.closest('[data-action="delete-event"]');
-        if (delBtn) {
-          const eventId = delBtn.dataset.eventId;
-          const eventTitle = delBtn.dataset.eventTitle;
-          const soldCount = Number(delBtn.dataset.sold || 0);
-          showDeleteConfirmModal(eventId, eventTitle, soldCount);
-        }
-      });
-    }
-
-    function showDeleteConfirmModal(eventId, eventTitle, soldCount) {
-      document.getElementById('delete-confirm-modal')?.remove();
-
-      const modal = document.createElement('div');
-      modal.id = 'delete-confirm-modal';
-      modal.innerHTML = `
-        <style>
-          #delete-confirm-modal {
-            position:fixed;inset:0;z-index:99999;
-            background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-            display:flex;align-items:center;justify-content:center;
-            padding:20px;animation:fadeIn .3s ease;
-          }
-          .delete-box {
-            max-width:420px;width:100%;
-            background:var(--bg-card);border:1px solid rgba(239,68,68,.15);
-            border-radius:20px;padding:28px 24px;
-            box-shadow:0 30px 80px rgba(0,0,0,.4);
-            animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;
-          }
-          .delete-box h3 { font-family:var(--font-serif);font-size:1.2rem;font-weight:700;margin-bottom:8px; }
-          .delete-box p { color:var(--text-muted);font-size:0.88rem;line-height:1.6;margin-bottom:16px; }
-          .delete-event-name {
-            padding:12px 16px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.1);
-            border-radius:10px;font-weight:600;font-size:0.9rem;margin-bottom:16px;
-            word-break:break-word;
-          }
-          .delete-warning {
-            padding:10px 14px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.12);
-            border-radius:10px;font-size:0.8rem;color:#f59e0b;margin-bottom:20px;
-            display:flex;align-items:center;gap:8px;
-          }
-          .delete-btns { display:flex;gap:10px; }
-          .delete-btns .btn { flex:1; }
-          .btn-danger {
-            background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;
-            border:none;padding:12px 20px;border-radius:12px;
-            font-weight:700;font-size:0.88rem;cursor:pointer;
-            transition:all .2s;
-          }
-          .btn-danger:hover { filter:brightness(1.1);transform:translateY(-1px); }
-          .btn-danger:disabled { opacity:.5;cursor:not-allowed;transform:none;filter:none; }
-        </style>
-        <div class="delete-box">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
-            <div style="width:44px;height:44px;border-radius:12px;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">🗑️</div>
-            <h3>Delete <span style="color:#ef4444;">Event</span></h3>
-          </div>
-          <p>This action is permanent. All ticket tiers, venue maps, seats, and reservations for this event will be deleted.</p>
-          <div class="delete-event-name">📅 ${escapeHTML(eventTitle)}</div>
-          ${soldCount > 0 ? `
-            <div class="delete-warning">
-              <span>⚠️</span>
-              <span>This event has <strong>${soldCount}</strong> ticket(s) sold. You must cancel/refund them before deleting.</span>
-            </div>
-          ` : ''}
-          <div class="delete-btns">
-            <button class="btn btn-outline" id="delete-cancel-btn">Cancel</button>
-            <button class="btn-danger" id="delete-confirm-btn" ${soldCount > 0 ? 'disabled' : ''}>
-              ${soldCount > 0 ? 'Cannot Delete' : 'Delete Permanently'}
-            </button>
-          </div>
-          <p id="delete-status" style="margin-top:12px;font-size:0.82rem;text-align:center;display:none;"></p>
-        </div>
-      `;
-      document.body.appendChild(modal);
-
-      // Close handlers
-      document.getElementById('delete-cancel-btn').addEventListener('click', () => modal.remove());
-      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
-
-      // Confirm deletion
-      if (soldCount === 0) {
-        document.getElementById('delete-confirm-btn').addEventListener('click', async () => {
-          const btn = document.getElementById('delete-confirm-btn');
-          const status = document.getElementById('delete-status');
-          btn.disabled = true;
-          btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;"></span> Deleting…';
-
-          try {
-            const result = await deleteEvent(eventId);
-            if (result.success) {
-              status.textContent = '✓ Event deleted successfully.';
-              status.style.color = '#22c55e';
-              status.style.display = 'block';
-              setTimeout(async () => {
-                modal.remove();
-                await loadDashboard();
-              }, 800);
-            } else {
-              status.textContent = '✗ ' + (result.error || 'Deletion failed.');
-              status.style.color = '#ef4444';
-              status.style.display = 'block';
-              btn.disabled = false;
-              btn.textContent = 'Delete Permanently';
-            }
-          } catch (err) {
-            status.textContent = '✗ ' + (err.message || 'Unexpected error.');
-            status.style.color = '#ef4444';
-            status.style.display = 'block';
-            btn.disabled = false;
-            btn.textContent = 'Delete Permanently';
-          }
-        });
-      }
-    }
-
-    async function loadDashboard() {
-      const loading = document.getElementById('events-loading');
-      const list = document.getElementById('events-list');
-
-      try {
-        const user = await getCurrentUser();
-        const events = await getOrganizerEvents();
-        loading.style.display = 'none';
-
-        // ── Use the server-side revenue function for accurate stats ──
-        const { data: revenueData } = await supabase
-          .rpc('get_organizer_revenue', { p_organizer_id: user.id });
-
-        let totalTickets = 0, totalRevenue = 0, totalScanned = 0;
-        if (revenueData) {
-          revenueData.forEach(r => {
-            totalTickets += Number(r.total_tickets_sold);
-            totalRevenue += Number(r.net_revenue);
-            totalScanned += Number(r.scanned_count);
-          });
-        }
-
-        const scanRate = totalTickets > 0 ? Math.round((totalScanned / totalTickets) * 100) : 0;
-
-        document.getElementById('stat-events').textContent = events.length;
-        document.getElementById('stat-tickets').textContent = totalTickets.toLocaleString();
-        document.getElementById('stat-revenue').textContent = '$' + totalRevenue.toLocaleString();
-        document.getElementById('stat-scan-rate').textContent = totalTickets > 0 ? scanRate + '%' : '—';
-
-        if (events.length === 0) {
-          list.innerHTML = `<p style="text-align:center;padding:32px 0;color:var(--text-muted);">No events yet. Create your first event!</p>`;
-          document.getElementById('revenue-table').innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:32px;">No revenue data yet.</p>';
-          return;
-        }
-
-        list.innerHTML = events.map(event => {
-          const date = new Date(event.date);
-          const sold = event.ticket_tiers?.reduce((sum, t) => sum + (t.sold_count || 0), 0) || 0;
-          const cap = event.ticket_tiers?.reduce((sum, t) => sum + t.capacity, 0) || 0;
-
-          return `
-            <div class="dash-event-row">
-              <img class="dash-event-img" src="${escapeHTML(event.cover_image) || 'images/event-concert.png'}" alt="" loading="lazy" />
-              <div>
-                <div class="dash-event-title">${escapeHTML(event.title)}</div>
-                <div class="dash-event-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
-              </div>
-              <div>${sold} / ${cap} sold</div>
-              <div><span class="dash-event-status status-${event.status}">${event.status}</span></div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                <button class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;" data-action="toggle-publish" data-event-id="${event.id}" data-status="${event.status}">
-                  ${event.status === 'published' ? 'Unpublish' : 'Publish'}
-                </button>
-                <a href="venue-designer.html?event_id=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">🗺️ Map</a>
-                <a href="scanner.html?event=${event.id}" class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;">Scan</a>
-                <button class="btn btn-outline btn-sm" style="font-size:0.72rem;padding:5px 10px;color:#ef4444;border-color:rgba(239,68,68,.25);" data-action="delete-event" data-event-id="${event.id}" data-event-title="${escapeHTML(event.title)}" data-sold="${sold}">
-                  🗑️ Delete
-                </button>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        // Listener is attached once in initEventActions() — no leak
-
-        // ── Load Revenue Dashboard ──
-        loadRevenueDashboard(revenueData, user.id);
-
-      } catch (err) {
-        console.error('Error loading dashboard:', err);
-        loading.style.display = 'none';
-        list.innerHTML = `<p style="text-align:center;padding:32px 0;color:var(--text-muted);">Connect Supabase to see your events.</p>`;
-      }
-    }
-
-    // ── Revenue Dashboard ──
-    async function loadRevenueDashboard(revenueData, userId) {
-      const tableEl = document.getElementById('revenue-table');
-
-      if (!revenueData || revenueData.length === 0) {
-        tableEl.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:32px;">No revenue data yet. Revenue appears after your first ticket sale.</p>';
-        return;
-      }
-
-      // Render per-event revenue table
-      tableEl.innerHTML = `
-        <div class="dash-event-row" style="grid-template-columns:1fr 100px 100px 100px 80px;font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;border-bottom:1px solid var(--border-color);padding-bottom:8px;">
-          <div>Event</div>
-          <div style="text-align:right;">Gross</div>
-          <div style="text-align:right;">Fee (5%)</div>
-          <div style="text-align:right;">Net Payout</div>
-          <div style="text-align:center;">Scan %</div>
-        </div>
-        ${revenueData.map(r => `
-          <div class="dash-event-row" style="grid-template-columns:1fr 100px 100px 100px 80px;">
-            <div>
-              <div class="dash-event-title">${escapeHTML(r.event_title)}</div>
-              <div class="dash-event-date">${r.total_tickets_sold} tickets sold</div>
-            </div>
-            <div style="text-align:right;font-weight:600;font-size:0.85rem;">
-              $${Number(r.gross_revenue).toLocaleString()}
-            </div>
-            <div style="text-align:right;color:var(--text-muted);font-size:0.82rem;">
-              -${Number(r.platform_fee).toLocaleString()}
-            </div>
-            <div style="text-align:right;color:var(--accent-primary);font-weight:700;font-size:0.85rem;">
-              $${Number(r.net_revenue).toLocaleString()}
-            </div>
-            <div style="text-align:center;font-size:0.82rem;">
-              ${Number(r.scan_rate)}%
-            </div>
-          </div>
-        `).join('')}
-      `;
-
-      // Load daily revenue chart
-      const { data: daily } = await supabase
-        .rpc('get_daily_revenue', { p_organizer_id: userId, p_days: 30 });
-
-      if (daily && daily.length > 0) {
-        renderRevenueChart(daily);
-      }
-    }
-
-    function renderRevenueChart(data) {
-      const maxRevenue = Math.max(...data.map(d => Number(d.revenue)), 1);
-      const container = document.getElementById('revenue-chart');
-      container.innerHTML = `
-        <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-bottom:12px;">Daily Revenue (Last 30 Days)</div>
-        <div style="display:flex;gap:2px;height:120px;align-items:flex-end;">
-          ${data.map(d => {
-            const pct = (Number(d.revenue) / maxRevenue) * 100;
-            const day = new Date(d.day).getDate();
-            const formattedRev = Number(d.revenue).toLocaleString();
-            return `
-              <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;" title="$${formattedRev} · ${d.tickets_sold} tickets">
-                <div style="width:100%;background:linear-gradient(to top, var(--accent-primary), rgba(212,175,55,.3));border-radius:4px 4px 0 0;height:${Math.max(pct, 3)}%;min-height:3px;transition:height .3s;"></div>
-                <span style="font-size:0.55rem;color:var(--text-muted);">${day}</span>
-              </div>`;
-          }).join('')}
-        </div>
-      `;
-    }
-
-    let tierCount = 1;
-
-    function initCreateModal() {
-      const modal = document.getElementById('create-modal');
-      document.getElementById('create-event-btn').addEventListener('click', () => modal.style.display = 'flex');
-      document.getElementById('create-modal-close').addEventListener('click', () => modal.style.display = 'none');
-      modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
-
-      // ── Cover Image Upload ──
-      const fileInput = document.getElementById('ev-cover');
-      const uploadArea = document.getElementById('cover-upload-area');
-      const placeholder = document.getElementById('cover-placeholder');
-      const preview = document.getElementById('cover-preview');
-      const previewImg = document.getElementById('cover-preview-img');
-      const removeBtn = document.getElementById('cover-remove');
-      let selectedFile = null;
-
-      placeholder.addEventListener('click', () => fileInput.click());
-
-      fileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) handleCoverFile(file);
-      });
-
-      // Drag & drop
-      uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
-      uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
-      uploadArea.addEventListener('drop', (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const file = e.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) handleCoverFile(file);
-      });
-
-      function handleCoverFile(file) {
-        if (file.size > 5 * 1024 * 1024) {
-          alert('Image too large. Maximum size is 5MB.');
-          return;
-        }
-        selectedFile = file;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          previewImg.src = e.target.result;
-          preview.style.display = 'block';
-          placeholder.style.display = 'none';
-        };
-        reader.readAsDataURL(file);
-      }
-
-      removeBtn.addEventListener('click', () => {
-        selectedFile = null;
-        fileInput.value = '';
-        preview.style.display = 'none';
-        placeholder.style.display = 'flex';
-      });
-
-      // ── Add Tier ──
-      document.getElementById('add-tier-btn').addEventListener('click', () => {
-        const container = document.getElementById('tiers-container');
-        const row = document.createElement('div');
-        row.className = 'tier-row';
-        row.id = `tier-row-${tierCount}`;
-        row.innerHTML = `
-          <div class="f-row" style="grid-template-columns:1fr 120px 100px;">
-            <div class="fg"><input type="text" class="fi" placeholder="Tier name" data-tier="name" required /></div>
-            <div class="fg"><input type="number" class="fi" placeholder="Price" data-tier="price" min="0" required /></div>
-            <div class="fg"><input type="number" class="fi" placeholder="Qty" data-tier="capacity" min="1" required /></div>
-          </div>
-        `;
-        container.appendChild(row);
-        tierCount++;
-      });
-
-      document.getElementById('create-event-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const user = await getCurrentUser();
-        if (!user) return;
-
-        const eventData = {
-          organizer_id: user.id,
-          title: document.getElementById('ev-title').value,
-          description: document.getElementById('ev-desc').value,
-          venue: document.getElementById('ev-venue').value,
-          venue_address: document.getElementById('ev-address').value,
-          city: document.getElementById('ev-city').value,
-          date: new Date(document.getElementById('ev-date').value).toISOString(),
-          category: document.getElementById('ev-category').value,
-          doors_open: document.getElementById('ev-doors').value || null,
-          language: document.getElementById('ev-language').value || 'English',
-          terms_conditions: document.getElementById('ev-terms').value || null,
-          status: 'published',
-        };
-
-        try {
-          // Upload cover image if selected
-          if (selectedFile) {
-            const ext = selectedFile.name.split('.').pop();
-            const fileName = `${user.id}/${crypto.randomUUID()}.${ext}`;
-
-            const { data: uploadData, error: uploadError } = await supabase.storage
-              .from('event-covers')
-              .upload(fileName, selectedFile, {
-                cacheControl: '3600',
-                upsert: false,
-                contentType: selectedFile.type,
-              });
-
-            if (uploadError) {
-              console.error('Upload error:', uploadError);
-              alert('Failed to upload image: ' + uploadError.message);
-              return;
-            }
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-              .from('event-covers')
-              .getPublicUrl(fileName);
-
-            eventData.cover_image = publicUrl;
-          }
-
-          const event = await createEvent(eventData);
-
-          // Create tiers
-          const tierRows = document.querySelectorAll('.tier-row');
-          for (const row of tierRows) {
-            const name = row.querySelector('[data-tier="name"]').value;
-            const price = parseFloat(row.querySelector('[data-tier="price"]').value) || 0;
-            const capacity = parseInt(row.querySelector('[data-tier="capacity"]').value) || 100;
-            
-            if (name) {
-              await supabase.from('ticket_tiers').insert({
-                event_id: event.id,
-                name,
-                price,
-                capacity,
-              });
-            }
-          }
-
-          modal.style.display = 'none';
-          await loadDashboard();
-        } catch (err) {
-          alert('Error creating event: ' + err.message);
-        }
-      });
-    }
-
-    // ── Utilities are now in src/lib/ui.js ──
-    // ── Publish/Unpublish is handled via delegated event listener in loadDashboard ──
-  </script>
+  <script type="module" src="js/dashboard.js"></script>
 </body>
 </html>
