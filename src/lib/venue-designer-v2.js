@@ -84,18 +84,14 @@ export function renderCanvas(elements, container, state) {
   svg.setAttribute('width', '100%');
   svg.setAttribute('height', '100%');
 
-  // Grid (dot pattern like Figma)
+  // Grid
   let defs = svg.querySelector('defs');
   if (!defs) {
     defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
     defs.innerHTML = `
-      <pattern id="vd-grid" width="24" height="24" patternUnits="userSpaceOnUse">
-        <circle cx="12" cy="12" r="0.6" fill="rgba(255,255,255,.07)"/>
-      </pattern>
-      <filter id="vd-glow" x="-20%" y="-20%" width="140%" height="140%">
-        <feGaussianBlur stdDeviation="2" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>`;
+      <pattern id="vd-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,.04)" stroke-width="0.5"/>
+      </pattern>`;
     svg.appendChild(defs);
   }
 
@@ -131,17 +127,16 @@ export function renderCanvas(elements, container, state) {
       sel.setAttribute('width', (el.w || 80) + 6); sel.setAttribute('height', (el.h || 80) + 6);
       sel.setAttribute('rx', 4);
       sel.setAttribute('fill', 'none'); sel.setAttribute('stroke', '#d4af37');
-      sel.setAttribute('stroke-width', 1.2); sel.setAttribute('stroke-dasharray', '5 3');
+      sel.setAttribute('stroke-width', 1.5); sel.setAttribute('stroke-dasharray', '4 3');
       sel.setAttribute('class', 'vd-sel-ring');
-      sel.setAttribute('filter', 'url(#vd-glow)');
       g.insertBefore(sel, g.firstChild);
 
-      // Resize handle (bottom-right)
-      const rh = nsEl('circle');
-      rh.setAttribute('cx', (el.w || 80)); rh.setAttribute('cy', (el.h || 80));
-      rh.setAttribute('r', 4);
-      rh.setAttribute('fill', '#d4af37'); rh.setAttribute('stroke', '#000'); rh.setAttribute('stroke-width', 1);
-      rh.setAttribute('class', 'vd-resize-handle');
+      // Resize handle
+      const rh = nsEl('rect');
+      rh.setAttribute('x', (el.w || 80) - 4); rh.setAttribute('y', (el.h || 80) - 4);
+      rh.setAttribute('width', 8); rh.setAttribute('height', 8);
+      rh.setAttribute('rx', 2);
+      rh.setAttribute('fill', '#d4af37'); rh.setAttribute('class', 'vd-resize-handle');
       rh.style.cursor = 'nwse-resize';
       g.appendChild(rh);
     }

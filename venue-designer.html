@@ -4,206 +4,254 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Venue Designer — Event Waw</title>
-  <meta name="description" content="Professional drag & drop venue layout designer for Event Waw." />
+  <meta name="description" content="Professional drag & drop venue layout designer." />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/venue-designer.css" />
   <script src="js/csp.js"></script>
 </head>
 <body>
-  <div class="vd-shell">
+  <div class="vd-shell" id="vd-shell">
 
-    <!-- ═══ TOPBAR ═══ -->
-    <header class="vd-topbar">
+    <!-- ══════ TOPBAR ══════ -->
+    <div class="vd-topbar">
       <div class="vd-topbar-left">
-        <a href="dashboard.html" class="vd-back" title="Back to Dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-        </a>
-        <div class="vd-title-group">
-          <span class="vd-title">🗺️ Venue <em>Designer</em></span>
-          <span class="vd-subtitle" id="ev-sub">loading…</span>
-        </div>
+        <a href="dashboard.html" class="vd-back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg></a>
+        <span class="vd-title">🗺️ Venue <span>Designer</span></span>
+        <span class="vd-subtitle" id="ev-subtitle">Loading…</span>
       </div>
       <div class="vd-topbar-center">
-        <button class="vd-ib" id="b-undo" title="Undo (Ctrl+Z)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h13a4 4 0 010 8H7"/><path d="M7 6l-4 4 4 4"/></svg></button>
-        <button class="vd-ib" id="b-redo" title="Redo (Ctrl+Y)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H8a4 4 0 000 8h9"/><path d="M17 6l4 4-4 4"/></svg></button>
+        <button class="vd-icon-btn" id="btn-undo" title="Undo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h13a4 4 0 010 8H7"/><path d="M7 6l-4 4 4 4"/></svg></button>
+        <button class="vd-icon-btn" id="btn-redo" title="Redo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H8a4 4 0 000 8h9"/><path d="M17 6l4 4-4 4"/></svg></button>
         <div class="vd-sep"></div>
-        <button class="vd-ib" id="b-zi" title="Zoom In">+</button>
-        <span class="vd-zoom-lbl" id="z-lbl">100%</span>
-        <button class="vd-ib" id="b-zo" title="Zoom Out">−</button>
-        <button class="vd-ib" id="b-zr" title="Reset View">⊙</button>
+        <button class="vd-icon-btn" id="btn-zi" title="Zoom In">+</button>
+        <span class="vd-zoom-lbl" id="zoom-lbl">100%</span>
+        <button class="vd-icon-btn" id="btn-zo" title="Zoom Out">−</button>
+        <button class="vd-icon-btn" id="btn-zr" title="Reset">⊙</button>
       </div>
       <div class="vd-topbar-right">
-        <button class="vd-del" id="b-delmap" style="display:none">🗑 Delete Map</button>
-        <button class="vd-save" id="b-save" disabled>
+        <button class="vd-del-btn" id="btn-del-map" style="display:none;">🗑 Delete Map</button>
+        <button class="vd-save-btn" id="btn-save" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-          SAVE &amp; DEPLOY
+          Save & Deploy
         </button>
       </div>
-    </header>
+    </div>
 
-    <!-- ═══ BODY ═══ -->
+    <!-- ══════ BODY ══════ -->
     <div class="vd-body">
+      <!-- LEFT: TOOLBOX + PROPERTIES -->
+      <div class="vd-toolbox">
+        <div class="vd-tb-section">
+          <div class="vd-tb-label">Elements</div>
+          <div class="vd-tb-grid" id="tb-grid"></div>
+        </div>
+        <div class="vd-tb-section" style="border-bottom:none;">
+          <div class="vd-tb-label">Properties</div>
+        </div>
+        <div class="vd-props-scroll" id="props-panel">
+          <p class="vd-props-empty">Click an element<br/>to edit properties</p>
+        </div>
+      </div>
 
-      <!-- LEFT PANEL -->
-      <aside class="vd-panel">
-        <div class="vd-section">
-          <div class="vd-section-label">Elements</div>
-          <div class="vd-grid" id="tb"></div>
-        </div>
-        <div class="vd-section" style="padding-bottom:4px;">
-          <div class="vd-section-label">Properties</div>
-        </div>
-        <div class="vd-props" id="pp">
-          <div class="vd-props-nil"><span>🖱️</span>Click or drag an element<br/>onto the canvas to begin</div>
-        </div>
-      </aside>
-
-      <!-- CANVAS -->
-      <main class="vd-canvas-area">
-        <div class="vd-canvas-inner" id="cvs"></div>
-        <div class="vd-toast" id="toast" style="display:none"></div>
-        <div class="vd-stats" id="stats"></div>
-      </main>
+      <!-- CENTER: CANVAS -->
+      <div class="vd-canvas-area">
+        <div class="vd-canvas-inner" id="vd-canvas"></div>
+        <div class="vd-toast" id="vd-toast" style="display:none;"></div>
+        <div class="vd-stats" id="vd-stats"></div>
+      </div>
     </div>
   </div>
 
   <script type="module">
+    import { supabase } from './src/lib/supabase.js';
     import { getEvent } from './src/lib/events.js';
     import { protectPage } from './src/lib/guard.js';
     import { escapeHTML } from './src/lib/utils.js';
     import { ELEMENT_TYPES, VenueDesignerEngine, saveVenueMapV2 } from './src/lib/venue-designer-v2.js';
     import { loadVenueMap, deleteVenueMap } from './src/lib/venue-designer.js';
 
-    let E, eid, tiers = [];
+    let engine, eventId, tiers = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
-      await protectPage('organizer');
-      eid = new URLSearchParams(location.search).get('event_id');
-      if (!eid) { alert('Missing event_id'); return void (location.href = 'dashboard.html'); }
+      const auth = await protectPage('organizer');
+      const params = new URLSearchParams(location.search);
+      eventId = params.get('event_id');
+      if (!eventId) { alert('Missing event_id'); location.href = 'dashboard.html'; return; }
 
       try {
-        const ev = await getEvent(eid);
-        document.getElementById('ev-sub').textContent = ev.title;
+        const ev = await getEvent(eventId);
+        document.getElementById('ev-subtitle').textContent = ev.title;
         tiers = ev.ticket_tiers || [];
-      } catch (e) { return void alert('Failed: ' + e.message); }
+      } catch (e) { alert('Event load failed: ' + e.message); return; }
 
-      E = new VenueDesignerEngine(document.getElementById('cvs'), {
+      // Init engine
+      engine = new VenueDesignerEngine(document.getElementById('vd-canvas'), {
         tiers,
-        onChange: () => { $('b-save').disabled = false; props(); stats(); },
+        onChange: () => {
+          document.getElementById('btn-save').disabled = false;
+          updateProps(); updateStats();
+        },
       });
 
-      toolbox();
-      buttons();
+      buildToolbox();
+      wireButtons();
 
+      // Load existing
       try {
-        const m = await loadVenueMap(eid);
-        if (m) { E.loadFromJSON(m.layout_json); $('b-delmap').style.display=''; msg('Editing v'+(m.version||1),'inf'); }
-        else E.addElement('stage',400,40);
-      } catch(_) { E.addElement('stage',400,40); }
-      stats();
+        const existing = await loadVenueMap(eventId);
+        if (existing) {
+          engine.loadFromJSON(existing.layout_json);
+          document.getElementById('btn-del-map').style.display = '';
+          toast('Editing v' + (existing.version || 1), 'info');
+        } else {
+          engine.addElement('stage', 400, 40);
+        }
+      } catch (_) { engine.addElement('stage', 400, 40); }
+
+      updateStats();
     });
 
-    const $ = id => document.getElementById(id);
-
-    // ── Toolbox ──
-    function toolbox() {
-      const g = $('tb');
-      g.innerHTML = Object.entries(ELEMENT_TYPES).map(([k,t]) =>
-        `<div class="vd-tool" draggable="true" data-t="${k}" title="${t.label}"><span class="vd-tool-ico">${t.icon}</span><span class="vd-tool-name">${t.label}</span></div>`
+    /* ── Toolbox ── */
+    function buildToolbox() {
+      const g = document.getElementById('tb-grid');
+      g.innerHTML = Object.entries(ELEMENT_TYPES).map(([k, t]) =>
+        `<div class="vd-tb-item" draggable="true" data-type="${k}" title="${t.label}">
+          <span class="vd-tb-item-icon">${t.icon}</span>
+          <span class="vd-tb-item-name">${t.label}</span>
+        </div>`
       ).join('');
-      g.querySelectorAll('.vd-tool').forEach(el => {
-        el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain',el.dataset.t); e.dataTransfer.effectAllowed='copy'; });
-        el.addEventListener('click', () => E.addElement(el.dataset.t));
+      g.querySelectorAll('.vd-tb-item').forEach(item => {
+        item.addEventListener('dragstart', e => {
+          e.dataTransfer.setData('text/plain', item.dataset.type);
+          e.dataTransfer.effectAllowed = 'copy';
+        });
+        item.addEventListener('click', () => engine.addElement(item.dataset.type));
       });
     }
 
-    // ── Properties ──
-    function props() {
-      const p = $('pp'), el = E.getSelected();
-      if (!el) { p.innerHTML = '<div class="vd-props-nil"><span>🖱️</span>Click or drag an element<br/>onto the canvas to begin</div>'; return; }
-      const t = ELEMENT_TYPES[el.type.toUpperCase()]||{};
-      let h = `<div class="vd-ph"><b>${t.icon||'📦'} ${esc(el.label)}</b><small>${t.label||el.type}</small></div>`;
-      h += f('Label','text',el.label,'label');
-      h += `<div class="vd-2col">${f('X','number',el.x,'x')}${f('Y','number',el.y,'y')}</div>`;
-      h += `<div class="vd-2col">${f('Width','number',el.w||80,'w')}${f('Height','number',el.h||80,'h')}</div>`;
-      h += sl('Rotation',el.rotation||0,0,360,'rotation','°');
-      h += `<div class="vd-f"><label>Color</label><input type="color" class="vd-cl" value="${el.color}" data-p="color"></div>`;
-      if (el.type==='section') {
-        h += '<div class="vd-hr"></div>';
-        h += `<div class="vd-2col">${f('Rows','number',el.rows,'rows')}${f('Seats/Row','number',el.seatsPerRow,'seatsPerRow')}</div>`;
-        h += sl('Curve',el.curve||0,0,500,'curve','');
-        if (tiers.length) h += `<div class="vd-f"><label>Tier</label><select class="vd-fi" data-p="tier_id">${tiers.map(t=>`<option value="${t.id}"${t.id===el.tier_id?' selected':''}>${esc(t.name)} — $${Number(t.price).toLocaleString()}</option>`).join('')}</select></div>`;
-        h += `<div class="vd-badge">💺 ${el.rows*el.seatsPerRow} seats</div>`;
+    /* ── Properties ── */
+    function updateProps() {
+      const p = document.getElementById('props-panel');
+      const el = engine.getSelected();
+      if (!el) { p.innerHTML = '<p class="vd-props-empty">Click an element<br/>to edit properties</p>'; return; }
+
+      const t = ELEMENT_TYPES[el.type.toUpperCase()] || {};
+      let h = `<div class="vd-ph"><span class="vd-ph-name">${t.icon||''} ${escapeHTML(el.label)}</span><span class="vd-ph-type">${t.label||el.type}</span></div>`;
+      h += field('Label', 'text', el.label, 'label');
+      h += `<div class="vd-row">${field('X','number',el.x,'x')}${field('Y','number',el.y,'y')}</div>`;
+      h += `<div class="vd-row">${field('W','number',el.w||80,'w')}${field('H','number',el.h||80,'h')}</div>`;
+      h += `<div class="vd-fg"><label>Rotate</label><input type="range" class="vd-slider" value="${el.rotation||0}" min="0" max="360" data-p="rotation"><span class="vd-slider-v">${el.rotation||0}°</span></div>`;
+      h += `<div class="vd-fg"><label>Color</label><input type="color" class="vd-color" value="${el.color}" data-p="color"></div>`;
+
+      if (el.type === 'section') {
+        h += '<div class="vd-divider"></div>';
+        h += `<div class="vd-row">${field('Rows','number',el.rows,'rows')}${field('Seats/Row','number',el.seatsPerRow,'seatsPerRow')}</div>`;
+        h += `<div class="vd-fg"><label>Curve</label><input type="range" class="vd-slider" value="${el.curve||0}" min="0" max="500" data-p="curve"><span class="vd-slider-v">${el.curve||0}</span></div>`;
+        if (tiers.length) {
+          h += `<div class="vd-fg"><label>Tier</label><select class="vd-fi" data-p="tier_id">${tiers.map(t=>`<option value="${t.id}" ${t.id===el.tier_id?'selected':''}>${escapeHTML(t.name)} — $${Number(t.price).toLocaleString()}</option>`).join('')}</select></div>`;
+        }
+        h += `<div class="vd-seats-info">${el.rows * el.seatsPerRow} seats</div>`;
       }
-      if (el.type==='table') { h += '<div class="vd-hr"></div>'+f('Seats Around','number',el.seats||6,'seats'); }
-      h += `<div class="vd-hr"></div><div class="vd-arow">
-        <button class="vd-a" id="a-dup" title="Duplicate (Ctrl+D)">📋</button>
-        <button class="vd-a" id="a-up" title="Bring to Front">⬆</button>
-        <button class="vd-a" id="a-dn" title="Send to Back">⬇</button>
-        <button class="vd-a" id="a-lk" title="Lock/Unlock">${el.locked?'🔒':'🔓'}</button>
-        <button class="vd-a vd-a-del" id="a-rm" title="Delete (Del)">🗑</button>
+      if (el.type === 'table') {
+        h += '<div class="vd-divider"></div>';
+        h += field('Seats','number',el.seats||6,'seats');
+      }
+
+      h += '<div class="vd-divider"></div>';
+      h += `<div class="vd-actions">
+        <button class="vd-act" id="pa-dup" title="Duplicate">📋</button>
+        <button class="vd-act" id="pa-up" title="Bring Front">⬆</button>
+        <button class="vd-act" id="pa-dn" title="Send Back">⬇</button>
+        <button class="vd-act" id="pa-lk" title="Lock">${el.locked?'🔒':'🔓'}</button>
+        <button class="vd-act vd-act-del" id="pa-rm" title="Delete">🗑</button>
       </div>`;
+
       p.innerHTML = h;
 
-      p.querySelectorAll('[data-p]').forEach(i => {
-        i.addEventListener(i.type==='range'?'input':'change', () => {
-          let v = i.value; if(i.type==='number'||i.type==='range') v=parseFloat(v)||0;
-          E.updateSelected({[i.dataset.p]:v});
-          const s=i.nextElementSibling; if(s&&s.classList.contains('vd-sl-v')) s.textContent=v+(i.dataset.p==='rotation'?'°':'');
-          const b=p.querySelector('.vd-badge'); if(b){const x=E.getSelected();if(x&&x.rows) b.textContent='💺 '+(x.rows*x.seatsPerRow)+' seats';}
+      // Bind
+      p.querySelectorAll('[data-p]').forEach(inp => {
+        const ev = (inp.type==='range') ? 'input' : 'change';
+        inp.addEventListener(ev, () => {
+          let v = inp.value;
+          if (inp.type==='number'||inp.type==='range') v = parseFloat(v)||0;
+          engine.updateSelected({ [inp.dataset.p]: v });
+          const vs = inp.nextElementSibling;
+          if (vs && vs.classList.contains('vd-slider-v')) vs.textContent = v + (inp.dataset.p==='rotation'?'°':'');
+          const si = p.querySelector('.vd-seats-info');
+          if (si) { const s = engine.getSelected(); if(s) si.textContent = `${s.rows*s.seatsPerRow} seats`; }
         });
       });
-      $('a-dup')?.addEventListener('click',()=>E.duplicateSelected());
-      $('a-up')?.addEventListener('click',()=>E.bringToFront());
-      $('a-dn')?.addEventListener('click',()=>E.sendToBack());
-      $('a-lk')?.addEventListener('click',()=>{E.toggleLock();props();});
-      $('a-rm')?.addEventListener('click',()=>{E.removeSelected();props();});
+      document.getElementById('pa-dup')?.addEventListener('click', () => engine.duplicateSelected());
+      document.getElementById('pa-up')?.addEventListener('click', () => engine.bringToFront());
+      document.getElementById('pa-dn')?.addEventListener('click', () => engine.sendToBack());
+      document.getElementById('pa-lk')?.addEventListener('click', () => { engine.toggleLock(); updateProps(); });
+      document.getElementById('pa-rm')?.addEventListener('click', () => { engine.removeSelected(); updateProps(); });
     }
 
-    function f(lbl,type,val,prop) {
-      return `<div class="vd-f"><label>${lbl}</label><input type="${type}" class="vd-fi" value="${typeof val==='string'?esc(val):val}" data-p="${prop}"></div>`;
-    }
-    function sl(lbl,val,min,max,prop,unit) {
-      return `<div class="vd-f"><label>${lbl}</label><input type="range" class="vd-sl" value="${val}" min="${min}" max="${max}" data-p="${prop}"><span class="vd-sl-v">${val}${unit}</span></div>`;
-    }
-    function esc(s) { return escapeHTML(s); }
-
-    // ── Stats ──
-    function stats() {
-      const s = E.elements.filter(e=>e.type==='section');
-      const t = E.elements.filter(e=>e.type==='table');
-      const n = s.reduce((a,e)=>a+e.rows*e.seatsPerRow,0)+t.reduce((a,e)=>a+(e.seats||6),0);
-      $('stats').innerHTML = `<span class="vd-st"><b>${E.elements.length}</b> elements</span><span class="vd-st"><b>${n}</b> seats</span><span class="vd-st"><b>${s.length}</b> sections</span><span class="vd-st"><b>${tiers.length}</b> tiers</span>`;
+    function field(label, type, val, prop) {
+      return `<div class="vd-fg"><label>${label}</label><input type="${type}" class="vd-fi" value="${typeof val==='string'?escapeHTML(val):val}" data-p="${prop}"></div>`;
     }
 
-    // ── Buttons ──
-    function buttons() {
-      $('b-undo').onclick=()=>E.undo();
-      $('b-redo').onclick=()=>E.redo();
-      $('b-zi').onclick=()=>{E.zoomIn();zl();};
-      $('b-zo').onclick=()=>{E.zoomOut();zl();};
-      $('b-zr').onclick=()=>{E.resetView();zl();};
+    /* ── Stats ── */
+    function updateStats() {
+      const secs = engine.elements.filter(e => e.type==='section');
+      const tbls = engine.elements.filter(e => e.type==='table');
+      const seats = secs.reduce((s,e) => s+(e.rows*e.seatsPerRow),0) + tbls.reduce((s,e) => s+(e.seats||6),0);
+      document.getElementById('vd-stats').innerHTML =
+        `<span class="vd-stat"><b>${engine.elements.length}</b> elements</span>` +
+        `<span class="vd-stat"><b>${seats}</b> seats</span>` +
+        `<span class="vd-stat"><b>${secs.length}</b> sections</span>`;
+    }
 
-      $('b-save').onclick=async()=>{
-        const b=$('b-save'); b.disabled=true; b.textContent='Saving…';
+    /* ── Topbar ── */
+    function wireButtons() {
+      document.getElementById('btn-undo').onclick = () => engine.undo();
+      document.getElementById('btn-redo').onclick = () => engine.redo();
+      document.getElementById('btn-zi').onclick = () => { engine.zoomIn(); updZoom(); };
+      document.getElementById('btn-zo').onclick = () => { engine.zoomOut(); updZoom(); };
+      document.getElementById('btn-zr').onclick = () => { engine.resetView(); updZoom(); };
+
+      document.getElementById('btn-save').onclick = async () => {
+        const btn = document.getElementById('btn-save');
+        btn.disabled = true; btn.textContent = 'Saving…';
         try {
-          const st={}; E.elements.filter(e=>e.type==='section').forEach(s=>{st[s.label.toLowerCase().replace(/\s+/g,'-')]=s.tier_id;});
-          const r=await saveVenueMapV2(eid,E,st);
-          msg(`✅ ${r.seatCount} seats saved (v${r.version})`,'ok');
-          $('b-delmap').style.display='';
-        } catch(e){msg('❌ '+e.message,'err');}
-        finally { b.disabled=false; b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="13" height="13"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> SAVE &amp; DEPLOY'; }
+          const st = {};
+          engine.elements.filter(e=>e.type==='section').forEach(s => {
+            st[s.label.toLowerCase().replace(/\s+/g,'-')] = s.tier_id;
+          });
+          const r = await saveVenueMapV2(eventId, engine, st);
+          toast(`✅ ${r.seatCount} seats saved (v${r.version})`, 'success');
+          document.getElementById('btn-del-map').style.display = '';
+        } catch (e) { toast('❌ ' + e.message, 'error'); }
+        finally {
+          btn.disabled = false;
+          btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save & Deploy';
+        }
       };
 
-      $('b-delmap').onclick=async()=>{
-        if(!confirm('Delete venue map and all seats?')) return;
-        try { await deleteVenueMap(eid); msg('Map deleted','ok'); $('b-delmap').style.display='none'; E.elements=[]; E.state.selectedId=null; E.addElement('stage',400,40); props(); stats(); }
-        catch(e){msg('❌ '+e.message,'err');}
+      document.getElementById('btn-del-map').onclick = async () => {
+        if (!confirm('Delete venue map and all seats?')) return;
+        try {
+          await deleteVenueMap(eventId);
+          toast('Map deleted', 'success');
+          document.getElementById('btn-del-map').style.display = 'none';
+          engine.elements = []; engine.state.selectedId = null;
+          engine.addElement('stage', 400, 40);
+          updateProps(); updateStats();
+        } catch (e) { toast('❌ ' + e.message, 'error'); }
       };
     }
 
-    function zl() { $('z-lbl').textContent=Math.round(E.state.zoom*100)+'%'; }
-    function msg(m,t='inf') { const e=$('toast'); e.textContent=m; e.className='vd-toast vd-toast-'+t; e.style.display=''; clearTimeout(e._t); e._t=setTimeout(()=>e.style.display='none',4500); }
+    function updZoom() {
+      document.getElementById('zoom-lbl').textContent = Math.round(engine.state.zoom*100) + '%';
+    }
+
+    function toast(msg, type='info') {
+      const t = document.getElementById('vd-toast');
+      t.textContent = msg; t.className = 'vd-toast vd-toast-' + type; t.style.display = '';
+      clearTimeout(t._t); t._t = setTimeout(() => t.style.display = 'none', 4000);
+    }
   </script>
 </body>
 </html>
