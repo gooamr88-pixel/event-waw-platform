@@ -547,41 +547,33 @@
         const signupBtn = document.getElementById('nav-signup');
 
         if (signinBtn) {
-          signinBtn.textContent = 'Events';
-          signinBtn.href = 'events.html';
+          signinBtn.textContent = 'Dashboard';
+          signinBtn.href = 'dashboard.html';
+          signinBtn.classList.remove('btn-outline');
+          signinBtn.classList.add('btn-primary');
           signinBtn.style.display = '';
         }
         if (signupBtn) {
-          signupBtn.textContent = 'Dashboard';
-          signupBtn.href = 'dashboard.html';
+          signupBtn.textContent = 'Sign Out';
+          signupBtn.href = '#';
           signupBtn.classList.remove('btn-primary');
           signupBtn.classList.add('btn-outline');
+          signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); });
         }
 
-        // Change nav-links "Events" → "Dashboard"
+        // Change nav-links "Events" anchor → "Dashboard" page link
         const navLinks = document.getElementById('nav-links');
         if (navLinks) {
           const eventsLink = navLinks.querySelector('a[href="#events"]');
           if (eventsLink) { eventsLink.textContent = 'Dashboard'; eventsLink.href = 'dashboard.html'; }
         }
 
-        const navActions = document.querySelector('.nav-actions');
-        if (navActions && !document.getElementById('signout-nav')) {
-          const signOutBtn = document.createElement('button');
-          signOutBtn.id = 'signout-nav';
-          signOutBtn.className = 'btn btn-outline btn-sm';
-          signOutBtn.textContent = 'Sign Out';
-          signOutBtn.style.cssText = 'font-size:0.85rem;';
-          signOutBtn.addEventListener('click', () => performSignOut('/index.html'));
-          navActions.insertBefore(signOutBtn, navActions.querySelector('.nav-toggle'));
-        }
-
         const mobileMenu = document.getElementById('mobile-menu');
         if (mobileMenu) {
           const links = mobileMenu.querySelectorAll('a');
           links.forEach(a => {
-            if (a.href.includes('login.html')) { a.textContent = 'Events'; a.href = 'events.html'; }
-            if (a.href.includes('register.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; }
+            if (a.href.includes('login.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; }
+            if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
             if (a.textContent.trim() === 'Events' && a.getAttribute('href') === '#events') { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; }
           });
         }
