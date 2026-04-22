@@ -76,72 +76,45 @@
         </div>
       </div>
 
-      <!-- ═══ Advanced Filters Bar ═══ -->
-      <div class="adv-filters" id="adv-filters">
-        <div class="adv-filter-group">
-          <label class="adv-filter-label" for="ev-filter-city">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-            City
-          </label>
-          <div class="adv-select-wrap">
-            <select class="adv-select" id="ev-filter-city">
-              <option value="all">All Cities</option>
-            </select>
-            <svg class="adv-select-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-          </div>
+      <!-- Inline Filters -->
+      <div class="adv-filters-inline" id="adv-filters" style="margin-bottom:24px;">
+        <div class="adv-pill-select">
+          <select class="adv-select" id="ev-filter-city">
+            <option value="all">All Cities</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
         </div>
-
-        <div class="adv-filter-group">
-          <label class="adv-filter-label" for="ev-filter-category">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
-            Type
-          </label>
-          <div class="adv-select-wrap">
-            <select class="adv-select" id="ev-filter-category">
-              <option value="all">All Types</option>
-              <option value="music">🎵 Music</option>
-              <option value="sports">⚽ Sports</option>
-              <option value="trips">🏕️ Trips</option>
-              <option value="conference">🎤 Conference</option>
-              <option value="art">🎨 Art & Culture</option>
-              <option value="food">🍽️ Food & Drink</option>
-              <option value="nightlife">🌙 Nightlife</option>
-              <option value="workshop">🛠️ Workshop</option>
-              <option value="gala">✨ Gala</option>
-              <option value="general">📌 General</option>
-            </select>
-            <svg class="adv-select-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-          </div>
+        <div class="adv-pill-select">
+          <select class="adv-select" id="ev-filter-category">
+            <option value="all">All Types</option>
+            <option value="music">Music</option>
+            <option value="sports">Sports</option>
+            <option value="trips">Trips</option>
+            <option value="conference">Conference</option>
+            <option value="art">Art</option>
+            <option value="food">Food</option>
+            <option value="nightlife">Nightlife</option>
+            <option value="workshop">Workshop</option>
+            <option value="gala">Gala</option>
+            <option value="general">General</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
         </div>
-
-        <div class="adv-filter-group">
-          <label class="adv-filter-label" for="ev-filter-date">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
-            Date
-          </label>
-          <div class="adv-select-wrap">
-            <select class="adv-select" id="ev-filter-date">
-              <option value="all">Any Date</option>
-              <option value="today">Today</option>
-              <option value="tomorrow">Tomorrow</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="custom">Pick a Date…</option>
-            </select>
-            <svg class="adv-select-arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
-          </div>
+        <div class="adv-pill-select">
+          <select class="adv-select" id="ev-filter-date">
+            <option value="all">Any Date</option>
+            <option value="today">Today</option>
+            <option value="tomorrow">Tomorrow</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="custom">Pick a Date</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
         </div>
-
-        <div class="adv-filter-group adv-date-custom" id="ev-date-custom" style="display:none;">
-          <label class="adv-filter-label" for="ev-date-input">📅 Exact Date</label>
-          <input type="date" class="adv-date-input" id="ev-date-input" />
-        </div>
-
-        <button class="adv-reset-btn" id="ev-reset-btn" style="display:none;" title="Reset all filters">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-          Reset
-        </button>
+        <input type="date" class="adv-date-pill" id="ev-date-input" style="display:none;" />
+        <button class="adv-reset-pill" id="ev-reset-btn" style="display:none;">Reset</button>
       </div>
+
 
       <!-- Events Grid -->
       <div class="events-grid" id="events-grid" data-stagger>
@@ -384,7 +357,6 @@
       const citySelect = document.getElementById('ev-filter-city');
       const catSelect = document.getElementById('ev-filter-category');
       const dateSelect = document.getElementById('ev-filter-date');
-      const dateCustom = document.getElementById('ev-date-custom');
       const dateInput = document.getElementById('ev-date-input');
       const resetBtn = document.getElementById('ev-reset-btn');
 
@@ -398,7 +370,7 @@
 
       dateSelect?.addEventListener('change', () => {
         activeDateFilter = dateSelect.value;
-        if (dateCustom) dateCustom.style.display = activeDateFilter === 'custom' ? '' : 'none';
+        if (dateInput) dateInput.style.display = activeDateFilter === 'custom' ? '' : 'none';
         if (activeDateFilter !== 'custom') { customDate = null; applyAndRender(); }
         else if (dateInput?.value) { customDate = dateInput.value; applyAndRender(); }
       });
@@ -410,8 +382,7 @@
         if (citySelect) citySelect.value = 'all';
         if (catSelect) catSelect.value = 'all';
         if (dateSelect) dateSelect.value = 'all';
-        if (dateCustom) dateCustom.style.display = 'none';
-        if (dateInput) dateInput.value = '';
+        if (dateInput) { dateInput.value = ''; dateInput.style.display = 'none'; }
         const searchInput = document.getElementById('events-search');
         if (searchInput) searchInput.value = '';
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.category === 'all'));
