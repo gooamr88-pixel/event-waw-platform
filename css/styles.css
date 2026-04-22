@@ -1272,6 +1272,205 @@ button { cursor: pointer; }
   }
 }
 
+/* ══════════════════════════════════
+   ADVANCED FILTERS BAR
+   ══════════════════════════════════ */
+
+.adv-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 20px;
+  margin-bottom: 28px;
+  padding: 18px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  flex-wrap: wrap;
+  transition: var(--transition);
+  box-shadow: 0 4px 24px rgba(0,0,0,.1);
+}
+.adv-filters:hover {
+  border-color: rgba(212,175,55,.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+
+.adv-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.adv-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  padding-left: 2px;
+}
+.adv-filter-label svg {
+  width: 13px;
+  height: 13px;
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
+.adv-select-wrap {
+  position: relative;
+}
+
+.adv-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 36px 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+}
+.adv-select:hover {
+  border-color: rgba(212,175,55,.3);
+  background: rgba(212,175,55,.04);
+}
+.adv-select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(212,175,55,.08);
+  background: rgba(212,175,55,.06);
+}
+.adv-select option {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+.adv-select-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+  transition: color 0.2s;
+}
+.adv-select:focus + .adv-select-arrow {
+  color: var(--accent-primary);
+}
+
+/* Custom date input */
+.adv-date-input {
+  width: 100%;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition);
+  outline: none;
+  color-scheme: dark;
+}
+.adv-date-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(212,175,55,.08);
+}
+[data-theme="light"] .adv-date-input {
+  color-scheme: light;
+}
+
+/* Reset button */
+.adv-reset-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: rgba(239,68,68,.06);
+  border: 1px solid rgba(239,68,68,.15);
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+.adv-reset-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.adv-reset-btn:hover {
+  background: rgba(239,68,68,.12);
+  border-color: rgba(239,68,68,.3);
+  transform: translateY(-1px);
+}
+
+/* Light theme */
+[data-theme="light"] .adv-filters {
+  background: #fff;
+  border-color: #e5e7eb;
+  box-shadow: 0 4px 16px rgba(0,0,0,.05);
+}
+[data-theme="light"] .adv-select {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #1a1a1f;
+}
+[data-theme="light"] .adv-select:hover {
+  background: #f3f4f6;
+  border-color: rgba(212,175,55,.3);
+}
+[data-theme="light"] .adv-select option {
+  background: #fff;
+  color: #1a1a1f;
+}
+[data-theme="light"] .adv-date-input {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #1a1a1f;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .adv-filters {
+    padding: 14px 16px;
+    gap: 12px;
+    border-radius: 14px;
+  }
+  .adv-filter-group {
+    min-width: calc(50% - 8px);
+    flex: unset;
+  }
+  .adv-reset-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+@media (max-width: 480px) {
+  .adv-filter-group {
+    min-width: 100%;
+  }
+}
+
 
 /* ══════════════════════════════════
    HOW IT WORKS — Steps

@@ -69,11 +69,78 @@
       </div>
 
       <!-- Search Bar -->
-      <div style="margin-bottom:32px;" data-reveal>
+      <div style="margin-bottom:16px;" data-reveal>
         <div style="position:relative;max-width:480px;">
           <svg style="position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
           <input type="text" class="fi" id="events-search" placeholder="Search events…" style="padding-left:44px;" />
         </div>
+      </div>
+
+      <!-- ═══ Advanced Filters Bar ═══ -->
+      <div class="adv-filters" id="adv-filters" data-reveal>
+        <div class="adv-filter-group">
+          <label class="adv-filter-label" for="ev-filter-city">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
+            City
+          </label>
+          <div class="adv-select-wrap">
+            <select class="adv-select" id="ev-filter-city">
+              <option value="all">All Cities</option>
+            </select>
+            <svg class="adv-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+          </div>
+        </div>
+
+        <div class="adv-filter-group">
+          <label class="adv-filter-label" for="ev-filter-category">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6z"/></svg>
+            Type
+          </label>
+          <div class="adv-select-wrap">
+            <select class="adv-select" id="ev-filter-category">
+              <option value="all">All Types</option>
+              <option value="music">🎵 Music</option>
+              <option value="sports">⚽ Sports</option>
+              <option value="trips">🏕️ Trips</option>
+              <option value="conference">🎤 Conference</option>
+              <option value="art">🎨 Art & Culture</option>
+              <option value="food">🍽️ Food & Drink</option>
+              <option value="nightlife">🌙 Nightlife</option>
+              <option value="workshop">🛠️ Workshop</option>
+              <option value="gala">✨ Gala</option>
+              <option value="general">📌 General</option>
+            </select>
+            <svg class="adv-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+          </div>
+        </div>
+
+        <div class="adv-filter-group">
+          <label class="adv-filter-label" for="ev-filter-date">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>
+            Date
+          </label>
+          <div class="adv-select-wrap">
+            <select class="adv-select" id="ev-filter-date">
+              <option value="all">Any Date</option>
+              <option value="today">Today</option>
+              <option value="tomorrow">Tomorrow</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+              <option value="custom">Pick a Date…</option>
+            </select>
+            <svg class="adv-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+          </div>
+        </div>
+
+        <div class="adv-filter-group adv-date-custom" id="ev-date-custom" style="display:none;">
+          <label class="adv-filter-label" for="ev-date-input">📅 Exact Date</label>
+          <input type="date" class="adv-date-input" id="ev-date-input" />
+        </div>
+
+        <button class="adv-reset-btn" id="ev-reset-btn" style="display:none;" title="Reset all filters">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+          Reset
+        </button>
       </div>
 
       <!-- Events Grid -->
@@ -115,6 +182,13 @@
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
 
+    let allEvents = [];
+    let activeCategory = 'all';
+    let activeCityFilter = 'all';
+    let activeDateFilter = 'all';
+    let customDate = null;
+    let searchQuery = '';
+
     // ── Init ──
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
@@ -126,9 +200,8 @@
       await loadEvents();
       initFilters();
       initSearch();
+      initAdvancedFilters();
     });
-
-    let allEvents = [];
 
     // ── Load Events ──
     async function loadEvents() {
@@ -137,7 +210,6 @@
       const empty = document.getElementById('events-empty');
 
       try {
-        // Fetch events WITH tiers in a single query (no N+1)
         let { data, error } = await supabase
           .from('events')
           .select('*, ticket_tiers(id, name, price, capacity, sold_count)')
@@ -155,11 +227,84 @@
         }
 
         allEvents = data;
-        renderEvents(allEvents);
+        populateCityFilter(allEvents);
+        applyAndRender();
       } catch (err) {
         console.error('Error loading events:', err);
         loading.style.display = 'none';
         empty.style.display = 'block';
+      }
+    }
+
+    // ── Populate city dropdown dynamically ──
+    function populateCityFilter(events) {
+      const select = document.getElementById('ev-filter-city');
+      if (!select) return;
+      const cities = [...new Set(events.map(e => (e.city || '').trim()).filter(Boolean))].sort();
+      select.innerHTML = '<option value="all">All Cities</option>';
+      cities.forEach(city => {
+        const opt = document.createElement('option');
+        opt.value = city;
+        opt.textContent = city;
+        select.appendChild(opt);
+      });
+    }
+
+    // ── Filter + Render Pipeline ──
+    function applyAndRender() {
+      let filtered = [...allEvents];
+      const now = new Date();
+
+      // Category
+      if (activeCategory !== 'all') {
+        filtered = filtered.filter(e => (e.category || '').toLowerCase() === activeCategory.toLowerCase());
+      }
+
+      // City
+      if (activeCityFilter !== 'all') {
+        filtered = filtered.filter(e => (e.city || '').toLowerCase() === activeCityFilter.toLowerCase());
+      }
+
+      // Date
+      if (activeDateFilter !== 'all') {
+        const today = new Date(); today.setHours(0, 0, 0, 0);
+        if (activeDateFilter === 'today') {
+          const end = new Date(today); end.setDate(end.getDate() + 1);
+          filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d < end; });
+        } else if (activeDateFilter === 'tomorrow') {
+          const start = new Date(today); start.setDate(start.getDate() + 1);
+          const end = new Date(start); end.setDate(end.getDate() + 1);
+          filtered = filtered.filter(e => { const d = new Date(e.date); return d >= start && d < end; });
+        } else if (activeDateFilter === 'week') {
+          const end = new Date(today); end.setDate(end.getDate() + 7);
+          filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d <= end; });
+        } else if (activeDateFilter === 'month') {
+          const end = new Date(today); end.setMonth(end.getMonth() + 1);
+          filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d <= end; });
+        } else if (activeDateFilter === 'custom' && customDate) {
+          const start = new Date(customDate); start.setHours(0, 0, 0, 0);
+          const end = new Date(start); end.setDate(end.getDate() + 1);
+          filtered = filtered.filter(e => { const d = new Date(e.date); return d >= start && d < end; });
+        }
+      }
+
+      // Search
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        filtered = filtered.filter(e =>
+          (e.title || '').toLowerCase().includes(q) ||
+          (e.venue || '').toLowerCase().includes(q) ||
+          (e.city || '').toLowerCase().includes(q) ||
+          (e.category || '').toLowerCase().includes(q)
+        );
+      }
+
+      renderEvents(filtered);
+
+      // Reset button visibility
+      const resetBtn = document.getElementById('ev-reset-btn');
+      if (resetBtn) {
+        resetBtn.style.display = (activeCategory !== 'all' || activeCityFilter !== 'all' || activeDateFilter !== 'all' || searchQuery.trim()) ? '' : 'none';
       }
     }
 
@@ -194,11 +339,11 @@
               <h3>${escapeHTML(event.title)}</h3>
               <div class="event-card-location">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                ${escapeHTML(event.venue)}
+                ${escapeHTML(event.venue)}${event.city ? ' · ' + escapeHTML(event.city) : ''}
               </div>
               <div class="event-card-footer">
-                <div class="event-card-price">$${minPrice.toLocaleString()} <small>/ person</small></div>
-                <div class="event-card-avail"><strong>${totalAvail}</strong> spots left</div>
+                <div class="event-card-price">${minPrice > 0 ? '$' + minPrice.toLocaleString() + ' <small>/ person</small>' : 'Free'}</div>
+                <div class="event-card-avail">${totalAvail > 0 ? '<strong>' + totalAvail + '</strong> spots left' : '<strong style="color:#ef4444;">Sold Out</strong>'}</div>
               </div>
             </div>
           </article>
@@ -206,26 +351,17 @@
       }).join('');
     }
 
-    // ── Demo fallback when DB not connected ──
-    function renderDemoEvents() {
-      const demoEvents = [
-        { id: 'demo-1', title: 'Neon Pulse Music Festival', cover_image: 'images/event-concert.png', category: 'music', venue: 'Cairo International Stadium', date: '2026-05-17T20:00:00+02:00', ticket_tiers: [{ price: 850, capacity: 500, sold_count: 477 }] },
-        { id: 'demo-2', title: 'The Golden Gala 2026', cover_image: 'images/event-gala.png', category: 'gala', venue: 'Royal Maxim Palace, New Cairo', date: '2026-06-06T19:30:00+02:00', ticket_tiers: [{ price: 2500, capacity: 200, sold_count: 192 }] },
-        { id: 'demo-3', title: 'Future Tech Summit 2026', cover_image: 'images/event-conference.png', category: 'conference', venue: 'GrEEK Campus, Downtown Cairo', date: '2026-06-15T09:00:00+02:00', ticket_tiers: [{ price: 450, capacity: 300, sold_count: 158 }] },
-      ];
-      allEvents = demoEvents;
-      renderEvents(demoEvents);
-    }
-
-    // ── Filters ──
+    // ── Category Buttons (existing) ──
     function initFilters() {
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
-          const cat = btn.dataset.category;
-          const filtered = cat === 'all' ? allEvents : allEvents.filter(e => e.category === cat);
-          renderEvents(filtered);
+          activeCategory = btn.dataset.category;
+          // Sync dropdown
+          const catSelect = document.getElementById('ev-filter-category');
+          if (catSelect) catSelect.value = activeCategory;
+          applyAndRender();
         });
       });
     }
@@ -237,17 +373,49 @@
       input.addEventListener('input', () => {
         clearTimeout(debounce);
         debounce = setTimeout(() => {
-          const q = input.value.toLowerCase().trim();
-          const activeFilter = document.querySelector('.filter-btn.active')?.dataset.category || 'all';
-          let filtered = activeFilter === 'all' ? allEvents : allEvents.filter(e => e.category === activeFilter);
-          if (q) {
-            filtered = filtered.filter(e =>
-              e.title.toLowerCase().includes(q) ||
-              e.venue?.toLowerCase().includes(q)
-            );
-          }
-          renderEvents(filtered);
+          searchQuery = input.value;
+          applyAndRender();
         }, 250);
+      });
+    }
+
+    // ── Advanced Filters ──
+    function initAdvancedFilters() {
+      const citySelect = document.getElementById('ev-filter-city');
+      const catSelect = document.getElementById('ev-filter-category');
+      const dateSelect = document.getElementById('ev-filter-date');
+      const dateCustom = document.getElementById('ev-date-custom');
+      const dateInput = document.getElementById('ev-date-input');
+      const resetBtn = document.getElementById('ev-reset-btn');
+
+      citySelect?.addEventListener('change', () => { activeCityFilter = citySelect.value; applyAndRender(); });
+
+      catSelect?.addEventListener('change', () => {
+        activeCategory = catSelect.value;
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.category === activeCategory));
+        applyAndRender();
+      });
+
+      dateSelect?.addEventListener('change', () => {
+        activeDateFilter = dateSelect.value;
+        if (dateCustom) dateCustom.style.display = activeDateFilter === 'custom' ? '' : 'none';
+        if (activeDateFilter !== 'custom') { customDate = null; applyAndRender(); }
+        else if (dateInput?.value) { customDate = dateInput.value; applyAndRender(); }
+      });
+
+      dateInput?.addEventListener('change', () => { customDate = dateInput.value; applyAndRender(); });
+
+      resetBtn?.addEventListener('click', () => {
+        activeCategory = 'all'; activeCityFilter = 'all'; activeDateFilter = 'all'; customDate = null; searchQuery = '';
+        if (citySelect) citySelect.value = 'all';
+        if (catSelect) catSelect.value = 'all';
+        if (dateSelect) dateSelect.value = 'all';
+        if (dateCustom) dateCustom.style.display = 'none';
+        if (dateInput) dateInput.value = '';
+        const searchInput = document.getElementById('events-search');
+        if (searchInput) searchInput.value = '';
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.toggle('active', b.dataset.category === 'all'));
+        applyAndRender();
       });
     }
 
