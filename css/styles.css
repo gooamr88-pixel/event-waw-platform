@@ -1279,44 +1279,44 @@ button { cursor: pointer; }
 .adv-filters {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
-  margin-top: 20px;
-  margin-bottom: 28px;
-  padding: 18px 24px;
+  gap: 14px;
+  margin-top: 16px;
+  margin-bottom: 24px;
+  padding: 16px 20px;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  border-radius: 18px;
+  border-radius: 16px;
   flex-wrap: wrap;
   transition: var(--transition);
-  box-shadow: 0 4px 24px rgba(0,0,0,.1);
+  box-shadow: 0 2px 12px rgba(0,0,0,.08);
 }
 .adv-filters:hover {
   border-color: rgba(212,175,55,.15);
-  box-shadow: 0 8px 32px rgba(0,0,0,.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,.12);
 }
 
 .adv-filter-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   flex: 1;
-  min-width: 140px;
+  min-width: 150px;
 }
 
 .adv-filter-label {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
+  gap: 5px;
+  font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
+  letter-spacing: 1.2px;
   color: var(--text-muted);
   padding-left: 2px;
 }
 .adv-filter-label svg {
-  width: 13px;
-  height: 13px;
+  width: 12px;
+  height: 12px;
   color: var(--accent-primary);
   flex-shrink: 0;
 }
@@ -1327,13 +1327,14 @@ button { cursor: pointer; }
 
 .adv-select {
   width: 100%;
+  box-sizing: border-box;
   appearance: none;
   -webkit-appearance: none;
   background: rgba(255,255,255,.04);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 10px 36px 10px 14px;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  padding: 9px 32px 9px 12px;
+  font-size: 0.84rem;
   font-weight: 500;
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -1347,7 +1348,7 @@ button { cursor: pointer; }
 }
 .adv-select:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(212,175,55,.08);
+  box-shadow: 0 0 0 2px rgba(212,175,55,.08);
   background: rgba(212,175,55,.06);
 }
 .adv-select option {
@@ -1358,11 +1359,11 @@ button { cursor: pointer; }
 
 .adv-select-arrow {
   position: absolute;
-  right: 12px;
+  right: 10px;
   top: 50%;
   transform: translateY(-50%);
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   color: var(--text-muted);
   pointer-events: none;
   transition: color 0.2s;
@@ -1374,11 +1375,12 @@ button { cursor: pointer; }
 /* Custom date input */
 .adv-date-input {
   width: 100%;
+  box-sizing: border-box;
   background: rgba(255,255,255,.04);
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 0.84rem;
   font-weight: 500;
   font-family: var(--font-sans);
   color: var(--text-primary);
@@ -1389,7 +1391,7 @@ button { cursor: pointer; }
 }
 .adv-date-input:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(212,175,55,.08);
+  box-shadow: 0 0 0 2px rgba(212,175,55,.08);
 }
 [data-theme="light"] .adv-date-input {
   color-scheme: light;
@@ -1397,15 +1399,15 @@ button { cursor: pointer; }
 
 /* Reset button */
 .adv-reset-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 18px;
-  border-radius: 12px;
+  gap: 5px;
+  padding: 9px 16px;
+  border-radius: 10px;
   background: rgba(239,68,68,.06);
   border: 1px solid rgba(239,68,68,.15);
   color: #ef4444;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   font-family: var(--font-sans);
   cursor: pointer;
@@ -1415,8 +1417,8 @@ button { cursor: pointer; }
   align-self: flex-end;
 }
 .adv-reset-btn svg {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 .adv-reset-btn:hover {
   background: rgba(239,68,68,.12);
@@ -1424,11 +1426,11 @@ button { cursor: pointer; }
   transform: translateY(-1px);
 }
 
-/* Light theme */
+/* Light theme overrides */
 [data-theme="light"] .adv-filters {
   background: #fff;
   border-color: #e5e7eb;
-  box-shadow: 0 4px 16px rgba(0,0,0,.05);
+  box-shadow: 0 2px 10px rgba(0,0,0,.04);
 }
 [data-theme="light"] .adv-select {
   background: #f9fafb;
@@ -1452,12 +1454,12 @@ button { cursor: pointer; }
 /* Responsive */
 @media (max-width: 768px) {
   .adv-filters {
-    padding: 14px 16px;
-    gap: 12px;
+    padding: 12px 14px;
+    gap: 10px;
     border-radius: 14px;
   }
   .adv-filter-group {
-    min-width: calc(50% - 8px);
+    min-width: calc(50% - 6px);
     flex: unset;
   }
   .adv-reset-btn {
