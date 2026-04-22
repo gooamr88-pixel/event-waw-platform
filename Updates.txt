@@ -1,0 +1,6 @@
+cd /var/www/eventwaw/html
+
+git pull
+
+
+chown -R www-data:www-data /var/www/eventwaw/html

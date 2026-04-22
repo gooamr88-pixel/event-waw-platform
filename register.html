@@ -232,7 +232,7 @@
     import { supabase } from './src/lib/supabase.js';
     import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
 
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+    const SUPABASE_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co';
 
     let registeredEmail = '';
 
@@ -402,7 +402,7 @@
           const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-              redirectTo: `${window.location.origin}/events.html`,
+              redirectTo: `${window.location.origin}/register.html`,
               queryParams: {
                 access_type: 'offline',
                 prompt: 'consent',

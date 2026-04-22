@@ -356,3 +356,36 @@ export function welcomeEmail(name: string, role: string): string {
   `;
   return emailWrapper(content);
 }
+
+// ═════════════════════════════════
+// 6. OTP — Password Reset
+// ═════════════════════════════════
+export function otpPasswordResetEmail(code: string): string {
+  const content = `
+    <tr><td style="padding:40px 36px;text-align:center;">
+      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(212,175,55,0.08);border-radius:50%;line-height:56px;text-align:center;">
+        <span style="font-size:24px;">🔑</span>
+      </div>
+      <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:${BRAND.text};">Password Reset</h1>
+      <p style="margin:0 0 28px;font-size:14px;color:${BRAND.textMuted};line-height:1.6;">
+        You requested to reset your password. Enter this code to proceed:
+      </p>
+      <table role="presentation" align="center" cellpadding="0" cellspacing="0"
+        style="background:${BRAND.bg};border:2px solid rgba(212,175,55,0.15);border-radius:16px;">
+        <tr><td style="padding:20px 40px;">
+          <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
+            ${code}
+          </span>
+        </td></tr>
+      </table>
+      <p style="margin:24px 0 0;font-size:12px;color:${BRAND.textDim};">
+        ⏱ This code expires in <strong style="color:${BRAND.textMuted};">5 minutes</strong>
+      </p>
+      <p style="margin:16px 0 0;font-size:12px;color:${BRAND.textDim};line-height:1.5;">
+        If you didn't request this, please ignore this email.<br/>
+        Your password will remain unchanged.
+      </p>
+    </td></tr>
+  `;
+  return emailWrapper(content);
+}
