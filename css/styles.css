@@ -190,7 +190,7 @@ body {
   filter: saturate(1.1) brightness(1.04);
 }
 [data-theme="light"] .event-card-image::after {
-  background: linear-gradient(to top, #ffffff 0%, rgba(255,255,255,.4) 40%, transparent 100%);
+  background: linear-gradient(to top, #ffffff 0%, rgba(255,255,255,.15) 35%, transparent 70%);
 }
 [data-theme="light"] .about-image-frame {
   border-color: rgba(0,0,0,.06);
@@ -425,7 +425,7 @@ body {
 
 /* ── Event Detail Page — Hero Image ── */
 [data-theme="light"] .ed-hero-overlay {
-  background: linear-gradient(to bottom, rgba(255,255,255,.05), rgba(250,249,246,.97));
+  background: linear-gradient(to bottom, rgba(250,249,246,.15), rgba(250,249,246,.85));
 }
 [data-theme="light"] .ed-info-card,
 [data-theme="light"] .ed-ticket-card {
@@ -2084,14 +2084,15 @@ button { cursor: pointer; }
   background: linear-gradient(135deg, #A8872B, #D4AF37, #A8872B);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
 }
+/* Hero stays dark-overlay so images are visible + white text readable */
 [data-theme="light"] .hero-slideshow::after {
-  background: linear-gradient(to bottom, rgba(250,250,250,0.7), rgba(250,250,250,0.88));
+  background: linear-gradient(to bottom, rgba(10,10,15,0.55), rgba(10,10,15,0.75));
 }
 [data-theme="light"] .hero-stat .number {
-  background: var(--accent-gradient);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  color: #fff;
+  -webkit-text-fill-color: #fff;
 }
-[data-theme="light"] .particle { background: var(--accent-dark); opacity: 0.3; }
+[data-theme="light"] .particle { background: rgba(255,255,255,.5); opacity: 0.3; }
 
 /* Section headers */
 [data-theme="light"] .section-header h2 { color: #1e293b; }
@@ -2118,7 +2119,7 @@ button { cursor: pointer; }
 }
 [data-theme="light"] .event-card-body h3 { color: #1e293b; }
 [data-theme="light"] .event-card-image::after {
-  background: linear-gradient(to top, #ffffff, transparent);
+  background: linear-gradient(to top, #ffffff 0%, rgba(255,255,255,.1) 30%, transparent 60%);
 }
 
 /* Steps */
@@ -2322,6 +2323,14 @@ button { cursor: pointer; }
 }
 [data-theme="light"] .hero-content h1,
 [data-theme="light"] .hero-content h2 {
+  color: #fff;
+  -webkit-text-fill-color: #fff;
+}
+[data-theme="light"] .hero-content p {
+  color: rgba(255,255,255,.9);
+}
+[data-theme="light"] .hero-wrapper,
+[data-theme="light"] .hero-content {
   color: #fff;
 }
 [data-theme="light"] .gold { color: #a88825 !important; }
