@@ -1,20 +1,20 @@
 /* ═══════════════════════════════════════════════
-   EVEENTY LANDING — Clean White + Pink/Magenta
+   EVEENTY LANDING — Clean White + Amber/Orange
    Applied ONLY to landing page via .eveenty-landing
    ═══════════════════════════════════════════════ */
 
 /* ── Override accent colors for landing ── */
 .eveenty-landing {
-  --ev-pink: #e6007e;
-  --ev-pink-light: #ff1493;
-  --ev-pink-dark: #c4006b;
-  --ev-yellow: #d4c527;
-  --ev-yellow-hover: #bfb220;
+  --ev-pink: #F28C00;
+  --ev-pink-light: #FFA726;
+  --ev-pink-dark: #D97B00;
+  --ev-yellow: #F28C00;
+  --ev-yellow-hover: #D97B00;
   --ev-dark: #333333;
   --ev-gray: #555555;
   --ev-light-gray: #999999;
   --ev-bg: #ffffff;
-  --ev-bg-soft: #fff5f9;
+  --ev-bg-soft: #FFF8EE;
   --ev-bg-cream: #fdf8f0;
   --ev-bg-stats: #4a4a4a;
   --ev-border: #e8e8e8;
@@ -131,7 +131,7 @@
 .eveenty-landing .btn-primary::before { display: none !important; }
 .eveenty-landing .btn-primary:hover {
   background: var(--ev-pink-dark) !important;
-  box-shadow: 0 4px 16px rgba(230,0,126,0.25) !important;
+  box-shadow: 0 4px 16px rgba(242,140,0,0.25) !important;
   transform: none !important;
 }
 .eveenty-landing .btn-outline {
@@ -146,7 +146,7 @@
 .eveenty-landing .btn-outline:hover {
   border-color: var(--ev-pink) !important;
   color: var(--ev-pink) !important;
-  background: #fff5f9 !important;
+  background: #FFF8EE !important;
   transform: none !important;
 }
 .eveenty-landing .btn-pulse { animation: none !important; }
@@ -164,7 +164,7 @@
   min-height: auto !important;
   height: auto !important;
   padding: 140px 0 80px !important;
-  background: linear-gradient(180deg, #ffffff 0%, #fff8fb 60%, #fff0f5 100%) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #FFF9F0 60%, #FFF5E6 100%) !important;
   display: block !important;
   text-align: left !important;
   position: relative;
@@ -248,7 +248,7 @@
 .ev-hero-buttons .ev-btn-create:hover {
   border-color: var(--ev-pink);
   color: var(--ev-pink);
-  box-shadow: 0 4px 16px rgba(230,0,126,0.08);
+  box-shadow: 0 4px 16px rgba(242,140,0,0.08);
 }
 .ev-hero-buttons .ev-btn-explore {
   display: inline-flex;
@@ -288,7 +288,7 @@
    ══════════════════════════════════ */
 .ev-search-bar-section {
   padding: 40px 0 20px;
-  background: linear-gradient(180deg, #fff0f5 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #FFF5E6 0%, #ffffff 100%);
 }
 .ev-search-bar-section .container {
   max-width: 1280px;
@@ -356,7 +356,7 @@
 }
 .ev-search-btn:hover {
   background: var(--ev-pink-dark);
-  box-shadow: 0 4px 20px rgba(230,0,126,0.3);
+  box-shadow: 0 4px 20px rgba(242,140,0,0.3);
 }
 .ev-search-btn svg {
   width: 16px;
@@ -685,7 +685,7 @@
 .ev-view-more-btn:hover {
   background: var(--ev-pink);
   color: #fff;
-  box-shadow: 0 4px 20px rgba(230,0,126,0.2);
+  box-shadow: 0 4px 20px rgba(242,140,0,0.2);
 }
 
 /* ══════════════════════════════════
@@ -704,14 +704,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(230,0,126,0.35);
+  box-shadow: 0 4px 20px rgba(242,140,0,0.35);
   cursor: pointer;
   z-index: 999;
   transition: all 0.3s ease;
 }
 .ev-chat-fab:hover {
   transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(230,0,126,0.45);
+  box-shadow: 0 6px 28px rgba(242,140,0,0.45);
 }
 .ev-chat-fab svg {
   width: 24px;
@@ -728,9 +728,8 @@
   display: none !important;
 }
 
-/* Remove About, Events grid, and Highlights from landing */
+/* Remove About and Highlights from landing */
 .eveenty-landing #about,
-.eveenty-landing #events,
 .eveenty-landing #highlights {
   display: none !important;
 }
@@ -742,8 +741,8 @@
 /* Section labels */
 .eveenty-landing .section-label {
   color: var(--ev-pink) !important;
-  border-color: rgba(230,0,126,0.12) !important;
-  background: rgba(230,0,126,0.06) !important;
+  border-color: rgba(242,140,0,0.12) !important;
+  background: rgba(242,140,0,0.06) !important;
 }
 .eveenty-landing .section-label::before {
   background: var(--ev-pink) !important;
@@ -759,11 +758,11 @@
 
 /* About feature icons */
 .eveenty-landing .about-feature .icon {
-  background: rgba(230,0,126,0.08) !important;
+  background: rgba(242,140,0,0.08) !important;
 }
 .eveenty-landing .about-feature:hover {
-  border-color: rgba(230,0,126,0.25) !important;
-  background: rgba(230,0,126,0.03) !important;
+  border-color: rgba(242,140,0,0.25) !important;
+  background: rgba(242,140,0,0.03) !important;
 }
 .eveenty-landing .about-image-frame {
   background: linear-gradient(135deg, var(--ev-pink), var(--ev-pink-dark)) !important;
@@ -771,35 +770,35 @@
 
 /* Step cards */
 .eveenty-landing .step-icon {
-  background: rgba(230,0,126,0.08) !important;
-  border-color: rgba(230,0,126,0.15) !important;
+  background: rgba(242,140,0,0.08) !important;
+  border-color: rgba(242,140,0,0.15) !important;
   color: var(--ev-pink) !important;
 }
 .eveenty-landing .step-card:hover .step-icon {
-  background: rgba(230,0,126,0.12) !important;
-  box-shadow: 0 4px 16px rgba(230,0,126,0.1) !important;
+  background: rgba(242,140,0,0.12) !important;
+  box-shadow: 0 4px 16px rgba(242,140,0,0.1) !important;
 }
 .eveenty-landing .step-card:hover {
-  border-color: rgba(230,0,126,0.25) !important;
+  border-color: rgba(242,140,0,0.25) !important;
 }
 .eveenty-landing .step-card::after {
   background: linear-gradient(90deg, transparent, var(--ev-pink), transparent) !important;
 }
 .eveenty-landing .step-card:hover .step-num {
-  color: rgba(230,0,126,0.06) !important;
+  color: rgba(242,140,0,0.06) !important;
 }
 
 /* Event cards */
 .eveenty-landing .event-card:hover {
-  border-color: rgba(230,0,126,0.25) !important;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 40px rgba(230,0,126,0.04) !important;
+  border-color: rgba(242,140,0,0.25) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 40px rgba(242,140,0,0.04) !important;
 }
 .eveenty-landing .event-card::before {
   background: linear-gradient(135deg, var(--ev-pink), var(--ev-pink-dark)) !important;
 }
 .eveenty-landing .event-card-badge {
   color: var(--ev-pink) !important;
-  border-color: rgba(230,0,126,0.2) !important;
+  border-color: rgba(242,140,0,0.2) !important;
 }
 .eveenty-landing .event-card-badge .dot {
   background: var(--ev-pink) !important;
@@ -813,22 +812,22 @@
 }
 .eveenty-landing .event-card-distance {
   color: var(--ev-pink) !important;
-  background: rgba(230,0,126,0.06) !important;
-  border-color: rgba(230,0,126,0.12) !important;
+  background: rgba(242,140,0,0.06) !important;
+  border-color: rgba(242,140,0,0.12) !important;
 }
 
 /* Category pills */
 .eveenty-landing .cat-pill.active {
   background: var(--ev-pink) !important;
   border-color: var(--ev-pink) !important;
-  box-shadow: 0 4px 20px rgba(230,0,126,0.25) !important;
+  box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
 }
 .eveenty-landing .cat-pill:hover {
-  border-color: rgba(230,0,126,0.3) !important;
+  border-color: rgba(242,140,0,0.3) !important;
   color: var(--ev-pink) !important;
 }
 .eveenty-landing .cat-pill-icon {
-  background: rgba(230,0,126,0.08) !important;
+  background: rgba(242,140,0,0.08) !important;
 }
 .eveenty-landing .cat-pill.active .cat-pill-icon {
   background: rgba(255,255,255,0.2) !important;
@@ -838,34 +837,34 @@
 .eveenty-landing .filter-btn.active {
   background: var(--ev-pink) !important;
   border-color: var(--ev-pink) !important;
-  box-shadow: 0 4px 20px rgba(230,0,126,0.25) !important;
+  box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
 }
 .eveenty-landing .filter-btn:hover {
-  background: rgba(230,0,126,0.06) !important;
-  border-color: rgba(230,0,126,0.4) !important;
+  background: rgba(242,140,0,0.06) !important;
+  border-color: rgba(242,140,0,0.4) !important;
   color: var(--ev-pink) !important;
 }
 
 /* Search bar */
 .eveenty-landing .smart-search-bar:focus-within {
-  border-color: rgba(230,0,126,0.35) !important;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 3px rgba(230,0,126,0.06) !important;
+  border-color: rgba(242,140,0,0.35) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 3px rgba(242,140,0,0.06) !important;
 }
 .eveenty-landing .smart-search-bar:focus-within .search-icon {
   color: var(--ev-pink) !important;
 }
 .eveenty-landing .search-clear-btn:hover {
-  background: rgba(230,0,126,0.1) !important;
+  background: rgba(242,140,0,0.1) !important;
   color: var(--ev-pink) !important;
 }
 
 /* Advanced filter pills */
 .eveenty-landing .adv-pill-select .adv-select:hover {
-  border-color: rgba(230,0,126,0.4) !important;
+  border-color: rgba(242,140,0,0.4) !important;
 }
 .eveenty-landing .adv-pill-select .adv-select:focus {
   border-color: var(--ev-pink) !important;
-  box-shadow: 0 0 0 3px rgba(230,0,126,0.08) !important;
+  box-shadow: 0 0 0 3px rgba(242,140,0,0.08) !important;
 }
 
 /* Geo status */
@@ -877,26 +876,26 @@
 
 /* Trust badges */
 .eveenty-landing .trust-badge-icon {
-  background: rgba(230,0,126,0.05) !important;
-  border-color: rgba(230,0,126,0.1) !important;
+  background: rgba(242,140,0,0.05) !important;
+  border-color: rgba(242,140,0,0.1) !important;
 }
 .eveenty-landing .trust-badge:hover {
-  border-color: rgba(230,0,126,0.2) !important;
+  border-color: rgba(242,140,0,0.2) !important;
 }
 .eveenty-landing .security-card-tags span {
-  background: rgba(230,0,126,0.04) !important;
-  border-color: rgba(230,0,126,0.1) !important;
+  background: rgba(242,140,0,0.04) !important;
+  border-color: rgba(242,140,0,0.1) !important;
 }
 .eveenty-landing .security-card:hover {
-  border-color: rgba(230,0,126,0.2) !important;
+  border-color: rgba(242,140,0,0.2) !important;
 }
 
 /* CTA section */
 .eveenty-landing .cta-section {
-  background: linear-gradient(180deg, #fff, #fff5f9) !important;
+  background: linear-gradient(180deg, #fff, #FFF8EE) !important;
 }
 .eveenty-landing .cta-glow {
-  background: radial-gradient(ellipse, rgba(230,0,126,0.06), transparent 70%) !important;
+  background: radial-gradient(ellipse, rgba(242,140,0,0.06), transparent 70%) !important;
 }
 
 /* Trusted logos */
@@ -948,8 +947,8 @@
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(230,0,126,0.06);
-  border: 1px solid rgba(230,0,126,0.12);
+  background: rgba(242,140,0,0.06);
+  border: 1px solid rgba(242,140,0,0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -958,9 +957,9 @@
   transition: all 0.3s ease;
 }
 .ev-contact-item:hover .ev-contact-icon {
-  background: rgba(230,0,126,0.1);
+  background: rgba(242,140,0,0.1);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230,0,126,0.08);
+  box-shadow: 0 4px 12px rgba(242,140,0,0.08);
 }
 .ev-contact-icon svg {
   width: 22px;
@@ -998,7 +997,7 @@
   border-color: var(--ev-pink);
   color: #fff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(230,0,126,0.2);
+  box-shadow: 0 4px 12px rgba(242,140,0,0.2);
 }
 .ev-social-link svg {
   width: 18px;
@@ -1044,7 +1043,7 @@
 .ev-form-group select:focus,
 .ev-form-group textarea:focus {
   border-color: var(--ev-pink);
-  box-shadow: 0 0 0 3px rgba(230,0,126,0.06);
+  box-shadow: 0 0 0 3px rgba(242,140,0,0.06);
 }
 .ev-form-group input::placeholder,
 .ev-form-group textarea::placeholder {
@@ -1081,7 +1080,7 @@
 }
 .ev-form-submit:hover {
   background: var(--ev-pink-dark);
-  box-shadow: 0 4px 20px rgba(230,0,126,0.25);
+  box-shadow: 0 4px 20px rgba(242,140,0,0.25);
   transform: translateY(-1px);
 }
 .ev-form-success {
