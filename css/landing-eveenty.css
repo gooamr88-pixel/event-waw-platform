@@ -23,16 +23,75 @@
   --ev-shadow-hover: 0 8px 30px rgba(0,0,0,0.1);
 }
 
-/* ── Force light clean look + override base accent ── */
+/* ── Force light clean look + override ALL base theme vars ── */
 .eveenty-landing,
 .eveenty-landing * {
-  --text-primary: #1a1a1f;
-  --text-secondary: #555;
-  --text-muted: #888;
-  --accent-primary: #F28C00;
-  --accent-secondary: #D97B00;
-  --accent-gradient: linear-gradient(135deg, #F28C00, #FFA726);
+  --text-primary: #1a1a1f !important;
+  --text-secondary: #555 !important;
+  --text-muted: #888 !important;
+  --accent-primary: #F28C00 !important;
+  --accent-secondary: #D97B00 !important;
+  --accent-gradient: linear-gradient(135deg, #F28C00, #FFA726) !important;
+  --bg-primary: #ffffff !important;
+  --bg-secondary: #f9f9f9 !important;
+  --bg-card: #ffffff !important;
+  --bg-glass: #f0f0f0 !important;
+  --border-primary: #e8e8e8 !important;
+  --border-secondary: #eee !important;
+  --shadow-card: 0 2px 20px rgba(0,0,0,0.06) !important;
+  color-scheme: light !important;
 }
+
+/* ── Explicit light background on all sections ── */
+.eveenty-landing {
+  background: #fff !important;
+  color: #1a1a1f !important;
+}
+.eveenty-landing .section,
+.eveenty-landing section {
+  color: #1a1a1f !important;
+}
+.eveenty-landing .section-header h2,
+.eveenty-landing h2, .eveenty-landing h3, .eveenty-landing h4 {
+  color: #1a1a1f !important;
+}
+.eveenty-landing .section-desc,
+.eveenty-landing p {
+  color: #555 !important;
+}
+/* Keep contact info panel text white on amber bg */
+.eveenty-landing .ev-info-panel-content h3 { color: #fff !important; }
+.eveenty-landing .ev-info-panel-content p { color: rgba(255,255,255,0.7) !important; }
+.eveenty-landing .ev-contact-item { color: rgba(255,255,255,0.85) !important; }
+/* Form panel explicit light */
+.eveenty-landing .ev-contact-form-wrap { background: #fff !important; }
+.eveenty-landing .ev-form-group label { color: #555 !important; }
+.eveenty-landing .ev-form-group input,
+.eveenty-landing .ev-form-group select,
+.eveenty-landing .ev-form-group textarea {
+  background: #fafafa !important;
+  color: #333 !important;
+  border-color: #e0e0e0 !important;
+}
+.eveenty-landing .step-card,
+.eveenty-landing .trust-badge {
+  background: #fff !important;
+  color: #1a1a1f !important;
+}
+.eveenty-landing .step-card h3 { color: #1a1a1f !important; }
+.eveenty-landing .step-card p { color: #666 !important; }
+.eveenty-landing .trust-badge-label { color: #1a1a1f !important; }
+.eveenty-landing .trust-badge-sub { color: #888 !important; }
+.eveenty-landing .footer {
+  background: #111 !important;
+  color: #ccc !important;
+}
+.eveenty-landing .footer h4 { color: #fff !important; }
+.eveenty-landing .footer p { color: #999 !important; }
+.eveenty-landing .footer a { color: #aaa !important; }
+.eveenty-landing .footer a:hover { color: #F28C00 !important; }
+.eveenty-landing .footer-bottom { border-color: rgba(255,255,255,0.1) !important; }
+.eveenty-landing .footer-bottom span { color: #777 !important; }
 
 /* ══════════════════════════════════
    NAVBAR — Eveenty Style (Clean Horizontal)
