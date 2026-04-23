@@ -738,7 +738,7 @@
 }
 
 /* ══════════════════════════════════
-   OLD SECTIONS — Rethemed to Eveenty Pink
+   OLD SECTIONS — Rethemed to Amber/Orange
    ══════════════════════════════════ */
 
 /* Section labels */
@@ -758,18 +758,6 @@
   font-style: italic;
 }
 .eveenty-landing .text-gold { color: var(--ev-pink) !important; }
-
-/* About feature icons */
-.eveenty-landing .about-feature .icon {
-  background: rgba(242,140,0,0.08) !important;
-}
-.eveenty-landing .about-feature:hover {
-  border-color: rgba(242,140,0,0.25) !important;
-  background: rgba(242,140,0,0.03) !important;
-}
-.eveenty-landing .about-image-frame {
-  background: linear-gradient(135deg, var(--ev-pink), var(--ev-pink-dark)) !important;
-}
 
 /* Step cards */
 .eveenty-landing .step-icon {
@@ -807,12 +795,8 @@
   background: var(--ev-pink) !important;
   box-shadow: 0 0 6px var(--ev-pink) !important;
 }
-.eveenty-landing .event-card-date {
-  color: var(--ev-pink) !important;
-}
-.eveenty-landing .event-card-avail strong {
-  color: var(--ev-pink) !important;
-}
+.eveenty-landing .event-card-date { color: var(--ev-pink) !important; }
+.eveenty-landing .event-card-avail strong { color: var(--ev-pink) !important; }
 .eveenty-landing .event-card-distance {
   color: var(--ev-pink) !important;
   background: rgba(242,140,0,0.06) !important;
@@ -829,12 +813,8 @@
   border-color: rgba(242,140,0,0.3) !important;
   color: var(--ev-pink) !important;
 }
-.eveenty-landing .cat-pill-icon {
-  background: rgba(242,140,0,0.08) !important;
-}
-.eveenty-landing .cat-pill.active .cat-pill-icon {
-  background: rgba(255,255,255,0.2) !important;
-}
+.eveenty-landing .cat-pill-icon { background: rgba(242,140,0,0.08) !important; }
+.eveenty-landing .cat-pill.active .cat-pill-icon { background: rgba(255,255,255,0.2) !important; }
 
 /* Filter buttons */
 .eveenty-landing .filter-btn.active {
@@ -853,18 +833,14 @@
   border-color: rgba(242,140,0,0.35) !important;
   box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 3px rgba(242,140,0,0.06) !important;
 }
-.eveenty-landing .smart-search-bar:focus-within .search-icon {
-  color: var(--ev-pink) !important;
-}
+.eveenty-landing .smart-search-bar:focus-within .search-icon { color: var(--ev-pink) !important; }
 .eveenty-landing .search-clear-btn:hover {
   background: rgba(242,140,0,0.1) !important;
   color: var(--ev-pink) !important;
 }
 
 /* Advanced filter pills */
-.eveenty-landing .adv-pill-select .adv-select:hover {
-  border-color: rgba(242,140,0,0.4) !important;
-}
+.eveenty-landing .adv-pill-select .adv-select:hover { border-color: rgba(242,140,0,0.4) !important; }
 .eveenty-landing .adv-pill-select .adv-select:focus {
   border-color: var(--ev-pink) !important;
   box-shadow: 0 0 0 3px rgba(242,140,0,0.08) !important;
@@ -882,38 +858,10 @@
   background: rgba(242,140,0,0.05) !important;
   border-color: rgba(242,140,0,0.1) !important;
 }
-.eveenty-landing .trust-badge:hover {
-  border-color: rgba(242,140,0,0.2) !important;
-}
-.eveenty-landing .security-card-tags span {
-  background: rgba(242,140,0,0.04) !important;
-  border-color: rgba(242,140,0,0.1) !important;
-}
-.eveenty-landing .security-card:hover {
-  border-color: rgba(242,140,0,0.2) !important;
-}
+.eveenty-landing .trust-badge:hover { border-color: rgba(242,140,0,0.2) !important; }
 
-/* CTA section */
-.eveenty-landing .cta-section {
-  background: linear-gradient(180deg, #fff, #FFF8EE) !important;
-}
-.eveenty-landing .cta-glow {
-  background: radial-gradient(ellipse, rgba(242,140,0,0.06), transparent 70%) !important;
-}
-
-/* Trusted logos */
-.eveenty-landing .trusted-logo-item { opacity: 0.4; }
-.eveenty-landing .trusted-logo-item:hover { opacity: 0.8; }
-
-/* Hero badge */
-.eveenty-landing .hero-badge .dot {
-  background: #22c55e !important;
-}
-
-/* Gold pulse animation override */
-.eveenty-landing .btn-pulse {
-  animation: none !important;
-}
+/* Button animation override */
+.eveenty-landing .btn-pulse { animation: none !important; }
 
 /* Section bg override */
 .eveenty-landing [style*="background:var(--bg-secondary)"] {
