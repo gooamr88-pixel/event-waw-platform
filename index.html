@@ -24,9 +24,9 @@
 
       <div class="nav-links" id="nav-links">
         <a href="#home">Home</a>
-        <a href="#events-section">Events</a>
-        <a href="#roles">Roles</a>
-        <a href="#highlights">Highlights</a>
+        <a href="#events">Events</a>
+        <a href="#how-it-works">How It Works</a>
+        <a href="#trust">Trust</a>
       </div>
 
       <div class="nav-actions">
@@ -41,9 +41,9 @@
   <div class="mobile-menu" id="mobile-menu">
     <button class="close-btn" id="mobile-close">✕</button>
     <a href="#home">Home</a>
-    <a href="#events-section">Events</a>
-    <a href="#roles">Roles</a>
-    <a href="#highlights">Highlights</a>
+    <a href="#events">Events</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#trust">Trust</a>
     <a href="login.html">Log In</a>
     <a href="register.html">Create Event</a>
   </div>
@@ -252,6 +252,147 @@
     </div>
   </section>
 
+  <!-- ══════ ABOUT ══════ -->
+  <section class="section" id="about">
+    <div class="container">
+      <div class="about-grid">
+        <div class="about-image-frame" data-reveal>
+          <img src="images/event-gala.png" alt="Premium Events" />
+        </div>
+        <div data-reveal>
+          <div class="section-header">
+            <div class="section-label">About Us</div>
+            <h2>Transforming Events<br>with <span class="gold">Innovation</span></h2>
+            <p class="section-desc">Event Waw is a next-generation event ticketing platform built for organizers who demand reliability and attendees who expect seamless experiences.</p>
+          </div>
+          <div class="about-features">
+            <div class="about-feature"><div class="icon">🎫</div><span>Ticketing</span></div>
+            <div class="about-feature"><div class="icon">📊</div><span>Analytics</span></div>
+            <div class="about-feature"><div class="icon">💳</div><span>Payments</span></div>
+            <div class="about-feature"><div class="icon">📱</div><span>QR Scanner</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ SMART SEARCH & EVENTS ══════ -->
+  <section class="section" id="events" style="background:var(--bg-secondary);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header-flex">
+          <div data-reveal>
+            <div class="section-label">Discover</div>
+            <h2>Events <span class="gold">Near You</span></h2>
+            <p class="section-desc">Search, filter by category, and find what's happening closest to you.</p>
+          </div>
+          <div class="filters" id="ev-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="week">This Week</button>
+            <button class="filter-btn" data-filter="month">This Month</button>
+          </div>
+        </div>
+      </div>
+      <div class="smart-search-wrapper" id="smart-search-wrapper">
+        <div class="smart-search-bar" id="smart-search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          <input type="text" class="smart-search-input" id="smart-search-input" placeholder="Search events, venues, or artists..." autocomplete="off" spellcheck="false" />
+          <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search">✕</button>
+          <div class="geo-status detecting" id="geo-status"><span class="geo-dot"></span><span id="geo-status-text">Detecting location…</span></div>
+        </div>
+        <div class="category-scroller" id="category-scroller">
+          <button class="cat-pill active" data-category="all" id="cat-all"><span class="cat-pill-icon">✦</span>All Events</button>
+          <button class="cat-pill" data-category="music" id="cat-music"><span class="cat-pill-icon">🎵</span>Music</button>
+          <button class="cat-pill" data-category="sports" id="cat-sports"><span class="cat-pill-icon">⚽</span>Sports</button>
+          <button class="cat-pill" data-category="trips" id="cat-trips"><span class="cat-pill-icon">🏕️</span>Trips</button>
+          <button class="cat-pill" data-category="conference" id="cat-conference"><span class="cat-pill-icon">🎤</span>Conferences</button>
+          <button class="cat-pill" data-category="art" id="cat-art"><span class="cat-pill-icon">🎨</span>Art &amp; Culture</button>
+          <button class="cat-pill" data-category="food" id="cat-food"><span class="cat-pill-icon">🍽️</span>Food &amp; Drink</button>
+          <button class="cat-pill" data-category="nightlife" id="cat-nightlife"><span class="cat-pill-icon">🌙</span>Nightlife</button>
+          <button class="cat-pill" data-category="workshop" id="cat-workshop"><span class="cat-pill-icon">🛠️</span>Workshops</button>
+        </div>
+        <div class="adv-filters-inline" id="adv-filters">
+          <div class="adv-pill-select"><select class="adv-select" id="filter-city"><option value="all">📍 All Cities</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <div class="adv-pill-select"><select class="adv-select" id="filter-category"><option value="all">🏷️ All Types</option><option value="music">🎵 Music</option><option value="sports">⚽ Sports</option><option value="trips">🏕️ Trips</option><option value="conference">🎤 Conference</option><option value="art">🎨 Art &amp; Culture</option><option value="food">🍽️ Food &amp; Drink</option><option value="nightlife">🌙 Nightlife</option><option value="workshop">🛠️ Workshop</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <div class="adv-pill-select"><select class="adv-select" id="filter-date"><option value="all">📅 Any Date</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Pick a Date…</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <input type="date" class="adv-date-pill" id="filter-date-input" style="display:none;" />
+          <button class="adv-reset-pill" id="adv-reset-btn" style="display:none;">✕ Reset</button>
+        </div>
+      </div>
+      <div class="search-results-meta" id="search-results-meta"><span class="search-results-count" id="search-results-count"></span><div class="sort-indicator" id="sort-indicator" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>Sorted by proximity</div></div>
+      <div class="events-grid" id="landing-events-grid" data-stagger>
+        <div class="event-card skeleton-card" id="skel-1"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+        <div class="event-card skeleton-card" id="skel-2"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+        <div class="event-card skeleton-card" id="skel-3"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+      </div>
+      <div id="events-empty" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(230,0,126,.06);border:1px solid rgba(230,0,126,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎪</div>
+        <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">No Events Found</h3>
+        <p id="empty-state-text" style="color:#888;font-size:0.95rem;max-width:400px;margin:0 auto 24px;line-height:1.7;">Be the first to create an event on Event Waw!</p>
+        <a href="register.html" class="btn btn-primary btn-lg">Become an Organizer</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ HOW IT WORKS ══════ -->
+  <section class="section" id="how-it-works">
+    <div class="container">
+      <div class="section-header center" data-reveal>
+        <div class="section-label">Simple &amp; Seamless</div>
+        <h2>How It <span class="gold">Works</span></h2>
+        <p class="section-desc">Your journey from discovery to entry — in three simple steps.</p>
+      </div>
+      <div class="steps-grid" data-stagger>
+        <div class="step-card"><span class="step-num">01</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg></div><h3>Discover Events</h3><p>Browse curated events near you. Filter by date, category, or location.</p></div>
+        <div class="step-card"><span class="step-num">02</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div><h3>Secure Your Spot</h3><p>Book tickets instantly with Stripe. Your reservation is guaranteed.</p></div>
+        <div class="step-card"><span class="step-num">03</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/></svg></div><h3>Walk In with QR</h3><p>Get your QR ticket instantly. Scan at the door — fast, contactless entry.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ TRUST ══════ -->
+  <section class="section" id="trust" style="background:var(--bg-secondary);">
+    <div class="container">
+      <div class="section-header center" data-reveal>
+        <div class="section-label">Trusted &amp; Verified</div>
+        <h2>Your Security Is Our <span class="gold">Priority</span></h2>
+        <p class="section-desc">Every transaction is encrypted, verified, and guaranteed.</p>
+      </div>
+      <div class="trust-badges" data-stagger>
+        <div class="trust-badge" id="trust-ssl"><div class="trust-badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></div><span class="trust-badge-label">SSL Secured</span><span class="trust-badge-sub">256-bit Encryption</span></div>
+        <div class="trust-badge" id="trust-stripe"><div class="trust-badge-icon" style="color:#635bff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div><span class="trust-badge-label">Stripe Verified</span><span class="trust-badge-sub">PCI DSS Compliant</span></div>
+        <div class="trust-badge" id="trust-gdpr"><div class="trust-badge-icon" style="color:#22c55e;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg></div><span class="trust-badge-label">GDPR Ready</span><span class="trust-badge-sub">Data Protection</span></div>
+        <div class="trust-badge" id="trust-support"><div class="trust-badge-icon" style="color:#3b82f6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg></div><span class="trust-badge-label">24/7 Support</span><span class="trust-badge-sub">Always Available</span></div>
+        <div class="trust-badge" id="trust-guarantee"><div class="trust-badge-icon" style="color:#f59e0b;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg></div><span class="trust-badge-label">Money-Back</span><span class="trust-badge-sub">100% Guarantee</span></div>
+        <div class="trust-badge" id="trust-users"><div class="trust-badge-icon" style="color:#ec4899;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div><span class="trust-badge-label">50K+ Users</span><span class="trust-badge-sub">Growing Community</span></div>
+      </div>
+      <div class="trusted-by" data-reveal>
+        <p class="trusted-by-label">Trusted &amp; Verified By</p>
+        <div class="trusted-logos">
+          <div class="trusted-logo-item"><svg viewBox="0 0 48 24" fill="currentColor"><text x="0" y="17" font-size="14" font-weight="800" font-family="Inter,sans-serif">Stripe</text></svg></div>
+          <div class="trusted-logo-item"><svg viewBox="0 0 72 24" fill="currentColor"><text x="0" y="17" font-size="14" font-weight="800" font-family="Inter,sans-serif">Cloudflare</text></svg></div>
+          <div class="trusted-logo-item"><svg viewBox="0 0 66 24" fill="currentColor"><text x="0" y="17" font-size="14" font-weight="800" font-family="Inter,sans-serif">Supabase</text></svg></div>
+          <div class="trusted-logo-item"><svg viewBox="0 0 60 24" fill="currentColor"><text x="0" y="17" font-size="13" font-weight="800" font-family="Inter,sans-serif">Let's Encrypt</text></svg></div>
+          <div class="trusted-logo-item"><svg viewBox="0 0 42 24" fill="currentColor"><text x="0" y="17" font-size="14" font-weight="800" font-family="Inter,sans-serif">Vercel</text></svg></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ CTA ══════ -->
+  <section class="cta-section" id="cta">
+    <div class="cta-glow"></div>
+    <div class="container" data-reveal>
+      <div class="section-label" style="justify-content:center">Get In Touch</div>
+      <h2>Ready to Create Your<br>Own <span class="gold">Event?</span></h2>
+      <p>Join as an organizer and start selling tickets in minutes.</p>
+      <div class="cta-buttons">
+        <a href="register.html" class="btn btn-primary btn-lg">Start Organizing <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></a>
+        <a href="#how-it-works" class="btn btn-outline btn-lg">Learn More</a>
+      </div>
+    </div>
+  </section>
+
   <!-- ══════ FOOTER ══════ -->
   <footer class="footer" id="footer">
     <div class="container">
@@ -309,165 +450,244 @@
     import { semiProtectPage, updateNavForAuth, performSignOut } from './src/lib/guard.js';
     import { getEvents } from './src/lib/events.js';
     import { escapeHTML } from './src/lib/utils.js';
+    import { initUI, initParticles } from './src/lib/ui.js';
     import { detectUserLocation, sortByProximity, formatDistance } from './src/lib/geo.js';
 
-    /* ── State ── */
     let allEvents = [];
     let userLocation = null;
+    let activeCategory = 'all';
+    let activeTimeFilter = 'all';
+    let activeCityFilter = 'all';
+    let activeDateFilter = 'all';
+    let customDate = null;
+    let searchQuery = '';
+    let searchDebounceTimer = null;
 
     document.addEventListener('DOMContentLoaded', async () => {
-      // Nav scroll effect
-      window.addEventListener('scroll', () => {
-        const nav = document.getElementById('main-nav');
-        if (nav) nav.classList.toggle('scrolled', window.scrollY > 40);
-      });
-
-      // Mobile menu
-      const toggle = document.getElementById('nav-toggle');
-      const mobileMenu = document.getElementById('mobile-menu');
-      const mobileClose = document.getElementById('mobile-close');
-      if (toggle && mobileMenu) {
-        toggle.addEventListener('click', () => mobileMenu.classList.add('active'));
-        mobileClose?.addEventListener('click', () => mobileMenu.classList.remove('active'));
-        mobileMenu.querySelectorAll('a').forEach(a => {
-          a.addEventListener('click', () => mobileMenu.classList.remove('active'));
-        });
-      }
+      initUI();
 
       const authState = await semiProtectPage();
       updateNavForAuth(authState);
 
-      // Update nav for authenticated users
       if (authState.user && authState.isFullyAuth) {
         const signinBtn = document.getElementById('nav-signin');
         const signupBtn = document.getElementById('nav-signup');
-
-        if (signinBtn) {
-          signinBtn.textContent = 'Dashboard';
-          signinBtn.href = 'dashboard.html';
-          signinBtn.classList.remove('btn-outline');
-          signinBtn.classList.add('btn-primary');
-        }
-        if (signupBtn) {
-          signupBtn.textContent = 'Sign Out';
-          signupBtn.href = '#';
-          signupBtn.classList.remove('btn-primary');
-          signupBtn.classList.add('btn-outline');
-          signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); });
-        }
-
+        if (signinBtn) { signinBtn.textContent = 'Dashboard'; signinBtn.href = 'dashboard.html'; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; }
+        if (signupBtn) { signupBtn.textContent = 'Sign Out'; signupBtn.href = '#'; signupBtn.classList.remove('btn-primary'); signupBtn.classList.add('btn-outline'); signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
         const navLinks = document.getElementById('nav-links');
-        if (navLinks) {
-          const eventsLink = navLinks.querySelector('a[href="#events-section"]');
-          if (eventsLink) { eventsLink.textContent = 'Dashboard'; eventsLink.href = 'dashboard.html'; }
-        }
-
-        const mobileMenuEl = document.getElementById('mobile-menu');
-        if (mobileMenuEl) {
-          const links = mobileMenuEl.querySelectorAll('a');
-          links.forEach(a => {
-            if (a.href.includes('login.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; }
-            if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
-          });
-        }
-
+        if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = 'Dashboard'; el.href = 'dashboard.html'; } }
+        const mm = document.getElementById('mobile-menu');
+        if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
         const heroCta = document.getElementById('hero-cta');
         if (heroCta) heroCta.href = 'events.html';
       }
 
-      // Load events
-      await loadEvents();
-      detectUserLocation().then(loc => {
-        if (loc?.lat && loc?.lng) userLocation = loc;
-      }).catch(() => {});
+      const [eventsResult, geoResult] = await Promise.allSettled([loadLandingEvents(), detectAndUpdateGeo()]);
+      if (userLocation && allEvents.length > 0) applyFiltersAndRender();
 
-      // Search filter bar handlers
-      initSearchFilters();
-
-      // Favorite search
-      const favInput = document.getElementById('ev-fav-search-input');
-      const favBtn = document.getElementById('ev-fav-search-btn');
-      if (favInput && favBtn) {
-        favBtn.addEventListener('click', () => {
-          const q = favInput.value.trim();
-          if (q) window.location.href = `events.html?search=${encodeURIComponent(q)}`;
-        });
-        favInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') favBtn.click();
-        });
-      }
+      initSmartSearch();
+      initCategoryPills();
+      initTimeFilters();
+      initAdvancedFilters();
+      initEveentyFeatures();
     });
 
-    /* ═══════════════════════════════
-       EVENTS LOADING & CAROUSEL
-       ═══════════════════════════════ */
+    async function detectAndUpdateGeo() {
+      const geoEl = document.getElementById('geo-status');
+      const geoText = document.getElementById('geo-status-text');
+      const sortInd = document.getElementById('sort-indicator');
+      try {
+        const loc = await detectUserLocation();
+        if (loc && loc.lat && loc.lng) {
+          userLocation = loc;
+          geoEl.classList.remove('detecting', 'failed'); geoEl.classList.add('active');
+          const parts = [loc.city, loc.country].filter(Boolean);
+          geoText.textContent = parts.length > 0 ? parts.join(', ') : 'Located';
+          if (sortInd) sortInd.style.display = '';
+          const si = document.getElementById('smart-search-input');
+          if (si && loc.city) si.placeholder = `Search events near ${loc.city}...`;
+        } else { geoEl.classList.remove('detecting'); geoEl.classList.add('failed'); geoText.textContent = 'Location unavailable'; }
+      } catch (e) { geoEl.classList.remove('detecting'); geoEl.classList.add('failed'); geoText.textContent = 'Location unavailable'; }
+    }
 
-    async function loadEvents() {
+    async function loadLandingEvents() {
+      const grid = document.getElementById('landing-events-grid');
+      const emptyState = document.getElementById('events-empty');
       const track = document.getElementById('ev-carousel-track');
       try {
-        allEvents = await getEvents({ limit: 20 });
-        track.innerHTML = '';
-
-        if (!allEvents || allEvents.length === 0) {
-          track.innerHTML = '<div style="padding:40px;text-align:center;color:#999;width:100%;">No events available yet. Be the first to create one!</div>';
-          return;
-        }
-
-        // Populate location filter
+        allEvents = await getEvents({ limit: 30 });
+        grid.querySelectorAll('.skeleton-card').forEach(s => s.remove());
+        if (!allEvents || allEvents.length === 0) { grid.style.display = 'none'; emptyState.style.display = 'block'; return; }
+        populateCityFilter(allEvents);
         populateLocationFilter(allEvents);
-
-        allEvents.forEach(event => {
-          const tiers = event.ticket_tiers || [];
-          const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => Number(t.price))) : 0;
-
-          const card = document.createElement('div');
-          card.className = 'ev-carousel-card';
-          card.onclick = () => window.location.href = `event-detail.html?id=${event.id}`;
-
-          card.innerHTML = `
-            <img src="${escapeHTML(event.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event.title)}" loading="lazy" />
-            <div class="ev-card-price">${minPrice > 0 ? `Tickets From US$${Number(minPrice).toLocaleString()}` : 'Free'}</div>
-          `;
-          track.appendChild(card);
-        });
+        renderCarousel(allEvents);
+        applyFiltersAndRender();
       } catch (err) {
         console.warn('Events fetch failed:', err);
-        track.innerHTML = '<div style="padding:40px;text-align:center;color:#999;width:100%;">Unable to load events.</div>';
+        grid.querySelectorAll('.skeleton-card').forEach(s => s.remove());
+        grid.style.display = 'none'; emptyState.style.display = 'block';
       }
+    }
+
+    function populateCityFilter(events) {
+      const select = document.getElementById('filter-city');
+      if (!select) return;
+      const cities = [...new Set(events.map(e => (e.city || '').trim()).filter(Boolean))].sort();
+      select.innerHTML = '<option value="all">All Cities</option>';
+      cities.forEach(city => { const opt = document.createElement('option'); opt.value = city; opt.textContent = city; select.appendChild(opt); });
     }
 
     function populateLocationFilter(events) {
       const select = document.getElementById('ev-filter-location');
       if (!select) return;
       const cities = [...new Set(events.map(e => (e.city || '').trim()).filter(Boolean))].sort();
-      cities.forEach(city => {
-        const opt = document.createElement('option');
-        opt.value = city;
-        opt.textContent = city;
-        select.appendChild(opt);
+      cities.forEach(city => { const opt = document.createElement('option'); opt.value = city; opt.textContent = city; select.appendChild(opt); });
+    }
+
+    function renderCarousel(events) {
+      const track = document.getElementById('ev-carousel-track');
+      if (!track) return;
+      track.innerHTML = '';
+      if (!events || events.length === 0) { track.innerHTML = '<div style="padding:40px;text-align:center;color:#999;width:100%;">No events yet</div>'; return; }
+      events.slice(0, 15).forEach(event => {
+        const tiers = event.ticket_tiers || [];
+        const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => Number(t.price))) : 0;
+        const card = document.createElement('div');
+        card.className = 'ev-carousel-card';
+        card.onclick = () => window.location.href = `event-detail.html?id=${event.id}`;
+        card.innerHTML = `<img src="${escapeHTML(event.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="ev-card-price">${minPrice > 0 ? `Tickets From US$${Number(minPrice).toLocaleString()}` : 'Free'}</div>`;
+        track.appendChild(card);
       });
     }
 
-    /* ═══════════════════════════════
-       SEARCH FILTERS
-       ═══════════════════════════════ */
+    function applyFiltersAndRender() {
+      let filtered = [...allEvents];
+      const now = new Date();
+      if (activeTimeFilter === 'week') { const end = new Date(now); end.setDate(end.getDate() + 7); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= now && d <= end; }); }
+      else if (activeTimeFilter === 'month') { const end = new Date(now); end.setDate(end.getDate() + 30); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= now && d <= end; }); }
+      if (activeCategory && activeCategory !== 'all') filtered = filtered.filter(e => (e.category || '').toLowerCase() === activeCategory.toLowerCase());
+      if (activeCityFilter && activeCityFilter !== 'all') filtered = filtered.filter(e => (e.city || '').toLowerCase() === activeCityFilter.toLowerCase());
+      if (activeDateFilter && activeDateFilter !== 'all') {
+        const today = new Date(); today.setHours(0,0,0,0);
+        if (activeDateFilter === 'today') { const end = new Date(today); end.setDate(end.getDate()+1); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d < end; }); }
+        else if (activeDateFilter === 'tomorrow') { const s = new Date(today); s.setDate(s.getDate()+1); const end = new Date(s); end.setDate(end.getDate()+1); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= s && d < end; }); }
+        else if (activeDateFilter === 'week') { const end = new Date(today); end.setDate(end.getDate()+7); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d <= end; }); }
+        else if (activeDateFilter === 'month') { const end = new Date(today); end.setMonth(end.getMonth()+1); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d <= end; }); }
+        else if (activeDateFilter === 'custom' && customDate) { const s = new Date(customDate); s.setHours(0,0,0,0); const end = new Date(s); end.setDate(end.getDate()+1); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= s && d < end; }); }
+      }
+      if (searchQuery.trim()) { const q = searchQuery.toLowerCase().trim(); filtered = filtered.filter(e => (e.title||'').toLowerCase().includes(q) || (e.description||'').toLowerCase().includes(q) || (e.venue||'').toLowerCase().includes(q) || (e.city||'').toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q)); }
+      if (userLocation) filtered = sortByProximity(filtered, userLocation.lat, userLocation.lng);
+      const display = filtered.slice(0, 12);
+      updateResultsMeta(display.length, filtered.length);
+      updateResetButton();
+      renderEvents(display);
+    }
 
-    function initSearchFilters() {
-      const searchBtn = document.getElementById('ev-search-btn');
-      if (!searchBtn) return;
+    function updateResultsMeta(showing, total) {
+      const metaEl = document.getElementById('search-results-meta');
+      const countEl = document.getElementById('search-results-count');
+      const emptyText = document.getElementById('empty-state-text');
+      const hasActiveFilter = searchQuery.trim() || activeCategory !== 'all' || activeTimeFilter !== 'all';
+      if (hasActiveFilter || userLocation) {
+        let text = `Showing <strong>${showing}</strong>`;
+        if (total > showing) text += ` of ${total}`;
+        text += ` event${total !== 1 ? 's' : ''}`;
+        if (searchQuery.trim()) text += ` for "<strong>${escapeHTML(searchQuery.trim())}</strong>"`;
+        if (activeCategory !== 'all') text += ` in <strong>${escapeHTML(activeCategory)}</strong>`;
+        if (userLocation && userLocation.city) text += ` near <strong>${escapeHTML(userLocation.city)}</strong>`;
+        countEl.innerHTML = text; metaEl.classList.add('visible');
+      } else { metaEl.classList.remove('visible'); }
+      if (emptyText && showing === 0 && hasActiveFilter) emptyText.textContent = 'No events match your search. Try adjusting your filters.';
+      else if (emptyText) emptyText.textContent = 'Be the first to create an event on Event Waw!';
+    }
 
-      searchBtn.addEventListener('click', () => {
-        const type = document.getElementById('ev-filter-type')?.value || 'all';
-        const location = document.getElementById('ev-filter-location')?.value || 'all';
-        const date = document.getElementById('ev-filter-date')?.value || 'all';
-
-        const params = new URLSearchParams();
-        if (type !== 'all') params.set('category', type);
-        if (location !== 'all') params.set('city', location);
-        if (date !== 'all') params.set('date', date);
-
-        window.location.href = `events.html${params.toString() ? '?' + params.toString() : ''}`;
+    function renderEvents(events) {
+      const grid = document.getElementById('landing-events-grid');
+      const emptyState = document.getElementById('events-empty');
+      grid.querySelectorAll('.event-card:not(.skeleton-card)').forEach(c => c.remove());
+      if (!events || events.length === 0) { grid.style.display = 'none'; emptyState.style.display = 'block'; return; }
+      grid.style.display = ''; emptyState.style.display = 'none';
+      events.forEach((event, idx) => {
+        const tiers = event.ticket_tiers || [];
+        const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => Number(t.price))) : 0;
+        const totalAvail = tiers.reduce((sum, t) => sum + (t.capacity - t.sold_count), 0);
+        const totalCap = tiers.reduce((sum, t) => sum + t.capacity, 0);
+        const soldPercent = totalCap > 0 ? ((totalCap - totalAvail) / totalCap) * 100 : 0;
+        let badgeText = event.category || 'Event';
+        if (soldPercent >= 90) badgeText = 'Selling Fast'; else if (totalAvail <= 0) badgeText = 'Sold Out';
+        const date = new Date(event.date);
+        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        let distHtml = '';
+        if (userLocation && event._distance != null && event._distance !== Infinity) distHtml = `<span class="event-card-distance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${formatDistance(event._distance)} away</span>`;
+        const card = document.createElement('article');
+        card.className = 'event-card'; card.style.cursor = 'pointer'; card.style.animationDelay = `${idx * 0.08}s`;
+        card.onclick = () => window.location.href = `event-detail.html?id=${event.id}`;
+        card.innerHTML = `<div class="event-card-image"><img src="${escapeHTML(event.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="event-card-badge"><span class="dot"></span> ${escapeHTML(badgeText)}</div></div><div class="event-card-body"><div class="event-card-date">${dateStr} · ${timeStr}</div><h3>${escapeHTML(event.title)}</h3><div class="event-card-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${escapeHTML(event.venue)}</div><div class="event-card-footer"><div class="event-card-price">${distHtml}${minPrice > 0 ? `$${Number(minPrice).toLocaleString()} <small>/ person</small>` : 'Free'}</div><div class="event-card-avail">${totalAvail > 0 ? `<strong>${totalAvail}</strong> spots left` : '<strong style="color:#ef4444;">Sold Out</strong>'}</div></div></div>`;
+        grid.appendChild(card);
       });
+    }
+
+    function initSmartSearch() {
+      const input = document.getElementById('smart-search-input');
+      const clearBtn = document.getElementById('search-clear-btn');
+      if (!input) return;
+      input.addEventListener('input', () => { searchQuery = input.value; clearBtn.classList.toggle('visible', searchQuery.length > 0); clearTimeout(searchDebounceTimer); searchDebounceTimer = setTimeout(() => applyFiltersAndRender(), 300); });
+      clearBtn.addEventListener('click', () => { input.value = ''; searchQuery = ''; clearBtn.classList.remove('visible'); applyFiltersAndRender(); input.focus(); });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { clearTimeout(searchDebounceTimer); searchQuery = input.value; applyFiltersAndRender(); } });
+    }
+
+    function initCategoryPills() {
+      const pills = document.querySelectorAll('#category-scroller .cat-pill');
+      pills.forEach(pill => { pill.addEventListener('click', () => { pills.forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeCategory = pill.dataset.category || 'all'; const catSelect = document.getElementById('filter-category'); if (catSelect) catSelect.value = activeCategory; applyFiltersAndRender(); }); });
+    }
+
+    function initAdvancedFilters() {
+      const citySelect = document.getElementById('filter-city');
+      const catSelect = document.getElementById('filter-category');
+      const dateSelect = document.getElementById('filter-date');
+      const dateInput = document.getElementById('filter-date-input');
+      const resetBtn = document.getElementById('adv-reset-btn');
+      citySelect?.addEventListener('change', () => { activeCityFilter = citySelect.value; applyFiltersAndRender(); });
+      catSelect?.addEventListener('change', () => { activeCategory = catSelect.value; document.querySelectorAll('#category-scroller .cat-pill').forEach(p => p.classList.toggle('active', (p.dataset.category || 'all') === activeCategory)); applyFiltersAndRender(); });
+      dateSelect?.addEventListener('change', () => { activeDateFilter = dateSelect.value; if (dateInput) dateInput.style.display = activeDateFilter === 'custom' ? '' : 'none'; if (activeDateFilter !== 'custom') { customDate = null; applyFiltersAndRender(); } else if (dateInput?.value) { customDate = dateInput.value; applyFiltersAndRender(); } });
+      dateInput?.addEventListener('change', () => { customDate = dateInput.value; applyFiltersAndRender(); });
+      resetBtn?.addEventListener('click', () => { activeCategory = 'all'; activeCityFilter = 'all'; activeDateFilter = 'all'; activeTimeFilter = 'all'; customDate = null; searchQuery = ''; if (citySelect) citySelect.value = 'all'; if (catSelect) catSelect.value = 'all'; if (dateSelect) dateSelect.value = 'all'; if (dateInput) { dateInput.value = ''; dateInput.style.display = 'none'; } const si = document.getElementById('smart-search-input'); if (si) { si.value = ''; document.getElementById('search-clear-btn')?.classList.remove('visible'); } document.querySelectorAll('#category-scroller .cat-pill').forEach(p => p.classList.toggle('active', p.dataset.category === 'all')); document.querySelectorAll('#ev-filters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all')); applyFiltersAndRender(); });
+    }
+
+    function updateResetButton() {
+      const btn = document.getElementById('adv-reset-btn');
+      if (!btn) return;
+      btn.style.display = (activeCategory !== 'all' || activeCityFilter !== 'all' || activeDateFilter !== 'all' || activeTimeFilter !== 'all' || searchQuery.trim()) ? '' : 'none';
+    }
+
+    function initTimeFilters() {
+      const buttons = document.querySelectorAll('#ev-filters .filter-btn');
+      buttons.forEach(btn => { btn.addEventListener('click', () => { buttons.forEach(b => b.classList.remove('active')); btn.classList.add('active'); activeTimeFilter = btn.dataset.filter || 'all'; applyFiltersAndRender(); }); });
+    }
+
+    function initEveentyFeatures() {
+      // Hero search bar filter
+      const searchBtn = document.getElementById('ev-search-btn');
+      if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+          const type = document.getElementById('ev-filter-type')?.value || 'all';
+          const location = document.getElementById('ev-filter-location')?.value || 'all';
+          const date = document.getElementById('ev-filter-date')?.value || 'all';
+          const params = new URLSearchParams();
+          if (type !== 'all') params.set('category', type);
+          if (location !== 'all') params.set('city', location);
+          if (date !== 'all') params.set('date', date);
+          window.location.href = `events.html${params.toString() ? '?' + params.toString() : ''}`;
+        });
+      }
+      // Favorite search
+      const favInput = document.getElementById('ev-fav-search-input');
+      const favBtn = document.getElementById('ev-fav-search-btn');
+      if (favInput && favBtn) {
+        favBtn.addEventListener('click', () => { const q = favInput.value.trim(); if (q) window.location.href = `events.html?search=${encodeURIComponent(q)}`; });
+        favInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') favBtn.click(); });
+      }
     }
   </script>
 

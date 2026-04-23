@@ -32,60 +32,72 @@
 }
 
 /* ══════════════════════════════════
-   NAVBAR — Eveenty Style
+   NAVBAR — Eveenty Style (Clean Horizontal)
    ══════════════════════════════════ */
 .eveenty-landing .navbar {
-  background: rgba(255,255,255,0.96) !important;
-  backdrop-filter: blur(20px);
+  background: #fff !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   border: none !important;
-  border-bottom: 2px solid var(--ev-pink) !important;
+  border-bottom: 3px solid var(--ev-pink) !important;
   border-radius: 0 !important;
-  position: fixed;
+  position: fixed !important;
   top: 0 !important;
   left: 0 !important;
-  right: 0;
+  right: 0 !important;
   transform: none !important;
   width: 100% !important;
   max-width: 100% !important;
   padding: 0 !important;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04) !important;
+  box-shadow: none !important;
   z-index: 1000;
 }
 .eveenty-landing .navbar .container {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 12px 32px;
+  padding: 14px 40px;
+  display: flex;
+  align-items: center;
+  gap: 40px;
 }
 .eveenty-landing .navbar.scrolled {
   transform: none !important;
   padding: 0 !important;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
 }
 
+/* Logo */
 .eveenty-landing .nav-logo-text {
   font-family: 'Inter', sans-serif !important;
   font-weight: 800 !important;
-  font-size: 1.5rem !important;
+  font-size: 1.4rem !important;
   color: #1a1a1f !important;
   -webkit-text-fill-color: #1a1a1f !important;
   background: none !important;
   animation: none !important;
+  letter-spacing: -0.5px;
 }
 .eveenty-landing .nav-logo-icon {
   color: var(--ev-pink) !important;
+  width: 2rem !important;
+  height: 2rem !important;
 }
 
+/* Nav Links — clean horizontal, no pill bg */
 .eveenty-landing .nav-links {
   background: none !important;
   border: none !important;
   padding: 0 !important;
-  gap: 32px !important;
+  gap: 28px !important;
+  margin-left: 8px;
 }
 .eveenty-landing .nav-links a {
   color: #444 !important;
   font-weight: 500 !important;
-  font-size: 0.92rem !important;
+  font-size: 0.9rem !important;
   text-shadow: none !important;
+  padding: 6px 0 !important;
+  letter-spacing: 0;
 }
 .eveenty-landing .nav-links a:hover {
   color: var(--ev-pink) !important;
@@ -94,6 +106,13 @@
 .eveenty-landing .nav-links a::after {
   background: var(--ev-pink) !important;
   box-shadow: none !important;
+  bottom: -2px !important;
+}
+
+/* Nav Actions — pushed right */
+.eveenty-landing .nav-actions {
+  margin-left: auto;
+  gap: 10px !important;
 }
 
 /* Nav Buttons */
@@ -104,27 +123,37 @@
   border-radius: 6px !important;
   box-shadow: none !important;
   font-weight: 600;
+  padding: 9px 22px !important;
+  font-size: 0.88rem !important;
 }
 .eveenty-landing .btn-primary::before { display: none !important; }
 .eveenty-landing .btn-primary:hover {
   background: var(--ev-pink-dark) !important;
   box-shadow: 0 4px 16px rgba(230,0,126,0.25) !important;
+  transform: none !important;
 }
 .eveenty-landing .btn-outline {
-  border-color: #ccc !important;
+  border: 1.5px solid #333 !important;
   color: #333 !important;
   border-radius: 6px !important;
   background: #fff !important;
+  padding: 9px 22px !important;
+  font-size: 0.88rem !important;
+  box-shadow: none !important;
 }
 .eveenty-landing .btn-outline:hover {
   border-color: var(--ev-pink) !important;
   color: var(--ev-pink) !important;
   background: #fff5f9 !important;
+  transform: none !important;
 }
 .eveenty-landing .btn-pulse { animation: none !important; }
 
-/* Theme Toggle */
+/* Theme Toggle — hide */
 .eveenty-landing .theme-toggle { display: none !important; }
+
+/* Mobile toggle color */
+.eveenty-landing .nav-toggle { color: #333 !important; }
 
 /* ══════════════════════════════════
    HERO — Split Layout (Eveenty)
@@ -697,21 +726,187 @@
   display: none !important;
 }
 
-/* Hide existing sections that are replaced */
-.eveenty-landing #about,
-.eveenty-landing #events,
-.eveenty-landing #how-it-works,
-.eveenty-landing #trust,
-.eveenty-landing #cta {
-  display: none !important;
+/* ══════════════════════════════════
+   OLD SECTIONS — Rethemed to Eveenty Pink
+   ══════════════════════════════════ */
+
+/* Section labels */
+.eveenty-landing .section-label {
+  color: var(--ev-pink) !important;
+  border-color: rgba(230,0,126,0.12) !important;
+  background: rgba(230,0,126,0.06) !important;
+}
+.eveenty-landing .section-label::before {
+  background: var(--ev-pink) !important;
 }
 
-/* ══════════════════════════════════
-   FOOTER OVERRIDE
-   ══════════════════════════════════ */
-.eveenty-landing .footer,
-.eveenty-landing footer {
-  background: #2a2a2a !important;
+/* Section headings */
+.eveenty-landing .section-header h2 .gold,
+.eveenty-landing .gold {
+  color: var(--ev-pink) !important;
+  font-style: italic;
+}
+.eveenty-landing .text-gold { color: var(--ev-pink) !important; }
+
+/* About feature icons */
+.eveenty-landing .about-feature .icon {
+  background: rgba(230,0,126,0.08) !important;
+}
+.eveenty-landing .about-feature:hover {
+  border-color: rgba(230,0,126,0.25) !important;
+  background: rgba(230,0,126,0.03) !important;
+}
+.eveenty-landing .about-image-frame {
+  background: linear-gradient(135deg, var(--ev-pink), var(--ev-pink-dark)) !important;
+}
+
+/* Step cards */
+.eveenty-landing .step-icon {
+  background: rgba(230,0,126,0.08) !important;
+  border-color: rgba(230,0,126,0.15) !important;
+  color: var(--ev-pink) !important;
+}
+.eveenty-landing .step-card:hover .step-icon {
+  background: rgba(230,0,126,0.12) !important;
+  box-shadow: 0 4px 16px rgba(230,0,126,0.1) !important;
+}
+.eveenty-landing .step-card:hover {
+  border-color: rgba(230,0,126,0.25) !important;
+}
+.eveenty-landing .step-card::after {
+  background: linear-gradient(90deg, transparent, var(--ev-pink), transparent) !important;
+}
+.eveenty-landing .step-card:hover .step-num {
+  color: rgba(230,0,126,0.06) !important;
+}
+
+/* Event cards */
+.eveenty-landing .event-card:hover {
+  border-color: rgba(230,0,126,0.25) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 40px rgba(230,0,126,0.04) !important;
+}
+.eveenty-landing .event-card::before {
+  background: linear-gradient(135deg, var(--ev-pink), var(--ev-pink-dark)) !important;
+}
+.eveenty-landing .event-card-badge {
+  color: var(--ev-pink) !important;
+  border-color: rgba(230,0,126,0.2) !important;
+}
+.eveenty-landing .event-card-badge .dot {
+  background: var(--ev-pink) !important;
+  box-shadow: 0 0 6px var(--ev-pink) !important;
+}
+.eveenty-landing .event-card-date {
+  color: var(--ev-pink) !important;
+}
+.eveenty-landing .event-card-avail strong {
+  color: var(--ev-pink) !important;
+}
+.eveenty-landing .event-card-distance {
+  color: var(--ev-pink) !important;
+  background: rgba(230,0,126,0.06) !important;
+  border-color: rgba(230,0,126,0.12) !important;
+}
+
+/* Category pills */
+.eveenty-landing .cat-pill.active {
+  background: var(--ev-pink) !important;
+  border-color: var(--ev-pink) !important;
+  box-shadow: 0 4px 20px rgba(230,0,126,0.25) !important;
+}
+.eveenty-landing .cat-pill:hover {
+  border-color: rgba(230,0,126,0.3) !important;
+  color: var(--ev-pink) !important;
+}
+.eveenty-landing .cat-pill-icon {
+  background: rgba(230,0,126,0.08) !important;
+}
+.eveenty-landing .cat-pill.active .cat-pill-icon {
+  background: rgba(255,255,255,0.2) !important;
+}
+
+/* Filter buttons */
+.eveenty-landing .filter-btn.active {
+  background: var(--ev-pink) !important;
+  border-color: var(--ev-pink) !important;
+  box-shadow: 0 4px 20px rgba(230,0,126,0.25) !important;
+}
+.eveenty-landing .filter-btn:hover {
+  background: rgba(230,0,126,0.06) !important;
+  border-color: rgba(230,0,126,0.4) !important;
+  color: var(--ev-pink) !important;
+}
+
+/* Search bar */
+.eveenty-landing .smart-search-bar:focus-within {
+  border-color: rgba(230,0,126,0.35) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 3px rgba(230,0,126,0.06) !important;
+}
+.eveenty-landing .smart-search-bar:focus-within .search-icon {
+  color: var(--ev-pink) !important;
+}
+.eveenty-landing .search-clear-btn:hover {
+  background: rgba(230,0,126,0.1) !important;
+  color: var(--ev-pink) !important;
+}
+
+/* Advanced filter pills */
+.eveenty-landing .adv-pill-select .adv-select:hover {
+  border-color: rgba(230,0,126,0.4) !important;
+}
+.eveenty-landing .adv-pill-select .adv-select:focus {
+  border-color: var(--ev-pink) !important;
+  box-shadow: 0 0 0 3px rgba(230,0,126,0.08) !important;
+}
+
+/* Geo status */
+.eveenty-landing .geo-status.active {
+  background: rgba(34,197,94,0.06) !important;
+  border-color: rgba(34,197,94,0.2) !important;
+  color: #22c55e !important;
+}
+
+/* Trust badges */
+.eveenty-landing .trust-badge-icon {
+  background: rgba(230,0,126,0.05) !important;
+  border-color: rgba(230,0,126,0.1) !important;
+}
+.eveenty-landing .trust-badge:hover {
+  border-color: rgba(230,0,126,0.2) !important;
+}
+.eveenty-landing .security-card-tags span {
+  background: rgba(230,0,126,0.04) !important;
+  border-color: rgba(230,0,126,0.1) !important;
+}
+.eveenty-landing .security-card:hover {
+  border-color: rgba(230,0,126,0.2) !important;
+}
+
+/* CTA section */
+.eveenty-landing .cta-section {
+  background: linear-gradient(180deg, #fff, #fff5f9) !important;
+}
+.eveenty-landing .cta-glow {
+  background: radial-gradient(ellipse, rgba(230,0,126,0.06), transparent 70%) !important;
+}
+
+/* Trusted logos */
+.eveenty-landing .trusted-logo-item { opacity: 0.4; }
+.eveenty-landing .trusted-logo-item:hover { opacity: 0.8; }
+
+/* Hero badge */
+.eveenty-landing .hero-badge .dot {
+  background: #22c55e !important;
+}
+
+/* Gold pulse animation override */
+.eveenty-landing .btn-pulse {
+  animation: none !important;
+}
+
+/* Section bg override */
+.eveenty-landing [style*="background:var(--bg-secondary)"] {
+  background: #faf9f8 !important;
 }
 
 /* ══════════════════════════════════
