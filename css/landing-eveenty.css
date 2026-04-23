@@ -1,0 +1,765 @@
+/* ═══════════════════════════════════════════════
+   EVEENTY LANDING — Clean White + Pink/Magenta
+   Applied ONLY to landing page via .eveenty-landing
+   ═══════════════════════════════════════════════ */
+
+/* ── Override accent colors for landing ── */
+.eveenty-landing {
+  --ev-pink: #e6007e;
+  --ev-pink-light: #ff1493;
+  --ev-pink-dark: #c4006b;
+  --ev-yellow: #d4c527;
+  --ev-yellow-hover: #bfb220;
+  --ev-dark: #333333;
+  --ev-gray: #555555;
+  --ev-light-gray: #999999;
+  --ev-bg: #ffffff;
+  --ev-bg-soft: #fff5f9;
+  --ev-bg-cream: #fdf8f0;
+  --ev-bg-stats: #4a4a4a;
+  --ev-border: #e8e8e8;
+  --ev-radius: 12px;
+  --ev-shadow: 0 2px 20px rgba(0,0,0,0.06);
+  --ev-shadow-hover: 0 8px 30px rgba(0,0,0,0.1);
+}
+
+/* ── Force light clean look ── */
+.eveenty-landing,
+.eveenty-landing * {
+  --text-primary: #1a1a1f;
+  --text-secondary: #555;
+  --text-muted: #888;
+}
+
+/* ══════════════════════════════════
+   NAVBAR — Eveenty Style
+   ══════════════════════════════════ */
+.eveenty-landing .navbar {
+  background: rgba(255,255,255,0.96) !important;
+  backdrop-filter: blur(20px);
+  border: none !important;
+  border-bottom: 2px solid var(--ev-pink) !important;
+  border-radius: 0 !important;
+  position: fixed;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0;
+  transform: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04) !important;
+  z-index: 1000;
+}
+.eveenty-landing .navbar .container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 12px 32px;
+}
+.eveenty-landing .navbar.scrolled {
+  transform: none !important;
+  padding: 0 !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08) !important;
+}
+
+.eveenty-landing .nav-logo-text {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 1.5rem !important;
+  color: #1a1a1f !important;
+  -webkit-text-fill-color: #1a1a1f !important;
+  background: none !important;
+  animation: none !important;
+}
+.eveenty-landing .nav-logo-icon {
+  color: var(--ev-pink) !important;
+}
+
+.eveenty-landing .nav-links {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  gap: 32px !important;
+}
+.eveenty-landing .nav-links a {
+  color: #444 !important;
+  font-weight: 500 !important;
+  font-size: 0.92rem !important;
+  text-shadow: none !important;
+}
+.eveenty-landing .nav-links a:hover {
+  color: var(--ev-pink) !important;
+  text-shadow: none !important;
+}
+.eveenty-landing .nav-links a::after {
+  background: var(--ev-pink) !important;
+  box-shadow: none !important;
+}
+
+/* Nav Buttons */
+.eveenty-landing .btn-primary {
+  background: var(--ev-pink) !important;
+  border-color: var(--ev-pink) !important;
+  color: #fff !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  font-weight: 600;
+}
+.eveenty-landing .btn-primary::before { display: none !important; }
+.eveenty-landing .btn-primary:hover {
+  background: var(--ev-pink-dark) !important;
+  box-shadow: 0 4px 16px rgba(230,0,126,0.25) !important;
+}
+.eveenty-landing .btn-outline {
+  border-color: #ccc !important;
+  color: #333 !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+}
+.eveenty-landing .btn-outline:hover {
+  border-color: var(--ev-pink) !important;
+  color: var(--ev-pink) !important;
+  background: #fff5f9 !important;
+}
+.eveenty-landing .btn-pulse { animation: none !important; }
+
+/* Theme Toggle */
+.eveenty-landing .theme-toggle { display: none !important; }
+
+/* ══════════════════════════════════
+   HERO — Split Layout (Eveenty)
+   ══════════════════════════════════ */
+.eveenty-landing .hero-wrapper {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 140px 0 80px !important;
+  background: linear-gradient(180deg, #ffffff 0%, #fff8fb 60%, #fff0f5 100%) !important;
+  display: block !important;
+  text-align: left !important;
+  position: relative;
+  overflow: visible !important;
+}
+.eveenty-landing .hero-slideshow,
+.eveenty-landing .particles,
+.eveenty-landing .scroll-hint {
+  display: none !important;
+}
+
+.ev-hero-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.ev-hero-text h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 2.8rem;
+  font-weight: 800;
+  color: #1a1a1f;
+  line-height: 1.15;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+}
+.ev-hero-text h1 .ev-ampersand {
+  color: var(--ev-pink);
+  font-weight: 800;
+}
+.ev-hero-text h1 .ev-highlight {
+  color: var(--ev-pink);
+  display: block;
+  font-style: normal;
+}
+
+.ev-hero-text .ev-hero-desc {
+  font-size: 1.05rem;
+  color: #555;
+  line-height: 1.75;
+  margin-bottom: 36px;
+  max-width: 480px;
+}
+.ev-hero-text .ev-hero-desc .ev-brand {
+  color: var(--ev-pink);
+  font-weight: 700;
+}
+.ev-hero-text .ev-hero-desc .ev-clicks {
+  color: var(--ev-pink);
+  font-weight: 600;
+}
+.ev-hero-text .ev-hero-desc .ev-organizers {
+  color: var(--ev-pink);
+  font-weight: 700;
+}
+
+.ev-hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ev-hero-buttons .ev-btn-create {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border: 1.5px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  color: #333;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.ev-hero-buttons .ev-btn-create:hover {
+  border-color: var(--ev-pink);
+  color: var(--ev-pink);
+  box-shadow: 0 4px 16px rgba(230,0,126,0.08);
+}
+.ev-hero-buttons .ev-btn-explore {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--ev-yellow);
+  color: #333;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.ev-hero-buttons .ev-btn-explore:hover {
+  background: var(--ev-yellow-hover);
+  box-shadow: 0 4px 16px rgba(212,197,39,0.3);
+  transform: translateY(-2px);
+}
+
+/* Hero Image (Featured Event Poster) */
+.ev-hero-image {
+  position: relative;
+}
+.ev-hero-image img {
+  width: 100%;
+  max-width: 520px;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+  display: block;
+}
+
+/* ══════════════════════════════════
+   SEARCH FILTER BAR
+   ══════════════════════════════════ */
+.ev-search-bar-section {
+  padding: 40px 0 20px;
+  background: linear-gradient(180deg, #fff0f5 0%, #ffffff 100%);
+}
+.ev-search-bar-section .container {
+  max-width: 1280px;
+}
+
+.ev-search-filters {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 60px;
+  padding: 8px 8px 8px 28px;
+  max-width: 700px;
+  margin: 0 auto;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+}
+.ev-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 20px;
+  font-size: 0.88rem;
+  color: #555;
+  border-right: 1px solid #eee;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+}
+.ev-filter-item:last-of-type {
+  border-right: none;
+}
+.ev-filter-item svg {
+  width: 16px;
+  height: 16px;
+  color: #999;
+  flex-shrink: 0;
+}
+.ev-filter-item select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  padding-right: 16px;
+}
+.ev-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--ev-pink);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.ev-search-btn:hover {
+  background: var(--ev-pink-dark);
+  box-shadow: 0 4px 20px rgba(230,0,126,0.3);
+}
+.ev-search-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ══════════════════════════════════
+   EVENTS CAROUSEL SECTION
+   ══════════════════════════════════ */
+.ev-events-carousel-section {
+  padding: 40px 0 60px;
+  background: #fff;
+  overflow: hidden;
+}
+.ev-events-carousel-section .container {
+  max-width: 1400px;
+}
+.ev-carousel-track {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 10px 0 20px;
+}
+.ev-carousel-track::-webkit-scrollbar { display: none; }
+
+.ev-carousel-card {
+  flex-shrink: 0;
+  width: 280px;
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.ev-carousel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--ev-shadow-hover);
+}
+.ev-carousel-card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  display: block;
+}
+.ev-carousel-card .ev-card-price {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  padding: 6px 16px;
+  background: var(--ev-pink);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+/* ══════════════════════════════════
+   STATS BAR
+   ══════════════════════════════════ */
+.ev-stats-bar {
+  background: var(--ev-bg-stats);
+  padding: 48px 0;
+}
+.ev-stats-bar .container {
+  max-width: 1280px;
+}
+.ev-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  text-align: center;
+}
+.ev-stat-item .ev-stat-number {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--ev-pink);
+  margin-bottom: 8px;
+}
+.ev-stat-item .ev-stat-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+.ev-stat-item .ev-stat-label svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ══════════════════════════════════
+   FAVORITE EVENTS SEARCH
+   ══════════════════════════════════ */
+.ev-fav-search-section {
+  background: var(--ev-bg-soft);
+  padding: 60px 0;
+  text-align: center;
+}
+.ev-fav-search-section .container {
+  max-width: 700px;
+}
+.ev-fav-search-section h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 12px;
+}
+.ev-fav-search-section h2 .ev-highlight {
+  color: var(--ev-pink);
+}
+.ev-fav-search-section .ev-fav-subtitle {
+  color: #777;
+  font-size: 0.95rem;
+  margin-bottom: 28px;
+}
+.ev-fav-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  max-width: 500px;
+  margin: 0 auto;
+  border: 1.5px solid var(--ev-pink);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+.ev-fav-search-wrap input {
+  flex: 1;
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  font-size: 0.95rem;
+  color: #333;
+  outline: none;
+}
+.ev-fav-search-wrap input::placeholder {
+  color: #aaa;
+}
+.ev-fav-search-wrap button {
+  padding: 14px 20px;
+  background: var(--ev-pink);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.ev-fav-search-wrap button:hover {
+  background: var(--ev-pink-dark);
+}
+.ev-fav-search-wrap button svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ══════════════════════════════════
+   CHOOSE YOUR ROLE
+   ══════════════════════════════════ */
+.ev-roles-section {
+  padding: 80px 0;
+  background: #fff;
+  text-align: center;
+}
+.ev-roles-section .container {
+  max-width: 1280px;
+}
+.ev-roles-section h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 12px;
+}
+.ev-roles-section h2 .ev-highlight {
+  color: var(--ev-pink);
+}
+.ev-roles-section .ev-roles-subtitle {
+  color: #777;
+  font-size: 0.92rem;
+  margin-bottom: 48px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ev-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+}
+.ev-role-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  aspect-ratio: 3/4;
+}
+.ev-role-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--ev-shadow-hover);
+}
+.ev-role-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: brightness(0.85);
+  transition: filter 0.3s ease, transform 0.4s ease;
+}
+.ev-role-card:hover img {
+  filter: brightness(0.7);
+  transform: scale(1.05);
+}
+.ev-role-label {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.ev-role-label .ev-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  font-size: 0.85rem;
+  transform: rotate(-45deg);
+}
+
+/* ══════════════════════════════════
+   PARTNERS / LOGOS
+   ══════════════════════════════════ */
+.ev-partners-section {
+  background: var(--ev-bg-cream);
+  padding: 48px 0;
+  overflow: hidden;
+}
+.ev-partners-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+.ev-partner-logo {
+  height: 48px;
+  opacity: 0.7;
+  filter: grayscale(20%);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+.ev-partner-logo:hover {
+  opacity: 1;
+  filter: grayscale(0%);
+  transform: scale(1.05);
+}
+
+/* ══════════════════════════════════
+   HIGHLIGHTS SECTION
+   ══════════════════════════════════ */
+.ev-highlights-section {
+  padding: 80px 0;
+  background: #fff;
+  text-align: center;
+}
+.ev-highlights-section h2 {
+  font-family: 'Inter', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #333;
+  margin-bottom: 12px;
+}
+.ev-highlights-section h2 .ev-highlight {
+  color: var(--ev-pink);
+}
+.ev-highlights-section .ev-highlights-subtitle {
+  color: #777;
+  font-size: 0.92rem;
+  margin-bottom: 40px;
+  max-width: 650px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ══════════════════════════════════
+   VIEW MORE BUTTON
+   ══════════════════════════════════ */
+.ev-view-more-wrap {
+  text-align: center;
+  padding: 20px 0 40px;
+  background: #fff;
+}
+.ev-view-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 36px;
+  border: 1.5px solid var(--ev-pink);
+  border-radius: 8px;
+  color: var(--ev-pink);
+  background: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.ev-view-more-btn:hover {
+  background: var(--ev-pink);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(230,0,126,0.2);
+}
+
+/* ══════════════════════════════════
+   FLOATING CHAT BUTTON
+   ══════════════════════════════════ */
+.ev-chat-fab {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--ev-pink);
+  border: none;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(230,0,126,0.35);
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.3s ease;
+}
+.ev-chat-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 28px rgba(230,0,126,0.45);
+}
+.ev-chat-fab svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* ══════════════════════════════════
+   HIDE OLD SECTIONS
+   ══════════════════════════════════ */
+.eveenty-landing .hero-content,
+.eveenty-landing .hero-stats,
+.eveenty-landing .hero-badge,
+.eveenty-landing .hero-buttons {
+  display: none !important;
+}
+
+/* Hide existing sections that are replaced */
+.eveenty-landing #about,
+.eveenty-landing #events,
+.eveenty-landing #how-it-works,
+.eveenty-landing #trust,
+.eveenty-landing #cta {
+  display: none !important;
+}
+
+/* ══════════════════════════════════
+   FOOTER OVERRIDE
+   ══════════════════════════════════ */
+.eveenty-landing .footer,
+.eveenty-landing footer {
+  background: #2a2a2a !important;
+}
+
+/* ══════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════ */
+@media (max-width: 1024px) {
+  .ev-hero-split {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    text-align: center;
+  }
+  .ev-hero-text h1 { font-size: 2.2rem; }
+  .ev-hero-text .ev-hero-desc { margin: 0 auto 28px; }
+  .ev-hero-buttons { justify-content: center; }
+  .ev-hero-image { text-align: center; }
+  .ev-hero-image img { margin: 0 auto; max-width: 400px; }
+  .ev-roles-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .eveenty-landing .hero-wrapper {
+    padding: 120px 0 60px !important;
+  }
+  .ev-hero-text h1 { font-size: 1.8rem; }
+  .ev-search-filters {
+    flex-direction: column;
+    border-radius: 16px;
+    padding: 16px;
+    gap: 8px;
+  }
+  .ev-filter-item {
+    border-right: none;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+    width: 100%;
+  }
+  .ev-filter-item:last-of-type { border-bottom: none; }
+  .ev-search-btn { width: 100%; justify-content: center; }
+  .ev-stats-grid { grid-template-columns: 1fr; gap: 24px; }
+  .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
+  .ev-partners-track { gap: 32px; }
+}
+
+@media (max-width: 480px) {
+  .ev-hero-text h1 { font-size: 1.5rem; }
+  .ev-hero-buttons { flex-direction: column; }
+  .ev-hero-buttons .ev-btn-create,
+  .ev-hero-buttons .ev-btn-explore { width: 100%; justify-content: center; }
+  .ev-roles-grid { grid-template-columns: 1fr 1fr; }
+  .ev-carousel-card { width: 240px; }
+}
