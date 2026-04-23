@@ -23,12 +23,15 @@
   --ev-shadow-hover: 0 8px 30px rgba(0,0,0,0.1);
 }
 
-/* ── Force light clean look ── */
+/* ── Force light clean look + override base accent ── */
 .eveenty-landing,
 .eveenty-landing * {
   --text-primary: #1a1a1f;
   --text-secondary: #555;
   --text-muted: #888;
+  --accent-primary: #F28C00;
+  --accent-secondary: #D97B00;
+  --accent-gradient: linear-gradient(135deg, #F28C00, #FFA726);
 }
 
 /* ══════════════════════════════════
@@ -944,9 +947,10 @@
   gap: 16px;
 }
 .ev-contact-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 10px;
   background: rgba(242,140,0,0.06);
   border: 1px solid rgba(242,140,0,0.12);
   display: flex;
@@ -962,8 +966,8 @@
   box-shadow: 0 4px 12px rgba(242,140,0,0.08);
 }
 .ev-contact-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 .ev-contact-item h4 {
   font-size: 0.95rem;
