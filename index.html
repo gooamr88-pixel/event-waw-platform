@@ -76,8 +76,63 @@
     </div>
   </div>
 
-
-
+  <!-- ══════ SMART SEARCH & EVENTS ══════ -->
+  <section class="section" id="events" style="background:#f9f9f9;">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header-flex">
+          <div data-reveal>
+            <div class="section-label">Discover</div>
+            <h2>Events <span class="gold">Near You</span></h2>
+            <p class="section-desc">Search, filter by category, and find what's happening closest to you.</p>
+          </div>
+          <div class="filters" id="ev-filters">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="week">This Week</button>
+            <button class="filter-btn" data-filter="month">This Month</button>
+          </div>
+        </div>
+      </div>
+      <div class="smart-search-wrapper" id="smart-search-wrapper">
+        <div class="smart-search-bar" id="smart-search-bar">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+          <input type="text" class="smart-search-input" id="smart-search-input" placeholder="Search events, venues, or artists..." autocomplete="off" spellcheck="false" />
+          <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search">✕</button>
+          <div class="geo-status detecting" id="geo-status"><span class="geo-dot"></span><span id="geo-status-text">Detecting location…</span></div>
+        </div>
+        <div class="category-scroller" id="category-scroller">
+          <button class="cat-pill active" data-category="all" id="cat-all"><span class="cat-pill-icon">✦</span>All Events</button>
+          <button class="cat-pill" data-category="music" id="cat-music"><span class="cat-pill-icon">🎵</span>Music</button>
+          <button class="cat-pill" data-category="sports" id="cat-sports"><span class="cat-pill-icon">⚽</span>Sports</button>
+          <button class="cat-pill" data-category="trips" id="cat-trips"><span class="cat-pill-icon">🏕️</span>Trips</button>
+          <button class="cat-pill" data-category="conference" id="cat-conference"><span class="cat-pill-icon">🎤</span>Conferences</button>
+          <button class="cat-pill" data-category="art" id="cat-art"><span class="cat-pill-icon">🎨</span>Art &amp; Culture</button>
+          <button class="cat-pill" data-category="food" id="cat-food"><span class="cat-pill-icon">🍽️</span>Food &amp; Drink</button>
+          <button class="cat-pill" data-category="nightlife" id="cat-nightlife"><span class="cat-pill-icon">🌙</span>Nightlife</button>
+          <button class="cat-pill" data-category="workshop" id="cat-workshop"><span class="cat-pill-icon">🛠️</span>Workshops</button>
+        </div>
+        <div class="adv-filters-inline" id="adv-filters">
+          <div class="adv-pill-select"><select class="adv-select" id="filter-city"><option value="all">📍 All Cities</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <div class="adv-pill-select"><select class="adv-select" id="filter-category"><option value="all">🏷️ All Types</option><option value="music">🎵 Music</option><option value="sports">⚽ Sports</option><option value="trips">🏕️ Trips</option><option value="conference">🎤 Conference</option><option value="art">🎨 Art &amp; Culture</option><option value="food">🍽️ Food &amp; Drink</option><option value="nightlife">🌙 Nightlife</option><option value="workshop">🛠️ Workshop</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <div class="adv-pill-select"><select class="adv-select" id="filter-date"><option value="all">📅 Any Date</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Pick a Date…</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <input type="date" class="adv-date-pill" id="filter-date-input" style="display:none;" />
+          <button class="adv-reset-pill" id="adv-reset-btn" style="display:none;">✕ Reset</button>
+        </div>
+      </div>
+      <div class="search-results-meta" id="search-results-meta"><span class="search-results-count" id="search-results-count"></span><div class="sort-indicator" id="sort-indicator" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>Sorted by proximity</div></div>
+      <div class="events-grid" id="landing-events-grid" data-stagger>
+        <div class="event-card skeleton-card" id="skel-1"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+        <div class="event-card skeleton-card" id="skel-2"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+        <div class="event-card skeleton-card" id="skel-3"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+      </div>
+      <div id="events-empty" style="display:none;text-align:center;padding:60px 20px;">
+        <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(242,140,0,.06);border:1px solid rgba(242,140,0,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎪</div>
+        <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">No Events Found</h3>
+        <p id="empty-state-text" style="color:#888;font-size:0.95rem;max-width:400px;margin:0 auto 24px;line-height:1.7;">Be the first to create an event on Event Waw!</p>
+        <a href="register.html" class="btn btn-primary btn-lg">Become an Organizer</a>
+      </div>
+    </div>
+  </section>
 
 
   <!-- ══════ STATS BAR ══════ -->
@@ -149,68 +204,6 @@
       <svg class="ev-partner-logo" viewBox="0 0 180 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="Inter,sans-serif">Supabase</text></svg>
       <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="20" font-weight="800" font-family="Inter,sans-serif">Let's Encrypt</text></svg>
       <svg class="ev-partner-logo" viewBox="0 0 120 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="Inter,sans-serif">Vercel</text></svg>
-    </div>
-  </section>
-
-
-
-
-
-  <!-- ══════ SMART SEARCH & EVENTS ══════ -->
-  <section class="section" id="events" style="background:var(--bg-secondary);">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-header-flex">
-          <div data-reveal>
-            <div class="section-label">Discover</div>
-            <h2>Events <span class="gold">Near You</span></h2>
-            <p class="section-desc">Search, filter by category, and find what's happening closest to you.</p>
-          </div>
-          <div class="filters" id="ev-filters">
-            <button class="filter-btn active" data-filter="all">All</button>
-            <button class="filter-btn" data-filter="week">This Week</button>
-            <button class="filter-btn" data-filter="month">This Month</button>
-          </div>
-        </div>
-      </div>
-      <div class="smart-search-wrapper" id="smart-search-wrapper">
-        <div class="smart-search-bar" id="smart-search-bar">
-          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-          <input type="text" class="smart-search-input" id="smart-search-input" placeholder="Search events, venues, or artists..." autocomplete="off" spellcheck="false" />
-          <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search">✕</button>
-          <div class="geo-status detecting" id="geo-status"><span class="geo-dot"></span><span id="geo-status-text">Detecting location…</span></div>
-        </div>
-        <div class="category-scroller" id="category-scroller">
-          <button class="cat-pill active" data-category="all" id="cat-all"><span class="cat-pill-icon">✦</span>All Events</button>
-          <button class="cat-pill" data-category="music" id="cat-music"><span class="cat-pill-icon">🎵</span>Music</button>
-          <button class="cat-pill" data-category="sports" id="cat-sports"><span class="cat-pill-icon">⚽</span>Sports</button>
-          <button class="cat-pill" data-category="trips" id="cat-trips"><span class="cat-pill-icon">🏕️</span>Trips</button>
-          <button class="cat-pill" data-category="conference" id="cat-conference"><span class="cat-pill-icon">🎤</span>Conferences</button>
-          <button class="cat-pill" data-category="art" id="cat-art"><span class="cat-pill-icon">🎨</span>Art &amp; Culture</button>
-          <button class="cat-pill" data-category="food" id="cat-food"><span class="cat-pill-icon">🍽️</span>Food &amp; Drink</button>
-          <button class="cat-pill" data-category="nightlife" id="cat-nightlife"><span class="cat-pill-icon">🌙</span>Nightlife</button>
-          <button class="cat-pill" data-category="workshop" id="cat-workshop"><span class="cat-pill-icon">🛠️</span>Workshops</button>
-        </div>
-        <div class="adv-filters-inline" id="adv-filters">
-          <div class="adv-pill-select"><select class="adv-select" id="filter-city"><option value="all">📍 All Cities</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
-          <div class="adv-pill-select"><select class="adv-select" id="filter-category"><option value="all">🏷️ All Types</option><option value="music">🎵 Music</option><option value="sports">⚽ Sports</option><option value="trips">🏕️ Trips</option><option value="conference">🎤 Conference</option><option value="art">🎨 Art &amp; Culture</option><option value="food">🍽️ Food &amp; Drink</option><option value="nightlife">🌙 Nightlife</option><option value="workshop">🛠️ Workshop</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
-          <div class="adv-pill-select"><select class="adv-select" id="filter-date"><option value="all">📅 Any Date</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Pick a Date…</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
-          <input type="date" class="adv-date-pill" id="filter-date-input" style="display:none;" />
-          <button class="adv-reset-pill" id="adv-reset-btn" style="display:none;">✕ Reset</button>
-        </div>
-      </div>
-      <div class="search-results-meta" id="search-results-meta"><span class="search-results-count" id="search-results-count"></span><div class="sort-indicator" id="sort-indicator" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>Sorted by proximity</div></div>
-      <div class="events-grid" id="landing-events-grid" data-stagger>
-        <div class="event-card skeleton-card" id="skel-1"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-        <div class="event-card skeleton-card" id="skel-2"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-        <div class="event-card skeleton-card" id="skel-3"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-      </div>
-      <div id="events-empty" style="display:none;text-align:center;padding:60px 20px;">
-        <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(242,140,0,.06);border:1px solid rgba(242,140,0,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎪</div>
-        <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">No Events Found</h3>
-        <p id="empty-state-text" style="color:#888;font-size:0.95rem;max-width:400px;margin:0 auto 24px;line-height:1.7;">Be the first to create an event on Event Waw!</p>
-        <a href="register.html" class="btn btn-primary btn-lg">Become an Organizer</a>
-      </div>
     </div>
   </section>
 

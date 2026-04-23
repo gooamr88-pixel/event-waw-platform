@@ -862,16 +862,11 @@
 
 /* Button animation override */
 .eveenty-landing .btn-pulse { animation: none !important; }
-
-/* Section bg override */
-.eveenty-landing [style*="background:var(--bg-secondary)"] {
-  background: #faf9f8 !important;
-}
 /* ══════════════════════════════════
    CONTACT US SECTION — Professional
    ══════════════════════════════════ */
 .ev-contact-section {
-  background: #fafafa;
+  background: #fff;
   padding: 80px 0 100px;
 }
 .ev-contact-grid {
@@ -885,7 +880,7 @@
 
 /* Dark Info Panel */
 .ev-contact-info-panel {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #F28C00 0%, #D97B00 50%, #C06A00 100%);
   padding: 48px 40px;
   position: relative;
   overflow: hidden;
@@ -1048,7 +1043,7 @@
   justify-content: center;
   gap: 8px;
   padding: 14px 32px;
-  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  background: #F28C00;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -1060,8 +1055,8 @@
   align-self: flex-start;
 }
 .ev-form-submit:hover {
-  background: linear-gradient(135deg, #16213e, #0f3460);
-  box-shadow: 0 8px 24px rgba(22,33,62,0.3);
+  background: #D97B00;
+  box-shadow: 0 8px 24px rgba(242,140,0,0.3);
   transform: translateY(-1px);
 }
 .ev-form-success {
