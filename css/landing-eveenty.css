@@ -165,6 +165,7 @@
 .ev-partner-logo:hover { opacity: 0.7; }
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
+.eveenty-landing #events { background: #f9f9f9 !important; }
 /* Theme overrides for event components */
 .eveenty-landing .smart-search-bar:focus-within {
   border-color: rgba(242,140,0,0.35) !important;
