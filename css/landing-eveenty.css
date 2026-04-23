@@ -1,31 +1,14 @@
-/* ═══════════════════════════════════════════════
-   EVEENTY LANDING — Clean White + Amber/Orange
-   Applied ONLY to landing page via .eveenty-landing
-   ═══════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   EVEENTY LANDING PAGE — Complete Standalone CSS
+   Forces light mode. No dependency on base theme variables.
+   Applied via .eveenty-landing on <body>
+   ═══════════════════════════════════════════════════════════ */
 
-/* ── Override accent colors for landing ── */
-.eveenty-landing {
-  --ev-pink: #F28C00;
-  --ev-pink-light: #FFA726;
-  --ev-pink-dark: #D97B00;
-  --ev-yellow: #F28C00;
-  --ev-yellow-hover: #D97B00;
-  --ev-dark: #333333;
-  --ev-gray: #555555;
-  --ev-light-gray: #999999;
-  --ev-bg: #ffffff;
-  --ev-bg-soft: #FFF8EE;
-  --ev-bg-cream: #fdf8f0;
-  --ev-bg-stats: #4a4a4a;
-  --ev-border: #e8e8e8;
-  --ev-radius: 12px;
-  --ev-shadow: 0 2px 20px rgba(0,0,0,0.06);
-  --ev-shadow-hover: 0 8px 30px rgba(0,0,0,0.1);
-}
-
-/* ── Force light clean look + override ALL base theme vars ── */
+/* ── 1. GLOBAL RESET — Force light on EVERYTHING ── */
 .eveenty-landing,
-.eveenty-landing * {
+.eveenty-landing *,
+.eveenty-landing *::before,
+.eveenty-landing *::after {
   --text-primary: #1a1a1f !important;
   --text-secondary: #555 !important;
   --text-muted: #888 !important;
@@ -41,50 +24,317 @@
   --shadow-card: 0 2px 20px rgba(0,0,0,0.06) !important;
   color-scheme: light !important;
 }
-
-/* ── Explicit light background on all sections ── */
 .eveenty-landing {
   background: #fff !important;
   color: #1a1a1f !important;
 }
-.eveenty-landing .section,
-.eveenty-landing section {
-  color: #1a1a1f !important;
+
+/* Hide old hero elements from base styles.css */
+.eveenty-landing .hero-content,
+.eveenty-landing .hero-stats,
+.eveenty-landing .hero-badge,
+.eveenty-landing .hero-buttons,
+.eveenty-landing #about,
+.eveenty-landing #highlights,
+.eveenty-landing .btn-pulse { display: none !important; }
+
+/* Force light text everywhere */
+.eveenty-landing h1, .eveenty-landing h2,
+.eveenty-landing h3, .eveenty-landing h4 { color: #1a1a1f !important; }
+.eveenty-landing p { color: #555 !important; }
+.eveenty-landing .gold { color: #F28C00 !important; font-style: italic; }
+.eveenty-landing .text-gold { color: #F28C00 !important; }
+.eveenty-landing .section-label {
+  color: #F28C00 !important;
+  border-color: rgba(242,140,0,0.12) !important;
+  background: rgba(242,140,0,0.06) !important;
 }
-.eveenty-landing .section-header h2,
-.eveenty-landing h2, .eveenty-landing h3, .eveenty-landing h4 {
-  color: #1a1a1f !important;
-}
-.eveenty-landing .section-desc,
-.eveenty-landing p {
-  color: #555 !important;
-}
-/* Keep contact info panel text white on amber bg */
-.eveenty-landing .ev-info-panel-content h3 { color: #fff !important; }
-.eveenty-landing .ev-info-panel-content p { color: rgba(255,255,255,0.7) !important; }
-.eveenty-landing .ev-contact-item { color: rgba(255,255,255,0.85) !important; }
-/* Form panel explicit light */
-.eveenty-landing .ev-contact-form-wrap { background: #fff !important; }
-.eveenty-landing .ev-form-group label { color: #555 !important; }
-.eveenty-landing .ev-form-group input,
-.eveenty-landing .ev-form-group select,
-.eveenty-landing .ev-form-group textarea {
-  background: #fafafa !important;
-  color: #333 !important;
-  border-color: #e0e0e0 !important;
-}
-.eveenty-landing .step-card,
-.eveenty-landing .trust-badge {
+.eveenty-landing .section-label::before { background: #F28C00 !important; }
+
+/* ── 2. NAVBAR ── */
+.eveenty-landing .navbar {
   background: #fff !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04) !important;
+}
+.eveenty-landing .nav-logo-text { color: #1a1a1f !important; font-weight: 800 !important; }
+.eveenty-landing .nav-logo-icon { color: #F28C00 !important; }
+.eveenty-landing .nav-links { margin: 0 auto !important; }
+.eveenty-landing .nav-links a {
+  color: #555 !important; font-weight: 500 !important;
+  font-size: 0.9rem !important; padding: 8px 16px !important;
+  transition: color 0.3s !important;
+}
+.eveenty-landing .nav-links a:hover { color: #F28C00 !important; }
+.eveenty-landing .btn-outline {
+  color: #333 !important; border-color: #ddd !important;
+  background: transparent !important;
+}
+.eveenty-landing .btn-outline:hover {
+  border-color: #F28C00 !important; color: #F28C00 !important;
+}
+.eveenty-landing .btn-primary {
+  background: #F28C00 !important; color: #fff !important;
+  border-color: #F28C00 !important;
+}
+.eveenty-landing .btn-primary:hover {
+  background: #D97B00 !important; border-color: #D97B00 !important;
+}
+
+/* ── 3. HERO ── */
+.eveenty-landing .hero-wrapper {
+  background: #fff !important; padding: 100px 0 60px !important;
+  min-height: auto !important;
+}
+.ev-hero-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+  align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 24px;
+}
+.ev-hero-text h1 {
+  font-size: 3.2rem !important; font-weight: 900 !important;
+  line-height: 1.15 !important; letter-spacing: -1px !important;
   color: #1a1a1f !important;
+}
+.ev-ampersand { color: #F28C00 !important; font-style: italic; }
+.ev-highlight { color: #F28C00 !important; font-style: italic; }
+.ev-hero-desc {
+  font-size: 1rem; line-height: 1.8; color: #666 !important;
+  margin: 20px 0 32px; max-width: 480px;
+}
+.ev-brand { font-weight: 700; color: #1a1a1f !important; }
+.ev-clicks { color: #F28C00; font-weight: 700; }
+.ev-organizers { color: #F28C00; font-weight: 600; }
+.ev-hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
+.ev-btn-create {
+  padding: 14px 28px; background: #F28C00; color: #fff;
+  border-radius: 10px; font-weight: 700; font-size: 0.95rem;
+  text-decoration: none; transition: all 0.3s;
+}
+.ev-btn-create:hover { background: #D97B00; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(242,140,0,0.3); }
+.ev-btn-explore {
+  padding: 14px 28px; background: transparent; color: #333;
+  border: 1.5px solid #ddd; border-radius: 10px;
+  font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
+}
+.ev-btn-explore:hover { border-color: #F28C00; color: #F28C00; }
+.ev-hero-image { display: flex; justify-content: center; }
+.ev-hero-image img { max-width: 100%; height: auto; border-radius: 20px; }
+
+/* ── 4. STATS BAR ── */
+.ev-stats-bar { background: #2a2a2a; padding: 40px 0; }
+.ev-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
+.ev-stat-number { font-size: 2.2rem; font-weight: 900; color: #F28C00; margin-bottom: 6px; }
+.ev-stat-label {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  color: #ccc; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;
+}
+.ev-stat-label svg { width: 16px; height: 16px; }
+
+/* ── 5. ROLES ── */
+.ev-roles-section {
+  padding: 80px 0; background: #fff !important; text-align: center;
+}
+.ev-roles-section h2 { font-size: 2rem; font-weight: 800; color: #1a1a1f !important; margin-bottom: 12px; }
+.ev-roles-subtitle { color: #888 !important; font-size: 0.95rem; max-width: 600px; margin: 0 auto 48px; }
+.ev-roles-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.ev-role-card {
+  position: relative; border-radius: 16px; overflow: hidden;
+  aspect-ratio: 3/4; cursor: pointer; transition: transform 0.3s;
+}
+.ev-role-card:hover { transform: translateY(-6px); }
+.ev-role-card img { width: 100%; height: 100%; object-fit: cover; }
+.ev-role-label {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 16px; background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  color: #fff; font-weight: 700; font-size: 0.95rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ev-arrow { font-size: 1.2rem; }
+
+/* ── 6. PARTNERS ── */
+.ev-partners-section {
+  padding: 40px 0; background: #fafafa !important;
+  border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;
+  overflow: hidden;
+}
+.ev-partners-track {
+  display: flex; align-items: center; justify-content: center; gap: 48px;
+  flex-wrap: wrap; padding: 0 24px;
+}
+.ev-partner-logo { height: 28px; opacity: 0.35; transition: opacity 0.3s; }
+.ev-partner-logo:hover { opacity: 0.7; }
+
+/* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
+/* Theme overrides for event components */
+.eveenty-landing .smart-search-bar:focus-within {
+  border-color: rgba(242,140,0,0.35) !important;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 3px rgba(242,140,0,0.06) !important;
+}
+.eveenty-landing .smart-search-bar:focus-within .search-icon { color: #F28C00 !important; }
+.eveenty-landing .search-clear-btn:hover { background: rgba(242,140,0,0.1) !important; color: #F28C00 !important; }
+.eveenty-landing .cat-pill.active {
+  background: #F28C00 !important; border-color: #F28C00 !important;
+  box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
+}
+.eveenty-landing .cat-pill:hover { border-color: rgba(242,140,0,0.3) !important; color: #F28C00 !important; }
+.eveenty-landing .cat-pill-icon { background: rgba(242,140,0,0.08) !important; }
+.eveenty-landing .cat-pill.active .cat-pill-icon { background: rgba(255,255,255,0.2) !important; }
+.eveenty-landing .filter-btn.active {
+  background: #F28C00 !important; border-color: #F28C00 !important;
+  box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
+}
+.eveenty-landing .filter-btn:hover {
+  background: rgba(242,140,0,0.06) !important; border-color: rgba(242,140,0,0.4) !important;
+  color: #F28C00 !important;
+}
+.eveenty-landing .adv-pill-select .adv-select:hover { border-color: rgba(242,140,0,0.4) !important; }
+.eveenty-landing .adv-pill-select .adv-select:focus {
+  border-color: #F28C00 !important; box-shadow: 0 0 0 3px rgba(242,140,0,0.08) !important;
+}
+.eveenty-landing .geo-status.active {
+  background: rgba(34,197,94,0.06) !important; border-color: rgba(34,197,94,0.2) !important;
+  color: #22c55e !important;
+}
+.eveenty-landing .event-card {
+  background: #fff !important; border-color: #eee !important;
+}
+.eveenty-landing .event-card:hover {
+  border-color: rgba(242,140,0,0.25) !important;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.12) !important;
+}
+.eveenty-landing .event-card::before { background: linear-gradient(135deg, #F28C00, #D97B00) !important; }
+.eveenty-landing .event-card-badge { color: #F28C00 !important; border-color: rgba(242,140,0,0.2) !important; }
+.eveenty-landing .event-card-badge .dot { background: #F28C00 !important; box-shadow: 0 0 6px #F28C00 !important; }
+.eveenty-landing .event-card-date { color: #F28C00 !important; }
+.eveenty-landing .event-card-avail strong { color: #F28C00 !important; }
+.eveenty-landing .event-card-distance {
+  color: #F28C00 !important; background: rgba(242,140,0,0.06) !important;
+  border-color: rgba(242,140,0,0.12) !important;
+}
+
+/* ── 8. HOW IT WORKS (uses base step-card) ── */
+.eveenty-landing .step-card {
+  background: #fff !important; border-color: #eee !important;
 }
 .eveenty-landing .step-card h3 { color: #1a1a1f !important; }
 .eveenty-landing .step-card p { color: #666 !important; }
+.eveenty-landing .step-icon {
+  background: rgba(242,140,0,0.08) !important;
+  border-color: rgba(242,140,0,0.15) !important;
+  color: #F28C00 !important;
+}
+.eveenty-landing .step-card:hover .step-icon {
+  background: rgba(242,140,0,0.12) !important;
+  box-shadow: 0 4px 16px rgba(242,140,0,0.1) !important;
+}
+.eveenty-landing .step-card:hover { border-color: rgba(242,140,0,0.25) !important; }
+.eveenty-landing .step-card::after { background: linear-gradient(90deg, transparent, #F28C00, transparent) !important; }
+.eveenty-landing .step-card:hover .step-num { color: rgba(242,140,0,0.06) !important; }
+
+/* ── 9. TRUST (uses base trust-badge) ── */
+.eveenty-landing .trust-badge {
+  background: #fff !important; border-color: #eee !important;
+}
+.eveenty-landing .trust-badge:hover { border-color: rgba(242,140,0,0.2) !important; }
+.eveenty-landing .trust-badge-icon {
+  background: rgba(242,140,0,0.05) !important;
+  border-color: rgba(242,140,0,0.1) !important;
+}
 .eveenty-landing .trust-badge-label { color: #1a1a1f !important; }
 .eveenty-landing .trust-badge-sub { color: #888 !important; }
+
+/* ── 10. CONTACT US ── */
+.ev-contact-section {
+  background: #fff !important; padding: 80px 0 100px;
+}
+.ev-contact-grid {
+  display: grid; grid-template-columns: 1fr 1.3fr; gap: 0;
+  border-radius: 16px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+.ev-contact-info-panel {
+  background: linear-gradient(135deg, #F28C00, #D97B00, #C06A00);
+  padding: 48px 40px; position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.ev-info-panel-content { position: relative; z-index: 2; }
+.ev-info-panel-content h3 {
+  font-size: 1.5rem; font-weight: 800; color: #fff !important;
+  margin-bottom: 10px; letter-spacing: -0.3px;
+}
+.ev-info-sub { font-size: 0.88rem; color: rgba(255,255,255,0.7) !important; line-height: 1.7; margin-bottom: 40px; }
+.ev-contact-details { display: flex; flex-direction: column; gap: 28px; margin-bottom: 48px; }
+.ev-contact-item {
+  display: flex; align-items: center; gap: 14px;
+  color: rgba(255,255,255,0.9) !important; font-size: 0.9rem; transition: color 0.3s;
+}
+.ev-contact-item:hover { color: #fff !important; }
+.ev-contact-item svg { flex-shrink: 0; opacity: 0.8; }
+.ev-contact-social { display: flex; gap: 10px; margin-top: auto; }
+.ev-social-link {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; transition: all 0.3s; text-decoration: none;
+}
+.ev-social-link:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+.ev-social-link svg { width: 16px; height: 16px; }
+.ev-info-decor-circle {
+  position: absolute; bottom: -60px; right: -60px;
+  width: 200px; height: 200px; border-radius: 50%;
+  background: rgba(255,255,255,0.08); z-index: 1;
+}
+.ev-info-decor-sm { width: 120px; height: 120px; bottom: 60px; right: 40px; background: rgba(255,255,255,0.05); }
+
+/* Contact Form */
+.ev-contact-form-wrap { background: #fff !important; padding: 48px 40px; }
+.ev-contact-form { display: flex; flex-direction: column; gap: 18px; }
+.ev-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.ev-form-group { display: flex; flex-direction: column; gap: 6px; }
+.ev-form-group label {
+  font-size: 0.8rem; font-weight: 600; color: #555 !important;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.ev-form-group input,
+.ev-form-group select,
+.ev-form-group textarea {
+  padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
+  background: #fafafa !important; font-size: 0.9rem; font-family: inherit;
+  color: #333 !important; outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+}
+.ev-form-group input:focus,
+.ev-form-group select:focus,
+.ev-form-group textarea:focus {
+  border-color: #F28C00; box-shadow: 0 0 0 3px rgba(242,140,0,0.06); background: #fff !important;
+}
+.ev-form-group input::placeholder,
+.ev-form-group textarea::placeholder { color: #bbb; }
+.ev-form-group textarea { resize: vertical; min-height: 100px; }
+.ev-form-group select {
+  appearance: none; -webkit-appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px;
+}
+.ev-form-submit {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 32px; background: #F28C00; color: #fff !important;
+  border: none; border-radius: 8px; font-size: 0.92rem; font-weight: 700;
+  font-family: inherit; cursor: pointer; transition: all 0.3s; align-self: flex-start;
+}
+.ev-form-submit:hover {
+  background: #D97B00; box-shadow: 0 8px 24px rgba(242,140,0,0.3); transform: translateY(-1px);
+}
+.ev-form-success {
+  display: flex; align-items: center; gap: 10px; padding: 16px;
+  background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15);
+  border-radius: 8px; color: #22c55e !important; font-weight: 600; font-size: 0.88rem;
+}
+.ev-form-success svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+/* ── 11. FOOTER ── */
 .eveenty-landing .footer {
-  background: #111 !important;
-  color: #ccc !important;
+  background: #111 !important; color: #ccc !important;
 }
 .eveenty-landing .footer h4 { color: #fff !important; }
 .eveenty-landing .footer p { color: #999 !important; }
@@ -93,1086 +343,24 @@
 .eveenty-landing .footer-bottom { border-color: rgba(255,255,255,0.1) !important; }
 .eveenty-landing .footer-bottom span { color: #777 !important; }
 
-/* ══════════════════════════════════
-   NAVBAR — Eveenty Style (Clean Horizontal)
-   ══════════════════════════════════ */
-.eveenty-landing .navbar {
-  background: #fff !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  border: none !important;
-  border-bottom: 3px solid var(--ev-pink) !important;
-  border-radius: 0 !important;
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  transform: none !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 0 !important;
-  box-shadow: none !important;
-  z-index: 1000;
-}
-.eveenty-landing .navbar .container {
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 14px 40px;
-  display: flex;
-  align-items: center;
-  gap: 40px;
-}
-.eveenty-landing .navbar.scrolled {
-  transform: none !important;
-  padding: 0 !important;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
-}
-
-/* Logo */
-.eveenty-landing .nav-logo-text {
-  font-family: 'Inter', sans-serif !important;
-  font-weight: 800 !important;
-  font-size: 1.4rem !important;
-  color: #1a1a1f !important;
-  -webkit-text-fill-color: #1a1a1f !important;
-  background: none !important;
-  animation: none !important;
-  letter-spacing: -0.5px;
-}
-.eveenty-landing .nav-logo-icon {
-  color: var(--ev-pink) !important;
-  width: 2rem !important;
-  height: 2rem !important;
-}
-
-/* Nav Links — centered in the middle */
-.eveenty-landing .nav-links {
-  background: none !important;
-  border: none !important;
-  padding: 0 !important;
-  gap: 28px !important;
-  flex: 1;
-  justify-content: center !important;
-  margin-left: 0;
-}
-.eveenty-landing .nav-links a {
-  color: #444 !important;
-  font-weight: 500 !important;
-  font-size: 0.9rem !important;
-  text-shadow: none !important;
-  padding: 6px 0 !important;
-  letter-spacing: 0;
-}
-.eveenty-landing .nav-links a:hover {
-  color: var(--ev-pink) !important;
-  text-shadow: none !important;
-}
-.eveenty-landing .nav-links a::after {
-  background: var(--ev-pink) !important;
-  box-shadow: none !important;
-  bottom: -2px !important;
-}
-
-/* Nav Actions — pushed right */
-.eveenty-landing .nav-actions {
-  margin-left: auto;
-  gap: 10px !important;
-}
-
-/* Nav Buttons */
-.eveenty-landing .btn-primary {
-  background: var(--ev-pink) !important;
-  border-color: var(--ev-pink) !important;
-  color: #fff !important;
-  border-radius: 6px !important;
-  box-shadow: none !important;
-  font-weight: 600;
-  padding: 9px 22px !important;
-  font-size: 0.88rem !important;
-}
-.eveenty-landing .btn-primary::before { display: none !important; }
-.eveenty-landing .btn-primary:hover {
-  background: var(--ev-pink-dark) !important;
-  box-shadow: 0 4px 16px rgba(242,140,0,0.25) !important;
-  transform: none !important;
-}
-.eveenty-landing .btn-outline {
-  border: 1.5px solid #333 !important;
-  color: #333 !important;
-  border-radius: 6px !important;
-  background: #fff !important;
-  padding: 9px 22px !important;
-  font-size: 0.88rem !important;
-  box-shadow: none !important;
-}
-.eveenty-landing .btn-outline:hover {
-  border-color: var(--ev-pink) !important;
-  color: var(--ev-pink) !important;
-  background: #FFF8EE !important;
-  transform: none !important;
-}
-.eveenty-landing .btn-pulse { animation: none !important; }
-
-/* Theme Toggle — hide */
-.eveenty-landing .theme-toggle { display: none !important; }
-
-/* Mobile toggle color */
-.eveenty-landing .nav-toggle { color: #333 !important; }
-
-/* ══════════════════════════════════
-   HERO — Split Layout (Eveenty)
-   ══════════════════════════════════ */
-.eveenty-landing .hero-wrapper {
-  min-height: auto !important;
-  height: auto !important;
-  padding: 140px 0 80px !important;
-  background: linear-gradient(180deg, #ffffff 0%, #FFF9F0 60%, #FFF5E6 100%) !important;
-  display: block !important;
-  text-align: left !important;
-  position: relative;
-  overflow: visible !important;
-}
-.eveenty-landing .hero-slideshow,
-.eveenty-landing .particles,
-.eveenty-landing .scroll-hint {
-  display: none !important;
-}
-
-.ev-hero-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
-  align-items: center;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
-
-.ev-hero-text h1 {
-  font-family: 'Inter', sans-serif;
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: #1a1a1f;
-  line-height: 1.15;
-  margin-bottom: 24px;
-  letter-spacing: -0.5px;
-}
-.ev-hero-text h1 .ev-ampersand {
-  color: var(--ev-pink);
-  font-weight: 800;
-}
-.ev-hero-text h1 .ev-highlight {
-  color: var(--ev-pink);
-  display: block;
-  font-style: normal;
-}
-
-.ev-hero-text .ev-hero-desc {
-  font-size: 1.05rem;
-  color: #555;
-  line-height: 1.75;
-  margin-bottom: 36px;
-  max-width: 480px;
-}
-.ev-hero-text .ev-hero-desc .ev-brand {
-  color: var(--ev-pink);
-  font-weight: 700;
-}
-.ev-hero-text .ev-hero-desc .ev-clicks {
-  color: var(--ev-pink);
-  font-weight: 600;
-}
-.ev-hero-text .ev-hero-desc .ev-organizers {
-  color: var(--ev-pink);
-  font-weight: 700;
-}
-
-.ev-hero-buttons {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.ev-hero-buttons .ev-btn-create {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  border: 1.5px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
-  color: #333;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-.ev-hero-buttons .ev-btn-create:hover {
-  border-color: var(--ev-pink);
-  color: var(--ev-pink);
-  box-shadow: 0 4px 16px rgba(242,140,0,0.08);
-}
-.ev-hero-buttons .ev-btn-explore {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  border: none;
-  border-radius: 8px;
-  background: var(--ev-yellow);
-  color: #333;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-.ev-hero-buttons .ev-btn-explore:hover {
-  background: var(--ev-yellow-hover);
-  box-shadow: 0 4px 16px rgba(212,197,39,0.3);
-  transform: translateY(-2px);
-}
-
-/* Hero Image (Featured Event Poster) */
-.ev-hero-image {
-  position: relative;
-}
-.ev-hero-image img {
-  width: 100%;
-  max-width: 520px;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-  display: block;
-}
-
-/* ══════════════════════════════════
-   SEARCH FILTER BAR
-   ══════════════════════════════════ */
-.ev-search-bar-section {
-  padding: 40px 0 20px;
-  background: linear-gradient(180deg, #FFF5E6 0%, #ffffff 100%);
-}
-.ev-search-bar-section .container {
-  max-width: 1280px;
-}
-
-.ev-search-filters {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 60px;
-  padding: 8px 8px 8px 28px;
-  max-width: 700px;
-  margin: 0 auto;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
-}
-.ev-filter-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 20px;
-  font-size: 0.88rem;
-  color: #555;
-  border-right: 1px solid #eee;
-  cursor: pointer;
-  white-space: nowrap;
-  position: relative;
-}
-.ev-filter-item:last-of-type {
-  border-right: none;
-}
-.ev-filter-item svg {
-  width: 16px;
-  height: 16px;
-  color: #999;
-  flex-shrink: 0;
-}
-.ev-filter-item select {
-  appearance: none;
-  -webkit-appearance: none;
-  background: none;
-  border: none;
-  color: #555;
-  font-size: 0.88rem;
-  font-family: inherit;
-  cursor: pointer;
-  padding-right: 16px;
-}
-.ev-search-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 28px;
-  background: var(--ev-pink);
-  color: #fff;
-  border: none;
-  border-radius: 50px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-.ev-search-btn:hover {
-  background: var(--ev-pink-dark);
-  box-shadow: 0 4px 20px rgba(242,140,0,0.3);
-}
-.ev-search-btn svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* ══════════════════════════════════
-   EVENTS CAROUSEL SECTION
-   ══════════════════════════════════ */
-.ev-events-carousel-section {
-  padding: 40px 0 60px;
-  background: #fff;
-  overflow: hidden;
-}
-.ev-events-carousel-section .container {
-  max-width: 1400px;
-}
-.ev-carousel-track {
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 10px 0 20px;
-}
-.ev-carousel-track::-webkit-scrollbar { display: none; }
-
-.ev-carousel-card {
-  flex-shrink: 0;
-  width: 280px;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-.ev-carousel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--ev-shadow-hover);
-}
-.ev-carousel-card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  display: block;
-}
-.ev-carousel-card .ev-card-price {
-  position: absolute;
-  bottom: 12px;
-  left: 12px;
-  padding: 6px 16px;
-  background: var(--ev-pink);
-  color: #fff;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-/* ══════════════════════════════════
-   STATS BAR
-   ══════════════════════════════════ */
-.ev-stats-bar {
-  background: var(--ev-bg-stats);
-  padding: 48px 0;
-}
-.ev-stats-bar .container {
-  max-width: 1280px;
-}
-.ev-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  text-align: center;
-}
-.ev-stat-item .ev-stat-number {
-  font-size: 2.4rem;
-  font-weight: 800;
-  color: var(--ev-pink);
-  margin-bottom: 8px;
-}
-.ev-stat-item .ev-stat-label {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  color: #fff;
-  font-size: 0.92rem;
-  font-weight: 500;
-}
-.ev-stat-item .ev-stat-label svg {
-  width: 18px;
-  height: 18px;
-}
-
-/* ══════════════════════════════════
-   FAVORITE EVENTS SEARCH
-   ══════════════════════════════════ */
-.ev-fav-search-section {
-  background: var(--ev-bg-soft);
-  padding: 60px 0;
-  text-align: center;
-}
-.ev-fav-search-section .container {
-  max-width: 700px;
-}
-.ev-fav-search-section h2 {
-  font-family: 'Inter', sans-serif;
-  font-size: 1.8rem;
-  font-weight: 800;
-  color: #333;
-  margin-bottom: 12px;
-}
-.ev-fav-search-section h2 .ev-highlight {
-  color: var(--ev-pink);
-}
-.ev-fav-search-section .ev-fav-subtitle {
-  color: #777;
-  font-size: 0.95rem;
-  margin-bottom: 28px;
-}
-.ev-fav-search-wrap {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  max-width: 500px;
-  margin: 0 auto;
-  border: 1.5px solid var(--ev-pink);
-  border-radius: 8px;
-  overflow: hidden;
-  background: #fff;
-}
-.ev-fav-search-wrap input {
-  flex: 1;
-  padding: 14px 20px;
-  border: none;
-  background: none;
-  font-size: 0.95rem;
-  color: #333;
-  outline: none;
-}
-.ev-fav-search-wrap input::placeholder {
-  color: #aaa;
-}
-.ev-fav-search-wrap button {
-  padding: 14px 20px;
-  background: var(--ev-pink);
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-.ev-fav-search-wrap button:hover {
-  background: var(--ev-pink-dark);
-}
-.ev-fav-search-wrap button svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* ══════════════════════════════════
-   CHOOSE YOUR ROLE
-   ══════════════════════════════════ */
-.ev-roles-section {
-  padding: 80px 0;
-  background: #fff;
-  text-align: center;
-}
-.ev-roles-section .container {
-  max-width: 1280px;
-}
-.ev-roles-section h2 {
-  font-family: 'Inter', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  color: #333;
-  margin-bottom: 12px;
-}
-.ev-roles-section h2 .ev-highlight {
-  color: var(--ev-pink);
-}
-.ev-roles-section .ev-roles-subtitle {
-  color: #777;
-  font-size: 0.92rem;
-  margin-bottom: 48px;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.ev-roles-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-}
-.ev-role-card {
-  position: relative;
-  border-radius: 16px;
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  aspect-ratio: 3/4;
-}
-.ev-role-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--ev-shadow-hover);
-}
-.ev-role-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  filter: brightness(0.85);
-  transition: filter 0.3s ease, transform 0.4s ease;
-}
-.ev-role-card:hover img {
-  filter: brightness(0.7);
-  transform: scale(1.05);
-}
-.ev-role-label {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  color: #fff;
-  font-weight: 700;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
-}
-.ev-role-label .ev-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  font-size: 0.85rem;
-  transform: rotate(-45deg);
-}
-
-/* ══════════════════════════════════
-   PARTNERS / LOGOS
-   ══════════════════════════════════ */
-.ev-partners-section {
-  background: var(--ev-bg-cream);
-  padding: 48px 0;
-  overflow: hidden;
-}
-.ev-partners-track {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 60px;
-  flex-wrap: wrap;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 0 32px;
-}
-.ev-partner-logo {
-  height: 48px;
-  opacity: 0.7;
-  filter: grayscale(20%);
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-.ev-partner-logo:hover {
-  opacity: 1;
-  filter: grayscale(0%);
-  transform: scale(1.05);
-}
-
-/* ══════════════════════════════════
-   HIGHLIGHTS SECTION
-   ══════════════════════════════════ */
-.ev-highlights-section {
-  padding: 80px 0;
-  background: #fff;
-  text-align: center;
-}
-.ev-highlights-section h2 {
-  font-family: 'Inter', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  color: #333;
-  margin-bottom: 12px;
-}
-.ev-highlights-section h2 .ev-highlight {
-  color: var(--ev-pink);
-}
-.ev-highlights-section .ev-highlights-subtitle {
-  color: #777;
-  font-size: 0.92rem;
-  margin-bottom: 40px;
-  max-width: 650px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* ══════════════════════════════════
-   VIEW MORE BUTTON
-   ══════════════════════════════════ */
-.ev-view-more-wrap {
-  text-align: center;
-  padding: 20px 0 40px;
-  background: #fff;
-}
-.ev-view-more-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 36px;
-  border: 1.5px solid var(--ev-pink);
-  border-radius: 8px;
-  color: var(--ev-pink);
-  background: #fff;
-  font-weight: 600;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-.ev-view-more-btn:hover {
-  background: var(--ev-pink);
-  color: #fff;
-  box-shadow: 0 4px 20px rgba(242,140,0,0.2);
-}
-
-/* ══════════════════════════════════
-   FLOATING CHAT BUTTON
-   ══════════════════════════════════ */
+/* ── 12. CHAT FAB ── */
 .ev-chat-fab {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--ev-pink);
-  border: none;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px rgba(242,140,0,0.35);
-  cursor: pointer;
-  z-index: 999;
-  transition: all 0.3s ease;
+  position: fixed; bottom: 28px; right: 28px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #F28C00; color: #fff; border: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 6px 24px rgba(242,140,0,0.3);
+  z-index: 999; transition: all 0.3s;
 }
-.ev-chat-fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 28px rgba(242,140,0,0.45);
-}
-.ev-chat-fab svg {
-  width: 24px;
-  height: 24px;
-}
+.ev-chat-fab:hover { background: #D97B00; transform: scale(1.08); }
+.ev-chat-fab svg { width: 24px; height: 24px; }
 
-/* ══════════════════════════════════
-   HIDE OLD SECTIONS
-   ══════════════════════════════════ */
-.eveenty-landing .hero-content,
-.eveenty-landing .hero-stats,
-.eveenty-landing .hero-badge,
-.eveenty-landing .hero-buttons {
-  display: none !important;
-}
-
-/* Remove About and Highlights from landing */
-.eveenty-landing #about,
-.eveenty-landing #highlights {
-  display: none !important;
-}
-
-/* ══════════════════════════════════
-   OLD SECTIONS — Rethemed to Amber/Orange
-   ══════════════════════════════════ */
-
-/* Section labels */
-.eveenty-landing .section-label {
-  color: var(--ev-pink) !important;
-  border-color: rgba(242,140,0,0.12) !important;
-  background: rgba(242,140,0,0.06) !important;
-}
-.eveenty-landing .section-label::before {
-  background: var(--ev-pink) !important;
-}
-
-/* Section headings */
-.eveenty-landing .section-header h2 .gold,
-.eveenty-landing .gold {
-  color: var(--ev-pink) !important;
-  font-style: italic;
-}
-.eveenty-landing .text-gold { color: var(--ev-pink) !important; }
-
-/* Step cards */
-.eveenty-landing .step-icon {
-  background: rgba(242,140,0,0.08) !important;
-  border-color: rgba(242,140,0,0.15) !important;
-  color: var(--ev-pink) !important;
-}
-.eveenty-landing .step-card:hover .step-icon {
-  background: rgba(242,140,0,0.12) !important;
-  box-shadow: 0 4px 16px rgba(242,140,0,0.1) !important;
-}
-.eveenty-landing .step-card:hover {
-  border-color: rgba(242,140,0,0.25) !important;
-}
-.eveenty-landing .step-card::after {
-  background: linear-gradient(90deg, transparent, var(--ev-pink), transparent) !important;
-}
-.eveenty-landing .step-card:hover .step-num {
-  color: rgba(242,140,0,0.06) !important;
-}
-
-/* Event cards */
-.eveenty-landing .event-card:hover {
-  border-color: rgba(242,140,0,0.25) !important;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.12), 0 0 40px rgba(242,140,0,0.04) !important;
-}
-.eveenty-landing .event-card::before {
-  background: linear-gradient(135deg, var(--ev-pink), var(--ev-pink-dark)) !important;
-}
-.eveenty-landing .event-card-badge {
-  color: var(--ev-pink) !important;
-  border-color: rgba(242,140,0,0.2) !important;
-}
-.eveenty-landing .event-card-badge .dot {
-  background: var(--ev-pink) !important;
-  box-shadow: 0 0 6px var(--ev-pink) !important;
-}
-.eveenty-landing .event-card-date { color: var(--ev-pink) !important; }
-.eveenty-landing .event-card-avail strong { color: var(--ev-pink) !important; }
-.eveenty-landing .event-card-distance {
-  color: var(--ev-pink) !important;
-  background: rgba(242,140,0,0.06) !important;
-  border-color: rgba(242,140,0,0.12) !important;
-}
-
-/* Category pills */
-.eveenty-landing .cat-pill.active {
-  background: var(--ev-pink) !important;
-  border-color: var(--ev-pink) !important;
-  box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
-}
-.eveenty-landing .cat-pill:hover {
-  border-color: rgba(242,140,0,0.3) !important;
-  color: var(--ev-pink) !important;
-}
-.eveenty-landing .cat-pill-icon { background: rgba(242,140,0,0.08) !important; }
-.eveenty-landing .cat-pill.active .cat-pill-icon { background: rgba(255,255,255,0.2) !important; }
-
-/* Filter buttons */
-.eveenty-landing .filter-btn.active {
-  background: var(--ev-pink) !important;
-  border-color: var(--ev-pink) !important;
-  box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
-}
-.eveenty-landing .filter-btn:hover {
-  background: rgba(242,140,0,0.06) !important;
-  border-color: rgba(242,140,0,0.4) !important;
-  color: var(--ev-pink) !important;
-}
-
-/* Search bar */
-.eveenty-landing .smart-search-bar:focus-within {
-  border-color: rgba(242,140,0,0.35) !important;
-  box-shadow: 0 8px 40px rgba(0,0,0,0.1), 0 0 0 3px rgba(242,140,0,0.06) !important;
-}
-.eveenty-landing .smart-search-bar:focus-within .search-icon { color: var(--ev-pink) !important; }
-.eveenty-landing .search-clear-btn:hover {
-  background: rgba(242,140,0,0.1) !important;
-  color: var(--ev-pink) !important;
-}
-
-/* Advanced filter pills */
-.eveenty-landing .adv-pill-select .adv-select:hover { border-color: rgba(242,140,0,0.4) !important; }
-.eveenty-landing .adv-pill-select .adv-select:focus {
-  border-color: var(--ev-pink) !important;
-  box-shadow: 0 0 0 3px rgba(242,140,0,0.08) !important;
-}
-
-/* Geo status */
-.eveenty-landing .geo-status.active {
-  background: rgba(34,197,94,0.06) !important;
-  border-color: rgba(34,197,94,0.2) !important;
-  color: #22c55e !important;
-}
-
-/* Trust badges */
-.eveenty-landing .trust-badge-icon {
-  background: rgba(242,140,0,0.05) !important;
-  border-color: rgba(242,140,0,0.1) !important;
-}
-.eveenty-landing .trust-badge:hover { border-color: rgba(242,140,0,0.2) !important; }
-
-/* Button animation override */
-.eveenty-landing .btn-pulse { animation: none !important; }
-/* ══════════════════════════════════
-   CONTACT US SECTION — Professional
-   ══════════════════════════════════ */
-.ev-contact-section {
-  background: #fff;
-  padding: 80px 0 100px;
-}
-.ev-contact-grid {
-  display: grid;
-  grid-template-columns: 1fr 1.3fr;
-  gap: 0;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
-}
-
-/* Dark Info Panel */
-.ev-contact-info-panel {
-  background: linear-gradient(135deg, #F28C00 0%, #D97B00 50%, #C06A00 100%);
-  padding: 48px 40px;
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-.ev-info-panel-content {
-  position: relative;
-  z-index: 2;
-}
-.ev-info-panel-content h3 {
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: #fff;
-  margin-bottom: 10px;
-  letter-spacing: -0.3px;
-}
-.ev-info-sub {
-  font-size: 0.88rem;
-  color: rgba(255,255,255,0.6);
-  line-height: 1.7;
-  margin-bottom: 40px;
-}
-.ev-contact-details {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  margin-bottom: 48px;
-}
-.ev-contact-item {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  color: rgba(255,255,255,0.85);
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
-}
-.ev-contact-item:hover {
-  color: #FFA726;
-}
-.ev-contact-item svg {
-  flex-shrink: 0;
-  opacity: 0.7;
-}
-.ev-contact-social {
-  display: flex;
-  gap: 10px;
-  margin-top: auto;
-}
-.ev-social-link {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(255,255,255,0.7);
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-.ev-social-link:hover {
-  background: var(--ev-pink);
-  border-color: var(--ev-pink);
-  color: #fff;
-  transform: translateY(-2px);
-}
-.ev-social-link svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* Decorative circles */
-.ev-info-decor-circle {
-  position: absolute;
-  bottom: -60px;
-  right: -60px;
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: rgba(242,140,0,0.08);
-  z-index: 1;
-}
-.ev-info-decor-sm {
-  width: 120px;
-  height: 120px;
-  bottom: 60px;
-  right: 40px;
-  background: rgba(242,140,0,0.04);
-}
-
-/* Form Panel */
-.ev-contact-form-wrap {
-  background: #fff;
-  padding: 48px 40px;
-}
-.ev-contact-form {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.ev-form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-.ev-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.ev-form-group label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #555;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-.ev-form-group input,
-.ev-form-group select,
-.ev-form-group textarea {
-  padding: 12px 14px;
-  border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fafafa;
-  font-size: 0.9rem;
-  font-family: inherit;
-  color: #333;
-  outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-}
-.ev-form-group input:focus,
-.ev-form-group select:focus,
-.ev-form-group textarea:focus {
-  border-color: var(--ev-pink);
-  box-shadow: 0 0 0 3px rgba(242,140,0,0.06);
-  background: #fff;
-}
-.ev-form-group input::placeholder,
-.ev-form-group textarea::placeholder {
-  color: #bbb;
-}
-.ev-form-group textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-.ev-form-group select {
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23999' fill='none' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 36px;
-}
-.ev-form-submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 32px;
-  background: #F28C00;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.92rem;
-  font-weight: 700;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  align-self: flex-start;
-}
-.ev-form-submit:hover {
-  background: #D97B00;
-  box-shadow: 0 8px 24px rgba(242,140,0,0.3);
-  transform: translateY(-1px);
-}
-.ev-form-success {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px;
-  background: rgba(34,197,94,0.06);
-  border: 1px solid rgba(34,197,94,0.15);
-  border-radius: 8px;
-  color: #22c55e;
-  font-weight: 600;
-  font-size: 0.88rem;
-}
-.ev-form-success svg {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-}
-
-/* ══════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════ */
-@media (max-width: 1024px) {
-  .ev-hero-split {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    text-align: center;
-  }
-  .ev-hero-text h1 { font-size: 2.2rem; }
-  .ev-hero-text .ev-hero-desc { margin: 0 auto 28px; }
-  .ev-hero-buttons { justify-content: center; }
-  .ev-hero-image { text-align: center; }
-  .ev-hero-image img { margin: 0 auto; max-width: 400px; }
-  .ev-roles-grid { grid-template-columns: repeat(3, 1fr); }
-  .ev-contact-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
-}
-
+/* ── 13. RESPONSIVE ── */
 @media (max-width: 768px) {
-  .eveenty-landing .hero-wrapper {
-    padding: 120px 0 60px !important;
-  }
-  .ev-hero-text h1 { font-size: 1.8rem; }
-  .ev-search-filters {
-    flex-direction: column;
-    border-radius: 16px;
-    padding: 16px;
-    gap: 8px;
-  }
-  .ev-filter-item {
-    border-right: none;
-    border-bottom: 1px solid #eee;
-    padding: 12px 0;
-    width: 100%;
-  }
-  .ev-filter-item:last-of-type { border-bottom: none; }
-  .ev-search-btn { width: 100%; justify-content: center; }
+  .ev-hero-split { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+  .ev-hero-text h1 { font-size: 2.2rem !important; }
+  .ev-hero-desc { margin: 16px auto 28px; }
+  .ev-hero-buttons { justify-content: center; }
   .ev-stats-grid { grid-template-columns: 1fr; gap: 24px; }
   .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
   .ev-partners-track { gap: 32px; }
@@ -1181,12 +369,8 @@
   .ev-contact-form-wrap { padding: 36px 28px; }
   .ev-form-row { grid-template-columns: 1fr; gap: 18px; }
 }
-
 @media (max-width: 480px) {
-  .ev-hero-text h1 { font-size: 1.5rem; }
-  .ev-hero-buttons { flex-direction: column; }
-  .ev-hero-buttons .ev-btn-create,
-  .ev-hero-buttons .ev-btn-explore { width: 100%; justify-content: center; }
-  .ev-roles-grid { grid-template-columns: 1fr 1fr; }
-  .ev-carousel-card { width: 240px; }
+  .ev-hero-text h1 { font-size: 1.8rem !important; }
+  .ev-roles-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ev-stat-number { font-size: 1.8rem; }
 }
