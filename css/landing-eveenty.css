@@ -1,32 +1,19 @@
 /* ═══════════════════════════════════════════════════════════
    EVEENTY LANDING PAGE — Complete Standalone CSS
-   Forces light mode. No dependency on base theme variables.
+   Theme-aware: works with both light and dark mode.
    Applied via .eveenty-landing on <body>
    ═══════════════════════════════════════════════════════════ */
 
-/* ── 1. GLOBAL RESET — Force light on EVERYTHING ── */
-.eveenty-landing,
-.eveenty-landing *,
-.eveenty-landing *::before,
-.eveenty-landing *::after {
-  --text-primary: #1a1a1f !important;
-  --text-secondary: #555 !important;
-  --text-muted: #888 !important;
-  --accent-primary: #F28C00 !important;
-  --accent-secondary: #D97B00 !important;
-  --accent-gradient: linear-gradient(135deg, #F28C00, #FFA726) !important;
-  --bg-primary: #ffffff !important;
-  --bg-secondary: #f9f9f9 !important;
-  --bg-card: #ffffff !important;
-  --bg-glass: #f0f0f0 !important;
-  --border-primary: #e8e8e8 !important;
-  --border-secondary: #eee !important;
-  --shadow-card: 0 2px 20px rgba(0,0,0,0.06) !important;
-  color-scheme: light !important;
-}
+/* ── 1. LANDING-SPECIFIC BRAND OVERRIDES ──
+   Override only the accent color for the landing page (orange brand).
+   All other theme variables (bg, text, borders) are inherited from theme.css */
 .eveenty-landing {
-  background: #fff !important;
-  color: #1a1a1f !important;
+  --accent-primary: #F28C00;
+  --accent-light: #FFA726;
+  --accent-dark: #D97B00;
+  --accent-gradient: linear-gradient(135deg, #F28C00, #FFA726);
+  --accent-subtle: rgba(242, 140, 0, 0.06);
+  --accent-subtle-border: rgba(242, 140, 0, 0.12);
 }
 
 /* Hide old hero elements from base styles.css */
@@ -40,8 +27,8 @@
 
 /* Force light text everywhere */
 .eveenty-landing h1, .eveenty-landing h2,
-.eveenty-landing h3, .eveenty-landing h4 { color: #1a1a1f !important; }
-.eveenty-landing p { color: #555 !important; }
+.eveenty-landing h3, .eveenty-landing h4 { color: var(--text-primary) !important; }
+.eveenty-landing p { color: var(--text-secondary) !important; }
 .eveenty-landing .gold { color: #F28C00 !important; font-style: italic; }
 .eveenty-landing .text-gold { color: #F28C00 !important; }
 .eveenty-landing .section-label {
@@ -53,21 +40,21 @@
 
 /* ── 2. NAVBAR ── */
 .eveenty-landing .navbar {
-  background: #fff !important;
-  border-bottom: 1px solid #f0f0f0 !important;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04) !important;
+  background: var(--nav-bg) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  box-shadow: var(--nav-shadow) !important;
 }
-.eveenty-landing .nav-logo-text { color: #1a1a1f !important; font-weight: 800 !important; }
+.eveenty-landing .nav-logo-text { color: var(--text-primary) !important; font-weight: 800 !important; }
 .eveenty-landing .nav-logo-icon { color: #F28C00 !important; }
 .eveenty-landing .nav-links { margin: 0 auto !important; }
 .eveenty-landing .nav-links a {
-  color: #555 !important; font-weight: 500 !important;
+  color: var(--nav-link) !important; font-weight: 500 !important;
   font-size: 0.9rem !important; padding: 8px 16px !important;
   transition: color 0.3s !important;
 }
 .eveenty-landing .nav-links a:hover { color: #F28C00 !important; }
 .eveenty-landing .btn-outline {
-  color: #333 !important; border-color: #ddd !important;
+  color: var(--text-secondary) !important; border-color: var(--border-heavy) !important;
   background: transparent !important;
 }
 .eveenty-landing .btn-outline:hover {
@@ -83,7 +70,7 @@
 
 /* ── 3. HERO ── */
 .eveenty-landing .hero-wrapper {
-  background: #fff !important; padding: 100px 0 60px !important;
+  background: var(--bg-primary) !important; padding: 100px 0 60px !important;
   min-height: auto !important;
 }
 .ev-hero-split {
@@ -93,15 +80,15 @@
 .ev-hero-text h1 {
   font-size: 3.2rem !important; font-weight: 900 !important;
   line-height: 1.15 !important; letter-spacing: -1px !important;
-  color: #1a1a1f !important;
+  color: var(--text-primary) !important;
 }
 .ev-ampersand { color: #F28C00 !important; font-style: italic; }
 .ev-highlight { color: #F28C00 !important; font-style: italic; }
 .ev-hero-desc {
-  font-size: 1rem; line-height: 1.8; color: #666 !important;
+  font-size: 1rem; line-height: 1.8; color: var(--text-muted) !important;
   margin: 20px 0 32px; max-width: 480px;
 }
-.ev-brand { font-weight: 700; color: #1a1a1f !important; }
+.ev-brand { font-weight: 700; color: var(--text-primary) !important; }
 .ev-clicks { color: #F28C00; font-weight: 700; }
 .ev-organizers { color: #F28C00; font-weight: 600; }
 .ev-hero-buttons { display: flex; gap: 14px; flex-wrap: wrap; }
@@ -112,8 +99,8 @@
 }
 .ev-btn-create:hover { background: #D97B00; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(242,140,0,0.3); }
 .ev-btn-explore {
-  padding: 14px 28px; background: transparent; color: #333;
-  border: 1.5px solid #ddd; border-radius: 10px;
+  padding: 14px 28px; background: transparent; color: var(--text-secondary);
+  border: 1.5px solid var(--border-heavy); border-radius: 10px;
   font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
 }
 .ev-btn-explore:hover { border-color: #F28C00; color: #F28C00; }
@@ -121,7 +108,7 @@
 .ev-hero-image img { max-width: 100%; height: auto; border-radius: 20px; }
 
 /* ── 4. STATS BAR ── */
-.ev-stats-bar { background: #2a2a2a; padding: 40px 0; }
+.ev-stats-bar { background: #1a1a22; padding: 40px 0; }
 .ev-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
 .ev-stat-number { font-size: 2.2rem; font-weight: 900; color: #F28C00; margin-bottom: 6px; }
 .ev-stat-label {
@@ -132,10 +119,10 @@
 
 /* ── 5. ROLES ── */
 .ev-roles-section {
-  padding: 80px 0; background: #fff !important; text-align: center;
+  padding: 80px 0; background: var(--bg-primary) !important; text-align: center;
 }
-.ev-roles-section h2 { font-size: 2rem; font-weight: 800; color: #1a1a1f !important; margin-bottom: 12px; }
-.ev-roles-subtitle { color: #888 !important; font-size: 0.95rem; max-width: 600px; margin: 0 auto 48px; }
+.ev-roles-section h2 { font-size: 2rem; font-weight: 800; color: var(--text-primary) !important; margin-bottom: 12px; }
+.ev-roles-subtitle { color: var(--text-muted) !important; font-size: 0.95rem; max-width: 600px; margin: 0 auto 48px; }
 .ev-roles-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
 .ev-role-card {
   position: relative; border-radius: 16px; overflow: hidden;
@@ -153,19 +140,19 @@
 
 /* ── 6. PARTNERS ── */
 .ev-partners-section {
-  padding: 40px 0; background: #fafafa !important;
-  border-top: 1px solid #f0f0f0; border-bottom: 1px solid #f0f0f0;
+  padding: 40px 0; background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);
   overflow: hidden;
 }
 .ev-partners-track {
   display: flex; align-items: center; justify-content: center; gap: 48px;
   flex-wrap: wrap; padding: 0 24px;
 }
-.ev-partner-logo { height: 28px; opacity: 0.35; transition: opacity 0.3s; }
+.ev-partner-logo { height: 28px; opacity: 0.35; transition: opacity 0.3s; fill: var(--text-muted); }
 .ev-partner-logo:hover { opacity: 0.7; }
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
-.eveenty-landing #events { background: #f9f9f9 !important; }
+.eveenty-landing #events { background: var(--bg-secondary) !important; }
 /* Theme overrides for event components */
 .eveenty-landing .smart-search-bar:focus-within {
   border-color: rgba(242,140,0,0.35) !important;
@@ -197,7 +184,7 @@
   color: #22c55e !important;
 }
 .eveenty-landing .event-card {
-  background: #fff !important; border-color: #eee !important;
+  background: var(--bg-card) !important; border-color: var(--border-primary) !important;
 }
 .eveenty-landing .event-card:hover {
   border-color: rgba(242,140,0,0.25) !important;
@@ -215,10 +202,10 @@
 
 /* ── 8. HOW IT WORKS (uses base step-card) ── */
 .eveenty-landing .step-card {
-  background: #fff !important; border-color: #eee !important;
+  background: var(--bg-card) !important; border-color: var(--border-primary) !important;
 }
-.eveenty-landing .step-card h3 { color: #1a1a1f !important; }
-.eveenty-landing .step-card p { color: #666 !important; }
+.eveenty-landing .step-card h3 { color: var(--text-primary) !important; }
+.eveenty-landing .step-card p { color: var(--text-muted) !important; }
 .eveenty-landing .step-icon {
   background: rgba(242,140,0,0.08) !important;
   border-color: rgba(242,140,0,0.15) !important;
@@ -234,19 +221,19 @@
 
 /* ── 9. TRUST (uses base trust-badge) ── */
 .eveenty-landing .trust-badge {
-  background: #fff !important; border-color: #eee !important;
+  background: var(--bg-card) !important; border-color: var(--border-primary) !important;
 }
 .eveenty-landing .trust-badge:hover { border-color: rgba(242,140,0,0.2) !important; }
 .eveenty-landing .trust-badge-icon {
   background: rgba(242,140,0,0.05) !important;
   border-color: rgba(242,140,0,0.1) !important;
 }
-.eveenty-landing .trust-badge-label { color: #1a1a1f !important; }
-.eveenty-landing .trust-badge-sub { color: #888 !important; }
+.eveenty-landing .trust-badge-label { color: var(--text-primary) !important; }
+.eveenty-landing .trust-badge-sub { color: var(--text-muted) !important; }
 
 /* ── 10. CONTACT US ── */
 .ev-contact-section {
-  background: #fff !important; padding: 80px 0 100px;
+  background: var(--bg-primary) !important; padding: 80px 0 100px;
 }
 .ev-contact-grid {
   display: grid; grid-template-columns: 1fr 1.3fr; gap: 0;
@@ -288,29 +275,29 @@
 .ev-info-decor-sm { width: 120px; height: 120px; bottom: 60px; right: 40px; background: rgba(255,255,255,0.05); }
 
 /* Contact Form */
-.ev-contact-form-wrap { background: #fff !important; padding: 48px 40px; }
+.ev-contact-form-wrap { background: var(--bg-card) !important; padding: 48px 40px; }
 .ev-contact-form { display: flex; flex-direction: column; gap: 18px; }
 .ev-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .ev-form-group { display: flex; flex-direction: column; gap: 6px; }
 .ev-form-group label {
-  font-size: 0.8rem; font-weight: 600; color: #555 !important;
+  font-size: 0.8rem; font-weight: 600; color: var(--text-secondary) !important;
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 .ev-form-group input,
 .ev-form-group select,
 .ev-form-group textarea {
-  padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 8px;
-  background: #fafafa !important; font-size: 0.9rem; font-family: inherit;
-  color: #333 !important; outline: none;
+  padding: 12px 14px; border: 1.5px solid var(--border-heavy); border-radius: 8px;
+  background: var(--bg-input) !important; font-size: 0.9rem; font-family: inherit;
+  color: var(--text-primary) !important; outline: none;
   transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
 }
 .ev-form-group input:focus,
 .ev-form-group select:focus,
 .ev-form-group textarea:focus {
-  border-color: #F28C00; box-shadow: 0 0 0 3px rgba(242,140,0,0.06); background: #fff !important;
+  border-color: #F28C00; box-shadow: 0 0 0 3px rgba(242,140,0,0.06); background: var(--bg-input-focus) !important;
 }
 .ev-form-group input::placeholder,
-.ev-form-group textarea::placeholder { color: #bbb; }
+.ev-form-group textarea::placeholder { color: var(--text-faint); }
 .ev-form-group textarea { resize: vertical; min-height: 100px; }
 .ev-form-group select {
   appearance: none; -webkit-appearance: none; cursor: pointer;
@@ -335,7 +322,7 @@
 
 /* ── 11. FOOTER ── */
 .eveenty-landing .footer {
-  background: #111 !important; color: #ccc !important;
+  background: #1a1a22 !important; color: #ccc !important;
 }
 .eveenty-landing .footer h4 { color: #fff !important; }
 .eveenty-landing .footer p { color: #999 !important; }

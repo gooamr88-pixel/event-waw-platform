@@ -16,50 +16,75 @@ export function initUI() {
   initMobileMenu();
 }
 
-/* ── Theme ── */
+/* ══════════════════════════════════
+   THEME ENGINE
+   ══════════════════════════════════
+   Priority:
+   1. localStorage (user's manual choice)
+   2. OS prefers-color-scheme (auto-detect)
+   3. Fallback: 'dark'
+   ══════════════════════════════════ */
 
+const THEME_KEY = 'theme';
+const ATTR = 'data-theme';
+const LIGHT = 'light';
+const DARK = 'dark';
+
+/**
+ * Resolve the initial theme and apply it.
+ * Also listens for OS preference changes when no manual choice is saved.
+ */
 export function initThemeFromStorage() {
-  const saved = localStorage.getItem('theme');
-  let theme = saved;
-  if (!theme) {
-    // Auto-detect from OS preference
-    theme = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  }
-  document.documentElement.setAttribute('data-theme', theme);
-  updateThemeIcons(theme);
+  const saved = localStorage.getItem(THEME_KEY);
+  const theme = saved || (matchDark() ? DARK : LIGHT);
+  applyTheme(theme);
 
-  // Listen for OS theme changes (if user hasn't manually chosen)
-  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('theme')) {
-      const auto = e.matches ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', auto);
-      updateThemeIcons(auto);
+  // Live OS preference listener (only when user hasn't manually chosen)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem(THEME_KEY)) {
+      applyTheme(e.matches ? DARK : LIGHT);
     }
   });
 }
 
+/**
+ * Bind click handlers on all theme toggle buttons.
+ * Supports both desktop (.theme-toggle) and mobile (#theme-toggle).
+ */
 export function initThemeToggle() {
   document.querySelectorAll('.theme-toggle, #theme-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('theme', next);
-      updateThemeIcons(next);
+      const current = document.documentElement.getAttribute(ATTR) || DARK;
+      const next = current === DARK ? LIGHT : DARK;
+      applyTheme(next);
+      localStorage.setItem(THEME_KEY, next);
     });
   });
 }
 
-function updateThemeIcons(theme) {
-  const icon = theme === 'dark' ? '☀️' : '🌙';
-  const label = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
-  document.querySelectorAll('.theme-toggle, #theme-toggle').forEach(btn => {
-    if (btn.classList.contains('mobile-theme-toggle')) {
-      btn.textContent = `${icon} ${label}`;
-    } else {
-      btn.textContent = icon;
-    }
-  });
+/**
+ * Apply a theme to the document and update all toggle icons.
+ * @param {'light'|'dark'} theme
+ */
+function applyTheme(theme) {
+  document.documentElement.setAttribute(ATTR, theme);
+  // The CSS handles icon visibility via [data-theme] selectors.
+  // No JS DOM manipulation needed for SVG icons.
+}
+
+/**
+ * Check if the OS prefers dark mode.
+ */
+function matchDark() {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+/**
+ * Get the current active theme.
+ * @returns {'light'|'dark'}
+ */
+export function getCurrentTheme() {
+  return document.documentElement.getAttribute(ATTR) || DARK;
 }
 
 /* ── Navbar Scroll ── */
