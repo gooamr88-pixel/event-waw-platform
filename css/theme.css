@@ -310,43 +310,15 @@
   opacity: 0;
 }
 
-/* ── Navbar (variable-driven) ── */
-.navbar {
-  background: var(--nav-bg);
-  border-color: var(--border-primary);
-  box-shadow: var(--nav-shadow);
-}
-.navbar.scrolled {
-  background: var(--nav-bg-scrolled);
-  box-shadow: var(--nav-shadow-scrolled);
-}
-.nav-links {
-  background: var(--nav-pill-bg);
-  border-color: var(--nav-pill-border);
-}
-.nav-links a {
-  color: var(--nav-link);
-}
-.nav-links a:hover,
-.nav-links a.active {
-  color: var(--nav-link-hover);
-}
-
-/* ── Dark mode nav shimmer (preserved) ── */
+/* ── Navbar & Logo — now driven by var() in styles.css directly ── */
+/* Dark mode shimmer effect on nav links */
 [data-theme="dark"] .nav-links a:hover {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.15);
 }
 [data-theme="light"] .nav-links a:hover {
   text-shadow: none;
 }
 
-/* ── Logo ── */
-[data-theme="light"] .nav-logo-text,
-[data-theme="light"] .shimmer {
-  background: none !important;
-  -webkit-text-fill-color: var(--text-primary) !important;
-  animation: none !important;
-}
 
 /* ── Buttons ── */
 .btn-outline {
