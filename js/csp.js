@@ -7,7 +7,7 @@
  * Import this FIRST in every page, before any other scripts.
  * 
  * NOTE: This is a defense-in-depth measure. For full protection,
- * also configure CSP headers on your hosting provider (Vercel/Netlify/Cloudflare).
+ * also configure CSP headers on your Nginx server or Cloudflare.
  * 
  * Usage: <script src="js/csp.js"></script>  (before </head>)
  */

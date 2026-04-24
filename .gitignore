@@ -26,3 +26,37 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+# =========================
+# Node & Dependencies
+# =========================
+node_modules/
+package.json
+package-lock.json
+
+# =========================
+# Build Outputs (Vite)
+# =========================
+dist/
+build/
+.vite/
+
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+*.local
+
+# =========================
+# Config Files (Unused in Vanilla Prod)
+# =========================
+vite.config.js
+vercel.json
+
+# =========================
+# OS / Editor Files
+# =========================
+.DS_Store
+.vscode/
+Thumbs.db
+
