@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/light-theme.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
+  <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
   <script src="js/csp.js"></script>
 </head>
 <body>
@@ -207,7 +207,7 @@
 
     // ══════ Helpers ══════
     function showError(t) { const m = document.getElementById('auth-msg'); m.className = 'auth-msg error'; m.textContent = t; m.style.display = 'block'; }
-    function initTheme() { const s = localStorage.getItem('theme') || 'light'; document.documentElement.setAttribute('data-theme', s); }
+    function initTheme() { localStorage.setItem('theme','light'); document.documentElement.setAttribute('data-theme', 'light'); }
     function initToggles() {
       document.querySelectorAll('.fi-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
