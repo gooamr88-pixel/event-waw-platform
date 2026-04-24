@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/light-theme.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'))</script>
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
   <script src="js/csp.js"></script>
 </head>
 <body>
@@ -532,7 +532,7 @@
     }
     function checkOTP() { document.getElementById('otp-submit').disabled = Array.from(document.querySelectorAll('.otp-digit')).map(d=>d.value).join('').length !== 6; }
 
-    function initTheme() { document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark'); }
+    function initTheme() { document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light'); }
     function initToggles() {
       document.querySelectorAll('.fi-toggle').forEach(b => b.addEventListener('click', () => {
         const i = b.parentElement.querySelector('input'); if (!i) return;

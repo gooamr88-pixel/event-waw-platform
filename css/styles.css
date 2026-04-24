@@ -968,6 +968,9 @@ button { cursor: pointer; }
   background: var(--accent-gradient); border-color: var(--accent-primary);
   color: var(--text-on-accent); box-shadow: 0 4px 20px rgba(212,175,55,.25); font-weight: 600;
 }
+.filter-btn.active:hover {
+  color: var(--text-on-accent);
+}
 
 
 /* ══════════════════════════════════
@@ -1146,6 +1149,9 @@ button { cursor: pointer; }
   color: var(--text-on-accent);
   box-shadow: 0 4px 20px rgba(212,175,55,.25);
   font-weight: 600;
+}
+.cat-pill.active:hover {
+  color: var(--text-on-accent);
 }
 .cat-pill.active::before { opacity: 0; }
 .cat-pill.active .cat-pill-icon {

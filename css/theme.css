@@ -417,6 +417,9 @@ input[type="tel"], select, textarea {
   color: var(--text-on-accent);
   box-shadow: var(--shadow-accent);
 }
+.cat-pill.active:hover {
+  color: var(--text-on-accent);
+}
 
 /* ── Filter Buttons ── */
 .filter-btn {
@@ -435,6 +438,9 @@ input[type="tel"], select, textarea {
   border-color: var(--accent-primary);
   color: var(--text-on-accent);
   box-shadow: var(--shadow-accent);
+}
+.filter-btn.active:hover {
+  color: var(--text-on-accent);
 }
 
 /* ── Section Labels ── */

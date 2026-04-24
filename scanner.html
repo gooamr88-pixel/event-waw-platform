@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/light-theme.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'))</script>
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
   <script src="js/csp.js"></script>
   <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#09090b" />
@@ -252,7 +252,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const saved = localStorage.getItem('theme') || 'dark';
+      const saved = localStorage.getItem('theme') || 'light';
       document.documentElement.setAttribute('data-theme', saved);
 
       const auth = await protectPage({ requireRole: 'organizer' });

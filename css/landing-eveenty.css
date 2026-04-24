@@ -163,17 +163,27 @@
 .eveenty-landing .cat-pill.active {
   background: #F28C00 !important; border-color: #F28C00 !important;
   box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
+  color: #fff !important;
 }
 .eveenty-landing .cat-pill:hover { border-color: rgba(242,140,0,0.3) !important; color: #F28C00 !important; }
+.eveenty-landing .cat-pill.active:hover {
+  color: #fff !important; background: #D97B00 !important;
+  border-color: #D97B00 !important;
+}
 .eveenty-landing .cat-pill-icon { background: rgba(242,140,0,0.08) !important; }
 .eveenty-landing .cat-pill.active .cat-pill-icon { background: rgba(255,255,255,0.2) !important; }
 .eveenty-landing .filter-btn.active {
   background: #F28C00 !important; border-color: #F28C00 !important;
   box-shadow: 0 4px 20px rgba(242,140,0,0.25) !important;
+  color: #fff !important;
 }
 .eveenty-landing .filter-btn:hover {
   background: rgba(242,140,0,0.06) !important; border-color: rgba(242,140,0,0.4) !important;
   color: #F28C00 !important;
+}
+.eveenty-landing .filter-btn.active:hover {
+  color: #fff !important; background: #D97B00 !important;
+  border-color: #D97B00 !important;
 }
 .eveenty-landing .adv-pill-select .adv-select:hover { border-color: rgba(242,140,0,0.4) !important; }
 .eveenty-landing .adv-pill-select .adv-select:focus {

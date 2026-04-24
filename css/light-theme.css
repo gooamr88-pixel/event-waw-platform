@@ -286,6 +286,9 @@
   color: #fff;
   box-shadow: 0 2px 12px rgba(154,123,26,0.2);
 }
+[data-theme="light"] .cat-pill.active:hover {
+  color: #fff;
+}
 [data-theme="light"] .cat-pill-icon { background: rgba(154,123,26,0.06); }
 
 /* ── Filter Buttons ── */
@@ -306,6 +309,9 @@
   border-color: #9a7b1a;
   color: #fff;
   box-shadow: 0 2px 12px rgba(154,123,26,0.2);
+}
+[data-theme="light"] .filter-btn.active:hover {
+  color: #fff;
 }
 
 /* ── Geo Status ── */

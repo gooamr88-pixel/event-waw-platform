@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Event Waw — Discover & Create Events Effortlessly</title>
   <meta name="description" content="Event Waw — Book tickets for concerts, festivals, exhibitions, sports, and conferences in just a few clicks. All-in-one platform for managing ticketing, sponsors, vendors, and marketing." />
-  <script>(function(){var t=localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');document.documentElement.setAttribute('data-theme',t)})()</script>
+  <script>(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()</script>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/landing-eveenty.css" />
@@ -123,7 +123,6 @@
         </div>
         <div class="adv-filters-inline" id="adv-filters">
           <div class="adv-pill-select"><select class="adv-select" id="filter-city"><option value="all">📍 All Cities</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
-          <div class="adv-pill-select"><select class="adv-select" id="filter-category"><option value="all">🏷️ All Types</option><option value="music">🎵 Music</option><option value="sports">⚽ Sports</option><option value="trips">🏕️ Trips</option><option value="conference">🎤 Conference</option><option value="art">🎨 Art &amp; Culture</option><option value="food">🍽️ Food &amp; Drink</option><option value="nightlife">🌙 Nightlife</option><option value="workshop">🛠️ Workshop</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
           <div class="adv-pill-select"><select class="adv-select" id="filter-date"><option value="all">📅 Any Date</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Pick a Date…</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
           <input type="date" class="adv-date-pill" id="filter-date-input" style="display:none;" />
           <button class="adv-reset-pill" id="adv-reset-btn" style="display:none;">✕ Reset</button>

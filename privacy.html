@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/light-theme.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||(matchMedia('(prefers-color-scheme:light)').matches?'light':'dark'))</script>
+  <script>document.documentElement.setAttribute('data-theme',localStorage.getItem('theme')||'light')</script>
   <script src="js/csp.js"></script>
 </head>
 <body>
@@ -145,7 +145,7 @@
   </style>
 
   <script>
-    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'dark');
+    document.documentElement.setAttribute('data-theme', localStorage.getItem('theme') || 'light');
   </script>
 </body>
 </html>
