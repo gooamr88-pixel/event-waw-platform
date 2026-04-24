@@ -364,10 +364,133 @@
     </div>
   </footer>
 
-  <!-- Floating Chat Button -->
-  <button class="ev-chat-fab" aria-label="Chat with us">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <!-- ══════ CHAT WIDGET ══════ -->
+  <div id="ev-chatbox" class="ev-chatbox">
+    <div class="ev-chatbox-header">
+      <div class="ev-chatbox-header-left">
+        <div class="ev-chatbox-avatar">
+          <svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg>
+        </div>
+        <div>
+          <div class="ev-chatbox-title">Event Waw</div>
+          <div class="ev-chatbox-status"><span class="ev-status-dot"></span> Online — Instant Replies</div>
+        </div>
+      </div>
+      <button class="ev-chatbox-close" id="ev-chatbox-close" aria-label="Close chat">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="ev-chatbox-messages" id="ev-chatbox-messages">
+      <!-- Messages injected by JS -->
+    </div>
+    <div class="ev-chatbox-footer">
+      <div class="ev-chatbox-input-wrap">
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <button class="ev-chat-fab" id="ev-chat-fab" aria-label="Chat with us">
+    <svg class="ev-fab-icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <svg class="ev-fab-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <span class="ev-fab-badge" id="ev-fab-badge">1</span>
   </button>
+
+  <script>
+  (function() {
+    const FAQ = [
+      { q: "🎫 How do I buy tickets?", a: "Browse our <a href='events.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
+      { q: "📍 How do I find events near me?", a: "On the Events page, click <b>\"Use My Location\"</b> and we'll auto-sort events by distance. You can also filter by city, category, and date." },
+      { q: "💰 Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy. If you need help, contact the organizer directly from your ticket." },
+      { q: "🎪 How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>. You can set pricing, venue, seating charts, and manage tickets all in one place." },
+      { q: "📱 How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly. One scan = one entry. No duplicates allowed!" },
+      { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventwaw.com</b> or use the contact form on this page. We typically respond within 24 hours." },
+      { q: "🔒 Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers. Everything is encrypted with bank-level security (256-bit SSL)." },
+      { q: "👥 What roles does the platform support?", a: "Event Waw supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools and dashboard features." }
+    ];
+
+    const chatbox = document.getElementById('ev-chatbox');
+    const fab = document.getElementById('ev-chat-fab');
+    const closeBtn = document.getElementById('ev-chatbox-close');
+    const msgArea = document.getElementById('ev-chatbox-messages');
+    const input = document.getElementById('ev-chatbox-input');
+    const sendBtn = document.getElementById('ev-chatbox-send');
+    const badge = document.getElementById('ev-fab-badge');
+    let isOpen = false;
+
+    function addMessage(html, type) {
+      const wrap = document.createElement('div');
+      wrap.className = 'ev-msg ev-msg-' + type;
+      const bubble = document.createElement('div');
+      bubble.className = 'ev-msg-bubble';
+      bubble.innerHTML = html;
+      wrap.appendChild(bubble);
+      msgArea.appendChild(wrap);
+      msgArea.scrollTop = msgArea.scrollHeight;
+    }
+
+    function addQuickReplies() {
+      const wrap = document.createElement('div');
+      wrap.className = 'ev-quick-replies';
+      FAQ.forEach(function(item, i) {
+        const btn = document.createElement('button');
+        btn.className = 'ev-quick-btn';
+        btn.textContent = item.q;
+        btn.addEventListener('click', function() {
+          addMessage(item.q, 'user');
+          wrap.remove();
+          setTimeout(function() {
+            addMessage(item.a, 'bot');
+            setTimeout(addQuickReplies, 400);
+          }, 500);
+        });
+        wrap.appendChild(btn);
+      });
+      msgArea.appendChild(wrap);
+      msgArea.scrollTop = msgArea.scrollHeight;
+    }
+
+    function handleUserInput() {
+      const text = input.value.trim();
+      if (!text) return;
+      addMessage(text, 'user');
+      input.value = '';
+      const lower = text.toLowerCase();
+      let matched = FAQ.find(function(f) {
+        const keywords = f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w) { return w.length > 3; });
+        return keywords.some(function(kw) { return lower.includes(kw); });
+      });
+      setTimeout(function() {
+        if (matched) {
+          addMessage(matched.a, 'bot');
+        } else {
+          addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.", 'bot');
+        }
+        setTimeout(addQuickReplies, 400);
+      }, 600);
+    }
+
+    function toggleChat() {
+      isOpen = !isOpen;
+      chatbox.classList.toggle('open', isOpen);
+      fab.classList.toggle('active', isOpen);
+      if (badge) badge.style.display = 'none';
+      if (isOpen) input.focus();
+    }
+
+    // Init welcome message
+    addMessage("👋 Hey there! Welcome to <b>Event Waw</b>. How can I help you today?", 'bot');
+    setTimeout(addQuickReplies, 300);
+
+    fab.addEventListener('click', toggleChat);
+    closeBtn.addEventListener('click', toggleChat);
+    sendBtn.addEventListener('click', handleUserInput);
+    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') handleUserInput(); });
+  })();
+  </script>
 
   <script src="js/main.js"></script>
   <script type="module">
