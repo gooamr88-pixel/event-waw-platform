@@ -138,37 +138,27 @@
 }
 .ev-arrow { font-size: 1.2rem; }
 
-/* ── 6. SPONSORS STRIP ── */
-.ev-sponsors-strip {
-  padding: 36px 0;
-  border-top: 1px solid var(--border-primary);
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-secondary);
+/* ── 6. PARTNERS ── */
+.ev-partners-section {
+  padding: 48px 0; background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);
   overflow: hidden;
 }
-.ev-sponsors-logos {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 48px;
-  flex-wrap: wrap;
+.ev-partners-track {
+  display: flex; align-items: center; justify-content: center; gap: 40px;
+  flex-wrap: wrap; padding: 0 24px;
 }
-.ev-logo-item {
-  height: 24px;
-  width: auto;
-  opacity: 0.3;
-  filter: grayscale(100%);
+.ev-sponsor-item {
   transition: all 0.3s ease;
-  fill: var(--text-primary);
+  opacity: 0.4;
+  filter: grayscale(100%);
 }
-.ev-logo-item:hover {
-  opacity: 0.7;
+.ev-sponsor-item:hover {
+  opacity: 0.85;
   filter: grayscale(0%);
+  transform: translateY(-2px);
 }
-@media (max-width: 600px) {
-  .ev-sponsors-logos { gap: 32px; }
-  .ev-logo-item { height: 20px; }
-}
+.ev-partner-logo { height: 32px; fill: var(--text-primary); transition: all 0.3s; }
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
 .eveenty-landing #events { background: var(--bg-secondary) !important; }
