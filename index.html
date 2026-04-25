@@ -128,9 +128,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
         </button>
         <div class="events-grid ev-slider-track" id="landing-events-grid" data-stagger>
-          <div class="event-card skeleton-card" id="skel-1"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-          <div class="event-card skeleton-card" id="skel-2"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-          <div class="event-card skeleton-card" id="skel-3"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+          <div class="event-poster-card skeleton-card" id="skel-1" style="background:var(--bg-glass);"></div>
+          <div class="event-poster-card skeleton-card" id="skel-2" style="background:var(--bg-glass);"></div>
+          <div class="event-poster-card skeleton-card" id="skel-3" style="background:var(--bg-glass);"></div>
+          <div class="event-poster-card skeleton-card" id="skel-4" style="background:var(--bg-glass);"></div>
         </div>
         <button class="ev-slider-arrow ev-slider-arrow-right" id="ev-slider-right" aria-label="Next events">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
@@ -646,26 +647,23 @@
     function renderEvents(events) {
       const grid = document.getElementById('landing-events-grid');
       const emptyState = document.getElementById('events-empty');
-      grid.querySelectorAll('.event-card:not(.skeleton-card)').forEach(c => c.remove());
+      grid.querySelectorAll('.event-poster-card').forEach(c => c.remove());
       if (!events || events.length === 0) { grid.style.display = 'none'; emptyState.style.display = 'block'; return; }
       grid.style.display = ''; emptyState.style.display = 'none';
       events.forEach((event, idx) => {
         const tiers = event.ticket_tiers || [];
-        const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => Number(t.price))) : 0;
         const totalAvail = tiers.reduce((sum, t) => sum + (t.capacity - t.sold_count), 0);
         const totalCap = tiers.reduce((sum, t) => sum + t.capacity, 0);
         const soldPercent = totalCap > 0 ? ((totalCap - totalAvail) / totalCap) * 100 : 0;
         let badgeText = event.category || 'Event';
         if (soldPercent >= 90) badgeText = 'Selling Fast'; else if (totalAvail <= 0) badgeText = 'Sold Out';
         const date = new Date(event.date);
-        const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-        const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        let distHtml = '';
-        if (userLocation && event._distance != null && event._distance !== Infinity) distHtml = `<span class="event-card-distance"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${formatDistance(event._distance)} away</span>`;
-        const card = document.createElement('article');
-        card.className = 'event-card'; card.style.cursor = 'pointer'; card.style.animationDelay = `${idx * 0.08}s`;
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const card = document.createElement('div');
+        card.className = 'event-poster-card';
+        card.style.animationDelay = `${idx * 0.06}s`;
         card.onclick = () => window.location.href = `event-detail.html?id=${event.id}`;
-        card.innerHTML = `<div class="event-card-image"><img src="${escapeHTML(event.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="event-card-badge"><span class="dot"></span> ${escapeHTML(badgeText)}</div></div><div class="event-card-body"><div class="event-card-date">${dateStr} · ${timeStr}</div><h3>${escapeHTML(event.title)}</h3><div class="event-card-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${escapeHTML(event.venue)}</div><div class="event-card-footer"><div class="event-card-price">${distHtml}${minPrice > 0 ? `$${Number(minPrice).toLocaleString()} <small>/ person</small>` : 'Free'}</div><div class="event-card-avail">${totalAvail > 0 ? `<strong>${totalAvail}</strong> spots left` : '<strong style="color:#ef4444;">Sold Out</strong>'}</div></div></div>`;
+        card.innerHTML = `<img src="${escapeHTML(event.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="poster-badge">${escapeHTML(badgeText)}</div><div class="poster-overlay"><div class="poster-title">${escapeHTML(event.title)}</div><div class="poster-meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>${dateStr}${event.venue ? ' · ' + escapeHTML(event.venue) : ''}</div></div>`;
         grid.appendChild(card);
       });
     }
@@ -741,7 +739,7 @@
     const leftBtn = document.getElementById('ev-slider-left');
     const rightBtn = document.getElementById('ev-slider-right');
     if (!track || !leftBtn || !rightBtn) return;
-    const scrollAmount = 364;
+    const scrollAmount = 448;
     function updateArrows() {
       const sl = track.scrollLeft, sw = track.scrollWidth, cw = track.clientWidth;
       leftBtn.classList.toggle('hidden', sl <= 5);
