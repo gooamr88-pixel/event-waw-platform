@@ -223,18 +223,33 @@
 /* Icon Circle */
 .ev-sponsor-icon-wrap {
   width: 56px; height: 56px;
+  min-width: 56px; min-height: 56px;
   border-radius: 14px;
   display: flex; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--brand-color) 8%, var(--bg-secondary));
+  background: var(--bg-secondary);
   margin-bottom: 16px;
   transition: all 0.4s ease;
 }
-.ev-sponsor-icon-wrap svg { width: 26px; height: 26px; }
-.ev-sponsor-card:hover .ev-sponsor-icon-wrap {
-  background: color-mix(in srgb, var(--brand-color) 15%, var(--bg-secondary));
-  transform: scale(1.08);
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--brand-color) 25%, transparent);
+.ev-sponsor-icon-wrap svg {
+  width: 26px; height: 26px;
+  max-width: 26px; max-height: 26px;
+  flex-shrink: 0;
 }
+/* Brand-specific icon backgrounds */
+.ev-sponsor-card[data-brand="stripe"] .ev-sponsor-icon-wrap { background: rgba(99,91,255,0.08); }
+.ev-sponsor-card[data-brand="cloudflare"] .ev-sponsor-icon-wrap { background: rgba(243,128,32,0.08); }
+.ev-sponsor-card[data-brand="supabase"] .ev-sponsor-icon-wrap { background: rgba(62,207,142,0.08); }
+.ev-sponsor-card[data-brand="letsencrypt"] .ev-sponsor-icon-wrap { background: rgba(44,60,105,0.08); }
+.ev-sponsor-card[data-brand="vercel"] .ev-sponsor-icon-wrap { background: rgba(0,0,0,0.06); }
+
+.ev-sponsor-card:hover .ev-sponsor-icon-wrap {
+  transform: scale(1.08);
+}
+.ev-sponsor-card[data-brand="stripe"]:hover .ev-sponsor-icon-wrap { background: rgba(99,91,255,0.15); box-shadow: 0 4px 20px rgba(99,91,255,0.15); }
+.ev-sponsor-card[data-brand="cloudflare"]:hover .ev-sponsor-icon-wrap { background: rgba(243,128,32,0.15); box-shadow: 0 4px 20px rgba(243,128,32,0.15); }
+.ev-sponsor-card[data-brand="supabase"]:hover .ev-sponsor-icon-wrap { background: rgba(62,207,142,0.15); box-shadow: 0 4px 20px rgba(62,207,142,0.15); }
+.ev-sponsor-card[data-brand="letsencrypt"]:hover .ev-sponsor-icon-wrap { background: rgba(44,60,105,0.15); box-shadow: 0 4px 20px rgba(44,60,105,0.15); }
+.ev-sponsor-card[data-brand="vercel"]:hover .ev-sponsor-icon-wrap { background: rgba(0,0,0,0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 
 /* Text */
 .ev-sponsor-name {
@@ -255,8 +270,8 @@
 }
 @media (max-width: 480px) {
   .ev-sponsors-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .ev-sponsor-icon-wrap { width: 48px; height: 48px; }
-  .ev-sponsor-icon-wrap svg { width: 22px; height: 22px; }
+  .ev-sponsor-icon-wrap { width: 48px; height: 48px; min-width: 48px; min-height: 48px; }
+  .ev-sponsor-icon-wrap svg { width: 22px; height: 22px; max-width: 22px; max-height: 22px; }
 }
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
