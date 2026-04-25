@@ -140,7 +140,7 @@
 
 /* ── 6. PARTNERS ── */
 .ev-partners-section {
-  padding: 40px 0;
+  padding: 48px 0;
   background: #FDF6E9 !important;
   border-top: none;
   border-bottom: none;
@@ -150,8 +150,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  padding: 0 16px;
+  gap: 20px;
+  padding: 0 8px;
 }
 .ev-sponsor-item {
   flex-shrink: 0;
@@ -160,16 +160,15 @@
   justify-content: center;
 }
 .ev-partner-logo {
-  height: 52px;
+  height: 80px;
   width: auto;
   object-fit: contain;
   display: block;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  opacity: 0.92;
+  transition: transform 0.3s ease;
+  opacity: 1;
 }
 .ev-partner-logo:hover {
-  transform: scale(1.05);
-  opacity: 1;
+  transform: scale(1.08);
 }
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
@@ -576,8 +575,8 @@
   .ev-hero-buttons { justify-content: center; }
   .ev-stats-grid { grid-template-columns: 1fr; gap: 24px; }
   .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
-  .ev-partners-track { gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .ev-partner-logo { height: 40px; }
+  .ev-partners-track { gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .ev-partner-logo { height: 60px; }
   .ev-contact-grid { grid-template-columns: 1fr; }
   .ev-contact-info-panel { padding: 36px 28px; }
   .ev-contact-form-wrap { padding: 36px 28px; }
