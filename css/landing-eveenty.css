@@ -171,6 +171,42 @@
   transform: scale(1.08);
 }
 
+/* ── 6b. TRUSTED BY ── */
+.ev-trusted-section {
+  padding: 48px 0 56px;
+  background: var(--bg-secondary) !important;
+  border-top: 1px solid var(--border-light);
+  overflow: hidden;
+}
+.ev-trusted-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  flex-wrap: wrap;
+  padding: 0 8px;
+}
+.ev-trusted-item {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s ease;
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+.ev-trusted-item:hover {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: translateY(-2px);
+}
+.ev-trusted-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
 .eveenty-landing #events { background: var(--bg-secondary) !important; }
 /* Theme overrides for event components */
@@ -577,6 +613,8 @@
   .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
   .ev-partners-track { gap: 16px; flex-wrap: wrap; justify-content: center; }
   .ev-partner-logo { height: 60px; }
+  .ev-trusted-track { gap: 28px; }
+  .ev-trusted-logo { height: 32px; }
   .ev-contact-grid { grid-template-columns: 1fr; }
   .ev-contact-info-panel { padding: 36px 28px; }
   .ev-contact-form-wrap { padding: 36px 28px; }
