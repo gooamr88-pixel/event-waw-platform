@@ -183,11 +183,10 @@
   align-items: center;
   justify-content: center;
   gap: 48px;
-  flex-wrap: wrap;
   padding: 0 8px;
 }
 .ev-trusted-item {
-  flex-shrink: 0;
+  flex-shrink: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -198,6 +197,7 @@
 }
 .ev-trusted-logo {
   height: 44px;
+  max-width: 160px;
   width: auto;
   object-fit: contain;
   display: block;
