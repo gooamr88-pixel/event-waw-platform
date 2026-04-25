@@ -140,8 +140,8 @@
 
 /* ── 6. PARTNERS ── */
 .ev-partners-section {
-  padding: 48px 0;
-  background: #FDF6E9 !important;
+  padding: 60px 0 48px;
+  background: var(--bg-primary) !important;
   border-top: none;
   border-bottom: none;
   overflow: hidden;
