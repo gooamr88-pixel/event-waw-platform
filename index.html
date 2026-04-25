@@ -23,11 +23,12 @@
       </a>
 
       <div class="nav-links" id="nav-links">
-        <a href="#home">Home</a>
+        <a href="index.html" class="active">Home</a>
         <a href="#events">Events</a>
-        <a href="#how-it-works">How It Works</a>
-        <a href="#trust">Trust</a>
-        <a href="#contact">Contact Us</a>
+        <a href="#create-event">Create Event</a>
+        <a href="how-it-works.html">How It Works</a>
+        <a href="why-us.html">Why Us?</a>
+        <a href="contact.html">Contact Us</a>
       </div>
 
       <div class="nav-actions">
@@ -45,11 +46,12 @@
   <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobile-menu">
     <button class="close-btn" id="mobile-close">✕</button>
-    <a href="#home">Home</a>
+    <a href="index.html">Home</a>
     <a href="#events">Events</a>
-    <a href="#how-it-works">How It Works</a>
-    <a href="#trust">Trust</a>
-    <a href="#contact">Contact Us</a>
+    <a href="#create-event">Create Event</a>
+    <a href="how-it-works.html">How It Works</a>
+    <a href="why-us.html">Why Us?</a>
+    <a href="contact.html">Contact Us</a>
     <a href="login.html">Log In</a>
     <a href="register.html">Create Event</a>
     <button class="mobile-theme-toggle theme-toggle" aria-label="Toggle theme">
@@ -129,10 +131,18 @@
         </div>
       </div>
       <div class="search-results-meta" id="search-results-meta"><span class="search-results-count" id="search-results-count"></span><div class="sort-indicator" id="sort-indicator" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>Sorted by proximity</div></div>
-      <div class="events-grid" id="landing-events-grid" data-stagger>
-        <div class="event-card skeleton-card" id="skel-1"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-        <div class="event-card skeleton-card" id="skel-2"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
-        <div class="event-card skeleton-card" id="skel-3"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+      <div class="ev-slider-wrapper" id="ev-slider-wrapper">
+        <button class="ev-slider-arrow ev-slider-arrow-left" id="ev-slider-left" aria-label="Previous events">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        </button>
+        <div class="events-grid ev-slider-track" id="landing-events-grid" data-stagger>
+          <div class="event-card skeleton-card" id="skel-1"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+          <div class="event-card skeleton-card" id="skel-2"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+          <div class="event-card skeleton-card" id="skel-3"><div class="event-card-image" style="background:var(--bg-glass);height:210px;"></div><div class="event-card-body"><div style="width:60%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:85%;height:16px;background:var(--bg-glass);border-radius:6px;margin-bottom:12px;"></div><div style="width:50%;height:12px;background:var(--bg-glass);border-radius:6px;margin-bottom:20px;"></div></div></div>
+        </div>
+        <button class="ev-slider-arrow ev-slider-arrow-right" id="ev-slider-right" aria-label="Next events">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </button>
       </div>
       <div id="events-empty" style="display:none;text-align:center;padding:60px 20px;">
         <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(242,140,0,.06);border:1px solid rgba(242,140,0,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎪</div>
@@ -208,110 +218,44 @@
   <!-- ══════ PARTNERS ══════ -->
   <section class="ev-partners-section">
     <div class="ev-partners-track">
-      <svg class="ev-partner-logo" viewBox="0 0 160 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="Inter,sans-serif">Stripe</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="Inter,sans-serif">Cloudflare</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 180 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="Inter,sans-serif">Supabase</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="20" font-weight="800" font-family="Inter,sans-serif">Let's Encrypt</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 120 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="Inter,sans-serif">Vercel</text></svg>
+      <svg class="ev-partner-logo" viewBox="0 0 160 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Stripe</text></svg>
+      <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Cloudflare</text></svg>
+      <svg class="ev-partner-logo" viewBox="0 0 180 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Supabase</text></svg>
+      <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="20" font-weight="800" font-family="DM Sans,sans-serif">Let's Encrypt</text></svg>
+      <svg class="ev-partner-logo" viewBox="0 0 120 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Vercel</text></svg>
     </div>
   </section>
 
-  <!-- ══════ HOW IT WORKS ══════ -->
-  <section class="section" id="how-it-works">
+  <!-- ══════ CREATE EVENT CTA ══════ -->
+  <section class="section" id="create-event" style="background:var(--bg-secondary);">
     <div class="container">
       <div class="section-header center" data-reveal>
-        <div class="section-label">Simple &amp; Seamless</div>
-        <h2>How It <span class="gold">Works</span></h2>
-        <p class="section-desc">Your journey from discovery to entry — in three simple steps.</p>
+        <div class="section-label">For Organizers</div>
+        <h2>Create Your <span class="gold">Event</span></h2>
+        <p class="section-desc">Launch your event in minutes. From intimate workshops to massive festivals — we've got you covered.</p>
       </div>
       <div class="steps-grid" data-stagger>
-        <div class="step-card"><span class="step-num">01</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg></div><h3>Discover Events</h3><p>Browse curated events near you. Filter by date, category, or location.</p></div>
-        <div class="step-card"><span class="step-num">02</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div><h3>Secure Your Spot</h3><p>Book tickets instantly with Stripe. Your reservation is guaranteed.</p></div>
-        <div class="step-card"><span class="step-num">03</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/></svg></div><h3>Walk In with QR</h3><p>Get your QR ticket instantly. Scan at the door — fast, contactless entry.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ══════ TRUST ══════ -->
-  <section class="section" id="trust" style="background:var(--bg-secondary);">
-    <div class="container">
-      <div class="section-header center" data-reveal>
-        <div class="section-label">Trusted &amp; Verified</div>
-        <h2>Your Security Is Our <span class="gold">Priority</span></h2>
-        <p class="section-desc">Every transaction is encrypted, verified, and guaranteed.</p>
-      </div>
-      <div class="trust-badges" data-stagger>
-        <div class="trust-badge" id="trust-ssl"><div class="trust-badge-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg></div><span class="trust-badge-label">SSL Secured</span><span class="trust-badge-sub">256-bit Encryption</span></div>
-        <div class="trust-badge" id="trust-stripe"><div class="trust-badge-icon" style="color:#635bff;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div><span class="trust-badge-label">Stripe Verified</span><span class="trust-badge-sub">PCI DSS Compliant</span></div>
-        <div class="trust-badge" id="trust-gdpr"><div class="trust-badge-icon" style="color:#22c55e;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3"/></svg></div><span class="trust-badge-label">GDPR Ready</span><span class="trust-badge-sub">Data Protection</span></div>
-        <div class="trust-badge" id="trust-support"><div class="trust-badge-icon" style="color:#3b82f6;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg></div><span class="trust-badge-label">24/7 Support</span><span class="trust-badge-sub">Always Available</span></div>
-        <div class="trust-badge" id="trust-guarantee"><div class="trust-badge-icon" style="color:#f59e0b;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg></div><span class="trust-badge-label">Money-Back</span><span class="trust-badge-sub">100% Guarantee</span></div>
-        <div class="trust-badge" id="trust-users"><div class="trust-badge-icon" style="color:#F28C00;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"/></svg></div><span class="trust-badge-label">50K+ Users</span><span class="trust-badge-sub">Growing Community</span></div>
-      </div>
-
-    </div>
-  </section>
-
-
-
-  <!-- ══════ CONTACT US ══════ -->
-  <section class="ev-contact-section section" id="contact">
-    <div class="container">
-      <div class="section-header center" data-reveal style="margin-bottom:48px;">
-        <div class="section-label">Get In Touch</div>
-        <h2>Let's Start a <span class="gold">Conversation</span></h2>
-        <p class="section-desc">Whether you have a question, want to partner, or need support — we're here to help.</p>
-      </div>
-      <div class="ev-contact-grid">
-        <div class="ev-contact-info-panel" data-reveal>
-          <div class="ev-info-panel-content">
-            <h3>Contact Information</h3>
-            <p class="ev-info-sub">Fill out the form and our team will get back to you within 24 hours.</p>
-            <div class="ev-contact-details">
-              <div class="ev-contact-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
-                <span>support@eventwaw.com</span>
-              </div>
-              <div class="ev-contact-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/></svg>
-                <span>+20 (100) 123-4567</span>
-              </div>
-              <div class="ev-contact-item">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
-                <span>Cairo, Egypt</span>
-              </div>
-            </div>
-            <div class="ev-contact-social">
-              <a href="#" class="ev-social-link"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-              <a href="#" class="ev-social-link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5" fill="currentColor" stroke="none"/></svg></a>
-              <a href="#" class="ev-social-link"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452z"/></svg></a>
-            </div>
-          </div>
-          <div class="ev-info-decor-circle"></div>
-          <div class="ev-info-decor-circle ev-info-decor-sm"></div>
+        <div class="step-card">
+          <span class="step-num">01</span>
+          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+          <h3>Set Up Your Event</h3>
+          <p>Add event details, images, dates, venue, and ticket tiers — all through an intuitive dashboard.</p>
         </div>
-        <div class="ev-contact-form-wrap" data-reveal>
-          <form class="ev-contact-form" id="contact-form" onsubmit="event.preventDefault(); this.querySelector('.ev-form-success').style.display='flex'; this.querySelector('button[type=submit]').style.display='none';">
-            <div class="ev-form-row">
-              <div class="ev-form-group"><label for="contact-name">First Name</label><input type="text" id="contact-name" placeholder="John" required /></div>
-              <div class="ev-form-group"><label for="contact-last">Last Name</label><input type="text" id="contact-last" placeholder="Doe" /></div>
-            </div>
-            <div class="ev-form-row">
-              <div class="ev-form-group"><label for="contact-email">Email</label><input type="email" id="contact-email" placeholder="your@email.com" required /></div>
-              <div class="ev-form-group"><label for="contact-phone">Phone</label><input type="tel" id="contact-phone" placeholder="+20 100 000 0000" /></div>
-            </div>
-            <div class="ev-form-group">
-              <label for="contact-subject">Subject</label>
-              <select id="contact-subject"><option value="general">General Inquiry</option><option value="support">Technical Support</option><option value="partnership">Partnership</option><option value="sponsorship">Sponsorship</option><option value="feedback">Feedback</option></select>
-            </div>
-            <div class="ev-form-group">
-              <label for="contact-message">Message</label>
-              <textarea id="contact-message" rows="4" placeholder="Tell us how we can help..." required></textarea>
-            </div>
-            <button type="submit" class="ev-form-submit">Send Message <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5"/></svg></button>
-            <div class="ev-form-success" style="display:none;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg><span>Message sent! We'll get back to you within 24 hours.</span></div>
-          </form>
+        <div class="step-card">
+          <span class="step-num">02</span>
+          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg></div>
+          <h3>Sell Tickets Instantly</h3>
+          <p>Accept payments securely through Stripe. Get real-time sales analytics and revenue tracking.</p>
         </div>
+        <div class="step-card">
+          <span class="step-num">03</span>
+          <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
+          <h3>Manage &amp; Grow</h3>
+          <p>Track attendees, scan QR codes at the door, and access powerful analytics to grow your next event.</p>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:48px;" data-reveal>
+        <a href="register.html" class="btn btn-primary" style="padding:16px 40px;font-size:1rem;">Start Creating Your Event <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:8px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></a>
       </div>
     </div>
   </section>
@@ -331,8 +275,8 @@
           <h4>Platform</h4>
           <ul class="footer-links">
             <li><a href="events.html">Events</a></li>
-            <li><a href="#roles">Roles</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="how-it-works.html">How It Works</a></li>
+            <li><a href="contact.html">Contact</a></li>
           </ul>
         </div>
         <div>
@@ -735,6 +679,28 @@
         favInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') favBtn.click(); });
       }
     }
+  </script>
+
+  <!-- Events Slider Navigation -->
+  <script>
+  (function(){
+    const track = document.getElementById('landing-events-grid');
+    const leftBtn = document.getElementById('ev-slider-left');
+    const rightBtn = document.getElementById('ev-slider-right');
+    if (!track || !leftBtn || !rightBtn) return;
+    const scrollAmount = 364;
+    function updateArrows() {
+      const sl = track.scrollLeft, sw = track.scrollWidth, cw = track.clientWidth;
+      leftBtn.classList.toggle('hidden', sl <= 5);
+      rightBtn.classList.toggle('hidden', sl + cw >= sw - 5);
+    }
+    leftBtn.addEventListener('click', () => track.scrollBy({ left: -scrollAmount, behavior: 'smooth' }));
+    rightBtn.addEventListener('click', () => track.scrollBy({ left: scrollAmount, behavior: 'smooth' }));
+    track.addEventListener('scroll', updateArrows, { passive: true });
+    const mo = new MutationObserver(() => setTimeout(updateArrows, 100));
+    mo.observe(track, { childList: true });
+    setTimeout(updateArrows, 500);
+  })();
   </script>
 
 </body>

@@ -4,7 +4,7 @@
    Gold · Black · Blue Glow · Cinematic
    ═══════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
@@ -36,8 +36,8 @@
   --shadow-glow: 0 8px 32px rgba(212, 175, 55, 0.08), 0 0 60px rgba(212, 175, 55, 0.04);
 
   /* ── Type ── */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
 
   /* ── Motion ── */
   --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -876,6 +876,73 @@ button { cursor: pointer; }
 /* ══════════════════════════════════
    EVENT CARDS
    ══════════════════════════════════ */
+
+/* ── Events Slider ── */
+.ev-slider-wrapper {
+  position: relative;
+  margin-top: 8px;
+}
+
+.ev-slider-track {
+  display: flex !important;
+  gap: 24px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px 20px;
+  scrollbar-width: none;
+}
+.ev-slider-track::-webkit-scrollbar { display: none; }
+
+.ev-slider-track > .event-card {
+  flex: 0 0 340px;
+  min-width: 340px;
+  scroll-snap-align: start;
+}
+
+.ev-slider-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transition: all 0.25s ease;
+  opacity: 0.85;
+}
+.ev-slider-arrow:hover {
+  opacity: 1;
+  background: var(--accent-primary);
+  color: #fff;
+  border-color: var(--accent-primary);
+  box-shadow: 0 6px 24px rgba(212,175,55,0.25);
+  transform: translateY(-50%) scale(1.08);
+}
+.ev-slider-arrow svg { width: 20px; height: 20px; }
+.ev-slider-arrow-left { left: -24px; }
+.ev-slider-arrow-right { right: -24px; }
+.ev-slider-arrow.hidden { opacity: 0; pointer-events: none; }
+
+@media (max-width: 768px) {
+  .ev-slider-arrow-left { left: 4px; }
+  .ev-slider-arrow-right { right: 4px; }
+  .ev-slider-arrow { width: 40px; height: 40px; }
+  .ev-slider-arrow svg { width: 16px; height: 16px; }
+  .ev-slider-track > .event-card {
+    flex: 0 0 300px;
+    min-width: 300px;
+  }
+}
 
 .events-grid {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));

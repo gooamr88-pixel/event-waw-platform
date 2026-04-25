@@ -94,8 +94,8 @@
   color-scheme: light;
 
   /* ── Typography ── */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
 
   /* ── Motion ── */
   --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);

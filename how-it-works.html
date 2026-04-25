@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>How It Works — Event Waw</title>
+  <meta name="description" content="Discover how Event Waw works — three simple steps to your next experience." />
+  <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/landing-eveenty.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
+</head>
+<body class="eveenty-landing">
+  <nav class="navbar" id="main-nav"><div class="container">
+    <a href="index.html" class="nav-logo" id="nav-logo"><div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div><span class="nav-logo-text">Event Waw</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#events">Events</a>
+      <a href="index.html#create-event">Create Event</a>
+      <a href="how-it-works.html" class="active">How It Works</a>
+      <a href="why-us.html">Why Us?</a>
+      <a href="contact.html">Contact Us</a>
+    </div>
+    <div class="nav-actions">
+      <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"><svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg><svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button>
+      <a href="login.html" class="btn btn-outline" id="nav-signin">Log In</a>
+      <a href="register.html" class="btn btn-primary" id="nav-signup">Create Event</a>
+      <button class="nav-toggle" id="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+    </div>
+  </div></nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <button class="close-btn" id="mobile-close">✕</button>
+    <a href="index.html">Home</a><a href="index.html#events">Events</a>
+    <a href="index.html#create-event">Create Event</a><a href="how-it-works.html" class="active">How It Works</a>
+    <a href="why-us.html">Why Us?</a><a href="contact.html">Contact Us</a>
+    <a href="login.html">Log In</a><a href="register.html">Create Event</a>
+  </div>
+
+  <section class="section" style="padding-top:140px;">
+    <div class="container">
+      <div class="section-header center" data-reveal>
+        <div class="section-label">Simple &amp; Seamless</div>
+        <h1>How It <span class="gold">Works</span></h1>
+        <p class="section-desc">Your journey from discovery to entry — in three simple steps.</p>
+      </div>
+      <div class="steps-grid" data-stagger>
+        <div class="step-card"><span class="step-num">01</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg></div><h3>Discover Events</h3><p>Browse curated events near you. Filter by date, category, or location.</p></div>
+        <div class="step-card"><span class="step-num">02</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg></div><h3>Secure Your Spot</h3><p>Book tickets instantly with Stripe. Your reservation is guaranteed.</p></div>
+        <div class="step-card"><span class="step-num">03</span><div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5z"/></svg></div><h3>Walk In with QR</h3><p>Get your QR ticket instantly. Scan at the door — fast, contactless entry.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer"><div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand"><a href="index.html" class="nav-logo" style="margin-bottom:12px"><div class="nav-logo-icon" style="width:1.5rem;height:1.5rem"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div><span class="nav-logo-text" style="font-size:1rem;color:#999">Event Waw<span class="text-gold">.</span></span></a><p>Premium event ticketing platform.</p></div>
+      <div><h4>Platform</h4><ul class="footer-links"><li><a href="events.html">Events</a></li><li><a href="how-it-works.html">How It Works</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+      <div><h4>Support</h4><ul class="footer-links"><li><a href="#">Help Center</a></li><li><a href="contact.html">Contact</a></li><li><a href="#">FAQ</a></li></ul></div>
+      <div><h4>Legal</h4><ul class="footer-links"><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li><li><a href="#">Cookies</a></li></ul></div>
+    </div>
+    <div class="footer-bottom"><span>&copy; 2026 Event Waw. All rights reserved.</span><div class="footer-social"><a href="#" aria-label="Twitter">𝕏</a><a href="#" aria-label="Instagram">📷</a><a href="#" aria-label="LinkedIn">in</a></div></div>
+  </div></footer>
+
+  <script>
+  (function(){
+    const tt=document.getElementById('theme-toggle');
+    if(tt)tt.addEventListener('click',()=>{const d=document.documentElement,c=d.getAttribute('data-theme')==='dark'?'light':'dark';d.setAttribute('data-theme',c);localStorage.setItem('theme',c)});
+    const mt=document.getElementById('nav-toggle'),mm=document.getElementById('mobile-menu'),mc=document.getElementById('mobile-close');
+    if(mt&&mm)mt.addEventListener('click',()=>mm.classList.add('open'));
+    if(mc&&mm)mc.addEventListener('click',()=>mm.classList.remove('open'));
+    if(mm)mm.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>mm.classList.remove('open')));
+    const nav=document.getElementById('main-nav');
+    if(nav)window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',window.scrollY>60));
+    const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){x.target.classList.add('revealed');obs.unobserve(x.target)}})},{threshold:.15});
+    document.querySelectorAll('[data-reveal]').forEach(el=>obs.observe(el));
+    document.querySelectorAll('[data-stagger]').forEach(w=>{const io=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting){Array.from(w.children).forEach((c,i)=>{setTimeout(()=>c.classList.add('revealed'),i*100)});io.unobserve(w)}})},{threshold:.1});io.observe(w)});
+  })();
+  </script>
+</body>
+</html>
