@@ -208,49 +208,65 @@
   </section>
 
   <!-- ══════ PARTNERS / SPONSORS ══════ -->
-  <section class="ev-partners-section">
-    <div class="container" style="text-align:center;">
-      <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--text-muted);margin-bottom:28px;">Trusted By Industry Leaders</p>
-      <div class="ev-partners-track">
+  <section class="ev-sponsors-showcase" id="sponsors">
+    <div class="ev-sponsors-glow"></div>
+    <div class="container" style="position:relative;z-index:2;">
+      <div class="ev-sponsors-header" data-reveal>
+        <div class="ev-sponsors-accent-line"></div>
+        <p class="ev-sponsors-label">Trusted By Industry Leaders</p>
+        <h2 class="ev-sponsors-title">Powered by the <span class="gold">Best in Tech</span></h2>
+        <p class="ev-sponsors-sub">We partner with world-class infrastructure providers to ensure security, performance, and reliability.</p>
+      </div>
+      <div class="ev-sponsors-grid" data-stagger>
 
         <!-- Stripe -->
-        <div class="ev-sponsor-item">
-          <svg class="ev-partner-logo" viewBox="0 0 120 40" fill="var(--text-primary)">
-            <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.803 4.916 3.803 7.045c0 4.338 2.636 6.065 6.934 7.591 2.784 1.013 3.764 1.749 3.764 2.868 0 1.012-.894 1.633-2.535 1.633-2.173 0-5.147-.994-7.353-2.291L3.669 22.45c1.858 1.042 5.28 2.149 8.865 2.149 2.639 0 4.846-.627 6.371-1.81 1.711-1.298 2.553-3.249 2.553-5.56 0-4.429-2.695-6.163-7.482-7.679z"/>
-            <text x="30" y="27" font-size="18" font-weight="700" font-family="DM Sans,sans-serif">Stripe</text>
-          </svg>
+        <div class="ev-sponsor-card" data-brand="stripe">
+          <div class="ev-sponsor-card-glow"></div>
+          <div class="ev-sponsor-icon-wrap" style="--brand-color:#635bff;">
+            <svg viewBox="0 0 24 24" fill="#635bff"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.803 4.916 3.803 7.045c0 4.338 2.636 6.065 6.934 7.591 2.784 1.013 3.764 1.749 3.764 2.868 0 1.012-.894 1.633-2.535 1.633-2.173 0-5.147-.994-7.353-2.291L3.669 22.45c1.858 1.042 5.28 2.149 8.865 2.149 2.639 0 4.846-.627 6.371-1.81 1.711-1.298 2.553-3.249 2.553-5.56 0-4.429-2.695-6.163-7.482-7.679z"/></svg>
+          </div>
+          <h4 class="ev-sponsor-name">Stripe</h4>
+          <p class="ev-sponsor-role">Payment Processing</p>
         </div>
 
         <!-- Cloudflare -->
-        <div class="ev-sponsor-item">
-          <svg class="ev-partner-logo" viewBox="0 0 160 40" fill="var(--text-primary)">
-            <path d="M20 8c-1.5 0-2.8.4-4 1.2-.8-2.5-3.1-4.2-5.8-4.2-3.4 0-6.2 2.8-6.2 6.2 0 .3 0 .7.1 1C1.8 13 0 15.4 0 18.2 0 21.9 3 25 6.7 25h13.7c2.8 0 5.6-2.2 5.6-5.6C26 14.8 23.2 8 20 8z" transform="translate(0,4) scale(0.9)" opacity="0.9"/>
-            <text x="28" y="27" font-size="15" font-weight="700" font-family="DM Sans,sans-serif">Cloudflare</text>
-          </svg>
+        <div class="ev-sponsor-card" data-brand="cloudflare">
+          <div class="ev-sponsor-card-glow"></div>
+          <div class="ev-sponsor-icon-wrap" style="--brand-color:#f38020;">
+            <svg viewBox="0 0 24 24" fill="#f38020"><path d="M16.5 7.5c-1 0-1.9.3-2.7.8-.5-1.7-2.1-2.9-3.9-2.9-2.3 0-4.2 1.9-4.2 4.2v.3c-1.5.5-2.7 1.9-2.7 3.6 0 2.2 1.8 4 4 4h9.2c1.9 0 3.8-1.5 3.8-3.8 0-3.4-1.9-6.2-3.5-6.2z"/></svg>
+          </div>
+          <h4 class="ev-sponsor-name">Cloudflare</h4>
+          <p class="ev-sponsor-role">CDN &amp; Security</p>
         </div>
 
         <!-- Supabase -->
-        <div class="ev-sponsor-item">
-          <svg class="ev-partner-logo" viewBox="0 0 150 40" fill="var(--text-primary)">
-            <path d="M14.5 26.5c-.5.7-1.6.3-1.6-.5V17h10.8c1.2 0 1.8 1.4 1 2.2L14.5 26.5zM11.5 3.5c.5-.7 1.6-.3 1.6.5V13H2.3c-1.2 0-1.8-1.4-1-2.2L11.5 3.5z" transform="translate(2,5) scale(0.85)"/>
-            <text x="28" y="27" font-size="15" font-weight="700" font-family="DM Sans,sans-serif">Supabase</text>
-          </svg>
+        <div class="ev-sponsor-card" data-brand="supabase">
+          <div class="ev-sponsor-card-glow"></div>
+          <div class="ev-sponsor-icon-wrap" style="--brand-color:#3ecf8e;">
+            <svg viewBox="0 0 24 24" fill="#3ecf8e"><path d="M13.5 21.5c-.4.6-1.4.3-1.4-.4v-7.7h8.1c1 0 1.5 1.1.8 1.8l-7.5 6.3zm-3-19c.4-.6 1.4-.3 1.4.4v7.7H3.8c-1 0-1.5-1.1-.8-1.8L10.5 2.5z"/></svg>
+          </div>
+          <h4 class="ev-sponsor-name">Supabase</h4>
+          <p class="ev-sponsor-role">Backend &amp; Database</p>
         </div>
 
         <!-- Let's Encrypt -->
-        <div class="ev-sponsor-item">
-          <svg class="ev-partner-logo" viewBox="0 0 170 40" fill="var(--text-primary)">
-            <path d="M12 2C8.13 2 5 5.13 5 9v3H3v10h18V12h-2V9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5v3H7V9c0-2.76 2.24-5 5-5zm0 10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" transform="translate(0,5) scale(0.9)"/>
-            <text x="24" y="27" font-size="13" font-weight="700" font-family="DM Sans,sans-serif">Let's Encrypt</text>
-          </svg>
+        <div class="ev-sponsor-card" data-brand="letsencrypt">
+          <div class="ev-sponsor-card-glow"></div>
+          <div class="ev-sponsor-icon-wrap" style="--brand-color:#2c3c69;">
+            <svg viewBox="0 0 24 24" fill="#2c3c69"><path d="M12 2C8.7 2 6 4.7 6 8v3H5c-1.1 0-2 .9-2 2v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7c0-1.1-.9-2-2-2h-1V8c0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4v3H8V8c0-2.2 1.8-4 4-4zm0 10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z"/></svg>
+          </div>
+          <h4 class="ev-sponsor-name">Let's Encrypt</h4>
+          <p class="ev-sponsor-role">SSL Certificates</p>
         </div>
 
         <!-- Vercel -->
-        <div class="ev-sponsor-item">
-          <svg class="ev-partner-logo" viewBox="0 0 120 40" fill="var(--text-primary)">
-            <polygon points="12,5 23,25 1,25" transform="translate(0,3)"/>
-            <text x="28" y="27" font-size="16" font-weight="700" font-family="DM Sans,sans-serif">Vercel</text>
-          </svg>
+        <div class="ev-sponsor-card" data-brand="vercel">
+          <div class="ev-sponsor-card-glow"></div>
+          <div class="ev-sponsor-icon-wrap" style="--brand-color:#000;">
+            <svg viewBox="0 0 24 24" fill="var(--text-primary)"><polygon points="12,2 22,20 2,20"/></svg>
+          </div>
+          <h4 class="ev-sponsor-name">Vercel</h4>
+          <p class="ev-sponsor-role">Hosting &amp; Edge</p>
         </div>
 
       </div>
@@ -267,19 +283,16 @@
       </div>
       <div class="steps-grid" data-stagger>
         <div class="step-card">
-          <span class="step-num">01</span>
           <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
           <h3>Set Up Your Event</h3>
           <p>Add event details, images, dates, venue, and ticket tiers — all through an intuitive dashboard.</p>
         </div>
         <div class="step-card">
-          <span class="step-num">02</span>
           <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z"/></svg></div>
           <h3>Sell Tickets Instantly</h3>
           <p>Accept payments securely through Stripe. Get real-time sales analytics and revenue tracking.</p>
         </div>
         <div class="step-card">
-          <span class="step-num">03</span>
           <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg></div>
           <h3>Manage &amp; Grow</h3>
           <p>Track attendees, scan QR codes at the door, and access powerful analytics to grow your next event.</p>
