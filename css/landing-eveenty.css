@@ -171,36 +171,36 @@
   transform: scale(1.08);
 }
 
-/* ── 6b. TRUSTED BY ── */
+/* ── 6b. TRUSTED PARTNERS ── */
 .ev-trusted-section {
-  padding: 32px 0 36px;
-  background: var(--bg-secondary) !important;
-  border-top: 1px solid var(--border-light);
+  padding: 40px 0 44px;
+  background: rgba(252, 240, 240, 0.6) !important;
+  border-top: 1px solid rgba(0,0,0,0.04);
   overflow: hidden;
 }
 .ev-trusted-track {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 48px;
+  gap: 14px;
+  flex-wrap: wrap;
   padding: 0 8px;
 }
-.ev-trusted-item {
-  flex-shrink: 1;
+.ev-trusted-pill {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s ease;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid rgba(0,0,0,0.04);
+  min-height: 40px;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-.ev-trusted-item:hover {
-  transform: scale(1.08);
-}
-.ev-trusted-logo {
-  height: 44px;
-  max-width: 160px;
-  width: auto;
-  object-fit: contain;
-  display: block;
+.ev-trusted-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
@@ -634,11 +634,11 @@
   .ev-partners-track { gap: 14px; flex-wrap: wrap; justify-content: center; }
   .ev-partner-logo { height: 36px; }
 
-  /* Trusted By */
+  /* Trusted Partners */
   .ev-trusted-section { padding: 28px 0 32px; }
-  .ev-trusted-track { gap: 20px; flex-wrap: wrap; justify-content: center; }
-  .ev-trusted-item svg,
-  .ev-trusted-logo { height: 28px !important; }
+  .ev-trusted-track { gap: 8px; }
+  .ev-trusted-pill { padding: 6px 10px; min-height: 34px; }
+  .ev-trusted-pill svg { transform: scale(0.85); }
 
   /* Events section */
   .eveenty-landing #events .section-header h2 { font-size: 1.6rem; }
@@ -696,11 +696,11 @@
   .ev-partners-section { padding: 24px 0 20px; }
   .ev-partner-logo { height: 28px; }
 
-  /* Trusted By */
-  .ev-trusted-section { padding: 24px 0 28px; }
-  .ev-trusted-track { gap: 16px; }
-  .ev-trusted-item svg,
-  .ev-trusted-logo { height: 22px !important; }
+  /* Trusted Partners */
+  .ev-trusted-section { padding: 20px 0 24px; }
+  .ev-trusted-track { gap: 6px; }
+  .ev-trusted-pill { padding: 5px 8px; min-height: 30px; border-radius: 8px; }
+  .ev-trusted-pill svg { transform: scale(0.75); }
 
   /* Section headers */
   .section-header h2 { font-size: 1.3rem !important; }
