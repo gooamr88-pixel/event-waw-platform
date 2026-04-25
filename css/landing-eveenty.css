@@ -140,7 +140,7 @@
 
 /* ── 6. PARTNERS ── */
 .ev-partners-section {
-  padding: 60px 0 48px;
+  padding: 40px 0 32px;
   background: var(--bg-primary) !important;
   border-top: none;
   border-bottom: none;
@@ -160,7 +160,7 @@
   justify-content: center;
 }
 .ev-partner-logo {
-  height: 80px;
+  height: 48px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -173,7 +173,7 @@
 
 /* ── 6b. TRUSTED BY ── */
 .ev-trusted-section {
-  padding: 48px 0 56px;
+  padding: 32px 0 36px;
   background: var(--bg-secondary) !important;
   border-top: 1px solid var(--border-light);
   overflow: hidden;
@@ -201,7 +201,7 @@
   transform: translateY(-2px);
 }
 .ev-trusted-logo {
-  height: 40px;
+  height: 28px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -612,9 +612,9 @@
   .ev-stats-grid { grid-template-columns: 1fr; gap: 24px; }
   .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
   .ev-partners-track { gap: 16px; flex-wrap: wrap; justify-content: center; }
-  .ev-partner-logo { height: 60px; }
-  .ev-trusted-track { gap: 28px; }
-  .ev-trusted-logo { height: 32px; }
+  .ev-partner-logo { height: 36px; }
+  .ev-trusted-track { gap: 20px; }
+  .ev-trusted-logo { height: 22px; }
   .ev-contact-grid { grid-template-columns: 1fr; }
   .ev-contact-info-panel { padding: 36px 28px; }
   .ev-contact-form-wrap { padding: 36px 28px; }
