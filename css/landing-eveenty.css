@@ -192,16 +192,14 @@
   align-items: center;
   justify-content: center;
   transition: all 0.4s ease;
-  filter: grayscale(100%);
-  opacity: 0.5;
+  opacity: 0.85;
 }
 .ev-trusted-item:hover {
-  filter: grayscale(0%);
   opacity: 1;
   transform: translateY(-2px);
 }
 .ev-trusted-logo {
-  height: 28px;
+  height: 36px;
   width: auto;
   object-fit: contain;
   display: block;
@@ -614,7 +612,7 @@
   .ev-partners-track { gap: 16px; flex-wrap: wrap; justify-content: center; }
   .ev-partner-logo { height: 36px; }
   .ev-trusted-track { gap: 20px; }
-  .ev-trusted-logo { height: 22px; }
+  .ev-trusted-logo { height: 28px; }
   .ev-contact-grid { grid-template-columns: 1fr; }
   .ev-contact-info-panel { padding: 36px 28px; }
   .ev-contact-form-wrap { padding: 36px 28px; }
