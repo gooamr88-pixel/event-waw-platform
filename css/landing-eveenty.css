@@ -140,25 +140,37 @@
 
 /* ── 6. PARTNERS ── */
 .ev-partners-section {
-  padding: 48px 0; background: var(--bg-secondary) !important;
-  border-top: 1px solid var(--border-primary); border-bottom: 1px solid var(--border-primary);
+  padding: 40px 0;
+  background: #FDF6E9 !important;
+  border-top: none;
+  border-bottom: none;
   overflow: hidden;
 }
 .ev-partners-track {
-  display: flex; align-items: center; justify-content: center; gap: 40px;
-  flex-wrap: wrap; padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 0 16px;
 }
 .ev-sponsor-item {
-  transition: all 0.3s ease;
-  opacity: 0.4;
-  filter: grayscale(100%);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.ev-sponsor-item:hover {
-  opacity: 0.85;
-  filter: grayscale(0%);
-  transform: translateY(-2px);
+.ev-partner-logo {
+  height: 52px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  opacity: 0.92;
 }
-.ev-partner-logo { height: 32px; fill: var(--text-primary); transition: all 0.3s; }
+.ev-partner-logo:hover {
+  transform: scale(1.05);
+  opacity: 1;
+}
 
 /* ── 7. EVENTS SECTION (uses base styles.css classes) ── */
 .eveenty-landing #events { background: var(--bg-secondary) !important; }
@@ -564,7 +576,8 @@
   .ev-hero-buttons { justify-content: center; }
   .ev-stats-grid { grid-template-columns: 1fr; gap: 24px; }
   .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
-  .ev-partners-track { gap: 32px; }
+  .ev-partners-track { gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .ev-partner-logo { height: 40px; }
   .ev-contact-grid { grid-template-columns: 1fr; }
   .ev-contact-info-panel { padding: 36px 28px; }
   .ev-contact-form-wrap { padding: 36px 28px; }
