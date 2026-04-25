@@ -191,15 +191,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.4s ease;
-  opacity: 0.85;
+  transition: transform 0.3s ease;
 }
 .ev-trusted-item:hover {
-  opacity: 1;
-  transform: translateY(-2px);
+  transform: scale(1.08);
 }
 .ev-trusted-logo {
-  height: 36px;
+  height: 44px;
   width: auto;
   object-fit: contain;
   display: block;
