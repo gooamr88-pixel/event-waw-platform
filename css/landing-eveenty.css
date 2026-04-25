@@ -600,30 +600,133 @@
 }
 
 /* ── 13. RESPONSIVE ── */
+
+/* ── Tablet & Small Desktop (≤1024px) ── */
+@media (max-width: 1024px) {
+  .ev-hero-split { gap: 40px; }
+  .ev-hero-text h1 { font-size: 2.6rem !important; }
+  .ev-roles-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+}
+
+/* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
-  .ev-hero-split { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-  .ev-hero-text h1 { font-size: 2.2rem !important; }
-  .ev-hero-desc { margin: 16px auto 28px; }
+  /* Hero */
+  .ev-hero-split { grid-template-columns: 1fr; gap: 32px; text-align: center; }
+  .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
+  .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
   .ev-hero-buttons { justify-content: center; }
-  .ev-stats-grid { grid-template-columns: 1fr; gap: 24px; }
-  .ev-roles-grid { grid-template-columns: repeat(2, 1fr); }
-  .ev-partners-track { gap: 16px; flex-wrap: wrap; justify-content: center; }
+  .ev-hero-image img { max-width: 80%; margin: 0 auto; }
+  .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
+
+  /* Stats */
+  .ev-stats-bar { padding: 28px 0; }
+  .ev-stats-grid { grid-template-columns: 1fr; gap: 20px; }
+  .ev-stat-number { font-size: 1.8rem; }
+  .ev-stat-label { font-size: 0.75rem; }
+
+  /* Roles */
+  .ev-roles-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .ev-roles-section { padding: 50px 0; }
+  .ev-roles-section h2 { font-size: 1.6rem; }
+
+  /* Sponsors */
+  .ev-partners-section { padding: 32px 0 24px; }
+  .ev-partners-track { gap: 14px; flex-wrap: wrap; justify-content: center; }
   .ev-partner-logo { height: 36px; }
-  .ev-trusted-track { gap: 20px; }
-  .ev-trusted-logo { height: 28px; }
+
+  /* Trusted By */
+  .ev-trusted-section { padding: 28px 0 32px; }
+  .ev-trusted-track { gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .ev-trusted-item svg,
+  .ev-trusted-logo { height: 28px !important; }
+
+  /* Events section */
+  .eveenty-landing #events .section-header h2 { font-size: 1.6rem; }
+  .ev-slider-wrapper { padding: 0; }
+
+  /* Steps / How it works */
+  .steps-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+
+  /* Trust badges */
+  .trust-badges { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+
+  /* Contact */
+  .ev-contact-section { padding: 50px 0 60px; }
   .ev-contact-grid { grid-template-columns: 1fr; }
-  .ev-contact-info-panel { padding: 36px 28px; }
-  .ev-contact-form-wrap { padding: 36px 28px; }
-  .ev-form-row { grid-template-columns: 1fr; gap: 18px; }
+  .ev-contact-info-panel { padding: 32px 24px; }
+  .ev-contact-form-wrap { padding: 32px 24px; }
+  .ev-form-row { grid-template-columns: 1fr; gap: 16px; }
+  .ev-info-panel-content h3 { font-size: 1.3rem; }
+
+  /* Section headers */
+  .section-header h2 { font-size: 1.5rem !important; }
+  .section-desc { font-size: 0.88rem !important; }
+  .section-label { font-size: 0.65rem !important; padding: 5px 14px !important; }
+
+  /* General section padding */
+  .section { padding: 50px 0 !important; }
+  .container { padding: 0 16px; }
+
+  /* Chatbox */
   .ev-chatbox {
     width: calc(100vw - 24px); right: 12px; bottom: 92px;
     max-height: calc(100vh - 120px);
   }
 }
+
+/* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
-  .ev-hero-text h1 { font-size: 1.8rem !important; }
-  .ev-roles-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
-  .ev-stat-number { font-size: 1.8rem; }
+  /* Hero */
+  .ev-hero-text h1 { font-size: 1.65rem !important; line-height: 1.25 !important; }
+  .ev-hero-desc { font-size: 0.85rem; }
+  .ev-btn-create, .ev-btn-explore { padding: 12px 22px; font-size: 0.88rem; }
+  .eveenty-landing .hero-wrapper { padding: 70px 0 32px !important; }
+
+  /* Stats */
+  .ev-stats-bar { padding: 24px 0; }
+  .ev-stat-number { font-size: 1.5rem; }
+
+  /* Roles */
+  .ev-roles-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ev-role-card { aspect-ratio: 1/1.2; }
+  .ev-role-label { font-size: 0.8rem; padding: 12px; }
+  .ev-roles-section { padding: 40px 0; }
+
+  /* Sponsors */
+  .ev-partners-section { padding: 24px 0 20px; }
+  .ev-partner-logo { height: 28px; }
+
+  /* Trusted By */
+  .ev-trusted-section { padding: 24px 0 28px; }
+  .ev-trusted-track { gap: 16px; }
+  .ev-trusted-item svg,
+  .ev-trusted-logo { height: 22px !important; }
+
+  /* Section headers */
+  .section-header h2 { font-size: 1.3rem !important; }
+  .section-header { margin-bottom: 24px; }
+
+  /* Steps */
+  .step-card { padding: 20px !important; }
+  .step-card h3 { font-size: 1rem !important; }
+  .step-card p { font-size: 0.82rem !important; }
+
+  /* Trust badges */
+  .trust-badges { grid-template-columns: repeat(2, 1fr) !important; }
+  .trust-badge { padding: 14px 8px; }
+  .trust-badge-label { font-size: 0.72rem; }
+
+  /* Contact */
+  .ev-contact-info-panel { padding: 28px 20px; }
+  .ev-contact-form-wrap { padding: 28px 20px; }
+  .ev-info-panel-content h3 { font-size: 1.15rem; }
+  .ev-form-submit { width: 100%; justify-content: center; }
+
+  /* General */
+  .section { padding: 40px 0 !important; }
+  .container { padding: 0 14px; }
+
+  /* Chatbox */
   .ev-chatbox {
     width: calc(100vw - 16px); right: 8px; bottom: 88px;
     height: calc(100vh - 110px); max-height: none;
@@ -631,3 +734,4 @@
   }
   .ev-quick-btn { font-size: 0.7rem; padding: 6px 10px; }
 }
+
