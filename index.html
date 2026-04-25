@@ -112,19 +112,11 @@
           <button class="search-clear-btn" id="search-clear-btn" aria-label="Clear search">✕</button>
           <div class="geo-status detecting" id="geo-status"><span class="geo-dot"></span><span id="geo-status-text">Detecting location…</span></div>
         </div>
-        <div class="category-scroller" id="category-scroller">
-          <button class="cat-pill active" data-category="all" id="cat-all"><span class="cat-pill-icon">✦</span>All Events</button>
-          <button class="cat-pill" data-category="music" id="cat-music"><span class="cat-pill-icon">🎵</span>Music</button>
-          <button class="cat-pill" data-category="sports" id="cat-sports"><span class="cat-pill-icon">⚽</span>Sports</button>
-          <button class="cat-pill" data-category="trips" id="cat-trips"><span class="cat-pill-icon">🏕️</span>Trips</button>
-          <button class="cat-pill" data-category="conference" id="cat-conference"><span class="cat-pill-icon">🎤</span>Conferences</button>
-          <button class="cat-pill" data-category="art" id="cat-art"><span class="cat-pill-icon">🎨</span>Art &amp; Culture</button>
-          <button class="cat-pill" data-category="food" id="cat-food"><span class="cat-pill-icon">🍽️</span>Food &amp; Drink</button>
-          <button class="cat-pill" data-category="nightlife" id="cat-nightlife"><span class="cat-pill-icon">🌙</span>Nightlife</button>
-          <button class="cat-pill" data-category="workshop" id="cat-workshop"><span class="cat-pill-icon">🛠️</span>Workshops</button>
-        </div>
         <div class="adv-filters-inline" id="adv-filters">
+          <div class="adv-pill-select"><select class="adv-select" id="filter-category"><option value="all">🏷️ All Categories</option><option value="music">🎵 Music</option><option value="sports">⚽ Sports</option><option value="trips">🏕️ Trips</option><option value="conference">🎤 Conferences</option><option value="art">🎨 Art &amp; Culture</option><option value="food">🍽️ Food &amp; Drink</option><option value="nightlife">🌙 Nightlife</option><option value="workshop">🛠️ Workshops</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <div class="adv-pill-select"><select class="adv-select" id="filter-country"><option value="all">🌍 All Countries</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
           <div class="adv-pill-select"><select class="adv-select" id="filter-city"><option value="all">📍 All Cities</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
+          <div class="adv-pill-select"><select class="adv-select" id="filter-venue"><option value="all">🏛️ All Venues</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
           <div class="adv-pill-select"><select class="adv-select" id="filter-date"><option value="all">📅 Any Date</option><option value="today">Today</option><option value="tomorrow">Tomorrow</option><option value="week">This Week</option><option value="month">This Month</option><option value="custom">Pick a Date…</option></select><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg></div>
           <input type="date" class="adv-date-pill" id="filter-date-input" style="display:none;" />
           <button class="adv-reset-pill" id="adv-reset-btn" style="display:none;">✕ Reset</button>
@@ -215,14 +207,53 @@
     </div>
   </section>
 
-  <!-- ══════ PARTNERS ══════ -->
+  <!-- ══════ PARTNERS / SPONSORS ══════ -->
   <section class="ev-partners-section">
-    <div class="ev-partners-track">
-      <svg class="ev-partner-logo" viewBox="0 0 160 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Stripe</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Cloudflare</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 180 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Supabase</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 200 48" fill="#333"><text x="10" y="34" font-size="20" font-weight="800" font-family="DM Sans,sans-serif">Let's Encrypt</text></svg>
-      <svg class="ev-partner-logo" viewBox="0 0 120 48" fill="#333"><text x="10" y="34" font-size="22" font-weight="800" font-family="DM Sans,sans-serif">Vercel</text></svg>
+    <div class="container" style="text-align:center;">
+      <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:var(--text-muted);margin-bottom:28px;">Trusted By Industry Leaders</p>
+      <div class="ev-partners-track">
+
+        <!-- Stripe -->
+        <div class="ev-sponsor-item">
+          <svg class="ev-partner-logo" viewBox="0 0 120 40" fill="var(--text-primary)">
+            <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.803 4.916 3.803 7.045c0 4.338 2.636 6.065 6.934 7.591 2.784 1.013 3.764 1.749 3.764 2.868 0 1.012-.894 1.633-2.535 1.633-2.173 0-5.147-.994-7.353-2.291L3.669 22.45c1.858 1.042 5.28 2.149 8.865 2.149 2.639 0 4.846-.627 6.371-1.81 1.711-1.298 2.553-3.249 2.553-5.56 0-4.429-2.695-6.163-7.482-7.679z"/>
+            <text x="30" y="27" font-size="18" font-weight="700" font-family="DM Sans,sans-serif">Stripe</text>
+          </svg>
+        </div>
+
+        <!-- Cloudflare -->
+        <div class="ev-sponsor-item">
+          <svg class="ev-partner-logo" viewBox="0 0 160 40" fill="var(--text-primary)">
+            <path d="M20 8c-1.5 0-2.8.4-4 1.2-.8-2.5-3.1-4.2-5.8-4.2-3.4 0-6.2 2.8-6.2 6.2 0 .3 0 .7.1 1C1.8 13 0 15.4 0 18.2 0 21.9 3 25 6.7 25h13.7c2.8 0 5.6-2.2 5.6-5.6C26 14.8 23.2 8 20 8z" transform="translate(0,4) scale(0.9)" opacity="0.9"/>
+            <text x="28" y="27" font-size="15" font-weight="700" font-family="DM Sans,sans-serif">Cloudflare</text>
+          </svg>
+        </div>
+
+        <!-- Supabase -->
+        <div class="ev-sponsor-item">
+          <svg class="ev-partner-logo" viewBox="0 0 150 40" fill="var(--text-primary)">
+            <path d="M14.5 26.5c-.5.7-1.6.3-1.6-.5V17h10.8c1.2 0 1.8 1.4 1 2.2L14.5 26.5zM11.5 3.5c.5-.7 1.6-.3 1.6.5V13H2.3c-1.2 0-1.8-1.4-1-2.2L11.5 3.5z" transform="translate(2,5) scale(0.85)"/>
+            <text x="28" y="27" font-size="15" font-weight="700" font-family="DM Sans,sans-serif">Supabase</text>
+          </svg>
+        </div>
+
+        <!-- Let's Encrypt -->
+        <div class="ev-sponsor-item">
+          <svg class="ev-partner-logo" viewBox="0 0 170 40" fill="var(--text-primary)">
+            <path d="M12 2C8.13 2 5 5.13 5 9v3H3v10h18V12h-2V9c0-3.87-3.13-7-7-7zm0 2c2.76 0 5 2.24 5 5v3H7V9c0-2.76 2.24-5 5-5zm0 10c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2z" transform="translate(0,5) scale(0.9)"/>
+            <text x="24" y="27" font-size="13" font-weight="700" font-family="DM Sans,sans-serif">Let's Encrypt</text>
+          </svg>
+        </div>
+
+        <!-- Vercel -->
+        <div class="ev-sponsor-item">
+          <svg class="ev-partner-logo" viewBox="0 0 120 40" fill="var(--text-primary)">
+            <polygon points="12,5 23,25 1,25" transform="translate(0,3)"/>
+            <text x="28" y="27" font-size="16" font-weight="700" font-family="DM Sans,sans-serif">Vercel</text>
+          </svg>
+        </div>
+
+      </div>
     </div>
   </section>
 
@@ -448,6 +479,8 @@
     let activeCategory = 'all';
     let activeTimeFilter = 'all';
     let activeCityFilter = 'all';
+    let activeCountryFilter = 'all';
+    let activeVenueFilter = 'all';
     let activeDateFilter = 'all';
     let customDate = null;
     let searchQuery = '';
@@ -476,7 +509,7 @@
       if (userLocation && allEvents.length > 0) applyFiltersAndRender();
 
       initSmartSearch();
-      initCategoryPills();
+
       initTimeFilters();
       initAdvancedFilters();
       initEveentyFeatures();
@@ -529,9 +562,28 @@
 
     function populateLocationFilter(events) {
       const select = document.getElementById('ev-filter-location');
-      if (!select) return;
-      const cities = [...new Set(events.map(e => (e.city || '').trim()).filter(Boolean))].sort();
-      cities.forEach(city => { const opt = document.createElement('option'); opt.value = city; opt.textContent = city; select.appendChild(opt); });
+      if (select) {
+        const cities = [...new Set(events.map(e => (e.city || '').trim()).filter(Boolean))].sort();
+        cities.forEach(city => { const opt = document.createElement('option'); opt.value = city; opt.textContent = city; select.appendChild(opt); });
+      }
+      // Populate city dropdown
+      const citySelect = document.getElementById('filter-city');
+      if (citySelect) {
+        const cities2 = [...new Set(events.map(e => (e.city || '').trim()).filter(Boolean))].sort();
+        cities2.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = '📍 ' + c; citySelect.appendChild(o); });
+      }
+      // Populate country dropdown
+      const countrySelect = document.getElementById('filter-country');
+      if (countrySelect) {
+        const countries = [...new Set(events.map(e => (e.country || '').trim()).filter(Boolean))].sort();
+        countries.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = '🌍 ' + c; countrySelect.appendChild(o); });
+      }
+      // Populate venue dropdown
+      const venueSelect = document.getElementById('filter-venue');
+      if (venueSelect) {
+        const venues = [...new Set(events.map(e => (e.venue || '').trim()).filter(Boolean))].sort();
+        venues.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = '🏛️ ' + v; venueSelect.appendChild(o); });
+      }
     }
 
     function renderCarousel(events) {
@@ -557,6 +609,8 @@
       else if (activeTimeFilter === 'month') { const end = new Date(now); end.setDate(end.getDate() + 30); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= now && d <= end; }); }
       if (activeCategory && activeCategory !== 'all') filtered = filtered.filter(e => (e.category || '').toLowerCase() === activeCategory.toLowerCase());
       if (activeCityFilter && activeCityFilter !== 'all') filtered = filtered.filter(e => (e.city || '').toLowerCase() === activeCityFilter.toLowerCase());
+      if (activeCountryFilter && activeCountryFilter !== 'all') filtered = filtered.filter(e => (e.country || '').toLowerCase() === activeCountryFilter.toLowerCase());
+      if (activeVenueFilter && activeVenueFilter !== 'all') filtered = filtered.filter(e => (e.venue || '').toLowerCase() === activeVenueFilter.toLowerCase());
       if (activeDateFilter && activeDateFilter !== 'all') {
         const today = new Date(); today.setHours(0,0,0,0);
         if (activeDateFilter === 'today') { const end = new Date(today); end.setDate(end.getDate()+1); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d < end; }); }
@@ -627,28 +681,29 @@
       input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { clearTimeout(searchDebounceTimer); searchQuery = input.value; applyFiltersAndRender(); } });
     }
 
-    function initCategoryPills() {
-      const pills = document.querySelectorAll('#category-scroller .cat-pill');
-      pills.forEach(pill => { pill.addEventListener('click', () => { pills.forEach(p => p.classList.remove('active')); pill.classList.add('active'); activeCategory = pill.dataset.category || 'all'; const catSelect = document.getElementById('filter-category'); if (catSelect) catSelect.value = activeCategory; applyFiltersAndRender(); }); });
-    }
+
 
     function initAdvancedFilters() {
       const citySelect = document.getElementById('filter-city');
       const catSelect = document.getElementById('filter-category');
+      const countrySelect = document.getElementById('filter-country');
+      const venueSelect = document.getElementById('filter-venue');
       const dateSelect = document.getElementById('filter-date');
       const dateInput = document.getElementById('filter-date-input');
       const resetBtn = document.getElementById('adv-reset-btn');
+      catSelect?.addEventListener('change', () => { activeCategory = catSelect.value; applyFiltersAndRender(); });
       citySelect?.addEventListener('change', () => { activeCityFilter = citySelect.value; applyFiltersAndRender(); });
-      catSelect?.addEventListener('change', () => { activeCategory = catSelect.value; document.querySelectorAll('#category-scroller .cat-pill').forEach(p => p.classList.toggle('active', (p.dataset.category || 'all') === activeCategory)); applyFiltersAndRender(); });
+      countrySelect?.addEventListener('change', () => { activeCountryFilter = countrySelect.value; applyFiltersAndRender(); });
+      venueSelect?.addEventListener('change', () => { activeVenueFilter = venueSelect.value; applyFiltersAndRender(); });
       dateSelect?.addEventListener('change', () => { activeDateFilter = dateSelect.value; if (dateInput) dateInput.style.display = activeDateFilter === 'custom' ? '' : 'none'; if (activeDateFilter !== 'custom') { customDate = null; applyFiltersAndRender(); } else if (dateInput?.value) { customDate = dateInput.value; applyFiltersAndRender(); } });
       dateInput?.addEventListener('change', () => { customDate = dateInput.value; applyFiltersAndRender(); });
-      resetBtn?.addEventListener('click', () => { activeCategory = 'all'; activeCityFilter = 'all'; activeDateFilter = 'all'; activeTimeFilter = 'all'; customDate = null; searchQuery = ''; if (citySelect) citySelect.value = 'all'; if (catSelect) catSelect.value = 'all'; if (dateSelect) dateSelect.value = 'all'; if (dateInput) { dateInput.value = ''; dateInput.style.display = 'none'; } const si = document.getElementById('smart-search-input'); if (si) { si.value = ''; document.getElementById('search-clear-btn')?.classList.remove('visible'); } document.querySelectorAll('#category-scroller .cat-pill').forEach(p => p.classList.toggle('active', p.dataset.category === 'all')); document.querySelectorAll('#ev-filters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all')); applyFiltersAndRender(); });
+      resetBtn?.addEventListener('click', () => { activeCategory = 'all'; activeCityFilter = 'all'; activeCountryFilter = 'all'; activeVenueFilter = 'all'; activeDateFilter = 'all'; activeTimeFilter = 'all'; customDate = null; searchQuery = ''; if (catSelect) catSelect.value = 'all'; if (citySelect) citySelect.value = 'all'; if (countrySelect) countrySelect.value = 'all'; if (venueSelect) venueSelect.value = 'all'; if (dateSelect) dateSelect.value = 'all'; if (dateInput) { dateInput.value = ''; dateInput.style.display = 'none'; } const si = document.getElementById('smart-search-input'); if (si) { si.value = ''; document.getElementById('search-clear-btn')?.classList.remove('visible'); } document.querySelectorAll('#ev-filters .filter-btn').forEach(b => b.classList.toggle('active', b.dataset.filter === 'all')); applyFiltersAndRender(); });
     }
 
     function updateResetButton() {
       const btn = document.getElementById('adv-reset-btn');
       if (!btn) return;
-      btn.style.display = (activeCategory !== 'all' || activeCityFilter !== 'all' || activeDateFilter !== 'all' || activeTimeFilter !== 'all' || searchQuery.trim()) ? '' : 'none';
+      btn.style.display = (activeCategory !== 'all' || activeCityFilter !== 'all' || activeCountryFilter !== 'all' || activeVenueFilter !== 'all' || activeDateFilter !== 'all' || activeTimeFilter !== 'all' || searchQuery.trim()) ? '' : 'none';
     }
 
     function initTimeFilters() {
