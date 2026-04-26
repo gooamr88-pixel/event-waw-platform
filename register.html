@@ -19,10 +19,10 @@
       </a>
       <div class="ev-logo-tagline">DISCOVER & CREATE EVENTS EFFORTLESSLY</div>
       <div class="ev-cards-area">
-        <div class="ev-card ev-card--hosts"><h3>Event Hosts</h3><ul><li>Easily create and edit events</li><li>Customize features</li><li>Manage everything from one platform</li></ul></div>
-        <div class="ev-card ev-card--exhibitors"><h3>Exhibitors and Vendors</h3><ul><li>Register easily</li><li>Increase sales</li><li>Connect seamlessly with attendees</li></ul></div>
+        <div class="ev-card ev-card--hosts"><h3>Organizers</h3><ul><li>Create and publish events instantly</li><li>Manage tickets, vendors & sponsors</li><li>Track analytics from one dashboard</li></ul></div>
+        <div class="ev-card ev-card--exhibitors"><h3>Attendees</h3><ul><li>Discover events near you</li><li>Book tickets in seconds</li><li>Get instant QR code entry</li></ul></div>
         <div class="ev-circle-deco"></div>
-        <div class="ev-card ev-card--sponsors"><h3>Sponsors</h3><ul><li>Maximize exposure</li><li>Simplify sponsor management</li><li>Customize packages effectively</li></ul></div>
+        <div class="ev-card ev-card--sponsors"><h3>Partners & Sponsors</h3><ul><li>Boost your brand visibility</li><li>Connect with targeted audiences</li><li>Measure ROI with real-time data</li></ul></div>
       </div>
     </div>
     <!-- RIGHT PANEL -->
@@ -71,17 +71,16 @@
             </div>
             <label class="ev-terms-label"><input type="checkbox" id="terms-agree" required /><span>By signing up, you agree to our <a href="terms.html" target="_blank">Terms & conditions*</a>, <a href="privacy.html" target="_blank">Privacy policy*</a> and <a href="#" class="yellow-link">Merchant agreement*</a></span></label>
             <div style="display:flex;justify-content:center;"><button type="button" class="ev-submit-btn" id="reg-submit"><span id="reg-text">Register</span><div id="reg-spinner" class="ev-btn-spinner" style="display:none;"></div></button></div>
-            <div class="ev-divider"><span>Or Register with</span></div>
-            <div class="ev-social-row">
-              <button type="button" class="ev-social-btn" id="facebook-signup" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></button>
-              <button type="button" class="ev-social-btn" id="google-signup" aria-label="Google"><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg></button>
-              <button type="button" class="ev-social-btn" id="apple-signup" aria-label="Apple"><svg viewBox="0 0 24 24" fill="#000"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg></button>
-            </div>
+            <div class="ev-divider"><span>or continue with</span></div>
+            <button type="button" class="ev-google-btn" id="google-signup">
+              <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+              Continue with Google
+            </button>
           </div>
           <!-- STEP 2: OTP Verification -->
           <div id="step-otp" class="ev-otp-section">
             <div style="text-align:center;margin-bottom:24px;">
-              <div class="ev-otp-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E91E63" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+              <div class="ev-otp-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F28C00" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
               <h2 style="color:#fff;font-size:1.1rem;margin-top:16px;">Verify your email</h2>
               <p style="font-size:0.82rem;color:#999;">We sent a 6-digit code to <strong id="otp-email-display" style="color:#fff;"></strong></p>
             </div>

@@ -1,17 +1,19 @@
 /* ═══════════════════════════════════════════════════════
-   Eveenty Auth Pages — Login / Register
-   Matches the exact Eveenty design from reference images
+   EVENT WAW — Auth Pages (Login / Register)
+   Matches the landing page design system exactly.
+   Orange brand: #F28C00 · DM Sans · Premium feel
    ═══════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body.eveenty-auth {
-  font-family: 'Poppins', sans-serif;
-  background: #fff;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  background: #faf9f6;
   min-height: 100vh;
   overflow-x: hidden;
+  color: #1a1a1f;
 }
 
 /* ── Main Split Layout ── */
@@ -24,7 +26,7 @@ body.eveenty-auth {
 /* ═══ LEFT PANEL — Branding ═══ */
 .ev-auth-left {
   flex: 0 0 480px;
-  background: #fff;
+  background: #faf9f6;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -44,7 +46,7 @@ body.eveenty-auth {
 .ev-logo-icon {
   width: 48px;
   height: 48px;
-  color: #E91E63;
+  color: #F28C00;
   flex-shrink: 0;
 }
 .ev-logo-icon svg {
@@ -52,22 +54,23 @@ body.eveenty-auth {
   height: 100%;
 }
 .ev-logo-text {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #1a1a2e;
-  letter-spacing: -0.5px;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1f;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 .ev-logo-text .ev-logo-dot {
-  color: #E91E63;
+  color: #F28C00;
 }
 .ev-logo-tagline {
-  font-size: 0.72rem;
-  color: #888;
+  font-size: 0.68rem;
+  color: #6b6b78;
   text-transform: uppercase;
-  letter-spacing: 3px;
+  letter-spacing: 2.5px;
   font-weight: 600;
-  margin-top: -4px;
+  margin-top: -2px;
   margin-bottom: 50px;
 }
 
@@ -139,10 +142,9 @@ body.eveenty-auth {
   left: 0;
   width: 280px;
   z-index: 2;
-  border-radius: 16px;
 }
 
-/* Circle decoration behind cards */
+/* Circle decoration */
 .ev-circle-deco {
   position: absolute;
   width: 220px;
@@ -153,8 +155,6 @@ body.eveenty-auth {
   right: 10px;
   z-index: 1;
 }
-
-/* W watermark inside circle */
 .ev-circle-deco::after {
   content: 'W';
   position: absolute;
@@ -162,9 +162,8 @@ body.eveenty-auth {
   right: 45px;
   font-size: 2.8rem;
   font-weight: 800;
-  font-style: normal;
   color: rgba(150,150,150,0.2);
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 /* ═══ RIGHT PANEL — Form ═══ */
@@ -176,9 +175,8 @@ body.eveenty-auth {
   justify-content: flex-start;
   padding: 40px 60px 40px;
   overflow-y: auto;
-  background: #fff;
+  background: #faf9f6;
 }
-
 .ev-auth-right-inner {
   width: 100%;
   max-width: 480px;
@@ -186,9 +184,10 @@ body.eveenty-auth {
 
 /* Page Title */
 .ev-page-title {
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.65rem;
-  font-weight: 700;
-  color: #1a1a2e;
+  font-weight: 800;
+  color: #1a1a1f;
   margin-bottom: 24px;
   text-align: center;
 }
@@ -202,18 +201,13 @@ body.eveenty-auth {
 }
 
 /* Form Groups */
-.ev-fg {
-  margin-bottom: 18px;
-}
+.ev-fg { margin-bottom: 18px; }
 .ev-fg-row {
   display: flex;
   gap: 16px;
   margin-bottom: 18px;
 }
-.ev-fg-row .ev-fg {
-  flex: 1;
-  margin-bottom: 0;
-}
+.ev-fg-row .ev-fg { flex: 1; margin-bottom: 0; }
 
 /* Labels */
 .ev-label {
@@ -223,10 +217,7 @@ body.eveenty-auth {
   color: #fff;
   margin-bottom: 7px;
 }
-.ev-label .required {
-  color: #E91E63;
-  margin-left: 2px;
-}
+.ev-label .required { color: #F28C00; margin-left: 2px; }
 
 /* Inputs */
 .ev-input {
@@ -238,17 +229,14 @@ body.eveenty-auth {
   background: #fff;
   color: #333;
   font-size: 0.88rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
-.ev-input::placeholder {
-  color: #aaa;
-  font-size: 0.84rem;
-}
+.ev-input::placeholder { color: #aaa; font-size: 0.84rem; }
 .ev-input:focus {
-  border-color: #E91E63;
-  box-shadow: 0 0 0 3px rgba(233,30,99,0.08);
+  border-color: #F28C00;
+  box-shadow: 0 0 0 3px rgba(242,140,0,0.08);
 }
 
 /* Select */
@@ -261,7 +249,7 @@ body.eveenty-auth {
   background: #fff;
   color: #aaa;
   font-size: 0.88rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   outline: none;
   cursor: pointer;
   appearance: none;
@@ -271,18 +259,11 @@ body.eveenty-auth {
   background-position: right 14px center;
   background-size: 14px;
 }
-.ev-select:focus {
-  border-color: #E91E63;
-  color: #333;
-}
+.ev-select:focus { border-color: #F28C00; color: #333; }
 .ev-select option { color: #333; }
 
 /* Salutation Radio Group */
-.ev-salutation {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-}
+.ev-salutation { display: flex; align-items: center; gap: 24px; }
 .ev-radio-label {
   display: flex;
   align-items: center;
@@ -295,19 +276,13 @@ body.eveenty-auth {
 .ev-radio {
   width: 16px;
   height: 16px;
-  accent-color: #E91E63;
+  accent-color: #F28C00;
   cursor: pointer;
 }
 
 /* Password Wrapper */
-.ev-pass-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-.ev-pass-wrap .ev-input {
-  padding-right: 44px;
-}
+.ev-pass-wrap { position: relative; display: flex; align-items: center; }
+.ev-pass-wrap .ev-input { padding-right: 44px; }
 .ev-pass-toggle {
   position: absolute;
   right: 12px;
@@ -323,38 +298,12 @@ body.eveenty-auth {
   padding: 4px;
   transition: color 0.2s;
 }
-.ev-pass-toggle:hover {
-  color: #666;
-}
+.ev-pass-toggle:hover { color: #666; }
 
 /* Phone row */
-.ev-phone-row {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 18px;
-}
-.ev-phone-row .ev-fg:first-child {
-  flex: 0 0 120px;
-}
-.ev-phone-row .ev-fg:last-child {
-  flex: 1;
-}
-.ev-country-select {
-  width: 100%;
-  height: 44px;
-  padding: 0 10px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: #fff;
-  color: #333;
-  font-size: 0.85rem;
-  font-family: 'Poppins', sans-serif;
-  outline: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+.ev-phone-row { display: flex; gap: 12px; margin-bottom: 18px; }
+.ev-phone-row .ev-fg:first-child { flex: 0 0 120px; }
+.ev-phone-row .ev-fg:last-child { flex: 1; }
 .ev-country-btn {
   width: 100%;
   height: 44px;
@@ -364,18 +313,12 @@ body.eveenty-auth {
   background: #fff;
   color: #333;
   font-size: 0.85rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 6px;
   justify-content: center;
-}
-.ev-country-flag {
-  width: 24px;
-  height: 16px;
-  object-fit: cover;
-  border-radius: 2px;
 }
 
 /* Remember me / Forgot password row */
@@ -396,19 +339,17 @@ body.eveenty-auth {
 .ev-remember input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #E91E63;
+  accent-color: #F28C00;
   cursor: pointer;
 }
 .ev-forgot-link {
   font-size: 0.82rem;
-  color: #E91E63;
+  color: #F28C00;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
-.ev-forgot-link:hover {
-  color: #ff4081;
-}
+.ev-forgot-link:hover { color: #FFA726; }
 
 /* Terms Checkbox */
 .ev-terms-label {
@@ -424,25 +365,19 @@ body.eveenty-auth {
 .ev-terms-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #E91E63;
+  accent-color: #F28C00;
   cursor: pointer;
   flex-shrink: 0;
   margin-top: 2px;
 }
 .ev-terms-label a {
-  color: #E91E63;
+  color: #F28C00;
   text-decoration: none;
   font-weight: 500;
 }
-.ev-terms-label a:hover {
-  text-decoration: underline;
-}
-.ev-terms-label a.yellow-link {
-  color: #F5D800;
-}
-.ev-terms-label a.yellow-link:hover {
-  color: #ffd600;
-}
+.ev-terms-label a:hover { text-decoration: underline; }
+.ev-terms-label a.yellow-link { color: #F5D800; }
+.ev-terms-label a.yellow-link:hover { color: #ffd600; }
 
 /* Submit Button */
 .ev-submit-btn {
@@ -453,24 +388,22 @@ body.eveenty-auth {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #E91E63;
+  background: #F28C00;
   color: #fff;
   border: none;
   border-radius: 24px;
   font-size: 0.92rem;
   font-weight: 600;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   cursor: pointer;
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 .ev-submit-btn:hover {
-  background: #d81b60;
+  background: #D97B00;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(233,30,99,0.3);
+  box-shadow: 0 4px 16px rgba(242,140,0,0.3);
 }
-.ev-submit-btn:active {
-  transform: translateY(0);
-}
+.ev-submit-btn:active { transform: translateY(0); }
 .ev-submit-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
@@ -499,50 +432,49 @@ body.eveenty-auth {
   font-weight: 500;
 }
 
-/* Social Buttons */
-.ev-social-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-}
-.ev-social-btn {
-  width: 60px;
+/* Google Button — Professional Full Width */
+.ev-google-btn {
+  width: 100%;
   height: 48px;
-  border: 1px solid #ddd;
+  border: 1px solid #e0e0e0;
   border-radius: 10px;
-  background: #f5f5f5;
+  background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 10px;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s;
+  transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #333;
 }
-.ev-social-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.ev-google-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
   border-color: #ccc;
+  background: #fafafa;
 }
-.ev-social-btn svg {
-  width: 24px;
-  height: 24px;
+.ev-google-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
+.ev-google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* Footer link */
 .ev-auth-footer {
   text-align: center;
   margin-top: 20px;
   font-size: 0.85rem;
-  color: #666;
+  color: #6b6b78;
 }
 .ev-auth-footer a {
-  color: #E91E63;
+  color: #F28C00;
   font-weight: 600;
   text-decoration: none;
 }
-.ev-auth-footer a:hover {
-  text-decoration: underline;
-}
+.ev-auth-footer a:hover { text-decoration: underline; }
 
 /* FAB */
 .ev-fab {
@@ -552,25 +484,23 @@ body.eveenty-auth {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #E91E63;
+  background: #F28C00;
   color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   border: none;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(233,30,99,0.35);
+  box-shadow: 0 4px 16px rgba(242,140,0,0.35);
   z-index: 1000;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 .ev-fab:hover {
   transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(233,30,99,0.45);
+  box-shadow: 0 6px 24px rgba(242,140,0,0.45);
+  background: #D97B00;
 }
-.ev-fab svg {
-  width: 24px;
-  height: 24px;
-}
+.ev-fab svg { width: 24px; height: 24px; }
 
 /* Auth Message */
 .ev-auth-msg {
@@ -614,229 +544,65 @@ body.eveenty-auth {
   z-index: 9999;
 }
 
-/* ═══ Password Strength (Register) ═══ */
-.ev-pass-strength {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 8px;
-}
-.ev-pass-bar {
-  flex: 1;
-  height: 4px;
-  background: #444;
-  border-radius: 2px;
-  overflow: hidden;
-}
-.ev-pass-bar-fill {
-  height: 100%;
-  width: 0%;
-  border-radius: 2px;
-  transition: all 0.3s;
-}
-.ev-pass-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  min-width: 45px;
-}
+/* ═══ Password Strength ═══ */
+.ev-pass-strength { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.ev-pass-bar { flex: 1; height: 4px; background: #444; border-radius: 2px; overflow: hidden; }
+.ev-pass-bar-fill { height: 100%; width: 0%; border-radius: 2px; transition: all 0.3s; }
+.ev-pass-label { font-size: 0.7rem; font-weight: 600; min-width: 45px; }
 
-/* ═══ OTP Section (Register Step 3) ═══ */
-.ev-otp-section {
-  display: none;
-}
+/* ═══ OTP ═══ */
+.ev-otp-section { display: none; }
 .ev-otp-icon-wrap {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto;
-  border-radius: 50%;
-  background: rgba(233,30,99,0.08);
-  border: 1px solid rgba(233,30,99,0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 64px; height: 64px; margin: 0 auto; border-radius: 50%;
+  background: rgba(242,140,0,0.08); border: 1px solid rgba(242,140,0,0.2);
+  display: flex; align-items: center; justify-content: center;
 }
-.ev-otp-inputs {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 24px;
-}
+.ev-otp-inputs { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; }
 .ev-otp-digit {
-  width: 48px;
-  height: 56px;
-  text-align: center;
-  font-size: 1.4rem;
-  font-weight: 700;
-  font-family: 'Poppins', sans-serif;
-  color: #333;
-  background: #fff;
-  border: 1.5px solid #ddd;
-  border-radius: 10px;
-  transition: all 0.2s;
-  caret-color: #E91E63;
-  outline: none;
+  width: 48px; height: 56px; text-align: center; font-size: 1.4rem; font-weight: 700;
+  font-family: 'DM Sans', sans-serif; color: #333; background: #fff;
+  border: 1.5px solid #ddd; border-radius: 10px; transition: all 0.2s;
+  caret-color: #F28C00; outline: none;
 }
-.ev-otp-digit:focus {
-  border-color: #E91E63;
-  box-shadow: 0 0 0 3px rgba(233,30,99,0.08);
-}
-.ev-otp-digit.filled {
-  border-color: rgba(233,30,99,0.4);
-  background: rgba(233,30,99,0.04);
-}
-.ev-otp-digit.error {
-  border-color: #ef4444;
-  background: rgba(239,68,68,0.04);
-  animation: evShake 0.4s ease;
-}
-.ev-otp-dash {
-  color: #999;
-  font-size: 1.2rem;
-  font-weight: 300;
-  padding: 0 2px;
-}
+.ev-otp-digit:focus { border-color: #F28C00; box-shadow: 0 0 0 3px rgba(242,140,0,0.08); }
+.ev-otp-digit.filled { border-color: rgba(242,140,0,0.4); background: rgba(242,140,0,0.04); }
+.ev-otp-digit.error { border-color: #ef4444; background: rgba(239,68,68,0.04); animation: evShake 0.4s ease; }
+.ev-otp-dash { color: #999; font-size: 1.2rem; font-weight: 300; padding: 0 2px; }
 @keyframes evShake {
   0%,100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
 .ev-link-btn {
-  background: none;
-  border: none;
-  color: #E91E63;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.2s;
-  font-size: inherit;
-  font-family: inherit;
+  background: none; border: none; color: #F28C00; font-weight: 600;
+  cursor: pointer; transition: color 0.2s; font-size: inherit; font-family: inherit;
 }
-.ev-link-btn:hover { color: #ff4081; }
+.ev-link-btn:hover { color: #FFA726; }
 .ev-link-btn:disabled { color: #888; cursor: default; }
-
-/* ═══ Progress Steps ═══ */
-.ev-reg-steps {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-bottom: 24px;
-}
-.ev-reg-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.ev-reg-step-num {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.75rem;
-  font-weight: 700;
-  background: #444;
-  border: 1.5px solid #555;
-  color: #999;
-  transition: all 0.3s;
-}
-.ev-reg-step.active .ev-reg-step-num {
-  background: #E91E63;
-  border-color: #E91E63;
-  color: #fff;
-}
-.ev-reg-step.done .ev-reg-step-num {
-  background: rgba(34,197,94,0.15);
-  border-color: #22c55e;
-  color: #22c55e;
-}
-.ev-reg-step-label {
-  font-size: 0.75rem;
-  color: #888;
-  font-weight: 500;
-  transition: color 0.3s;
-}
-.ev-reg-step.active .ev-reg-step-label {
-  color: #fff;
-}
-.ev-reg-step-line {
-  width: 40px;
-  height: 1.5px;
-  background: #555;
-  margin: 0 8px;
-  transition: background 0.3s;
-}
-.ev-reg-step-line.done {
-  background: #22c55e;
-}
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 1024px) {
-  .ev-auth-left {
-    flex: 0 0 380px;
-    padding: 30px 30px 30px 40px;
-  }
-  .ev-cards-area {
-    width: 320px;
-    height: 310px;
-    transform: scale(0.9);
-  }
-  .ev-auth-right {
-    padding: 30px 40px;
-  }
+  .ev-auth-left { flex: 0 0 380px; padding: 30px 30px 30px 40px; }
+  .ev-cards-area { width: 320px; height: 310px; transform: scale(0.9); }
+  .ev-auth-right { padding: 30px 40px; }
 }
 
 @media (max-width: 860px) {
-  .ev-auth-container {
-    flex-direction: column;
-  }
-  .ev-auth-left {
-    flex: none;
-    padding: 30px 20px;
-    align-items: center;
-  }
-  .ev-cards-area {
-    display: none;
-  }
-  .ev-logo-tagline {
-    margin-bottom: 20px;
-  }
-  .ev-auth-right {
-    padding: 20px 24px 40px;
-  }
+  .ev-auth-container { flex-direction: column; }
+  .ev-auth-left { flex: none; padding: 30px 20px; align-items: center; }
+  .ev-cards-area { display: none; }
+  .ev-logo-tagline { margin-bottom: 20px; }
+  .ev-auth-right { padding: 20px 24px 40px; }
 }
 
 @media (max-width: 480px) {
-  .ev-auth-right {
-    padding: 16px 16px 40px;
-  }
-  .ev-form-box {
-    padding: 24px 20px 22px;
-  }
-  .ev-fg-row {
-    flex-direction: column;
-    gap: 0;
-  }
-  .ev-fg-row .ev-fg {
-    margin-bottom: 18px;
-  }
-  .ev-phone-row {
-    flex-direction: column;
-    gap: 0;
-  }
-  .ev-phone-row .ev-fg {
-    margin-bottom: 18px;
-  }
-  .ev-phone-row .ev-fg:first-child {
-    flex: none;
-  }
-  .ev-submit-btn {
-    width: 100%;
-  }
-  .ev-otp-digit {
-    width: 40px;
-    height: 48px;
-    font-size: 1.2rem;
-  }
+  .ev-auth-right { padding: 16px 16px 40px; }
+  .ev-form-box { padding: 24px 20px 22px; }
+  .ev-fg-row { flex-direction: column; gap: 0; }
+  .ev-fg-row .ev-fg { margin-bottom: 18px; }
+  .ev-phone-row { flex-direction: column; gap: 0; }
+  .ev-phone-row .ev-fg { margin-bottom: 18px; }
+  .ev-phone-row .ev-fg:first-child { flex: none; }
+  .ev-submit-btn { width: 100%; }
+  .ev-otp-digit { width: 40px; height: 48px; font-size: 1.2rem; }
 }
