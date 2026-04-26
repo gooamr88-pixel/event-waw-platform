@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register — Eveenty</title>
-  <meta name="description" content="Create your Eveenty account — Events Made Easy." />
+  <title>Register — Event Waw</title>
+  <meta name="description" content="Create your Event Waw account — Discover & Create Events Effortlessly." />
   <link rel="stylesheet" href="css/eveenty-auth.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
 </head>
@@ -14,9 +14,10 @@
     <!-- LEFT PANEL -->
     <div class="ev-auth-left">
       <a href="index.html" class="ev-logo">
-        <span class="ev-logo-text">Ev</span><span class="ev-logo-ee">ee</span><span class="ev-logo-text">nty</span>
+        <div class="ev-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
+        <span class="ev-logo-text">Event Waw<span class="ev-logo-dot">.</span></span>
       </a>
-      <div class="ev-logo-tagline">EVENTS MADE EASY</div>
+      <div class="ev-logo-tagline">DISCOVER & CREATE EVENTS EFFORTLESSLY</div>
       <div class="ev-cards-area">
         <div class="ev-card ev-card--hosts"><h3>Event Hosts</h3><ul><li>Easily create and edit events</li><li>Customize features</li><li>Manage everything from one platform</li></ul></div>
         <div class="ev-card ev-card--exhibitors"><h3>Exhibitors and Vendors</h3><ul><li>Register easily</li><li>Increase sales</li><li>Connect seamlessly with attendees</li></ul></div>
@@ -194,7 +195,7 @@
           if (error) throw new Error(error.message);
           if (!data[0].is_verified) throw new Error(data[0].error_message);
           await markOTPVerified();
-          showMsg('success','✓ Email verified! Welcome to Eveenty!');
+          showMsg('success','✓ Email verified! Welcome to Event Waw!');
           setTimeout(() => { window.location.href = '/events.html'; }, 1000);
         } catch (err) {
           showMsg('error', err.message || 'Invalid code.');
