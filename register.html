@@ -73,7 +73,7 @@
             <div style="display:flex;justify-content:center;"><button type="button" class="ev-submit-btn" id="reg-submit"><span id="reg-text">Register</span><div id="reg-spinner" class="ev-btn-spinner" style="display:none;"></div></button></div>
             <div class="ev-divider"><span>or continue with</span></div>
             <button type="button" class="ev-google-btn" id="google-signup">
-              <svg viewBox="0 0 48 48" width="22" height="22"><path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z"/><path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 16.318 4 9.656 8.337 6.306 14.691z"/><path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0124 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44z"/><path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 01-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
               Continue with Google
             </button>
           </div>
@@ -106,7 +106,62 @@
       </div>
     </div>
   </div>
-  <button class="ev-fab" aria-label="Help"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+  <!-- ═══ CHAT WIDGET ═══ -->
+  <div id="ev-chatbox" class="ev-chatbox">
+    <div class="ev-chatbox-header">
+      <div class="ev-chatbox-header-left">
+        <div class="ev-chatbox-avatar"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
+        <div><div class="ev-chatbox-title">Event Waw</div><div class="ev-chatbox-status"><span class="ev-status-dot"></span> Online — Instant Replies</div></div>
+      </div>
+      <button class="ev-chatbox-close" id="ev-chatbox-close" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div class="ev-chatbox-messages" id="ev-chatbox-messages"></div>
+    <div class="ev-chatbox-footer">
+      <div class="ev-chatbox-input-wrap">
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+      </div>
+    </div>
+  </div>
+  <button class="ev-chat-fab" id="ev-chat-fab" aria-label="Chat with us">
+    <svg class="ev-fab-icon-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <svg class="ev-fab-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <span class="ev-fab-badge" id="ev-fab-badge">1</span>
+  </button>
+
+  <script>
+  (function() {
+    const FAQ = [
+      { q: "🎫 How do I buy tickets?", a: "Browse our <a href='events.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
+      { q: "📍 How do I find events near me?", a: "On the Events page, click <b>\"Use My Location\"</b> and we'll auto-sort events by distance. You can also filter by city, category, and date." },
+      { q: "💰 Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy." },
+      { q: "🎪 How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>. You can set pricing, venue, seating charts, and manage tickets all in one place." },
+      { q: "📱 How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly. One scan = one entry." },
+      { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventwaw.com</b> or use the contact form. We typically respond within 24 hours." },
+      { q: "🔒 Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers. Everything is encrypted with bank-level security." },
+      { q: "👥 What roles does the platform support?", a: "Event Waw supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools." }
+    ];
+    const chatbox = document.getElementById('ev-chatbox');
+    const fab = document.getElementById('ev-chat-fab');
+    const closeBtn = document.getElementById('ev-chatbox-close');
+    const msgArea = document.getElementById('ev-chatbox-messages');
+    const input = document.getElementById('ev-chatbox-input');
+    const sendBtn = document.getElementById('ev-chatbox-send');
+    const badge = document.getElementById('ev-fab-badge');
+    let isOpen = false;
+    function addMessage(html, type) { const w=document.createElement('div');w.className='ev-msg ev-msg-'+type;const b=document.createElement('div');b.className='ev-msg-bubble';b.innerHTML=html;w.appendChild(b);msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
+    function addQuickReplies() { const w=document.createElement('div');w.className='ev-quick-replies';FAQ.forEach(function(item){const btn=document.createElement('button');btn.className='ev-quick-btn';btn.textContent=item.q;btn.addEventListener('click',function(){addMessage(item.q,'user');w.remove();setTimeout(function(){addMessage(item.a,'bot');setTimeout(addQuickReplies,400);},500);});w.appendChild(btn);});msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
+    function handleUserInput() { const t=input.value.trim();if(!t)return;addMessage(t,'user');input.value='';const lower=t.toLowerCase();let matched=FAQ.find(function(f){const kw=f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w){return w.length>3;});return kw.some(function(k){return lower.includes(k);});});setTimeout(function(){if(matched){addMessage(matched.a,'bot');}else{addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.","bot");}setTimeout(addQuickReplies,400);},600); }
+    function toggleChat() { isOpen=!isOpen;chatbox.classList.toggle('open',isOpen);fab.classList.toggle('active',isOpen);if(badge)badge.style.display='none';if(isOpen)input.focus(); }
+    addMessage("👋 Hey there! Welcome to <b>Event Waw</b>. How can I help you today?","bot");
+    setTimeout(addQuickReplies,300);
+    fab.addEventListener('click',toggleChat);
+    closeBtn.addEventListener('click',toggleChat);
+    sendBtn.addEventListener('click',handleUserInput);
+    input.addEventListener('keydown',function(e){if(e.key==='Enter')handleUserInput();});
+  })();
+  </script>
+  <link rel="stylesheet" href="css/landing-eveenty.css" />
 
   <script type="module">
     import { signUp } from './src/lib/auth.js';

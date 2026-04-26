@@ -31,7 +31,7 @@ body.eveenty-auth {
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 60px 40px 40px 50px;
+  padding: 48px 40px 40px 50px;
   position: relative;
 }
 
@@ -113,18 +113,18 @@ body.eveenty-auth {
   flex-shrink: 0;
 }
 
-/* Organizers Card */
+/* Organizers Card — Deep Burnt Orange */
 .ev-card--hosts {
-  background: #D97B00;
+  background: linear-gradient(135deg, #BF6B00, #9A5500);
   top: 0;
   left: 0;
   width: 200px;
   z-index: 2;
 }
 
-/* Attendees Card */
+/* Attendees Card — Bright Golden */
 .ev-card--exhibitors {
-  background: #FFA726;
+  background: linear-gradient(135deg, #FFB74D, #FFA726);
   color: #1a1a2e;
   top: 100px;
   left: 140px;
@@ -132,12 +132,12 @@ body.eveenty-auth {
   z-index: 3;
 }
 .ev-card--exhibitors h3 { color: #1a1a2e; }
-.ev-card--exhibitors ul li { color: #333; }
+.ev-card--exhibitors ul li { color: #3a2800; }
 .ev-card--exhibitors ul li::before { color: #1a1a2e; }
 
-/* Partners Card */
+/* Partners Card — Rich Amber */
 .ev-card--sponsors {
-  background: #E8870A;
+  background: linear-gradient(135deg, #F28C00, #D97B00);
   top: 190px;
   left: 0;
   width: 280px;
@@ -376,8 +376,8 @@ body.eveenty-auth {
   font-weight: 500;
 }
 .ev-terms-label a:hover { text-decoration: underline; }
-.ev-terms-label a.yellow-link { color: #F5D800; }
-.ev-terms-label a.yellow-link:hover { color: #ffd600; }
+.ev-terms-label a.yellow-link { color: #FFA726; }
+.ev-terms-label a.yellow-link:hover { color: #FFB74D; }
 
 /* Submit Button */
 .ev-submit-btn {
@@ -435,32 +435,37 @@ body.eveenty-auth {
 /* Google Button — Professional Full Width */
 .ev-google-btn {
   width: 100%;
-  height: 48px;
-  border: 1px solid #e0e0e0;
+  height: 50px;
+  border: 1.5px solid #dadce0;
   border-radius: 10px;
   background: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.2s, border-color 0.2s, background 0.2s;
+  transition: transform 0.15s, box-shadow 0.25s, border-color 0.2s, background 0.2s;
   font-family: 'DM Sans', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
-  color: #333;
+  color: #3c4043;
+  letter-spacing: 0.01em;
 }
 .ev-google-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-  border-color: #ccc;
-  background: #fafafa;
+  background: #f7f8f8;
+  border-color: #c6c6c6;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 .ev-google-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  background: #eef0f1;
+  transform: scale(0.99);
 }
-.ev-google-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.ev-google-btn svg,
+.ev-google-btn img {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
 
 /* Footer link */
 .ev-auth-footer {
@@ -476,31 +481,7 @@ body.eveenty-auth {
 }
 .ev-auth-footer a:hover { text-decoration: underline; }
 
-/* FAB */
-.ev-fab {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #F28C00;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(242,140,0,0.35);
-  z-index: 1000;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.ev-fab:hover {
-  transform: scale(1.08);
-  box-shadow: 0 6px 24px rgba(242,140,0,0.45);
-  background: #D97B00;
-}
-.ev-fab svg { width: 24px; height: 24px; }
+/* FAB is now the chat widget from landing-eveenty.css */
 
 /* Auth Message */
 .ev-auth-msg {
