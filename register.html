@@ -7,7 +7,7 @@
   <meta name="description" content="Create your Event Waw account — Discover & Create Events Effortlessly." />
   <link rel="stylesheet" href="css/landing-eveenty.css" />
   <link rel="stylesheet" href="css/eveenty-auth.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/css/flag-icons.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
 </head>
 <body class="eveenty-auth">
@@ -58,25 +58,9 @@
                 <option value="sponsor">Sponsor</option>
               </select>
             </div>
-            <div class="ev-phone-row">
-              <div class="ev-fg"><label class="ev-label">Country</label>
-                <div class="ev-cc-picker" id="cc-picker">
-                  <button type="button" class="ev-cc-btn" id="cc-btn">
-                    <span class="fi fi-eg" id="cc-flag"></span>
-                    <span id="cc-code">+20</span>
-                    <svg class="cc-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-                  </button>
-                  <div class="ev-cc-dropdown" id="cc-dropdown">
-                    <div class="ev-cc-search-wrap">
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-                      <input type="text" class="ev-cc-search" id="cc-search" placeholder="Search country..." autocomplete="off" />
-                    </div>
-                    <div class="ev-cc-list" id="cc-list"></div>
-                  </div>
-                  <input type="hidden" id="country-code" value="+20" />
-                </div>
-              </div>
-              <div class="ev-fg"><label class="ev-label">Phone</label><input type="tel" class="ev-input" id="reg-phone" placeholder="(123)-456-7891" autocomplete="tel" /></div>
+            <div class="ev-fg">
+              <label class="ev-label">Phone</label>
+              <input type="tel" class="ev-input" id="reg-phone" placeholder="" autocomplete="tel" />
             </div>
             <div class="ev-fg">
               <label class="ev-label" for="reg-pass">Password <span class="required">*</span></label>
@@ -181,64 +165,17 @@
   </script>
   <link rel="stylesheet" href="css/landing-eveenty.css" />
 
-  <!-- Country Code Picker -->
+  <!-- intl-tel-input -->
+  <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>
   <script>
-  (function(){
-    var C = [
-      {n:"Egypt",i:"eg",c:"+20"},{n:"United States",i:"us",c:"+1"},{n:"United Kingdom",i:"gb",c:"+44"},
-      {n:"Germany",i:"de",c:"+49"},{n:"France",i:"fr",c:"+33"},{n:"Saudi Arabia",i:"sa",c:"+966"},
-      {n:"UAE",i:"ae",c:"+971"},{n:"India",i:"in",c:"+91"},{n:"China",i:"cn",c:"+86"},
-      {n:"Japan",i:"jp",c:"+81"},{n:"South Korea",i:"kr",c:"+82"},{n:"Brazil",i:"br",c:"+55"},
-      {n:"Italy",i:"it",c:"+39"},{n:"Spain",i:"es",c:"+34"},{n:"Australia",i:"au",c:"+61"},
-      {n:"Turkey",i:"tr",c:"+90"},{n:"Russia",i:"ru",c:"+7"},{n:"Netherlands",i:"nl",c:"+31"},
-      {n:"Sweden",i:"se",c:"+46"},{n:"Norway",i:"no",c:"+47"},{n:"Poland",i:"pl",c:"+48"},
-      {n:"Portugal",i:"pt",c:"+351"},{n:"Malaysia",i:"my",c:"+60"},{n:"Indonesia",i:"id",c:"+62"},
-      {n:"Philippines",i:"ph",c:"+63"},{n:"Nigeria",i:"ng",c:"+234"},{n:"South Africa",i:"za",c:"+27"},
-      {n:"Kenya",i:"ke",c:"+254"},{n:"Morocco",i:"ma",c:"+212"},{n:"Tunisia",i:"tn",c:"+216"},
-      {n:"Algeria",i:"dz",c:"+213"},{n:"Libya",i:"ly",c:"+218"},{n:"Lebanon",i:"lb",c:"+961"},
-      {n:"Jordan",i:"jo",c:"+962"},{n:"Iraq",i:"iq",c:"+964"},{n:"Kuwait",i:"kw",c:"+965"},
-      {n:"Oman",i:"om",c:"+968"},{n:"Bahrain",i:"bh",c:"+973"},{n:"Qatar",i:"qa",c:"+974"},
-      {n:"Canada",i:"ca",c:"+1"},{n:"Mexico",i:"mx",c:"+52"},{n:"Argentina",i:"ar",c:"+54"},
-      {n:"Switzerland",i:"ch",c:"+41"},{n:"Belgium",i:"be",c:"+32"},{n:"Austria",i:"at",c:"+43"},
-      {n:"Ireland",i:"ie",c:"+353"},{n:"Greece",i:"gr",c:"+30"},{n:"Pakistan",i:"pk",c:"+92"},
-      {n:"Bangladesh",i:"bd",c:"+880"},{n:"Thailand",i:"th",c:"+66"},{n:"Vietnam",i:"vn",c:"+84"},
-      {n:"Singapore",i:"sg",c:"+65"},{n:"New Zealand",i:"nz",c:"+64"},{n:"Sudan",i:"sd",c:"+249"},
-      {n:"Palestine",i:"ps",c:"+970"},{n:"Syria",i:"sy",c:"+963"},{n:"Yemen",i:"ye",c:"+967"}
-    ];
-    var btn=document.getElementById('cc-btn'),dd=document.getElementById('cc-dropdown'),
-        list=document.getElementById('cc-list'),search=document.getElementById('cc-search'),
-        flagEl=document.getElementById('cc-flag'),codeEl=document.getElementById('cc-code'),
-        hidden=document.getElementById('country-code'),sel='eg';
-
-    function render(q){
-      list.innerHTML='';q=(q||'').toLowerCase();
-      C.forEach(function(c){
-        if(q && c.n.toLowerCase().indexOf(q)===-1 && c.c.indexOf(q)===-1) return;
-        var d=document.createElement('div');
-        d.className='ev-cc-item'+(c.i===sel?' active':'');
-        d.innerHTML='<span class="fi fi-'+c.i+'"></span><span class="cc-name">'+c.n+'</span><span class="cc-dial">'+c.c+'</span>';
-        d.onclick=function(){
-          sel=c.i;
-          flagEl.className='fi fi-'+c.i;
-          codeEl.textContent=c.c;
-          hidden.value=c.c;
-          dd.classList.remove('open');
-          search.value='';
-        };
-        list.appendChild(d);
-      });
-    }
-    render();
-    btn.onclick=function(e){
-      e.preventDefault();
-      var open=dd.classList.toggle('open');
-      if(open){search.value='';render();setTimeout(function(){search.focus();},50);}
-    };
-    search.oninput=function(){render(search.value);};
-    document.addEventListener('click',function(e){
-      if(!e.target.closest('#cc-picker'))dd.classList.remove('open');
+    var iti = window.intlTelInput(document.getElementById('reg-phone'), {
+      initialCountry: 'eg',
+      preferredCountries: ['eg','sa','ae','us','gb'],
+      separateDialCode: true,
+      countrySearch: true,
+      useFullscreenPopup: false,
+      loadUtilsOnInit: "https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/utils.js"
     });
-  })();
   </script>
 
   <script type="module">
@@ -258,7 +195,7 @@
         const firstName = document.getElementById('reg-first').value.trim();
         const lastName = document.getElementById('reg-last').value.trim();
         const email = document.getElementById('reg-email').value.trim();
-        const phone = document.getElementById('reg-phone').value.trim();
+        const phone = (typeof iti !== 'undefined' && iti.getNumber) ? iti.getNumber() : document.getElementById('reg-phone').value.trim();
         const password = document.getElementById('reg-pass').value;
         const confirm = document.getElementById('reg-conf').value;
         const agreed = document.getElementById('terms-agree').checked;
