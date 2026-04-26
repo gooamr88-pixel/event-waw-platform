@@ -29,9 +29,9 @@ body.eveenty-auth {
   background: #faf9f6;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
-  padding: 40px 40px 40px 50px;
+  padding: 60px 40px 40px 50px;
   position: relative;
 }
 
@@ -71,7 +71,7 @@ body.eveenty-auth {
   letter-spacing: 2.5px;
   font-weight: 600;
   margin-top: -2px;
-  margin-bottom: 50px;
+  margin-bottom: 36px;
 }
 
 /* Cards Container */
@@ -113,18 +113,18 @@ body.eveenty-auth {
   flex-shrink: 0;
 }
 
-/* Event Hosts Card */
+/* Organizers Card */
 .ev-card--hosts {
-  background: #8B1A40;
+  background: #D97B00;
   top: 0;
   left: 0;
   width: 200px;
   z-index: 2;
 }
 
-/* Exhibitors Card */
+/* Attendees Card */
 .ev-card--exhibitors {
-  background: #F5D800;
+  background: #FFA726;
   color: #1a1a2e;
   top: 100px;
   left: 140px;
@@ -135,9 +135,9 @@ body.eveenty-auth {
 .ev-card--exhibitors ul li { color: #333; }
 .ev-card--exhibitors ul li::before { color: #1a1a2e; }
 
-/* Sponsors Card */
+/* Partners Card */
 .ev-card--sponsors {
-  background: #6B2D5B;
+  background: #E8870A;
   top: 190px;
   left: 0;
   width: 280px;
