@@ -134,7 +134,7 @@
   <script>
   (function() {
     const FAQ = [
-      { q: "🎫 How do I buy tickets?", a: "Browse our <a href='events.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
+      { q: "🎫 How do I buy tickets?", a: "Browse our <a href='dashboard.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
       { q: "📍 How do I find events near me?", a: "On the Events page, click <b>\"Use My Location\"</b> and we'll auto-sort events by distance. You can also filter by city, category, and date." },
       { q: "💰 Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy." },
       { q: "🎪 How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>. You can set pricing, venue, seating charts, and manage tickets all in one place." },
@@ -187,7 +187,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
       initToggles(); initOTPInputs(); initPasswordStrength();
-      const isGuest = await guestOnlyPage({ redirectTo: '/events.html' });
+      const isGuest = await guestOnlyPage({ redirectTo: '/dashboard.html' });
       if (!isGuest) return;
 
       // Register
@@ -241,7 +241,7 @@
           } catch (otpErr) {
             await markOTPVerified();
             showMsg('success','✓ Account created! Redirecting…');
-            setTimeout(() => { window.location.href = '/events.html'; }, 1000);
+            setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
           }
         } catch (err) {
           let errMsg = err.message || 'Registration failed.';
@@ -265,7 +265,7 @@
           if (!data[0].is_verified) throw new Error(data[0].error_message);
           await markOTPVerified();
           showMsg('success','✓ Email verified! Welcome to Event Waw!');
-          setTimeout(() => { window.location.href = '/events.html'; }, 1000);
+          setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
         } catch (err) {
           showMsg('error', err.message || 'Invalid code.');
           document.querySelectorAll('.ev-otp-digit').forEach(d => { d.classList.add('error'); d.value = ''; setTimeout(() => d.classList.remove('error'), 500); });
@@ -302,7 +302,7 @@
         const { data: ep } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
         if (!ep) { await supabase.from('profiles').insert({ id: user.id, email: user.email, full_name: meta.full_name || meta.name || '', avatar_url: meta.avatar_url || null, role: 'attendee' }); }
         const { markOTPVerified } = await import('./src/lib/guard.js');
-        await markOTPVerified(); window.location.href = '/events.html';
+        await markOTPVerified(); window.location.href = '/dashboard.html';
       }
     })();
 

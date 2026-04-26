@@ -146,7 +146,7 @@
   <script>
   (function() {
     const FAQ = [
-      { q: "🎫 How do I buy tickets?", a: "Browse our <a href='events.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
+      { q: "🎫 How do I buy tickets?", a: "Browse our <a href='dashboard.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
       { q: "📍 How do I find events near me?", a: "On the Events page, click <b>\"Use My Location\"</b> and we'll auto-sort events by distance." },
       { q: "💰 Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy." },
       { q: "🎪 How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>." },
@@ -182,7 +182,7 @@
         return;
       }
 
-      const isGuest = await guestOnlyPage({ redirectTo: '/events.html' });
+      const isGuest = await guestOnlyPage({ redirectTo: '/dashboard.html' });
       if (!isGuest) return;
 
       const redirect = new URLSearchParams(window.location.search).get('redirect');
@@ -209,7 +209,7 @@
           msg.style.display = 'block';
 
           setTimeout(() => {
-            window.location.href = redirect || '/events.html';
+            window.location.href = redirect || '/dashboard.html';
           }, 600);
 
         } catch (err) {
@@ -249,7 +249,7 @@
       await ensureProfile(session.user);
       await markOTPVerified();
       const redirect = new URLSearchParams(window.location.search).get('redirect');
-      setTimeout(() => { window.location.href = redirect || '/events.html'; }, 600);
+      setTimeout(() => { window.location.href = redirect || '/dashboard.html'; }, 600);
     }
 
     // ══════ Ensure profile exists for OAuth users ══════

@@ -80,7 +80,7 @@
         </p>
         <div class="ev-hero-buttons">
           <a href="register.html" class="ev-btn-create" id="hero-create">Create Your Event</a>
-          <a href="events.html" class="ev-btn-explore" id="hero-cta">Explore Events</a>
+          <a href="dashboard.html" class="ev-btn-explore" id="hero-cta">Explore Events</a>
         </div>
       </div>
       <div class="ev-hero-image">
@@ -292,7 +292,7 @@
         <div>
           <h4>Platform</h4>
           <ul class="footer-links">
-            <li><a href="events.html">Events</a></li>
+            <li><a href="dashboard.html">Events</a></li>
             <li><a href="how-it-works.html">How It Works</a></li>
             <li><a href="contact.html">Contact</a></li>
           </ul>
@@ -364,7 +364,7 @@
   <script>
   (function() {
     const FAQ = [
-      { q: "How do I buy tickets?", a: "Browse our <a href='events.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
+      { q: "How do I buy tickets?", a: "Browse our <a href='dashboard.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
       { q: "How do I find events near me?", a: "On the Events page, click <b>\"Use My Location\"</b> and we'll auto-sort events by distance. You can also filter by city, category, and date." },
       { q: "Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy." },
       { q: "How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>. You can set pricing, venue, seating charts, and manage tickets." },
@@ -490,7 +490,7 @@
         const mm = document.getElementById('mobile-menu');
         if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
         const heroCta = document.getElementById('hero-cta');
-        if (heroCta) heroCta.href = 'events.html';
+        if (heroCta) heroCta.href = 'dashboard.html';
       }
 
       const [eventsResult, geoResult] = await Promise.allSettled([loadLandingEvents(), detectAndUpdateGeo()]);
@@ -674,14 +674,14 @@
           if (type !== 'all') params.set('category', type);
           if (location !== 'all') params.set('city', location);
           if (date !== 'all') params.set('date', date);
-          window.location.href = `events.html${params.toString() ? '?' + params.toString() : ''}`;
+          window.location.href = `dashboard.html${params.toString() ? '?' + params.toString() : ''}`;
         });
       }
       // Favorite search
       const favInput = document.getElementById('ev-fav-search-input');
       const favBtn = document.getElementById('ev-fav-search-btn');
       if (favInput && favBtn) {
-        favBtn.addEventListener('click', () => { const q = favInput.value.trim(); if (q) window.location.href = `events.html?search=${encodeURIComponent(q)}`; });
+        favBtn.addEventListener('click', () => { const q = favInput.value.trim(); if (q) window.location.href = `dashboard.html?search=${encodeURIComponent(q)}`; });
         favInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') favBtn.click(); });
       }
     }
