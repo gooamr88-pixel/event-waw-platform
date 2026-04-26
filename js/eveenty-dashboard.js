@@ -56,20 +56,25 @@ function setupSignOut() {
 /* ══════════════════════════════════
    SIDEBAR NAVIGATION
    ══════════════════════════════════ */
-function setupSidebar() {
+function switchToPanel(panelName) {
   const items = document.querySelectorAll('.ev-nav-item');
   const panels = document.querySelectorAll('.ev-panel');
+  items.forEach(i => i.classList.remove('active'));
+  panels.forEach(p => p.classList.remove('active'));
+  const navItem = document.querySelector(`[data-panel="${panelName}"]`);
+  if (navItem) navItem.classList.add('active');
+  const panel = document.getElementById('panel-' + panelName);
+  if (panel) panel.classList.add('active');
+}
+
+function setupSidebar() {
   const sidebar = document.getElementById('sidebar');
   const toggle = document.getElementById('sidebar-toggle');
   const overlay = document.getElementById('sidebar-overlay');
 
-  items.forEach(item => {
+  document.querySelectorAll('.ev-nav-item').forEach(item => {
     item.addEventListener('click', () => {
-      items.forEach(i => i.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      item.classList.add('active');
-      const panel = document.getElementById('panel-' + item.dataset.panel);
-      if (panel) panel.classList.add('active');
+      switchToPanel(item.dataset.panel);
       sidebar.classList.remove('open');
       overlay.classList.remove('active');
     });
@@ -84,14 +89,13 @@ function setupSidebar() {
     overlay.classList.remove('active');
   });
 
-  // Revenue button switches to analytics
-  document.getElementById('payout-btn')?.addEventListener('click', () => {
-    items.forEach(i => i.classList.remove('active'));
-    panels.forEach(p => p.classList.remove('active'));
-    const anaItem = document.querySelector('[data-panel="analytics"]');
-    if (anaItem) anaItem.classList.add('active');
-    document.getElementById('panel-analytics')?.classList.add('active');
+  // Header quick-nav buttons (Events / Tickets)
+  document.querySelectorAll('[data-goto]').forEach(btn => {
+    btn.addEventListener('click', () => switchToPanel(btn.dataset.goto));
   });
+
+  // Revenue button switches to analytics
+  document.getElementById('payout-btn')?.addEventListener('click', () => switchToPanel('analytics'));
 }
 
 /* ══════════════════════════════════
