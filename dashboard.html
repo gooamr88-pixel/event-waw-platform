@@ -4,12 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Event Waw</title>
-  <meta name="description" content="Manage your events, tickets, analytics, and finances." />
+  <meta name="description" content="Manage your events, tickets, analytics, and finances — Eveenty Organizer Dashboard." />
   <link rel="stylesheet" href="css/eveenty-dashboard.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
 <body class="ev-dash">
+
+  <!-- Toast Container -->
+  <div class="ev-toast-container" id="toast-container"></div>
 
   <!-- Mobile Toggle -->
   <button class="ev-mobile-toggle" id="sidebar-toggle">
@@ -21,7 +24,7 @@
   <aside class="ev-sidebar" id="sidebar">
     <div class="ev-sidebar-brand">
       <h1>Ev<span>ee</span>nty</h1>
-      <p>Events Made Easy</p>
+      <p>Organizer Hub</p>
     </div>
     <nav class="ev-sidebar-nav">
       <button class="ev-nav-item active" data-panel="events">
@@ -29,13 +32,13 @@
         Events
       </button>
       <button class="ev-nav-item" data-panel="tickets">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3v0a3 3 0 01-3-3V6"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
         Tickets
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="ev-nav-item" data-panel="approval">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-        Approval Request
+        Approval
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="ev-nav-item" data-panel="analytics">
@@ -52,6 +55,16 @@
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
     </nav>
+    <div class="ev-sidebar-footer">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Back to Home
+      </a>
+      <button id="signout-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
   </aside>
 
   <!-- ══════ TOP HEADER ══════ -->
@@ -70,10 +83,7 @@
       </a>
     </div>
     <div class="ev-header-right">
-      <select class="ev-lang-select">
-        <option>EN-US</option>
-        <option>AR</option>
-      </select>
+      <select class="ev-lang-select"><option>EN-US</option><option>AR</option></select>
       <div class="ev-user-info" id="user-info">
         <div class="ev-user-avatar" id="user-avatar">U</div>
         <div class="ev-user-meta">
@@ -89,28 +99,42 @@
 
     <!-- ════ PANEL: EVENTS ════ -->
     <div class="ev-panel active" id="panel-events">
+      <!-- Welcome Banner -->
+      <div class="ev-welcome">
+        <div>
+          <h2>Welcome back, <span id="welcome-name">Organizer</span> 👋</h2>
+          <p>Here's what's happening with your events today.</p>
+        </div>
+        <div class="ev-welcome-actions">
+          <a href="scanner.html" class="ev-btn ev-btn-outline" style="color:#fff;border-color:rgba(255,255,255,.25)">📱 Scanner</a>
+          <button class="ev-btn ev-btn-primary" id="welcome-create-btn">+ Create Event</button>
+        </div>
+      </div>
+
+      <!-- Stat Cards -->
       <div class="ev-stat-grid" id="events-stat-grid">
         <div class="ev-stat-card"><div class="ev-stat-icon orange">📋</div><div><div class="ev-stat-value" id="stat-total">0</div><div class="ev-stat-label">Total Events</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon blue">📋</div><div><div class="ev-stat-value" id="stat-live">0</div><div class="ev-stat-label">Live Events</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon pink">📋</div><div><div class="ev-stat-value" id="stat-review">0</div><div class="ev-stat-label">In Review</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon gold">💰</div><div><div class="ev-stat-value" id="stat-past">0</div><div class="ev-stat-label">Past Events</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon blue">🟢</div><div><div class="ev-stat-value" id="stat-live">0</div><div class="ev-stat-label">Live Events</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon pink">⏳</div><div><div class="ev-stat-value" id="stat-review">0</div><div class="ev-stat-label">In Review</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon gold">📅</div><div><div class="ev-stat-value" id="stat-past">0</div><div class="ev-stat-label">Past Events</div></div></div>
         <div class="ev-stat-card"><div class="ev-stat-icon green">📝</div><div><div class="ev-stat-value" id="stat-draft">0</div><div class="ev-stat-label">In Draft</div></div></div>
       </div>
 
+      <!-- Events Table -->
       <div class="ev-card">
         <div class="ev-card-header">
           <div class="ev-search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="ev-search" placeholder="Search By Name..." />
+            <input type="text" id="ev-search" placeholder="Search events by name..." />
           </div>
-          <button class="ev-payout-btn" id="payout-btn">📋 Payout</button>
+          <button class="ev-payout-btn" id="payout-btn">💰 Revenue</button>
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table" id="events-table">
             <thead>
               <tr>
-                <th>#</th><th>Events</th><th>Services</th><th>Created At</th>
-                <th>From - To ↑</th><th>Total Revenue</th><th>Status</th><th>Actions</th>
+                <th>#</th><th>Event</th><th>Tickets</th><th>Created</th>
+                <th>Date</th><th>Revenue</th><th>Status</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="events-tbody">
@@ -124,7 +148,7 @@
 
     <!-- ════ PANEL: TICKETS ════ -->
     <div class="ev-panel" id="panel-tickets">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">Ticket Management</h2>
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">🎫 Ticket Management</h2>
       <div class="ev-card">
         <div class="ev-card-header">
           <div class="ev-event-selector">
@@ -146,16 +170,13 @@
       </div>
     </div>
 
-    <!-- ════ PANEL: APPROVAL REQUEST ════ -->
+    <!-- ════ PANEL: APPROVAL ════ -->
     <div class="ev-panel" id="panel-approval">
-      <div class="ev-breadcrumb">
-        <strong>Requests</strong> <span>›</span> <span>Vendors requests</span>
-      </div>
+      <div class="ev-breadcrumb"><strong>Requests</strong> <span>›</span> <span>Vendor requests</span></div>
       <div class="ev-tabs">
-        <button class="ev-tab active" data-approval-tab="pending">Pending Requests</button>
+        <button class="ev-tab active" data-approval-tab="pending">Pending</button>
         <button class="ev-tab" data-approval-tab="accepted">Accepted</button>
         <button class="ev-tab" data-approval-tab="rejected">Rejected</button>
-        <button class="ev-tab" data-approval-tab="auto-rejected">Auto Rejected</button>
       </div>
       <div class="ev-card">
         <div class="ev-card-header">
@@ -165,50 +186,35 @@
           </div>
           <div class="ev-export-group">
             <button class="ev-btn-icon" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-            <button class="ev-btn-icon" title="Export PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
           </div>
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Vendor Name</th><th>Email</th><th>Type</th><th>Name</th><th>Category</th><th>Price</th><th>Date Request</th><th>Questions</th><th>Payment method</th><th>…</th></tr></thead>
+            <thead><tr><th>#</th><th>Vendor</th><th>Email</th><th>Type</th><th>Name</th><th>Category</th><th>Price</th><th>Date</th><th>Status</th></tr></thead>
             <tbody id="approval-tbody">
-              <tr><td colspan="11" class="ev-table-empty">there is no pending requests</td></tr>
+              <tr><td colspan="9" class="ev-table-empty">No pending requests</td></tr>
             </tbody>
           </table>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;">
-          <div class="ev-pagination">
-            <button class="ev-page-btn">‹</button>
-            <button class="ev-page-btn active">1</button>
-            <button class="ev-page-btn">2</button>
-            <button class="ev-page-btn">3</button>
-            <button class="ev-page-btn">4</button>
-            <button class="ev-page-btn">5</button>
-            <span style="padding:0 4px;color:var(--ev-text-muted);">…</span>
-            <button class="ev-page-btn">10</button>
-            <button class="ev-page-btn">›</button>
-          </div>
-          <div class="ev-page-info">0 items</div>
         </div>
       </div>
     </div>
 
     <!-- ════ PANEL: ANALYTICS ════ -->
     <div class="ev-panel" id="panel-analytics">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">📊 Analytics Dashboard</h2>
-      <div class="ev-stat-grid" style="margin-bottom:24px;">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">📊 Analytics Dashboard</h2>
+      <div class="ev-stat-grid" style="margin-bottom:24px">
         <div class="ev-stat-card"><div class="ev-stat-icon orange">🎫</div><div><div class="ev-stat-value" id="ana-tickets">0</div><div class="ev-stat-label">Tickets Sold</div></div></div>
         <div class="ev-stat-card"><div class="ev-stat-icon green">💰</div><div><div class="ev-stat-value" id="ana-revenue">$0</div><div class="ev-stat-label">Total Revenue</div></div></div>
         <div class="ev-stat-card"><div class="ev-stat-icon blue">📊</div><div><div class="ev-stat-value" id="ana-scanrate">—</div><div class="ev-stat-label">Scan Rate</div></div></div>
       </div>
       <div class="ev-chart-grid">
-        <div class="ev-chart-card"><h3>Revenue Trends</h3><div class="ev-chart-container"><canvas id="revenue-chart"></canvas></div></div>
-        <div class="ev-chart-card"><h3>Tickets by Tier</h3><div class="ev-chart-container"><canvas id="tier-chart"></canvas></div></div>
+        <div class="ev-chart-card"><h3>📈 Revenue Trends</h3><div class="ev-chart-container"><canvas id="revenue-chart"></canvas></div></div>
+        <div class="ev-chart-card"><h3>🎯 Tickets by Tier</h3><div class="ev-chart-container"><canvas id="tier-chart"></canvas></div></div>
       </div>
       <div class="ev-card">
         <div class="ev-card-header"><span class="ev-card-title">💰 Revenue <span class="ev-pink">Breakdown</span></span></div>
         <div id="revenue-breakdown">
-          <p style="text-align:center;padding:24px;color:var(--ev-text-muted);">Revenue data loads after first sale</p>
+          <p style="text-align:center;padding:24px;color:var(--ev-text-muted)">Revenue data loads after first sale</p>
         </div>
       </div>
     </div>
@@ -217,28 +223,23 @@
     <div class="ev-panel" id="panel-promo">
       <div class="ev-card">
         <div class="ev-card-header">
-          <span class="ev-card-title">Promo Codes</span>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <div class="ev-search-bar" style="max-width:260px;">
-              <input type="text" placeholder="Search by Promo Code name" />
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            </div>
-            <select class="ev-filter-select"><option>Orders from</option></select>
-            <button class="ev-btn ev-btn-primary">+New Promo Code</button>
+          <span class="ev-card-title">🏷️ Promo Codes</span>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div class="ev-search-bar" style="max-width:240px"><input type="text" placeholder="Search promo codes…" /><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+            <button class="ev-btn ev-btn-primary">+ New Promo</button>
           </div>
         </div>
-        <div style="text-align:center;padding:48px 24px;color:var(--ev-text-muted);font-size:1rem;font-weight:500;">
-          You don't have any Promo Codes yet
+        <div style="text-align:center;padding:48px 24px;color:var(--ev-text-muted);font-size:.95rem">
+          <div style="font-size:2.5rem;margin-bottom:12px">🏷️</div>
+          <p style="font-weight:600;margin-bottom:4px">No promo codes yet</p>
+          <p style="font-size:.84rem">Create your first promo code to offer discounts.</p>
         </div>
       </div>
     </div>
 
     <!-- ════ PANEL: FINANCIAL ════ -->
     <div class="ev-panel" id="panel-financial">
-      <h2 style="font-size:1.2rem;font-weight:700;margin-bottom:16px;">Booths Partial Payment</h2>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:16px;">
-        <select class="ev-filter-select" style="border-color:var(--ev-yellow);"><option>Filter by status</option><option>Paid</option><option>Pending</option></select>
-      </div>
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">💳 Financial Overview</h2>
       <div class="ev-card">
         <div class="ev-card-header">
           <div class="ev-event-selector">
@@ -247,14 +248,13 @@
           </div>
           <div class="ev-export-group">
             <button class="ev-btn-icon" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-            <button class="ev-btn-icon" title="Export PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></button>
           </div>
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Vendors Name</th><th>Booth Name</th><th>1st Pay Date</th><th>1st Payment</th><th>1st Payment Taxes</th><th>2nd Pay Date</th><th>2nd Payment</th><th>2st Payment Taxes</th><th>Status</th></tr></thead>
+            <thead><tr><th>#</th><th>Vendor</th><th>Booth</th><th>1st Pay</th><th>1st Amount</th><th>2nd Pay</th><th>2nd Amount</th><th>Status</th></tr></thead>
             <tbody id="financial-tbody">
-              <tr><td colspan="10" class="ev-table-empty">No Data Found</td></tr>
+              <tr><td colspan="8" class="ev-table-empty">No financial data yet</td></tr>
             </tbody>
           </table>
         </div>
@@ -267,7 +267,7 @@
   <div class="ev-modal-overlay" id="create-modal">
     <div class="ev-modal">
       <div class="ev-modal-header">
-        <h2>Create New Event</h2>
+        <h2>🎪 Create New Event</h2>
         <button class="ev-modal-close" id="create-modal-close">✕</button>
       </div>
       <form id="create-event-form">
@@ -277,7 +277,7 @@
         </div>
         <div class="ev-form-group">
           <label for="ev-desc">Description</label>
-          <textarea class="ev-form-input" id="ev-desc" rows="3" placeholder="Tell attendees about your event…" style="resize:vertical;"></textarea>
+          <textarea class="ev-form-input" id="ev-desc" rows="3" placeholder="Tell attendees about your event…" style="resize:vertical"></textarea>
         </div>
         <div class="ev-form-row">
           <div class="ev-form-group">
@@ -306,15 +306,15 @@
         <div class="ev-form-group">
           <label>Ticket Tiers</label>
           <div id="tiers-container">
-            <div class="ev-form-row" style="grid-template-columns:1fr 100px 80px;margin-bottom:8px;">
+            <div class="ev-form-row" style="grid-template-columns:1fr 100px 80px;margin-bottom:8px">
               <input class="ev-form-input" type="text" placeholder="Tier name (e.g. General)" data-tier="name" required />
               <input class="ev-form-input" type="number" placeholder="Price" data-tier="price" min="0" required />
               <input class="ev-form-input" type="number" placeholder="Qty" data-tier="capacity" min="1" required />
             </div>
           </div>
-          <button type="button" class="ev-btn ev-btn-outline ev-btn-sm" id="add-tier-btn" style="margin-top:6px;">+ Add Tier</button>
+          <button type="button" class="ev-btn ev-btn-outline ev-btn-sm" id="add-tier-btn" style="margin-top:6px">+ Add Tier</button>
         </div>
-        <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:12px;padding:12px;">🚀 Create Event</button>
+        <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:16px;padding:13px;justify-content:center">🚀 Create Event</button>
       </form>
     </div>
   </div>

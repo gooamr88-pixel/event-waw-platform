@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════
-   EVEENTY DASHBOARD — Main JS
-   Sidebar nav, data loading, charts
+   EVEENTY DASHBOARD v2 — Controller
+   Single-file, modular, production-ready
    ═══════════════════════════════════ */
 
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
@@ -8,6 +8,22 @@ import { getOrganizerEvents, createEvent, deleteEvent } from '../src/lib/events.
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { escapeHTML } from '../src/lib/utils.js';
 
+/* ══════════════════════════════════
+   TOAST NOTIFICATIONS
+   ══════════════════════════════════ */
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.className = `ev-toast ${type}`;
+  toast.innerHTML = `<span>${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span> ${escapeHTML(message)}`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 300); }, 3500);
+}
+
+/* ══════════════════════════════════
+   INIT
+   ══════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
   const auth = await protectPage({ requireRole: 'organizer' });
   if (!auth) return;
@@ -16,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSidebar();
   setupCreateModal();
   setupSearch();
+  setupSignOut();
 
   await loadDashboard();
 });
@@ -27,9 +44,18 @@ function setupUserInfo({ user, profile }) {
   document.getElementById('user-name').textContent = name;
   document.getElementById('user-email').textContent = email;
   document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+  const welcomeEl = document.getElementById('welcome-name');
+  if (welcomeEl) welcomeEl.textContent = name.split(' ')[0];
 }
 
-/* ── Sidebar Navigation ── */
+/* ── Sign Out ── */
+function setupSignOut() {
+  document.getElementById('signout-btn')?.addEventListener('click', () => performSignOut('/index.html'));
+}
+
+/* ══════════════════════════════════
+   SIDEBAR NAVIGATION
+   ══════════════════════════════════ */
 function setupSidebar() {
   const items = document.querySelectorAll('.ev-nav-item');
   const panels = document.querySelectorAll('.ev-panel');
@@ -44,13 +70,11 @@ function setupSidebar() {
       item.classList.add('active');
       const panel = document.getElementById('panel-' + item.dataset.panel);
       if (panel) panel.classList.add('active');
-      // Close mobile sidebar
       sidebar.classList.remove('open');
       overlay.classList.remove('active');
     });
   });
 
-  // Mobile toggle
   toggle?.addEventListener('click', () => {
     sidebar.classList.toggle('open');
     overlay.classList.toggle('active');
@@ -59,30 +83,40 @@ function setupSidebar() {
     sidebar.classList.remove('open');
     overlay.classList.remove('active');
   });
+
+  // Revenue button switches to analytics
+  document.getElementById('payout-btn')?.addEventListener('click', () => {
+    items.forEach(i => i.classList.remove('active'));
+    panels.forEach(p => p.classList.remove('active'));
+    const anaItem = document.querySelector('[data-panel="analytics"]');
+    if (anaItem) anaItem.classList.add('active');
+    document.getElementById('panel-analytics')?.classList.add('active');
+  });
 }
 
-/* ── Load Dashboard Data ── */
+/* ══════════════════════════════════
+   LOAD DASHBOARD DATA
+   ══════════════════════════════════ */
 async function loadDashboard() {
   try {
     const user = await getCurrentUser();
     const events = await getOrganizerEvents();
 
-    // Compute stats
+    // Stats
     const total = events.length;
     const live = events.filter(e => e.status === 'published').length;
     const draft = events.filter(e => e.status === 'draft').length;
     const past = events.filter(e => new Date(e.date) < new Date()).length;
     const review = events.filter(e => e.status === 'review' || e.status === 'in_review').length;
 
-    document.getElementById('stat-total').textContent = total;
-    document.getElementById('stat-live').textContent = live;
-    document.getElementById('stat-review').textContent = review;
-    document.getElementById('stat-past').textContent = past;
-    document.getElementById('stat-draft').textContent = draft;
+    animateCounter('stat-total', total);
+    animateCounter('stat-live', live);
+    animateCounter('stat-review', review);
+    animateCounter('stat-past', past);
+    animateCounter('stat-draft', draft);
 
-    // Revenue data
-    let totalTickets = 0, totalRevenue = 0, totalScanned = 0;
-    let revenueData = null;
+    // Revenue
+    let totalTickets = 0, totalRevenue = 0, totalScanned = 0, revenueData = null;
     try {
       const { data } = await supabase.rpc('get_organizer_revenue', { p_organizer_id: user.id });
       revenueData = data;
@@ -100,40 +134,43 @@ async function loadDashboard() {
     document.getElementById('ana-revenue').textContent = '$' + totalRevenue.toLocaleString();
     document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '—';
 
-    // Render events table
     renderEventsTable(events);
-
-    // Populate event selects
     populateEventSelects(events);
-
-    // Set financial event name
-    if (events.length > 0) {
-      document.getElementById('fin-event-name').textContent = events[0].title;
-    }
-
-    // Charts
+    if (events.length > 0) document.getElementById('fin-event-name').textContent = events[0].title;
     initCharts(revenueData, events);
-
-    // Revenue breakdown
-    if (revenueData && revenueData.length > 0) {
-      renderRevenueBreakdown(revenueData);
-    }
-
-    // Tickets panel handler
+    if (revenueData?.length) renderRevenueBreakdown(revenueData);
     setupTicketsPanel(events);
 
   } catch (err) {
     console.error('Dashboard error:', err);
     document.getElementById('events-tbody').innerHTML =
-      `<tr><td colspan="8" class="ev-table-empty">Connect to see your events</td></tr>`;
+      `<tr><td colspan="8" class="ev-table-empty">Failed to load events. Please refresh.</td></tr>`;
   }
 }
 
-/* ── Render Events Table ── */
+/* ── Animated Counter ── */
+function animateCounter(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (target === 0) { el.textContent = '0'; return; }
+  let current = 0;
+  const step = Math.max(1, Math.ceil(target / 20));
+  const interval = setInterval(() => {
+    current += step;
+    if (current >= target) { current = target; clearInterval(interval); }
+    el.textContent = current;
+  }, 40);
+}
+
+/* ══════════════════════════════════
+   EVENTS TABLE
+   ══════════════════════════════════ */
+let tableListenerAttached = false;
+
 function renderEventsTable(events) {
   const tbody = document.getElementById('events-tbody');
   if (!events.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No events yet. Create your first event!</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No events yet — create your first one!</td></tr>';
     return;
   }
 
@@ -142,31 +179,20 @@ function renderEventsTable(events) {
     const created = new Date(ev.created_at);
     const isPast = date < new Date();
     const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
-    const services = ev.ticket_tiers?.map(t => `${t.name} (${t.sold_count || 0}/${t.capacity})`).join(', ') || '—';
-
-    let statusClass = ev.status;
-    if (isPast) statusClass = 'past';
-    let statusLabel = ev.status;
-    if (isPast) statusLabel = 'Past';
+    const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
+    let statusClass = isPast ? 'past' : ev.status;
+    let statusLabel = isPast ? 'Past' : ev.status;
 
     return `<tr>
-      <td style="font-weight:600;">#${i + 1}</td>
-      <td><a href="event-detail.html?id=${ev.id}" class="ev-link" style="font-weight:600;">${escapeHTML(ev.title)}</a></td>
-      <td style="font-size:.8rem;">
-        <div>Include:</div>
-        <div class="ev-link">Tickets (${sold}/${ev.ticket_tiers?.reduce((s,t)=>s+t.capacity,0)||0})</div>
-      </td>
-      <td style="font-size:.82rem;">📅 ${created.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</td>
-      <td style="font-size:.82rem;">
-        📅 ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-        ${isPast ? '<br><span class="ev-badge past" style="margin-top:4px;">⏳ Past</span>' : ''}
-      </td>
-      <td style="font-weight:600;">${totalRevenueForEvent(ev)}</td>
+      <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
+      <td><a href="event-detail.html?id=${ev.id}" class="ev-link" style="font-weight:600;font-size:.88rem">${escapeHTML(ev.title)}</a></td>
+      <td><span style="font-weight:500">${sold}/${cap}</span> <span style="font-size:.75rem;color:var(--ev-text-muted)">sold</span></td>
+      <td style="font-size:.8rem;color:var(--ev-text-sec)">${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+      <td style="font-size:.8rem">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</td>
+      <td style="font-weight:600">${calcRevenue(ev)}</td>
+      <td><span class="ev-badge ${statusClass}">${statusLabel}</span></td>
       <td>
-        <span class="ev-badge ${statusClass}">${statusLabel}</span>
-      </td>
-      <td>
-        <div style="display:flex;gap:4px;">
+        <div style="display:flex;gap:4px">
           <button class="ev-btn-icon" title="Edit" data-action="edit" data-id="${ev.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
@@ -178,45 +204,46 @@ function renderEventsTable(events) {
     </tr>`;
   }).join('');
 
-  // Event delegation for actions
-  tbody.addEventListener('click', async (e) => {
-    const editBtn = e.target.closest('[data-action="edit"]');
-    if (editBtn) {
-      const id = editBtn.dataset.id;
-      showEditModal(id);
-      return;
-    }
-    const delBtn = e.target.closest('[data-action="delete"]');
-    if (delBtn) {
-      const id = delBtn.dataset.id;
-      const title = delBtn.dataset.title;
-      const sold = Number(delBtn.dataset.sold || 0);
-      if (sold > 0) { alert(`Cannot delete: ${sold} ticket(s) sold.`); return; }
-      if (confirm(`Delete "${title}"? This cannot be undone.`)) {
-        const result = await deleteEvent(id);
-        if (result.success) { await loadDashboard(); }
-        else { alert(result.error || 'Delete failed'); }
-      }
-    }
-  });
+  // Attach once to avoid duplicate handlers
+  if (!tableListenerAttached) {
+    tableListenerAttached = true;
+    tbody.addEventListener('click', handleTableAction);
+  }
 }
 
-function totalRevenueForEvent(ev) {
-  const sold = ev.ticket_tiers?.reduce((s, t) => {
-    return s + (t.sold_count || 0) * (t.price || 0);
-  }, 0) || 0;
-  return sold > 0 ? '$' + sold.toLocaleString() : '-';
+function calcRevenue(ev) {
+  const r = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0) || 0;
+  return r > 0 ? '$' + r.toLocaleString() : '—';
 }
 
-/* ── Populate Event Selects ── */
+async function handleTableAction(e) {
+  const editBtn = e.target.closest('[data-action="edit"]');
+  if (editBtn) { showEditModal(editBtn.dataset.id); return; }
+
+  const delBtn = e.target.closest('[data-action="delete"]');
+  if (delBtn) {
+    const id = delBtn.dataset.id;
+    const title = delBtn.dataset.title;
+    const sold = Number(delBtn.dataset.sold || 0);
+    if (sold > 0) { showToast(`Cannot delete: ${sold} ticket(s) sold`, 'error'); return; }
+    if (confirm(`Delete "${title}"? This cannot be undone.`)) {
+      const result = await deleteEvent(id);
+      if (result.success) { showToast('Event deleted', 'success'); await loadDashboard(); }
+      else { showToast(result.error || 'Delete failed', 'error'); }
+    }
+  }
+}
+
+/* ══════════════════════════════════
+   POPULATE EVENT SELECTS
+   ══════════════════════════════════ */
 function populateEventSelects(events) {
-  const selects = ['ticket-event-select', 'approval-event-select'];
-  selects.forEach(id => {
+  ['ticket-event-select', 'approval-event-select'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    const firstOpt = el.querySelector('option');
+    const first = el.querySelector('option');
     el.innerHTML = '';
-    el.appendChild(firstOpt);
+    el.appendChild(first);
     events.forEach(ev => {
       const opt = document.createElement('option');
       opt.value = ev.id;
@@ -226,8 +253,10 @@ function populateEventSelects(events) {
   });
 }
 
-/* ── Tickets Panel ── */
-function setupTicketsPanel(events) {
+/* ══════════════════════════════════
+   TICKETS PANEL
+   ══════════════════════════════════ */
+function setupTicketsPanel() {
   const select = document.getElementById('ticket-event-select');
   select?.addEventListener('change', async () => {
     const tbody = document.getElementById('tickets-tbody');
@@ -252,42 +281,48 @@ function setupTicketsPanel(events) {
       }
       tbody.innerHTML = tickets.map((t, i) => `<tr>
         <td>${i + 1}</td>
-        <td style="font-weight:600;">${escapeHTML(t.attendee_name || '—')}</td>
+        <td style="font-weight:600">${escapeHTML(t.attendee_name || '—')}</td>
         <td>${escapeHTML(t.attendee_email || '—')}</td>
         <td>${escapeHTML(t.tier_name || '—')}</td>
         <td>${t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '—'}</td>
         <td><span class="ev-badge ${t.scanned_at ? 'accepted' : 'pending'}">${t.scanned_at ? '✓ Scanned' : 'Pending'}</span></td>
-        <td style="font-size:.8rem;color:var(--ev-text-light);">${new Date(t.created_at).toLocaleDateString()}</td>
+        <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(t.created_at).toLocaleDateString()}</td>
       </tr>`).join('');
 
       // CSV export
-      document.getElementById('ticket-csv-btn')?.addEventListener('click', () => {
-        const headers = ['Name','Email','Tier','Seat','Status','Date'];
-        const rows = tickets.map(t => [
+      document.getElementById('ticket-csv-btn')?.onclick = () => {
+        const rows = [['Name','Email','Tier','Seat','Status','Date']];
+        tickets.forEach(t => rows.push([
           t.attendee_name||'', t.attendee_email||'', t.tier_name||'',
           t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '',
           t.scanned_at ? 'Scanned' : 'Pending', t.created_at||''
-        ]);
-        const csv = [headers,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+        ]));
+        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
         a.download = `tickets_${Date.now()}.csv`;
         a.click();
-      });
+        showToast('CSV exported', 'success');
+      };
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty" style="color:var(--ev-danger);">${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty" style="color:var(--ev-danger)">${err.message}</td></tr>`;
     }
   });
 }
 
-/* ── Charts ── */
+/* ══════════════════════════════════
+   CHARTS
+   ══════════════════════════════════ */
+let revenueChartInstance = null, tierChartInstance = null;
+
 function initCharts(revenueData, events) {
   if (typeof Chart === 'undefined') return;
 
   // Revenue line chart
   const rCtx = document.getElementById('revenue-chart');
   if (rCtx && revenueData?.length) {
-    new Chart(rCtx, {
+    if (revenueChartInstance) revenueChartInstance.destroy();
+    revenueChartInstance = new Chart(rCtx, {
       type: 'line',
       data: {
         labels: revenueData.map(d => {
@@ -297,23 +332,24 @@ function initCharts(revenueData, events) {
         datasets: [{
           label: 'Revenue ($)',
           data: revenueData.map(d => Number(d.revenue || d.net_revenue || 0)),
-          borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,.1)',
-          fill: true, tension: 0.4, pointRadius: 3,
+          borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,.08)',
+          fill: true, tension: 0.4, pointRadius: 4,
           pointBackgroundColor: '#F5C518', pointBorderWidth: 0,
+          borderWidth: 2.5,
         }]
       },
       options: {
         responsive: true, maintainAspectRatio: false,
         plugins: { legend: { display: false } },
         scales: {
-          x: { grid: { color: '#F0F0F0' }, ticks: { color: '#999', font: { size: 10 } } },
-          y: { grid: { color: '#F0F0F0' }, ticks: { color: '#999', font: { size: 10 } } },
+          x: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { color: '#999', font: { size: 10 } } },
+          y: { grid: { color: 'rgba(0,0,0,.04)' }, ticks: { color: '#999', font: { size: 10 } } },
         }
       }
     });
   }
 
-  // Tickets doughnut
+  // Tier doughnut
   const tCtx = document.getElementById('tier-chart');
   if (tCtx && events?.length) {
     const tierMap = {};
@@ -323,63 +359,65 @@ function initCharts(revenueData, events) {
     const labels = Object.keys(tierMap);
     const values = Object.values(tierMap);
     if (labels.length) {
-      new Chart(tCtx, {
+      if (tierChartInstance) tierChartInstance.destroy();
+      tierChartInstance = new Chart(tCtx, {
         type: 'doughnut',
         data: {
           labels, datasets: [{
             data: values,
-            backgroundColor: ['#F5C518','#E91E63','#2196F3','#4CAF50','#FF9800','#9C27B0'],
-            borderWidth: 0, hoverOffset: 6,
+            backgroundColor: ['#F5C518','#E91E63','#2196F3','#4CAF50','#FF9800','#9C27B0','#00BCD4','#FF5722'],
+            borderWidth: 0, hoverOffset: 8,
           }]
         },
         options: {
-          responsive: true, maintainAspectRatio: false, cutout: '65%',
-          plugins: { legend: { position: 'bottom', labels: { color: '#777', font: { size: 11 }, padding: 14 } } }
+          responsive: true, maintainAspectRatio: false, cutout: '68%',
+          plugins: { legend: { position: 'bottom', labels: { color: '#777', font: { size: 11 }, padding: 16 } } }
         }
       });
     }
   }
 }
 
-/* ── Revenue Breakdown ── */
+/* ══════════════════════════════════
+   REVENUE BREAKDOWN
+   ══════════════════════════════════ */
 function renderRevenueBreakdown(data) {
   const el = document.getElementById('revenue-breakdown');
-  el.innerHTML = `
-    <div class="ev-table-wrap"><table class="ev-table">
-    <thead><tr><th>Event</th><th style="text-align:right;">Gross</th><th style="text-align:right;">Fee (5%)</th><th style="text-align:right;">Net Payout</th><th style="text-align:center;">Scan %</th></tr></thead>
+  el.innerHTML = `<div class="ev-table-wrap"><table class="ev-table">
+    <thead><tr><th>Event</th><th style="text-align:right">Gross</th><th style="text-align:right">Fee (5%)</th><th style="text-align:right">Net Payout</th><th style="text-align:center">Scan %</th></tr></thead>
     <tbody>${data.map(r => `<tr>
-      <td><div style="font-weight:600;">${escapeHTML(r.event_title)}</div><div style="font-size:.78rem;color:var(--ev-text-light);">${r.total_tickets_sold} tickets</div></td>
-      <td style="text-align:right;font-weight:600;">$${Number(r.gross_revenue).toLocaleString()}</td>
-      <td style="text-align:right;color:var(--ev-text-light);">-$${Number(r.platform_fee).toLocaleString()}</td>
-      <td style="text-align:right;color:var(--ev-pink);font-weight:700;">$${Number(r.net_revenue).toLocaleString()}</td>
-      <td style="text-align:center;">${Number(r.scan_rate)}%</td>
+      <td><div style="font-weight:600">${escapeHTML(r.event_title)}</div><div style="font-size:.76rem;color:var(--ev-text-sec)">${r.total_tickets_sold} tickets</div></td>
+      <td style="text-align:right;font-weight:600">$${Number(r.gross_revenue).toLocaleString()}</td>
+      <td style="text-align:right;color:var(--ev-text-sec)">-$${Number(r.platform_fee).toLocaleString()}</td>
+      <td style="text-align:right;color:var(--ev-pink);font-weight:700">$${Number(r.net_revenue).toLocaleString()}</td>
+      <td style="text-align:center">${Number(r.scan_rate)}%</td>
     </tr>`).join('')}</tbody></table></div>`;
 }
 
-/* ── Search ── */
+/* ══════════════════════════════════
+   SEARCH
+   ══════════════════════════════════ */
 function setupSearch() {
   document.getElementById('ev-search')?.addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase();
     document.querySelectorAll('#events-tbody tr').forEach(row => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = text.includes(q) ? '' : 'none';
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
     });
   });
 }
 
-/* ── Create Modal ── */
+/* ══════════════════════════════════
+   CREATE EVENT MODAL
+   ══════════════════════════════════ */
 function setupCreateModal() {
   const modal = document.getElementById('create-modal');
-  const closeBtn = document.getElementById('create-modal-close');
-  const openBtns = [document.getElementById('header-create-event'), document.getElementById('payout-btn')];
+  const open = () => modal.classList.add('active');
+  const close = () => modal.classList.remove('active');
 
-  document.getElementById('header-create-event')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    modal.classList.add('active');
-  });
-
-  closeBtn?.addEventListener('click', () => modal.classList.remove('active'));
-  modal?.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+  document.getElementById('header-create-event')?.addEventListener('click', (e) => { e.preventDefault(); open(); });
+  document.getElementById('welcome-create-btn')?.addEventListener('click', open);
+  document.getElementById('create-modal-close')?.addEventListener('click', close);
+  modal?.addEventListener('click', (e) => { if (e.target === modal) close(); });
 
   // Add tier
   document.getElementById('add-tier-btn')?.addEventListener('click', () => {
@@ -397,6 +435,10 @@ function setupCreateModal() {
   // Submit
   document.getElementById('create-event-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Creating…';
+
     const user = await getCurrentUser();
     if (!user) return;
 
@@ -413,24 +455,32 @@ function setupCreateModal() {
 
     try {
       const event = await createEvent(eventData);
-      // Create tiers
       const tierRows = document.querySelectorAll('#tiers-container .ev-form-row, #tiers-container > div');
       for (const row of tierRows) {
         const name = row.querySelector('[data-tier="name"]')?.value;
         const price = parseFloat(row.querySelector('[data-tier="price"]')?.value) || 0;
         const capacity = parseInt(row.querySelector('[data-tier="capacity"]')?.value) || 100;
-        if (name) { await supabase.from('ticket_tiers').insert({ event_id: event.id, name, price, capacity }); }
+        if (name) await supabase.from('ticket_tiers').insert({ event_id: event.id, name, price, capacity });
       }
-      modal.classList.remove('active');
+      close();
+      e.target.reset();
+      showToast('Event created successfully!', 'success');
       await loadDashboard();
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '🚀 Create Event';
+    }
   });
 }
 
-/* ── Edit Modal ── */
+/* ══════════════════════════════════
+   EDIT EVENT MODAL
+   ══════════════════════════════════ */
 async function showEditModal(eventId) {
   const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
-  if (error || !ev) { alert('Failed to load event'); return; }
+  if (error || !ev) { showToast('Failed to load event', 'error'); return; }
 
   const evDate = ev.date ? new Date(ev.date) : new Date();
   const dateStr = evDate.toISOString().slice(0, 10);
@@ -438,9 +488,9 @@ async function showEditModal(eventId) {
 
   const modal = document.createElement('div');
   modal.className = 'ev-modal-overlay active';
-  modal.innerHTML = `<div class="ev-modal" style="max-width:480px;">
-    <div class="ev-modal-header"><h2>Edit Event</h2><button class="ev-modal-close" id="edit-close">✕</button></div>
-    <div style="padding:10px 14px;background:var(--ev-yellow-light);border-radius:8px;margin-bottom:16px;font-weight:600;">📅 ${escapeHTML(ev.title)}</div>
+  modal.innerHTML = `<div class="ev-modal" style="max-width:480px">
+    <div class="ev-modal-header"><h2>✏️ Edit Event</h2><button class="ev-modal-close" id="edit-close">✕</button></div>
+    <div style="padding:12px 16px;background:var(--ev-border-lt);border-radius:10px;margin-bottom:18px;font-weight:600;font-size:.9rem">📅 ${escapeHTML(ev.title)}</div>
     <div class="ev-form-row">
       <div class="ev-form-group"><label>Date</label><input class="ev-form-input" type="date" id="edit-date" value="${dateStr}" /></div>
       <div class="ev-form-group"><label>Time</label><input class="ev-form-input" type="time" id="edit-time" value="${timeStr}" /></div>
@@ -450,11 +500,10 @@ async function showEditModal(eventId) {
       <div class="ev-form-group"><label>Venue</label><input class="ev-form-input" type="text" id="edit-venue" value="${escapeHTML(ev.venue || ev.location || '')}" /></div>
       <div class="ev-form-group"><label>City</label><input class="ev-form-input" type="text" id="edit-city" value="${escapeHTML(ev.city || '')}" /></div>
     </div>
-    <div style="display:flex;gap:10px;margin-top:16px;">
-      <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1;">Cancel</button>
-      <button class="ev-btn ev-btn-pink" id="edit-save" style="flex:1;">Save Changes</button>
+    <div style="display:flex;gap:10px;margin-top:18px">
+      <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1">Cancel</button>
+      <button class="ev-btn ev-btn-pink" id="edit-save" style="flex:1">Save Changes</button>
     </div>
-    <p id="edit-status" style="text-align:center;margin-top:10px;font-size:.85rem;display:none;"></p>
   </div>`;
   document.body.appendChild(modal);
 
@@ -464,11 +513,10 @@ async function showEditModal(eventId) {
 
   document.getElementById('edit-save').addEventListener('click', async () => {
     const btn = document.getElementById('edit-save');
-    const status = document.getElementById('edit-status');
     btn.disabled = true; btn.textContent = 'Saving…';
     const d = document.getElementById('edit-date').value;
     const t = document.getElementById('edit-time').value;
-    if (!d) { status.textContent = 'Select a date'; status.style.color = 'var(--ev-danger)'; status.style.display = 'block'; btn.disabled = false; btn.textContent = 'Save Changes'; return; }
+    if (!d) { showToast('Please select a date', 'error'); btn.disabled = false; btn.textContent = 'Save Changes'; return; }
     try {
       const updates = {
         date: new Date(`${d}T${t || '00:00'}:00`).toISOString(),
@@ -476,14 +524,14 @@ async function showEditModal(eventId) {
       };
       const venue = document.getElementById('edit-venue').value.trim();
       const city = document.getElementById('edit-city').value.trim();
-      if (venue) updates.location = venue;
+      if (venue) updates.venue = venue;
       if (city) updates.city = city;
       const { error } = await supabase.from('events').update(updates).eq('id', eventId);
       if (error) throw error;
-      status.textContent = '✓ Updated!'; status.style.color = 'var(--ev-success)'; status.style.display = 'block';
-      setTimeout(async () => { modal.remove(); await loadDashboard(); }, 600);
+      showToast('Event updated!', 'success');
+      setTimeout(async () => { modal.remove(); await loadDashboard(); }, 500);
     } catch (err) {
-      status.textContent = '✗ ' + err.message; status.style.color = 'var(--ev-danger)'; status.style.display = 'block';
+      showToast('Error: ' + err.message, 'error');
       btn.disabled = false; btn.textContent = 'Save Changes';
     }
   });
