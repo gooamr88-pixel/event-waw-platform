@@ -7,6 +7,7 @@
   <meta name="description" content="Create your Event Waw account — Discover & Create Events Effortlessly." />
   <link rel="stylesheet" href="css/landing-eveenty.css" />
   <link rel="stylesheet" href="css/eveenty-auth.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/css/flag-icons.min.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
 </head>
 <body class="eveenty-auth">
@@ -61,12 +62,15 @@
               <div class="ev-fg"><label class="ev-label">Country</label>
                 <div class="ev-cc-picker" id="cc-picker">
                   <button type="button" class="ev-cc-btn" id="cc-btn">
-                    <img src="https://flagcdn.com/w20/eg.png" width="20" height="15" id="cc-flag" alt="" />
+                    <span class="fi fi-eg" id="cc-flag"></span>
                     <span id="cc-code">+20</span>
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                    <svg class="cc-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
                   </button>
                   <div class="ev-cc-dropdown" id="cc-dropdown">
-                    <input type="text" class="ev-cc-search" id="cc-search" placeholder="Search country..." autocomplete="off" />
+                    <div class="ev-cc-search-wrap">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                      <input type="text" class="ev-cc-search" id="cc-search" placeholder="Search country..." autocomplete="off" />
+                    </div>
                     <div class="ev-cc-list" id="cc-list"></div>
                   </div>
                   <input type="hidden" id="country-code" value="+20" />
@@ -180,58 +184,57 @@
   <!-- Country Code Picker -->
   <script>
   (function(){
-    const COUNTRIES = [
-      {name:"Egypt",iso:"eg",code:"+20"},{name:"United States",iso:"us",code:"+1"},{name:"United Kingdom",iso:"gb",code:"+44"},
-      {name:"Germany",iso:"de",code:"+49"},{name:"France",iso:"fr",code:"+33"},{name:"Saudi Arabia",iso:"sa",code:"+966"},
-      {name:"UAE",iso:"ae",code:"+971"},{name:"India",iso:"in",code:"+91"},{name:"China",iso:"cn",code:"+86"},
-      {name:"Japan",iso:"jp",code:"+81"},{name:"South Korea",iso:"kr",code:"+82"},{name:"Brazil",iso:"br",code:"+55"},
-      {name:"Italy",iso:"it",code:"+39"},{name:"Spain",iso:"es",code:"+34"},{name:"Australia",iso:"au",code:"+61"},
-      {name:"Turkey",iso:"tr",code:"+90"},{name:"Russia",iso:"ru",code:"+7"},{name:"Netherlands",iso:"nl",code:"+31"},
-      {name:"Sweden",iso:"se",code:"+46"},{name:"Norway",iso:"no",code:"+47"},{name:"Poland",iso:"pl",code:"+48"},
-      {name:"Portugal",iso:"pt",code:"+351"},{name:"Malaysia",iso:"my",code:"+60"},{name:"Indonesia",iso:"id",code:"+62"},
-      {name:"Philippines",iso:"ph",code:"+63"},{name:"Nigeria",iso:"ng",code:"+234"},{name:"South Africa",iso:"za",code:"+27"},
-      {name:"Kenya",iso:"ke",code:"+254"},{name:"Morocco",iso:"ma",code:"+212"},{name:"Tunisia",iso:"tn",code:"+216"},
-      {name:"Algeria",iso:"dz",code:"+213"},{name:"Libya",iso:"ly",code:"+218"},{name:"Lebanon",iso:"lb",code:"+961"},
-      {name:"Jordan",iso:"jo",code:"+962"},{name:"Iraq",iso:"iq",code:"+964"},{name:"Kuwait",iso:"kw",code:"+965"},
-      {name:"Oman",iso:"om",code:"+968"},{name:"Bahrain",iso:"bh",code:"+973"},{name:"Qatar",iso:"qa",code:"+974"},
-      {name:"Canada",iso:"ca",code:"+1"},{name:"Mexico",iso:"mx",code:"+52"},{name:"Argentina",iso:"ar",code:"+54"},
-      {name:"Switzerland",iso:"ch",code:"+41"},{name:"Belgium",iso:"be",code:"+32"},{name:"Austria",iso:"at",code:"+43"},
-      {name:"Ireland",iso:"ie",code:"+353"},{name:"Greece",iso:"gr",code:"+30"},{name:"Pakistan",iso:"pk",code:"+92"},
-      {name:"Bangladesh",iso:"bd",code:"+880"},{name:"Thailand",iso:"th",code:"+66"},{name:"Vietnam",iso:"vn",code:"+84"},
-      {name:"Singapore",iso:"sg",code:"+65"},{name:"New Zealand",iso:"nz",code:"+64"},{name:"Sudan",iso:"sd",code:"+249"},
-      {name:"Palestine",iso:"ps",code:"+970"},{name:"Syria",iso:"sy",code:"+963"},{name:"Yemen",iso:"ye",code:"+967"}
+    var C = [
+      {n:"Egypt",i:"eg",c:"+20"},{n:"United States",i:"us",c:"+1"},{n:"United Kingdom",i:"gb",c:"+44"},
+      {n:"Germany",i:"de",c:"+49"},{n:"France",i:"fr",c:"+33"},{n:"Saudi Arabia",i:"sa",c:"+966"},
+      {n:"UAE",i:"ae",c:"+971"},{n:"India",i:"in",c:"+91"},{n:"China",i:"cn",c:"+86"},
+      {n:"Japan",i:"jp",c:"+81"},{n:"South Korea",i:"kr",c:"+82"},{n:"Brazil",i:"br",c:"+55"},
+      {n:"Italy",i:"it",c:"+39"},{n:"Spain",i:"es",c:"+34"},{n:"Australia",i:"au",c:"+61"},
+      {n:"Turkey",i:"tr",c:"+90"},{n:"Russia",i:"ru",c:"+7"},{n:"Netherlands",i:"nl",c:"+31"},
+      {n:"Sweden",i:"se",c:"+46"},{n:"Norway",i:"no",c:"+47"},{n:"Poland",i:"pl",c:"+48"},
+      {n:"Portugal",i:"pt",c:"+351"},{n:"Malaysia",i:"my",c:"+60"},{n:"Indonesia",i:"id",c:"+62"},
+      {n:"Philippines",i:"ph",c:"+63"},{n:"Nigeria",i:"ng",c:"+234"},{n:"South Africa",i:"za",c:"+27"},
+      {n:"Kenya",i:"ke",c:"+254"},{n:"Morocco",i:"ma",c:"+212"},{n:"Tunisia",i:"tn",c:"+216"},
+      {n:"Algeria",i:"dz",c:"+213"},{n:"Libya",i:"ly",c:"+218"},{n:"Lebanon",i:"lb",c:"+961"},
+      {n:"Jordan",i:"jo",c:"+962"},{n:"Iraq",i:"iq",c:"+964"},{n:"Kuwait",i:"kw",c:"+965"},
+      {n:"Oman",i:"om",c:"+968"},{n:"Bahrain",i:"bh",c:"+973"},{n:"Qatar",i:"qa",c:"+974"},
+      {n:"Canada",i:"ca",c:"+1"},{n:"Mexico",i:"mx",c:"+52"},{n:"Argentina",i:"ar",c:"+54"},
+      {n:"Switzerland",i:"ch",c:"+41"},{n:"Belgium",i:"be",c:"+32"},{n:"Austria",i:"at",c:"+43"},
+      {n:"Ireland",i:"ie",c:"+353"},{n:"Greece",i:"gr",c:"+30"},{n:"Pakistan",i:"pk",c:"+92"},
+      {n:"Bangladesh",i:"bd",c:"+880"},{n:"Thailand",i:"th",c:"+66"},{n:"Vietnam",i:"vn",c:"+84"},
+      {n:"Singapore",i:"sg",c:"+65"},{n:"New Zealand",i:"nz",c:"+64"},{n:"Sudan",i:"sd",c:"+249"},
+      {n:"Palestine",i:"ps",c:"+970"},{n:"Syria",i:"sy",c:"+963"},{n:"Yemen",i:"ye",c:"+967"}
     ];
-    const btn=document.getElementById('cc-btn'), dd=document.getElementById('cc-dropdown'),
-          list=document.getElementById('cc-list'), search=document.getElementById('cc-search'),
-          flagImg=document.getElementById('cc-flag'), codeSpan=document.getElementById('cc-code'),
-          hiddenInput=document.getElementById('country-code');
-    let selected='eg';
-    function flagUrl(iso){return 'https://flagcdn.com/w40/'+iso+'.png';}
-    function render(filter){
-      list.innerHTML='';
-      const q=(filter||'').toLowerCase();
-      COUNTRIES.filter(c=>!q||c.name.toLowerCase().includes(q)||c.code.includes(q)).forEach(c=>{
-        const item=document.createElement('div');
-        item.className='ev-cc-item'+(c.iso===selected?' active':'');
-        item.innerHTML='<img src="'+flagUrl(c.iso)+'" alt="'+c.name+'" /><span class="cc-name">'+c.name+'</span><span class="cc-dial">'+c.code+'</span>';
-        item.addEventListener('click',function(){
-          selected=c.iso;
-          flagImg.src=flagUrl(c.iso);
-          codeSpan.textContent=c.code;
-          hiddenInput.value=c.code;
+    var btn=document.getElementById('cc-btn'),dd=document.getElementById('cc-dropdown'),
+        list=document.getElementById('cc-list'),search=document.getElementById('cc-search'),
+        flagEl=document.getElementById('cc-flag'),codeEl=document.getElementById('cc-code'),
+        hidden=document.getElementById('country-code'),sel='eg';
+
+    function render(q){
+      list.innerHTML='';q=(q||'').toLowerCase();
+      C.forEach(function(c){
+        if(q && c.n.toLowerCase().indexOf(q)===-1 && c.c.indexOf(q)===-1) return;
+        var d=document.createElement('div');
+        d.className='ev-cc-item'+(c.i===sel?' active':'');
+        d.innerHTML='<span class="fi fi-'+c.i+'"></span><span class="cc-name">'+c.n+'</span><span class="cc-dial">'+c.c+'</span>';
+        d.onclick=function(){
+          sel=c.i;
+          flagEl.className='fi fi-'+c.i;
+          codeEl.textContent=c.c;
+          hidden.value=c.c;
           dd.classList.remove('open');
           search.value='';
-        });
-        list.appendChild(item);
+        };
+        list.appendChild(d);
       });
     }
     render();
-    btn.addEventListener('click',function(e){
+    btn.onclick=function(e){
       e.preventDefault();
-      const isOpen=dd.classList.toggle('open');
-      if(isOpen){search.value='';render();setTimeout(function(){search.focus();},50);}
-    });
-    search.addEventListener('input',function(){render(search.value);});
+      var open=dd.classList.toggle('open');
+      if(open){search.value='';render();setTimeout(function(){search.focus();},50);}
+    };
+    search.oninput=function(){render(search.value);};
     document.addEventListener('click',function(e){
       if(!e.target.closest('#cc-picker'))dd.classList.remove('open');
     });
