@@ -3,135 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sign In — Event Waw</title>
-  <meta name="description" content="Sign in to your Event Waw account." />
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/light-theme.css" />
+  <title>Login — Eveenty</title>
+  <meta name="description" content="Sign in to your Eveenty account — Events Made Easy." />
+  <link rel="stylesheet" href="css/eveenty-auth.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-  <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
-  <script src="js/csp.js"></script>
 </head>
-<body>
-  <div class="auth-page">
-    <div class="auth-bg"><img src="images/event-gala.png" alt="" /><div class="auth-bg-ov"></div></div>
-    <div class="auth-orb auth-orb-1"></div>
-    <div class="auth-orb auth-orb-2"></div>
-    <div class="particles"></div>
+<body class="eveenty-auth">
+  <!-- Top Blue Bar -->
+  <div class="ev-top-bar"></div>
 
-    <div class="auth-wrap" style="animation: scaleIn .6s cubic-bezier(.16,1,.3,1) forwards;">
-      <div class="auth-head">
-        <a href="index.html" class="nav-logo" style="justify-content:center">
-          <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
-          <span class="nav-logo-text shimmer">Event Waw</span>
-        </a>
-        <p class="tagline">Welcome back</p>
+  <div class="ev-auth-container">
+    <!-- ═══ LEFT PANEL — Branding ═══ -->
+    <div class="ev-auth-left">
+      <a href="index.html" class="ev-logo">
+        <span class="ev-logo-text">Ev</span>
+        <span class="ev-logo-ee">ee</span>
+        <span class="ev-logo-text">nty</span>
+      </a>
+      <div class="ev-logo-tagline">EVENTS MADE EASY</div>
+
+      <div class="ev-cards-area">
+        <!-- Event Hosts Card -->
+        <div class="ev-card ev-card--hosts">
+          <h3>Event Hosts</h3>
+          <ul>
+            <li>Easily create and edit events</li>
+            <li>Customize features</li>
+            <li>Manage everything from one platform</li>
+          </ul>
+        </div>
+
+        <!-- Exhibitors and Vendors Card -->
+        <div class="ev-card ev-card--exhibitors">
+          <h3>Exhibitors and Vendors</h3>
+          <ul>
+            <li>Register easily</li>
+            <li>Increase sales</li>
+            <li>Connect seamlessly with attendees</li>
+          </ul>
+        </div>
+
+        <!-- Circle Decoration -->
+        <div class="ev-circle-deco"></div>
+
+        <!-- Sponsors Card -->
+        <div class="ev-card ev-card--sponsors">
+          <h3>Sponsors</h3>
+          <ul>
+            <li>Maximize exposure</li>
+            <li>Simplify sponsor management</li>
+            <li>Customize packages effectively</li>
+          </ul>
+        </div>
       </div>
+    </div>
 
-      <div class="auth-box" style="animation: fadeInUp .7s cubic-bezier(.16,1,.3,1) .2s both;">
-        <div id="auth-msg" class="auth-msg" style="display:none;"></div>
+    <!-- ═══ RIGHT PANEL — Login Form ═══ -->
+    <div class="ev-auth-right">
+      <div class="ev-auth-right-inner">
+        <h1 class="ev-page-title">Welcome back</h1>
 
-        <!-- ══════ Email + Password (direct signin, no OTP) ══════ -->
-        <div id="step-credentials">
+        <div class="ev-form-box">
+          <div id="auth-msg" class="ev-auth-msg"></div>
+
           <form id="login-form">
-            <div class="fg">
-              <label class="fl" for="login-email">Email address</label>
-              <input type="email" class="fi" id="login-email" placeholder="you@example.com" autocomplete="email" required />
+            <!-- Email -->
+            <div class="ev-fg">
+              <label class="ev-label" for="login-email">Email <span class="required">*</span></label>
+              <input type="email" class="ev-input" id="login-email" placeholder="Email" autocomplete="email" required />
             </div>
-            <div class="fg">
-              <label class="fl" for="login-pass">Password</label>
-              <div class="fi-wrap">
-                <input type="password" class="fi" id="login-pass" placeholder="••••••••" autocomplete="current-password" required />
-                <button type="button" class="fi-toggle" aria-label="Toggle password">
+
+            <!-- Password -->
+            <div class="ev-fg">
+              <label class="ev-label" for="login-pass">Password <span class="required">*</span></label>
+              <div class="ev-pass-wrap">
+                <input type="password" class="ev-input" id="login-pass" placeholder="Password" autocomplete="current-password" required />
+                <button type="button" class="ev-pass-toggle" aria-label="Toggle password visibility">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                 </button>
               </div>
             </div>
-            <div class="f-help" style="justify-content:flex-end;">
-              <a href="forgot-password.html">Forgot password?</a>
+
+            <!-- Remember me / Forgot password -->
+            <div class="ev-remember-row">
+              <label class="ev-remember">
+                <input type="checkbox" id="remember-me" />
+                Remember me
+              </label>
+              <a href="forgot-password.html" class="ev-forgot-link">Forgot password?</a>
             </div>
-            <button type="submit" class="btn btn-primary btn-full btn-lg" id="login-submit">
-              <span id="login-text">Sign In</span>
-              <svg id="login-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-              <div id="login-spinner" class="btn-spinner" style="display:none;"></div>
-            </button>
-            <div class="divider"><span>or continue with</span></div>
-            <div class="soc-grid">
-              <button type="button" class="soc-btn" id="google-login" style="width:100%;">
+
+            <!-- Login Button -->
+            <div style="display:flex;justify-content:center;">
+              <button type="submit" class="ev-submit-btn" id="login-submit">
+                <span id="login-text">Login</span>
+                <div id="login-spinner" class="ev-btn-spinner" style="display:none;"></div>
+              </button>
+            </div>
+
+            <!-- Divider -->
+            <div class="ev-divider"><span>Or login with</span></div>
+
+            <!-- Social Buttons -->
+            <div class="ev-social-row">
+              <button type="button" class="ev-social-btn" id="facebook-login" aria-label="Login with Facebook">
+                <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              </button>
+              <button type="button" class="ev-social-btn" id="google-login" aria-label="Login with Google">
                 <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                Continue with Google
+              </button>
+              <button type="button" class="ev-social-btn" id="apple-login" aria-label="Login with Apple">
+                <svg viewBox="0 0 24 24" fill="#000"><path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
               </button>
             </div>
           </form>
         </div>
 
+        <!-- Footer -->
+        <div class="ev-auth-footer">
+          Don't have an account? <a href="register.html">Sign Up</a>
+        </div>
       </div>
-      <p class="f-footer" style="animation: fadeInUp .7s cubic-bezier(.16,1,.3,1) .4s both;">Don't have an account? <a href="register.html">Create one</a></p>
     </div>
   </div>
 
-  <!-- ═══ Trusted Partners ═══ -->
-  <div class="tp-section">
-    <h3 class="tp-title">Trusted partners</h3>
-    <div class="tp-logos">
-      <!-- Visa -->
-      <div class="tp-pill"><svg viewBox="0 0 48 16" width="52" height="18"><path d="M19.4 1.2l-3 13.6h-2.9l3-13.6h2.9zm12.2 8.8l1.5-4.2.9 4.2h-2.4zm3.2 4.8h2.7l-2.4-13.6h-2.5c-.5 0-1 .3-1.2.8l-4.3 12.8h3l.6-1.6h3.7l.4 1.6zm-7.3-4.4c0-3.6-5-3.8-5-5.4 0-.5.5-1 1.5-1.1.5-.1 1.9-.1 3.4.6l.6-2.9C27 1.2 25.8 1 24.3 1c-2.8 0-4.8 1.5-4.8 3.7 0 1.6 1.4 2.5 2.5 3 1.1.6 1.5.9 1.5 1.5 0 .8-.9 1.1-1.7 1.1-1.4 0-2.2-.4-2.9-.7l-.5 2.5c.7.3 1.9.6 3.1.6 3 .1 5-1.5 5-3.8zM15.6 1.2L11.2 14.8H8.1L5.9 3.5c-.1-.5-.3-.7-.7-.9C4.3 2.2 3 1.8 1.7 1.5l.1-.3h4.8c.6 0 1.2.4 1.3 1.1l1.2 6.3 3-7.4h3.1z" fill="#1A1F71"/></svg></div>
-      <!-- Mastercard -->
-      <div class="tp-pill"><svg viewBox="0 0 48 30" width="44" height="28"><circle cx="18" cy="15" r="12" fill="#EB001B"/><circle cx="30" cy="15" r="12" fill="#F79E1B"/><path d="M24 5.4a12 12 0 010 19.2 12 12 0 000-19.2z" fill="#FF5F00"/></svg></div>
-      <!-- Google -->
-      <div class="tp-pill"><svg viewBox="0 0 74 24" width="60" height="20"><path d="M9.24 8.19v2.46h5.88a5.1 5.1 0 01-2.22 3.34l3.6 2.8c2.1-1.94 3.3-4.8 3.3-8.18 0-.78-.07-1.53-.2-2.25H9.24z" fill="#4285F4"/><path d="M9.24 19.44a8.5 8.5 0 005.9-2.17l-3.6-2.8a5.1 5.1 0 01-7.6-2.68L.32 14.48a9 9 0 008.92 4.96z" fill="#34A853"/><path d="M3.94 11.79a5.1 5.1 0 010-3.2L.32 5.84a9 9 0 000 8.64l3.62-2.7z" fill="#FBBC05"/><path d="M9.24.76A4.88 4.88 0 0112.68 2l2.72-2.72A8.65 8.65 0 009.24-.76 9 9 0 00.32 5.84l3.62 2.76A5.36 5.36 0 019.24.76z" fill="#EA4335"/><text x="22" y="17" font-family="sans-serif" font-size="14" font-weight="500" fill="#5F6368">Google</text></svg></div>
-      <!-- AWS -->
-      <div class="tp-pill"><svg viewBox="0 0 60 24" width="48" height="20"><text x="2" y="18" font-family="'Amazon Ember',sans-serif" font-size="18" font-weight="700" fill="#232F3E" letter-spacing="-0.5">aws</text></svg></div>
-      <!-- Apple Pay -->
-      <div class="tp-pill"><svg viewBox="0 0 50 20" width="50" height="20"><path d="M8.43 2.85c-.5.6-1.3 1.06-2.1 1a2.97 2.97 0 011.37-2.15A3.2 3.2 0 019.85.42c-.06 1.13-.46 2-1.42 2.43zm-.02.94c-1.17-.07-2.16.67-2.72.67-.56 0-1.42-.63-2.35-.61A3.47 3.47 0 00.4 5.62c-1.26 2.17-.32 5.4.9 7.17.6.88 1.32 1.85 2.27 1.82.9-.04 1.26-.59 2.35-.59 1.1 0 1.4.59 2.35.56.98-.01 1.6-.88 2.2-1.76a7.8 7.8 0 001-2.04A3.18 3.18 0 019.53 7.7a3.25 3.25 0 011.56-2.73 3.33 3.33 0 00-2.68-1.18z" fill="#000"/><text x="14" y="13.5" font-family="SF Pro Display,sans-serif" font-size="11" font-weight="600" fill="#000">Pay</text></svg></div>
-      <!-- Google Pay -->
-      <div class="tp-pill"><svg viewBox="0 0 56 20" width="56" height="20"><text x="1" y="15" font-family="sans-serif" font-size="12" font-weight="500" fill="#5F6368">G</text><text x="11" y="15" font-family="sans-serif" font-size="12" font-weight="500" fill="#5F6368">Pay</text></svg></div>
-      <!-- Meta -->
-      <div class="tp-pill"><svg viewBox="0 0 80 24" width="64" height="20"><path d="M16 4c-3.3 0-5.8 2.2-7.2 4.8C7.7 6.1 6 4 3.5 4 1.5 4 0 6 0 8.8c0 5.2 7 11.2 8.8 11.2 1 0 3-2.2 4.2-4.4 1.2 2.2 3.2 4.4 4.2 4.4C19 20 24 14 24 8.8 24 6 22.5 4 20.5 4c-2.5 0-4.2 2.1-5.3 4.8C13.8 6.2 11.3 4 16 4z" fill="url(#metaGrad)" transform="translate(0,1)"/><defs><linearGradient id="metaGrad" x1="0" y1="0" x2="24" y2="0" gradientUnits="userSpaceOnUse"><stop stop-color="#0082FB"/><stop offset="1" stop-color="#0082FB"/></linearGradient></defs><text x="28" y="17" font-family="sans-serif" font-size="14" font-weight="600" fill="#1C2B33">Meta</text></svg></div>
-      <!-- Stripe -->
-      <div class="tp-pill"><svg viewBox="0 0 60 24" width="52" height="20"><text x="2" y="18" font-family="sans-serif" font-size="16" font-weight="700" fill="#635BFF" letter-spacing="-0.3">stripe</text></svg></div>
-      <!-- PayPal -->
-      <div class="tp-pill"><svg viewBox="0 0 24 28" width="22" height="26"><path d="M20.1 7.2c.3-1.6 0-2.6-.8-3.6C18.3 2.4 16.2 1.6 13.6 1.6H5.8a1 1 0 00-1 .8L2 19.4a.6.6 0 00.6.7h4.4l-.3 1.8a.5.5 0 00.5.6h3.6a.8.8 0 00.8-.7l.7-3.6a.8.8 0 01.8-.7h.5c3.5 0 6.2-1.4 7-5.5.4-1.7.2-3.2-.7-4.2z" fill="#003087"/><path d="M20.1 7.2c-.8 5-4.3 6.8-8.5 6.8h-2a1 1 0 00-1 .8L7.5 21a.6.6 0 00.6.7h3.6a.8.8 0 00.8-.7l.7-3.6a.8.8 0 01.8-.7h.5c3.5 0 6.2-1.4 7-5.5.3-1.7.1-3.2-.8-4.2z" fill="#0070E0"/></svg></div>
-      <!-- Amex -->
-      <div class="tp-pill"><svg viewBox="0 0 40 26" width="36" height="24"><rect width="40" height="26" rx="4" fill="#006FCF"/><text x="20" y="11" text-anchor="middle" font-family="sans-serif" font-size="5.5" font-weight="800" fill="#fff" letter-spacing="0.5">AMERICAN</text><text x="20" y="18" text-anchor="middle" font-family="sans-serif" font-size="5.5" font-weight="800" fill="#fff" letter-spacing="0.5">EXPRESS</text></svg></div>
-    </div>
-  </div>
-
-  <style>
-    .tp-section {
-      position: fixed; bottom: 0; left: 0; right: 0; z-index: 10;
-      background: rgba(252, 240, 240, 0.95); backdrop-filter: blur(12px);
-      padding: 20px 24px 18px; text-align: center;
-    }
-    .tp-title {
-      font-size: 1.05rem; font-weight: 700; margin-bottom: 14px;
-      background: linear-gradient(135deg, #E91E63, #9C27B0);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .tp-logos {
-      display: flex; align-items: center; justify-content: center;
-      gap: 10px; flex-wrap: wrap;
-    }
-    .tp-pill {
-      display: flex; align-items: center; justify-content: center;
-      background: #fff; border-radius: 10px; padding: 6px 12px;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.04);
-      min-height: 36px;
-    }
-    @media (max-width: 600px) {
-      .tp-logos { gap: 6px; }
-      .tp-pill { padding: 5px 8px; border-radius: 8px; min-height: 30px; }
-      .tp-pill svg { transform: scale(0.85); }
-      .tp-title { font-size: 0.9rem; margin-bottom: 10px; }
-      .tp-section { padding: 14px 12px 12px; }
-    }
-  </style>
-    .auth-msg { padding: 12px 16px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5; }
-    .auth-msg.error { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); color: #fca5a5; }
-    .auth-msg.success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.2); color: #86efac; }
-    .btn-spinner { width: 18px; height: 18px; border: 2px solid rgba(0,0,0,.2); border-top-color: var(--bg-primary); border-radius: 50%; animation: spin 0.6s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  <!-- FAB -->
+  <button class="ev-fab" aria-label="Help">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  </button>
 
   <script type="module">
     import { signIn } from './src/lib/auth.js';
@@ -139,14 +138,11 @@
     import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
-      initTheme();
       initToggles();
-      initParticles();
 
       // ── Handle OAuth callback (Google redirect back) ──
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // User already has a session (likely returning from Google OAuth)
         await handleOAuthReturn(session);
         return;
       }
@@ -156,7 +152,7 @@
 
       const redirect = new URLSearchParams(window.location.search).get('redirect');
 
-      // ══════ Login Form (direct — no OTP) ══════
+      // ══════ Login Form ══════
       document.getElementById('login-form').addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = document.getElementById('login-email').value.trim();
@@ -166,18 +162,14 @@
 
         btn.disabled = true;
         document.getElementById('login-text').textContent = 'Signing in…';
-        document.getElementById('login-arrow').style.display = 'none';
         document.getElementById('login-spinner').style.display = 'block';
         msg.style.display = 'none';
 
         try {
-          // 1. Verify credentials and sign in
           await signIn({ email, password });
-
-          // 2. Auto-mark OTP verified so the guard doesn't block dashboard access
           await markOTPVerified();
 
-          msg.className = 'auth-msg success';
+          msg.className = 'ev-auth-msg success';
           msg.textContent = '✓ Welcome back! Redirecting…';
           msg.style.display = 'block';
 
@@ -186,14 +178,13 @@
           }, 600);
 
         } catch (err) {
-          msg.className = 'auth-msg error';
+          msg.className = 'ev-auth-msg error';
           msg.textContent = err.message === 'Invalid login credentials'
             ? 'Invalid email or password. Please try again.'
             : err.message || 'Sign in failed. Please try again.';
           msg.style.display = 'block';
           btn.disabled = false;
-          document.getElementById('login-text').textContent = 'Sign In';
-          document.getElementById('login-arrow').style.display = 'block';
+          document.getElementById('login-text').textContent = 'Login';
           document.getElementById('login-spinner').style.display = 'none';
         }
       });
@@ -206,10 +197,7 @@
             provider: 'google',
             options: {
               redirectTo: `${window.location.origin}/login.html${redirect ? '?redirect=' + encodeURIComponent(redirect) : ''}`,
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent',
-              },
+              queryParams: { access_type: 'offline', prompt: 'consent' },
             },
           });
           if (error) showError(error.message);
@@ -220,69 +208,48 @@
     // ══════ Handle OAuth redirect return ══════
     async function handleOAuthReturn(session) {
       const msg = document.getElementById('auth-msg');
-      msg.className = 'auth-msg success';
+      msg.className = 'ev-auth-msg success';
       msg.textContent = '✓ Signed in with Google! Redirecting…';
       msg.style.display = 'block';
-
-      // Ensure profile exists for Google users (trigger should handle, but double-check)
       await ensureProfile(session.user);
-
-      // Mark OTP verified (Google users don't need OTP)
       await markOTPVerified();
-
       const redirect = new URLSearchParams(window.location.search).get('redirect');
-      setTimeout(() => {
-        window.location.href = redirect || '/events.html';
-      }, 600);
+      setTimeout(() => { window.location.href = redirect || '/events.html'; }, 600);
     }
 
     // ══════ Ensure profile exists for OAuth users ══════
     async function ensureProfile(user) {
       try {
         const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', user.id)
-          .maybeSingle();
-
+          .from('profiles').select('id').eq('id', user.id).maybeSingle();
         if (!profile) {
-          // Profile doesn't exist yet — create it
           const meta = user.user_metadata || {};
           await supabase.from('profiles').insert({
-            id: user.id,
-            email: user.email,
+            id: user.id, email: user.email,
             full_name: meta.full_name || meta.name || '',
-            avatar_url: meta.avatar_url || null,
-            role: 'attendee', // Default role for Google signups
+            avatar_url: meta.avatar_url || null, role: 'attendee',
           });
         }
-      } catch (err) {
-        console.error('Profile sync error:', err);
-      }
+      } catch (err) { console.error('Profile sync error:', err); }
     }
 
     // ══════ Helpers ══════
-    function showError(t) { const m = document.getElementById('auth-msg'); m.className = 'auth-msg error'; m.textContent = t; m.style.display = 'block'; }
-    function initTheme() { localStorage.setItem('theme','light'); document.documentElement.setAttribute('data-theme', 'light'); }
+    function showError(t) {
+      const m = document.getElementById('auth-msg');
+      m.className = 'ev-auth-msg error'; m.textContent = t; m.style.display = 'block';
+    }
+
     function initToggles() {
-      document.querySelectorAll('.fi-toggle').forEach(btn => {
+      document.querySelectorAll('.ev-pass-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
-          const inp = btn.parentElement.querySelector('input'); if (!inp) return;
-          const show = inp.type === 'password'; inp.type = show ? 'text' : 'password';
+          const inp = btn.parentElement.querySelector('input');
+          if (!inp) return;
+          const show = inp.type === 'password';
+          inp.type = show ? 'text' : 'password';
           btn.innerHTML = show
             ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
             : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
         });
-      });
-    }
-    function initParticles() {
-      document.querySelectorAll('.particles').forEach(c => {
-        for (let i = 0; i < 20; i++) {
-          const p = document.createElement('div'); p.className = 'particle';
-          const s = Math.random() * 2.5 + 1;
-          p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:-5%;animation-duration:${Math.random()*16+10}s;animation-delay:${Math.random()*12}s;`;
-          c.appendChild(p);
-        }
       });
     }
   </script>
