@@ -514,11 +514,11 @@ body.eveenty-auth {
 }
 @keyframes evSpin { to { transform: rotate(360deg); } }
 
-/* Blue Top Bar */
+/* Orange Top Bar */
 .ev-top-bar {
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #2196F3, #1976D2, #42A5F5);
+  background: linear-gradient(90deg, #D97B00, #F28C00, #FFA726);
   position: fixed;
   top: 0;
   left: 0;
