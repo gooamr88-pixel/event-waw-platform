@@ -59,7 +59,14 @@
   -webkit-text-fill-color: #141420 !important;
   animation: none !important;
 }
+/* Keep footer logo light on dark footer */
+[data-theme="light"] .footer .nav-logo-text,
+[data-theme="light"] footer .nav-logo-text {
+  -webkit-text-fill-color: #e4e4e7 !important;
+}
 [data-theme="light"] .nav-logo-icon { color: #9a7b1a; }
+[data-theme="light"] .footer .nav-logo-icon,
+[data-theme="light"] footer .nav-logo-icon { color: #F28C00 !important; }
 [data-theme="light"] .nav-toggle { color: #141420; }
 
 /* ── Theme Toggle ── */
@@ -156,6 +163,9 @@
 [data-theme="light"] .section-desc { color: #6e6e80; }
 [data-theme="light"] h1, [data-theme="light"] h2,
 [data-theme="light"] h3, [data-theme="light"] h4 { color: #141420; }
+/* Keep footer headings light */
+[data-theme="light"] .footer h4,
+[data-theme="light"] footer h4 { color: #f4f4f5 !important; }
 /* Keep hero text white */
 [data-theme="light"] .hero-content h1,
 [data-theme="light"] .hero-content h2 { color: #fff !important; -webkit-text-fill-color: #fff !important; }
@@ -395,26 +405,31 @@
    ══════════════════════════════════ */
 [data-theme="light"] .footer,
 [data-theme="light"] footer {
-  background: #1a1a22;
-  color: #d4d4d8;
+  background: #1a1a22 !important;
+  color: #d4d4d8 !important;
   border-top-color: rgba(0,0,0,0.08);
 }
-[data-theme="light"] .footer h4 { color: #f4f4f5; }
-[data-theme="light"] .footer-links a { color: #a1a1aa; }
-[data-theme="light"] .footer-links a:hover { color: #b8941f; }
+[data-theme="light"] .footer h4,
+[data-theme="light"] footer h4 { color: #f4f4f5 !important; }
+[data-theme="light"] .footer p,
+[data-theme="light"] .footer-brand p { color: #a1a1aa !important; }
+[data-theme="light"] .footer-links a { color: #a1a1aa !important; }
+[data-theme="light"] .footer-links a:hover { color: #F28C00 !important; }
 [data-theme="light"] .footer-social a {
-  background: rgba(255,255,255,0.06);
-  border-color: rgba(255,255,255,0.08);
-  color: #a1a1aa;
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: #a1a1aa !important;
 }
 [data-theme="light"] .footer-social a:hover {
-  background: #9a7b1a; border-color: #9a7b1a; color: #fff;
+  background: #F28C00 !important; border-color: #F28C00 !important; color: #fff !important;
 }
 [data-theme="light"] .footer-bottom {
-  border-top-color: rgba(255,255,255,0.06);
-  color: #71717a;
+  border-top-color: rgba(255,255,255,0.06) !important;
+  color: #71717a !important;
 }
-[data-theme="light"] footer .text-muted { color: #a1a1aa; }
+[data-theme="light"] .footer-bottom span { color: #71717a !important; }
+[data-theme="light"] .footer-bottom a { color: #D4AF37 !important; }
+[data-theme="light"] footer .text-muted { color: #a1a1aa !important; }
 
 /* ══════════════════════════════════
    FORM INPUTS
