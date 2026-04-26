@@ -479,6 +479,21 @@ body.eveenty-auth {
 }
 .ev-auth-footer a:hover { text-decoration: underline; }
 
+/* Legal Links Row */
+.ev-legal-links {
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; margin-top: 14px; flex-wrap: wrap;
+}
+.ev-legal-links a {
+  color: #6b6b78; font-size: 0.75rem; font-weight: 500;
+  text-decoration: none; transition: color 0.2s;
+}
+.ev-legal-links a:hover { color: #F28C00; }
+.ev-legal-dot {
+  width: 3px; height: 3px; border-radius: 50%;
+  background: #555; display: inline-block;
+}
+
 /* FAB is now the chat widget from landing-eveenty.css */
 
 /* Auth Message */
