@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Event Waw â€" Discover & Create Events Effortlessly</title>
-  <meta name="description" content="Event Waw â€" Book tickets for concerts, festivals, exhibitions, sports, and conferences in just a few clicks. All-in-one platform for managing ticketing, sponsors, vendors, and marketing." />
+  <title>Event Waw &mdash; Discover & Create Events Effortlessly</title>
+  <meta name="description" content="Event Waw &mdash; Book tickets for concerts, festivals, exhibitions, sports, and conferences in just a few clicks. All-in-one platform for managing ticketing, sponsors, vendors, and marketing." />
   <script>(function(){localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')})()</script>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/theme.css" />
@@ -139,7 +139,7 @@
         </button>
       </div>
       <div id="events-empty" style="display:none;text-align:center;padding:60px 20px;">
-        <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(242,140,0,.06);border:1px solid rgba(242,140,0,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">ðŸŽª</div>
+        <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:rgba(242,140,0,.06);border:1px solid rgba(242,140,0,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">&#127914;</div>
         <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:8px;">No Events Found</h3>
         <p id="empty-state-text" style="color:#888;font-size:0.95rem;max-width:400px;margin:0 auto 24px;line-height:1.7;">Be the first to create an event on Event Waw!</p>
         <a href="register.html" class="btn btn-primary btn-lg">Become an Organizer</a>
@@ -285,7 +285,7 @@
         <div class="footer-brand">
           <a href="index.html" class="nav-logo" style="margin-bottom:12px">
             <div class="nav-logo-icon" style="width:1.5rem;height:1.5rem"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
-            <span class="nav-logo-text" style="font-size:1rem;color:#e4e4e7">Event Waw<span class="text-gold">.</span></span>
+            <span class="nav-logo-text" style="font-size:1rem">Event Waw<span class="text-gold">.</span></span>
           </a>
           <p>Premium event ticketing platform. Discover, book, and attend world-class experiences with a single QR scan.</p>
         </div>
@@ -300,9 +300,9 @@
         <div>
           <h4>Support</h4>
           <ul class="footer-links">
-            <li><a href="#">Help Center</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">FAQ</a></li>
+            <li><a href="contact.html">Help Center</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="#ev-chat-fab" onclick="document.getElementById('ev-chat-fab').click()">FAQ</a></li>
           </ul>
         </div>
         <div>
@@ -316,7 +316,7 @@
       </div>
       <div class="footer-bottom">
         <span>&copy; 2026 Event Waw. All rights reserved.</span>
-        <span style="color:#777;">Made by <a href="tel:+201108607033" style="color:#D4AF37;text-decoration:none;font-weight:600;">Yousef Amr</a></span>
+        <span style="color:#777;">Made by <a href="tel:+201108607033" style="color:#F28C00;text-decoration:none;font-weight:600;">Yousef Amr</a></span>
         <div class="footer-social">
           <a href="#" aria-label="Twitter"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
           <a href="#" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
@@ -554,9 +554,7 @@
       }
     }
 
-    function renderCarousel(events) {
-      // Legacy stub - events now render via renderEvents() into the slider track
-    }
+
 
     function applyFiltersAndRender() {
       let filtered = [...allEvents];
