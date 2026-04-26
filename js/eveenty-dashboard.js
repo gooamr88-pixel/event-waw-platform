@@ -1,0 +1,490 @@
+/* ═══════════════════════════════════
+   EVEENTY DASHBOARD — Main JS
+   Sidebar nav, data loading, charts
+   ═══════════════════════════════════ */
+
+import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
+import { getOrganizerEvents, createEvent, deleteEvent } from '../src/lib/events.js';
+import { protectPage, performSignOut } from '../src/lib/guard.js';
+import { escapeHTML } from '../src/lib/utils.js';
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const auth = await protectPage({ requireRole: 'organizer' });
+  if (!auth) return;
+
+  setupUserInfo(auth);
+  setupSidebar();
+  setupCreateModal();
+  setupSearch();
+
+  await loadDashboard();
+});
+
+/* ── User Info ── */
+function setupUserInfo({ user, profile }) {
+  const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const email = user?.email || '';
+  document.getElementById('user-name').textContent = name;
+  document.getElementById('user-email').textContent = email;
+  document.getElementById('user-avatar').textContent = name.charAt(0).toUpperCase();
+}
+
+/* ── Sidebar Navigation ── */
+function setupSidebar() {
+  const items = document.querySelectorAll('.ev-nav-item');
+  const panels = document.querySelectorAll('.ev-panel');
+  const sidebar = document.getElementById('sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  const overlay = document.getElementById('sidebar-overlay');
+
+  items.forEach(item => {
+    item.addEventListener('click', () => {
+      items.forEach(i => i.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      item.classList.add('active');
+      const panel = document.getElementById('panel-' + item.dataset.panel);
+      if (panel) panel.classList.add('active');
+      // Close mobile sidebar
+      sidebar.classList.remove('open');
+      overlay.classList.remove('active');
+    });
+  });
+
+  // Mobile toggle
+  toggle?.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('active');
+  });
+  overlay?.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+  });
+}
+
+/* ── Load Dashboard Data ── */
+async function loadDashboard() {
+  try {
+    const user = await getCurrentUser();
+    const events = await getOrganizerEvents();
+
+    // Compute stats
+    const total = events.length;
+    const live = events.filter(e => e.status === 'published').length;
+    const draft = events.filter(e => e.status === 'draft').length;
+    const past = events.filter(e => new Date(e.date) < new Date()).length;
+    const review = events.filter(e => e.status === 'review' || e.status === 'in_review').length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-live').textContent = live;
+    document.getElementById('stat-review').textContent = review;
+    document.getElementById('stat-past').textContent = past;
+    document.getElementById('stat-draft').textContent = draft;
+
+    // Revenue data
+    let totalTickets = 0, totalRevenue = 0, totalScanned = 0;
+    let revenueData = null;
+    try {
+      const { data } = await supabase.rpc('get_organizer_revenue', { p_organizer_id: user.id });
+      revenueData = data;
+      if (data) {
+        data.forEach(r => {
+          totalTickets += Number(r.total_tickets_sold);
+          totalRevenue += Number(r.net_revenue);
+          totalScanned += Number(r.scanned_count);
+        });
+      }
+    } catch (e) { console.warn('Revenue RPC skipped:', e.message); }
+
+    const scanRate = totalTickets > 0 ? Math.round((totalScanned / totalTickets) * 100) : 0;
+    document.getElementById('ana-tickets').textContent = totalTickets.toLocaleString();
+    document.getElementById('ana-revenue').textContent = '$' + totalRevenue.toLocaleString();
+    document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '—';
+
+    // Render events table
+    renderEventsTable(events);
+
+    // Populate event selects
+    populateEventSelects(events);
+
+    // Set financial event name
+    if (events.length > 0) {
+      document.getElementById('fin-event-name').textContent = events[0].title;
+    }
+
+    // Charts
+    initCharts(revenueData, events);
+
+    // Revenue breakdown
+    if (revenueData && revenueData.length > 0) {
+      renderRevenueBreakdown(revenueData);
+    }
+
+    // Tickets panel handler
+    setupTicketsPanel(events);
+
+  } catch (err) {
+    console.error('Dashboard error:', err);
+    document.getElementById('events-tbody').innerHTML =
+      `<tr><td colspan="8" class="ev-table-empty">Connect to see your events</td></tr>`;
+  }
+}
+
+/* ── Render Events Table ── */
+function renderEventsTable(events) {
+  const tbody = document.getElementById('events-tbody');
+  if (!events.length) {
+    tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No events yet. Create your first event!</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = events.map((ev, i) => {
+    const date = new Date(ev.date);
+    const created = new Date(ev.created_at);
+    const isPast = date < new Date();
+    const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
+    const services = ev.ticket_tiers?.map(t => `${t.name} (${t.sold_count || 0}/${t.capacity})`).join(', ') || '—';
+
+    let statusClass = ev.status;
+    if (isPast) statusClass = 'past';
+    let statusLabel = ev.status;
+    if (isPast) statusLabel = 'Past';
+
+    return `<tr>
+      <td style="font-weight:600;">#${i + 1}</td>
+      <td><a href="event-detail.html?id=${ev.id}" class="ev-link" style="font-weight:600;">${escapeHTML(ev.title)}</a></td>
+      <td style="font-size:.8rem;">
+        <div>Include:</div>
+        <div class="ev-link">Tickets (${sold}/${ev.ticket_tiers?.reduce((s,t)=>s+t.capacity,0)||0})</div>
+      </td>
+      <td style="font-size:.82rem;">📅 ${created.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</td>
+      <td style="font-size:.82rem;">
+        📅 ${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        ${isPast ? '<br><span class="ev-badge past" style="margin-top:4px;">⏳ Past</span>' : ''}
+      </td>
+      <td style="font-weight:600;">${totalRevenueForEvent(ev)}</td>
+      <td>
+        <span class="ev-badge ${statusClass}">${statusLabel}</span>
+      </td>
+      <td>
+        <div style="display:flex;gap:4px;">
+          <button class="ev-btn-icon" title="Edit" data-action="edit" data-id="${ev.id}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="ev-btn-icon" title="Delete" data-action="delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-sold="${sold}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Event delegation for actions
+  tbody.addEventListener('click', async (e) => {
+    const editBtn = e.target.closest('[data-action="edit"]');
+    if (editBtn) {
+      const id = editBtn.dataset.id;
+      showEditModal(id);
+      return;
+    }
+    const delBtn = e.target.closest('[data-action="delete"]');
+    if (delBtn) {
+      const id = delBtn.dataset.id;
+      const title = delBtn.dataset.title;
+      const sold = Number(delBtn.dataset.sold || 0);
+      if (sold > 0) { alert(`Cannot delete: ${sold} ticket(s) sold.`); return; }
+      if (confirm(`Delete "${title}"? This cannot be undone.`)) {
+        const result = await deleteEvent(id);
+        if (result.success) { await loadDashboard(); }
+        else { alert(result.error || 'Delete failed'); }
+      }
+    }
+  });
+}
+
+function totalRevenueForEvent(ev) {
+  const sold = ev.ticket_tiers?.reduce((s, t) => {
+    return s + (t.sold_count || 0) * (t.price || 0);
+  }, 0) || 0;
+  return sold > 0 ? '$' + sold.toLocaleString() : '-';
+}
+
+/* ── Populate Event Selects ── */
+function populateEventSelects(events) {
+  const selects = ['ticket-event-select', 'approval-event-select'];
+  selects.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const firstOpt = el.querySelector('option');
+    el.innerHTML = '';
+    el.appendChild(firstOpt);
+    events.forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev.id;
+      opt.textContent = ev.title;
+      el.appendChild(opt);
+    });
+  });
+}
+
+/* ── Tickets Panel ── */
+function setupTicketsPanel(events) {
+  const select = document.getElementById('ticket-event-select');
+  select?.addEventListener('change', async () => {
+    const tbody = document.getElementById('tickets-tbody');
+    const eventId = select.value;
+    if (!eventId) {
+      tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">Select an event to view tickets</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
+    try {
+      const { data: tiers } = await supabase.from('ticket_tiers').select('id').eq('event_id', eventId);
+      if (!tiers?.length) { tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No tiers found</td></tr>'; return; }
+      const { data: tickets } = await supabase
+        .from('tickets')
+        .select('id, attendee_name, attendee_email, tier_name, status, scanned_at, created_at, seat_section, seat_row, seat_number')
+        .in('ticket_tier_id', tiers.map(t => t.id))
+        .order('created_at', { ascending: false });
+
+      if (!tickets?.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No tickets sold yet</td></tr>';
+        return;
+      }
+      tbody.innerHTML = tickets.map((t, i) => `<tr>
+        <td>${i + 1}</td>
+        <td style="font-weight:600;">${escapeHTML(t.attendee_name || '—')}</td>
+        <td>${escapeHTML(t.attendee_email || '—')}</td>
+        <td>${escapeHTML(t.tier_name || '—')}</td>
+        <td>${t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '—'}</td>
+        <td><span class="ev-badge ${t.scanned_at ? 'accepted' : 'pending'}">${t.scanned_at ? '✓ Scanned' : 'Pending'}</span></td>
+        <td style="font-size:.8rem;color:var(--ev-text-light);">${new Date(t.created_at).toLocaleDateString()}</td>
+      </tr>`).join('');
+
+      // CSV export
+      document.getElementById('ticket-csv-btn')?.addEventListener('click', () => {
+        const headers = ['Name','Email','Tier','Seat','Status','Date'];
+        const rows = tickets.map(t => [
+          t.attendee_name||'', t.attendee_email||'', t.tier_name||'',
+          t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '',
+          t.scanned_at ? 'Scanned' : 'Pending', t.created_at||''
+        ]);
+        const csv = [headers,...rows].map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = `tickets_${Date.now()}.csv`;
+        a.click();
+      });
+    } catch (err) {
+      tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty" style="color:var(--ev-danger);">${err.message}</td></tr>`;
+    }
+  });
+}
+
+/* ── Charts ── */
+function initCharts(revenueData, events) {
+  if (typeof Chart === 'undefined') return;
+
+  // Revenue line chart
+  const rCtx = document.getElementById('revenue-chart');
+  if (rCtx && revenueData?.length) {
+    new Chart(rCtx, {
+      type: 'line',
+      data: {
+        labels: revenueData.map(d => {
+          const dt = new Date(d.day || d.event_title);
+          return isNaN(dt) ? (d.event_title || '—') : dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }),
+        datasets: [{
+          label: 'Revenue ($)',
+          data: revenueData.map(d => Number(d.revenue || d.net_revenue || 0)),
+          borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,.1)',
+          fill: true, tension: 0.4, pointRadius: 3,
+          pointBackgroundColor: '#F5C518', pointBorderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { color: '#F0F0F0' }, ticks: { color: '#999', font: { size: 10 } } },
+          y: { grid: { color: '#F0F0F0' }, ticks: { color: '#999', font: { size: 10 } } },
+        }
+      }
+    });
+  }
+
+  // Tickets doughnut
+  const tCtx = document.getElementById('tier-chart');
+  if (tCtx && events?.length) {
+    const tierMap = {};
+    events.forEach(ev => {
+      (ev.ticket_tiers || []).forEach(t => { tierMap[t.name] = (tierMap[t.name] || 0) + (t.sold_count || 0); });
+    });
+    const labels = Object.keys(tierMap);
+    const values = Object.values(tierMap);
+    if (labels.length) {
+      new Chart(tCtx, {
+        type: 'doughnut',
+        data: {
+          labels, datasets: [{
+            data: values,
+            backgroundColor: ['#F5C518','#E91E63','#2196F3','#4CAF50','#FF9800','#9C27B0'],
+            borderWidth: 0, hoverOffset: 6,
+          }]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false, cutout: '65%',
+          plugins: { legend: { position: 'bottom', labels: { color: '#777', font: { size: 11 }, padding: 14 } } }
+        }
+      });
+    }
+  }
+}
+
+/* ── Revenue Breakdown ── */
+function renderRevenueBreakdown(data) {
+  const el = document.getElementById('revenue-breakdown');
+  el.innerHTML = `
+    <div class="ev-table-wrap"><table class="ev-table">
+    <thead><tr><th>Event</th><th style="text-align:right;">Gross</th><th style="text-align:right;">Fee (5%)</th><th style="text-align:right;">Net Payout</th><th style="text-align:center;">Scan %</th></tr></thead>
+    <tbody>${data.map(r => `<tr>
+      <td><div style="font-weight:600;">${escapeHTML(r.event_title)}</div><div style="font-size:.78rem;color:var(--ev-text-light);">${r.total_tickets_sold} tickets</div></td>
+      <td style="text-align:right;font-weight:600;">$${Number(r.gross_revenue).toLocaleString()}</td>
+      <td style="text-align:right;color:var(--ev-text-light);">-$${Number(r.platform_fee).toLocaleString()}</td>
+      <td style="text-align:right;color:var(--ev-pink);font-weight:700;">$${Number(r.net_revenue).toLocaleString()}</td>
+      <td style="text-align:center;">${Number(r.scan_rate)}%</td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+/* ── Search ── */
+function setupSearch() {
+  document.getElementById('ev-search')?.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#events-tbody tr').forEach(row => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(q) ? '' : 'none';
+    });
+  });
+}
+
+/* ── Create Modal ── */
+function setupCreateModal() {
+  const modal = document.getElementById('create-modal');
+  const closeBtn = document.getElementById('create-modal-close');
+  const openBtns = [document.getElementById('header-create-event'), document.getElementById('payout-btn')];
+
+  document.getElementById('header-create-event')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    modal.classList.add('active');
+  });
+
+  closeBtn?.addEventListener('click', () => modal.classList.remove('active'));
+  modal?.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('active'); });
+
+  // Add tier
+  document.getElementById('add-tier-btn')?.addEventListener('click', () => {
+    const container = document.getElementById('tiers-container');
+    const row = document.createElement('div');
+    row.className = 'ev-form-row';
+    row.style.cssText = 'grid-template-columns:1fr 100px 80px;margin-bottom:8px;';
+    row.innerHTML = `
+      <input class="ev-form-input" type="text" placeholder="Tier name" data-tier="name" required />
+      <input class="ev-form-input" type="number" placeholder="Price" data-tier="price" min="0" required />
+      <input class="ev-form-input" type="number" placeholder="Qty" data-tier="capacity" min="1" required />`;
+    container.appendChild(row);
+  });
+
+  // Submit
+  document.getElementById('create-event-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const eventData = {
+      organizer_id: user.id,
+      title: document.getElementById('ev-title').value,
+      description: document.getElementById('ev-desc').value,
+      venue: document.getElementById('ev-venue').value,
+      city: document.getElementById('ev-city').value,
+      date: new Date(document.getElementById('ev-date').value).toISOString(),
+      category: document.getElementById('ev-category').value,
+      status: 'published',
+    };
+
+    try {
+      const event = await createEvent(eventData);
+      // Create tiers
+      const tierRows = document.querySelectorAll('#tiers-container .ev-form-row, #tiers-container > div');
+      for (const row of tierRows) {
+        const name = row.querySelector('[data-tier="name"]')?.value;
+        const price = parseFloat(row.querySelector('[data-tier="price"]')?.value) || 0;
+        const capacity = parseInt(row.querySelector('[data-tier="capacity"]')?.value) || 100;
+        if (name) { await supabase.from('ticket_tiers').insert({ event_id: event.id, name, price, capacity }); }
+      }
+      modal.classList.remove('active');
+      await loadDashboard();
+    } catch (err) { alert('Error: ' + err.message); }
+  });
+}
+
+/* ── Edit Modal ── */
+async function showEditModal(eventId) {
+  const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
+  if (error || !ev) { alert('Failed to load event'); return; }
+
+  const evDate = ev.date ? new Date(ev.date) : new Date();
+  const dateStr = evDate.toISOString().slice(0, 10);
+  const timeStr = evDate.toTimeString().slice(0, 5);
+
+  const modal = document.createElement('div');
+  modal.className = 'ev-modal-overlay active';
+  modal.innerHTML = `<div class="ev-modal" style="max-width:480px;">
+    <div class="ev-modal-header"><h2>Edit Event</h2><button class="ev-modal-close" id="edit-close">✕</button></div>
+    <div style="padding:10px 14px;background:var(--ev-yellow-light);border-radius:8px;margin-bottom:16px;font-weight:600;">📅 ${escapeHTML(ev.title)}</div>
+    <div class="ev-form-row">
+      <div class="ev-form-group"><label>Date</label><input class="ev-form-input" type="date" id="edit-date" value="${dateStr}" /></div>
+      <div class="ev-form-group"><label>Time</label><input class="ev-form-input" type="time" id="edit-time" value="${timeStr}" /></div>
+    </div>
+    <div class="ev-form-group"><label>Description</label><textarea class="ev-form-input" id="edit-desc" rows="3">${escapeHTML(ev.description || '')}</textarea></div>
+    <div class="ev-form-row">
+      <div class="ev-form-group"><label>Venue</label><input class="ev-form-input" type="text" id="edit-venue" value="${escapeHTML(ev.venue || ev.location || '')}" /></div>
+      <div class="ev-form-group"><label>City</label><input class="ev-form-input" type="text" id="edit-city" value="${escapeHTML(ev.city || '')}" /></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1;">Cancel</button>
+      <button class="ev-btn ev-btn-pink" id="edit-save" style="flex:1;">Save Changes</button>
+    </div>
+    <p id="edit-status" style="text-align:center;margin-top:10px;font-size:.85rem;display:none;"></p>
+  </div>`;
+  document.body.appendChild(modal);
+
+  document.getElementById('edit-close').addEventListener('click', () => modal.remove());
+  document.getElementById('edit-cancel').addEventListener('click', () => modal.remove());
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+  document.getElementById('edit-save').addEventListener('click', async () => {
+    const btn = document.getElementById('edit-save');
+    const status = document.getElementById('edit-status');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const d = document.getElementById('edit-date').value;
+    const t = document.getElementById('edit-time').value;
+    if (!d) { status.textContent = 'Select a date'; status.style.color = 'var(--ev-danger)'; status.style.display = 'block'; btn.disabled = false; btn.textContent = 'Save Changes'; return; }
+    try {
+      const updates = {
+        date: new Date(`${d}T${t || '00:00'}:00`).toISOString(),
+        description: document.getElementById('edit-desc').value.trim(),
+      };
+      const venue = document.getElementById('edit-venue').value.trim();
+      const city = document.getElementById('edit-city').value.trim();
+      if (venue) updates.location = venue;
+      if (city) updates.city = city;
+      const { error } = await supabase.from('events').update(updates).eq('id', eventId);
+      if (error) throw error;
+      status.textContent = '✓ Updated!'; status.style.color = 'var(--ev-success)'; status.style.display = 'block';
+      setTimeout(async () => { modal.remove(); await loadDashboard(); }, 600);
+    } catch (err) {
+      status.textContent = '✗ ' + err.message; status.style.color = 'var(--ev-danger)'; status.style.display = 'block';
+      btn.disabled = false; btn.textContent = 'Save Changes';
+    }
+  });
+}
