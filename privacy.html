@@ -4,148 +4,160 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Privacy Policy — Event Waw</title>
-  <meta name="description" content="Event Waw Privacy Policy" />
-  <link rel="stylesheet" href="css/styles.css" />
-  <link rel="stylesheet" href="css/light-theme.css" />
+  <meta name="description" content="Event Waw Privacy Policy — How we collect, use, and protect your data." />
+  <link rel="stylesheet" href="css/legal.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
-  <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
-  <script src="js/csp.js"></script>
 </head>
 <body>
   <div class="legal-page">
     <nav class="legal-nav">
       <a href="index.html" class="nav-logo">
         <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
-        <span class="nav-logo-text shimmer">Event Waw</span>
+        <span class="nav-logo-text">Event Waw</span>
       </a>
-      <a href="javascript:history.back()" class="legal-back">← Back</a>
+      <a href="javascript:history.back()" class="legal-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </a>
     </nav>
 
     <div class="legal-container">
       <div class="legal-header">
         <span class="legal-badge">Legal</span>
-        <h1>Privacy Policy</h1>
+        <h1>Privacy <span class="highlight">Policy</span></h1>
         <p class="legal-date">Last updated: April 16, 2026</p>
       </div>
 
+      <div class="legal-toc">
+        <h3>Table of Contents</h3>
+        <ol>
+          <li><a href="#s1">Information We Collect</a></li>
+          <li><a href="#s2">How We Use Your Information</a></li>
+          <li><a href="#s3">Information Sharing</a></li>
+          <li><a href="#s4">Data Security</a></li>
+          <li><a href="#s5">Cookies & Tracking</a></li>
+          <li><a href="#s6">Your Rights</a></li>
+          <li><a href="#s7">Data Retention</a></li>
+          <li><a href="#s8">Children's Privacy</a></li>
+          <li><a href="#s9">Changes to This Policy</a></li>
+          <li><a href="#s10">Contact Us</a></li>
+        </ol>
+      </div>
+
       <div class="legal-content">
-        <section>
-          <h2>1. Information We Collect</h2>
+        <section id="s1">
+          <h2><span class="sec-num">1</span> Information We Collect</h2>
           <p>We collect information you provide directly to us, including:</p>
           <ul>
             <li><strong>Account Information:</strong> Name, email address, phone number, and password when you create an account.</li>
             <li><strong>Payment Information:</strong> Payment card details are processed securely by Stripe. We do not store your full card number.</li>
             <li><strong>Event Information:</strong> Details about events you create, attend, or interact with.</li>
+            <li><strong>Location Data:</strong> With your permission, approximate location to show nearby events.</li>
             <li><strong>Usage Data:</strong> Browser type, IP address, pages visited, and interaction data.</li>
           </ul>
         </section>
 
-        <section>
-          <h2>2. How We Use Your Information</h2>
+        <section id="s2">
+          <h2><span class="sec-num">2</span> How We Use Your Information</h2>
           <p>We use collected information to:</p>
           <ul>
             <li>Provide, maintain, and improve the Platform.</li>
-            <li>Process transactions and send related information.</li>
+            <li>Process transactions and send related information (tickets, receipts).</li>
             <li>Send verification codes and security alerts.</li>
             <li>Communicate updates about events you've shown interest in.</li>
             <li>Detect, investigate, and prevent fraudulent transactions.</li>
+            <li>Personalize your experience and show relevant event recommendations.</li>
             <li>Comply with legal obligations.</li>
           </ul>
         </section>
 
-        <section>
-          <h2>3. Information Sharing</h2>
+        <section id="s3">
+          <h2><span class="sec-num">3</span> Information Sharing</h2>
           <p>We do not sell your personal information. We may share information with:</p>
           <ul>
             <li><strong>Event Organizers:</strong> Your name and ticket details for events you attend.</li>
             <li><strong>Payment Processors:</strong> Stripe, to process payments securely.</li>
-            <li><strong>Service Providers:</strong> Third parties that help us operate the Platform (e.g., email services).</li>
-            <li><strong>Legal Compliance:</strong> When required by law or to protect our rights.</li>
+            <li><strong>Service Providers:</strong> Third parties that help us operate the Platform (e.g., email delivery, hosting).</li>
+            <li><strong>Legal Compliance:</strong> When required by law, court order, or to protect our rights.</li>
           </ul>
+          <div class="legal-info">
+            <p><strong>Important:</strong> We will never sell, rent, or trade your personal data to third parties for marketing purposes.</p>
+          </div>
         </section>
 
-        <section>
-          <h2>4. Data Security</h2>
+        <section id="s4">
+          <h2><span class="sec-num">4</span> Data Security</h2>
           <p>We implement industry-standard security measures including:</p>
           <ul>
-            <li>End-to-end encryption for sensitive data transmission.</li>
+            <li>End-to-end encryption (TLS/SSL) for all data transmission.</li>
             <li>Row Level Security (RLS) policies on all database tables.</li>
-            <li>HMAC-SHA256 signed QR codes for ticket verification.</li>
+            <li>HMAC-SHA256 signed QR codes for tamper-proof ticket verification.</li>
             <li>Hashed OTP codes (SHA-256) — we never store plaintext verification codes.</li>
-            <li>Regular security audits and monitoring.</li>
+            <li>PCI DSS compliant payment processing via Stripe.</li>
+            <li>Regular security audits and penetration testing.</li>
           </ul>
         </section>
 
-        <section>
-          <h2>5. Cookies & Tracking</h2>
+        <section id="s5">
+          <h2><span class="sec-num">5</span> Cookies & Tracking</h2>
           <p>We use minimal cookies essential for:</p>
           <ul>
-            <li>Maintaining your login session.</li>
-            <li>Remembering your theme preference (dark/light mode).</li>
+            <li>Maintaining your login session (authentication tokens).</li>
+            <li>Remembering your theme preference (light/dark mode).</li>
+            <li>Storing language and accessibility preferences.</li>
           </ul>
-          <p>We do not use third-party advertising cookies or tracking pixels.</p>
+          <p>We do not use third-party advertising cookies, tracking pixels, or behavioral targeting technologies.</p>
         </section>
 
-        <section>
-          <h2>6. Your Rights</h2>
+        <section id="s6">
+          <h2><span class="sec-num">6</span> Your Rights</h2>
           <p>You have the right to:</p>
           <ul>
             <li><strong>Access</strong> your personal data at any time through your account settings.</li>
             <li><strong>Correct</strong> any inaccurate information in your profile.</li>
             <li><strong>Delete</strong> your account and associated data by contacting us.</li>
-            <li><strong>Export</strong> your data in a machine-readable format.</li>
-            <li><strong>Withdraw consent</strong> for optional data processing.</li>
+            <li><strong>Export</strong> your data in a machine-readable format (JSON/CSV).</li>
+            <li><strong>Withdraw consent</strong> for optional data processing at any time.</li>
+            <li><strong>Lodge a complaint</strong> with a data protection authority if you believe your rights have been violated.</li>
           </ul>
         </section>
 
-        <section>
-          <h2>7. Data Retention</h2>
-          <p>We retain your personal data for as long as your account is active. Transaction records and ticket data may be retained for up to 7 years for legal and accounting purposes. You can request deletion of your account at any time.</p>
+        <section id="s7">
+          <h2><span class="sec-num">7</span> Data Retention</h2>
+          <p>We retain your personal data for as long as your account is active. Transaction records and ticket data may be retained for up to 7 years for legal and accounting purposes. You can request deletion of your account at any time, and we will process your request within 30 days.</p>
         </section>
 
-        <section>
-          <h2>8. Children's Privacy</h2>
-          <p>The Platform is not intended for users under the age of 16. We do not knowingly collect information from children under 16. If we learn that we have collected such data, we will take steps to delete it promptly.</p>
+        <section id="s8">
+          <h2><span class="sec-num">8</span> Children's Privacy</h2>
+          <p>The Platform is not intended for users under the age of 16. We do not knowingly collect information from children under 16. If we learn that we have collected such data, we will take steps to delete it promptly. If you believe a child has provided us with personal information, please contact us.</p>
         </section>
 
-        <section>
-          <h2>9. Changes to This Policy</h2>
-          <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the updated policy on this page with a new "Last updated" date. We encourage you to review this policy periodically.</p>
+        <section id="s9">
+          <h2><span class="sec-num">9</span> Changes to This Policy</h2>
+          <p>We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the updated policy on this page with a new "Last updated" date, and by sending an email notification for significant changes. We encourage you to review this policy periodically.</p>
         </section>
 
-        <section>
-          <h2>10. Contact Us</h2>
-          <p>If you have any questions about this Privacy Policy or your data, please contact us at:</p>
+        <section id="s10">
+          <h2><span class="sec-num">10</span> Contact Us</h2>
+          <p>If you have any questions about this Privacy Policy or your data, please contact us:</p>
           <div class="legal-contact">
-            <p>📧 <strong>privacy@eventwaw.com</strong></p>
+            <div class="contact-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <p><strong>privacy@eventwaw.com</strong><br><span style="color:#888;font-size:0.85rem;">Data Protection Officer</span></p>
           </div>
         </section>
       </div>
     </div>
+
+    <div class="legal-footer">
+      <div class="legal-footer-links">
+        <a href="terms.html">Terms of Service</a>
+        <a href="privacy.html">Privacy Policy</a>
+        <a href="merchant-agreement.html">Merchant Agreement</a>
+      </div>
+      <p>&copy; 2026 Event Waw. All rights reserved. Made by <a href="tel:+201108607033">Yousef Amr</a></p>
+    </div>
   </div>
-
-  <style>
-    .legal-page { min-height: 100vh; background: var(--bg-primary); color: var(--text-primary); }
-    .legal-nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 40px; border-bottom: 1px solid var(--border-color); }
-    .legal-back { color: var(--text-secondary); font-size: 0.88rem; text-decoration: none; transition: color 0.2s; }
-    .legal-back:hover { color: var(--accent-primary); }
-    .legal-container { max-width: 720px; margin: 0 auto; padding: 60px 24px 100px; }
-    .legal-header { text-align: center; margin-bottom: 48px; }
-    .legal-badge { display: inline-block; padding: 6px 16px; border-radius: 20px; background: rgba(212,175,55,.08); border: 1px solid rgba(212,175,55,.15); color: var(--accent-primary); font-size: 0.78rem; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 16px; }
-    .legal-header h1 { font-family: var(--font-serif); font-size: 2.4rem; color: var(--text-primary); margin: 0; }
-    .legal-date { color: var(--text-muted); font-size: 0.85rem; margin-top: 8px; }
-    .legal-content section { margin-bottom: 36px; }
-    .legal-content h2 { font-family: var(--font-serif); font-size: 1.2rem; color: var(--text-primary); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
-    .legal-content p { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.8; margin: 0 0 12px; }
-    .legal-content ul { padding-left: 20px; margin: 8px 0 12px; }
-    .legal-content li { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.8; margin-bottom: 4px; }
-    .legal-contact { background: rgba(212,175,55,.04); border: 1px solid rgba(212,175,55,.1); border-radius: 12px; padding: 16px 20px; margin-top: 12px; }
-    .legal-contact p { margin: 0; }
-    @media (max-width: 640px) { .legal-nav { padding: 16px 20px; } .legal-header h1 { font-size: 1.8rem; } }
-  </style>
-
-  <script>
-    localStorage.setItem('theme','light'); document.documentElement.setAttribute('data-theme', 'light');
-  </script>
 </body>
 </html>
