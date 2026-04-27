@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════
-   EVEENTY DASHBOARD v2 — Controller
+   EVENT WAW DASHBOARD — Controller
    Single-file, modular, production-ready
    ═══════════════════════════════════ */
 
