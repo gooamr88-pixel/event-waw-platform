@@ -162,6 +162,9 @@ GRANT EXECUTE ON FUNCTION request_organizer_upgrade() TO authenticated;
 
 -- ════════════ GET ORDER BY SESSION RPC ════════════
 
+-- Drop existing version first (return type changed)
+DROP FUNCTION IF EXISTS get_order_by_session(TEXT);
+
 -- Retrieves order details by Stripe session ID.
 -- Only returns the order if it belongs to the requesting user,
 -- OR the user is the event organizer.
