@@ -82,6 +82,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
         <span>Tickets</span>
       </button>
+      <button class="ev-header-link" data-goto="analytics">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        <span>Analytics</span>
+      </button>
       <button class="ev-header-link create-event" id="header-create-event">
         + <span>Create Event</span>
       </button>
@@ -153,6 +157,11 @@
     <!-- ════ PANEL: TICKETS ════ -->
     <div class="ev-panel" id="panel-tickets">
       <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">🎫 Ticket Management</h2>
+      <div class="ev-stat-grid" style="margin-bottom:18px" id="ticket-stats-grid">
+        <div class="ev-stat-card"><div class="ev-stat-icon orange">🎫</div><div><div class="ev-stat-value" id="tkt-stat-sold">0</div><div class="ev-stat-label">Tickets Sold</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon green">✅</div><div><div class="ev-stat-value" id="tkt-stat-scanned">0</div><div class="ev-stat-label">Scanned</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon blue">💰</div><div><div class="ev-stat-value" id="tkt-stat-revenue">$0</div><div class="ev-stat-label">Revenue</div></div></div>
+      </div>
       <div class="ev-card">
         <div class="ev-card-header">
           <div class="ev-event-selector">
@@ -264,9 +273,9 @@
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Vendor</th><th>Booth</th><th>1st Pay</th><th>1st Amount</th><th>2nd Pay</th><th>2nd Amount</th><th>Status</th></tr></thead>
+            <thead><tr><th>#</th><th>Event</th><th>Tickets Sold</th><th>Gross Revenue</th><th>Platform Fee (5%)</th><th>Net Payout</th><th>Status</th></tr></thead>
             <tbody id="financial-tbody">
-              <tr><td colspan="8" class="ev-table-empty">No financial data yet</td></tr>
+              <tr><td colspan="7" class="ev-table-empty">No financial data yet</td></tr>
             </tbody>
           </table>
         </div>

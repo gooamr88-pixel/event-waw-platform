@@ -98,8 +98,8 @@ function setupSidebar() {
     btn.addEventListener('click', () => switchToPanel(btn.dataset.goto));
   });
 
-  // Revenue button switches to analytics
-  document.getElementById('payout-btn')?.addEventListener('click', () => switchToPanel('analytics'));
+  // Revenue button switches to financial
+  document.getElementById('payout-btn')?.addEventListener('click', () => switchToPanel('financial'));
 }
 
 /* ══════════════════════════════════
@@ -199,9 +199,18 @@ function renderEventsTable(events) {
       <td style="font-weight:600">${calcRevenue(ev)}</td>
       <td><span class="ev-badge ${statusClass}">${statusLabel}</span></td>
       <td>
-        <div style="display:flex;gap:4px">
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
           <button class="ev-btn-icon" title="Edit" data-action="edit" data-id="${ev.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          </button>
+          <button class="ev-btn-icon" title="Venue Map" data-action="map" data-id="${ev.id}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          </button>
+          <button class="ev-btn-icon" title="Duplicate" data-action="duplicate" data-id="${ev.id}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          </button>
+          <button class="ev-btn-icon" title="Share Link" data-action="share" data-id="${ev.id}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           </button>
           <button class="ev-btn-icon" title="Delete" data-action="delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-sold="${sold}" data-status="${ev.status}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -227,6 +236,24 @@ async function handleTableAction(e) {
   const editBtn = e.target.closest('[data-action="edit"]');
   if (editBtn) { showEditModal(editBtn.dataset.id); return; }
 
+  const mapBtn = e.target.closest('[data-action="map"]');
+  if (mapBtn) { window.location.href = `venue-designer.html?event_id=${mapBtn.dataset.id}`; return; }
+
+  const dupBtn = e.target.closest('[data-action="duplicate"]');
+  if (dupBtn) { await duplicateEvent(dupBtn.dataset.id); return; }
+
+  const shareBtn = e.target.closest('[data-action="share"]');
+  if (shareBtn) {
+    const url = `${window.location.origin}/event-detail.html?id=${shareBtn.dataset.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Event link copied to clipboard!', 'success');
+    } catch {
+      prompt('Copy this link:', url);
+    }
+    return;
+  }
+
   const delBtn = e.target.closest('[data-action="delete"]');
   if (delBtn) {
     const id = delBtn.dataset.id;
@@ -243,6 +270,38 @@ async function handleTableAction(e) {
       if (result.success) { showToast('Event deleted', 'success'); await loadDashboard(); }
       else { showToast(result.error || 'Delete failed', 'error'); }
     }
+  }
+}
+
+async function duplicateEvent(eventId) {
+  try {
+    const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
+    if (error || !ev) { showToast('Failed to load event', 'error'); return; }
+    const user = await getCurrentUser();
+    const copy = {
+      organizer_id: user.id,
+      title: ev.title + ' (Copy)',
+      description: ev.description,
+      venue: ev.venue,
+      city: ev.city,
+      date: ev.date,
+      category: ev.category,
+      status: 'draft',
+    };
+    const newEvent = await createEvent(copy);
+    // Copy tiers
+    const { data: tiers } = await supabase.from('ticket_tiers').select('*').eq('event_id', eventId);
+    if (tiers?.length) {
+      for (const t of tiers) {
+        await supabase.from('ticket_tiers').insert({
+          event_id: newEvent.id, name: t.name, price: t.price, capacity: t.capacity
+        });
+      }
+    }
+    showToast(`Event duplicated as draft: "${copy.title}"`, 'success');
+    await loadDashboard();
+  } catch (err) {
+    showToast('Duplicate failed: ' + err.message, 'error');
   }
 }
 
@@ -275,22 +334,37 @@ function setupTicketsPanel() {
     const eventId = select.value;
     if (!eventId) {
       tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">Select an event to view tickets</td></tr>';
+      document.getElementById('tkt-stat-sold').textContent = '0';
+      document.getElementById('tkt-stat-scanned').textContent = '0';
+      document.getElementById('tkt-stat-revenue').textContent = '$0';
       return;
     }
     tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
     try {
-      const { data: tiers } = await supabase.from('ticket_tiers').select('id').eq('event_id', eventId);
+      const { data: tiers } = await supabase.from('ticket_tiers').select('id, price').eq('event_id', eventId);
       if (!tiers?.length) { tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No tiers found</td></tr>'; return; }
+      const tierPrices = {};
+      tiers.forEach(t => { tierPrices[t.id] = t.price || 0; });
       const { data: tickets } = await supabase
         .from('tickets')
-        .select('id, attendee_name, attendee_email, tier_name, status, scanned_at, created_at, seat_section, seat_row, seat_number')
+        .select('id, attendee_name, attendee_email, tier_name, ticket_tier_id, status, scanned_at, created_at, seat_section, seat_row, seat_number')
         .in('ticket_tier_id', tiers.map(t => t.id))
         .order('created_at', { ascending: false });
 
       if (!tickets?.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No tickets sold yet</td></tr>';
+        document.getElementById('tkt-stat-sold').textContent = '0';
+        document.getElementById('tkt-stat-scanned').textContent = '0';
+        document.getElementById('tkt-stat-revenue').textContent = '$0';
         return;
       }
+
+      // Update ticket stats
+      const scannedCount = tickets.filter(t => t.scanned_at).length;
+      const totalRev = tickets.reduce((s, t) => s + (tierPrices[t.ticket_tier_id] || 0), 0);
+      document.getElementById('tkt-stat-sold').textContent = tickets.length;
+      document.getElementById('tkt-stat-scanned').textContent = scannedCount;
+      document.getElementById('tkt-stat-revenue').textContent = '$' + totalRev.toLocaleString();
       tbody.innerHTML = tickets.map((t, i) => `<tr>
         <td>${i + 1}</td>
         <td style="font-weight:600">${escapeHTML(t.attendee_name || '—')}</td>
@@ -513,6 +587,10 @@ function setupCreateModal() {
       showToast('Venue is required', 'error');
       btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
     }
+    if (new Date(eventData.date) < new Date()) {
+      showToast('Event date cannot be in the past', 'error');
+      btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
+    }
 
     try {
       const event = await createEvent(eventData);
@@ -556,7 +634,6 @@ function setupCreateModal() {
    EDIT EVENT MODAL
    ══════════════════════════════════ */
 async function showEditModal(eventId) {
-  // Clean up any existing edit modals to prevent duplicates
   document.querySelectorAll('.ev-modal-overlay.ev-edit-modal').forEach(m => m.remove());
 
   const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
@@ -565,12 +642,16 @@ async function showEditModal(eventId) {
   const evDate = ev.date ? new Date(ev.date) : new Date();
   const dateStr = evDate.toISOString().slice(0, 10);
   const timeStr = evDate.toTimeString().slice(0, 5);
+  const isDraft = ev.status === 'draft';
 
   const modal = document.createElement('div');
   modal.className = 'ev-modal-overlay active ev-edit-modal';
-  modal.innerHTML = `<div class="ev-modal" style="max-width:480px">
+  modal.innerHTML = `<div class="ev-modal" style="max-width:520px">
     <div class="ev-modal-header"><h2>✏️ Edit Event</h2><button class="ev-modal-close" id="edit-close">✕</button></div>
-    <div style="padding:12px 16px;background:var(--ev-border-lt);border-radius:10px;margin-bottom:18px;font-weight:600;font-size:.9rem">📅 ${escapeHTML(ev.title)}</div>
+    <div class="ev-form-group">
+      <label>Event Title</label>
+      <input class="ev-form-input" type="text" id="edit-title" value="${escapeHTML(ev.title)}" />
+    </div>
     <div class="ev-form-row">
       <div class="ev-form-group"><label>Date</label><input class="ev-form-input" type="date" id="edit-date" value="${dateStr}" /></div>
       <div class="ev-form-group"><label>Time</label><input class="ev-form-input" type="time" id="edit-time" value="${timeStr}" /></div>
@@ -580,12 +661,32 @@ async function showEditModal(eventId) {
       <div class="ev-form-group"><label>Venue</label><input class="ev-form-input" type="text" id="edit-venue" value="${escapeHTML(ev.venue || ev.location || '')}" /></div>
       <div class="ev-form-group"><label>City</label><input class="ev-form-input" type="text" id="edit-city" value="${escapeHTML(ev.city || '')}" /></div>
     </div>
+    <div class="ev-form-group">
+      <label>Status</label>
+      <div style="display:flex;gap:10px">
+        <button class="ev-btn ${isDraft ? 'ev-btn-outline' : 'ev-btn-pink'}" id="edit-status-pub" type="button" style="flex:1">🟢 Published</button>
+        <button class="ev-btn ${isDraft ? 'ev-btn-pink' : 'ev-btn-outline'}" id="edit-status-draft" type="button" style="flex:1">📝 Draft</button>
+      </div>
+      <input type="hidden" id="edit-status" value="${ev.status}" />
+    </div>
     <div style="display:flex;gap:10px;margin-top:18px">
       <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1">Cancel</button>
       <button class="ev-btn ev-btn-pink" id="edit-save" style="flex:1">Save Changes</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
+
+  // Status toggle
+  document.getElementById('edit-status-pub').addEventListener('click', () => {
+    document.getElementById('edit-status').value = 'published';
+    document.getElementById('edit-status-pub').className = 'ev-btn ev-btn-pink';
+    document.getElementById('edit-status-draft').className = 'ev-btn ev-btn-outline';
+  });
+  document.getElementById('edit-status-draft').addEventListener('click', () => {
+    document.getElementById('edit-status').value = 'draft';
+    document.getElementById('edit-status-draft').className = 'ev-btn ev-btn-pink';
+    document.getElementById('edit-status-pub').className = 'ev-btn ev-btn-outline';
+  });
 
   const closeModal = () => modal.remove();
   document.getElementById('edit-close').addEventListener('click', closeModal);
@@ -600,9 +701,15 @@ async function showEditModal(eventId) {
     if (!d) { showToast('Please select a date', 'error'); btn.disabled = false; btn.textContent = 'Save Changes'; return; }
     try {
       const updates = {
+        title: document.getElementById('edit-title').value.trim().slice(0, 200),
         date: new Date(`${d}T${t || '00:00'}:00`).toISOString(),
         description: document.getElementById('edit-desc').value.trim(),
+        status: document.getElementById('edit-status').value,
       };
+      if (!updates.title || updates.title.length < 3) {
+        showToast('Title must be at least 3 characters', 'error');
+        btn.disabled = false; btn.textContent = 'Save Changes'; return;
+      }
       const venue = document.getElementById('edit-venue').value.trim();
       const city = document.getElementById('edit-city').value.trim();
       if (venue) updates.venue = venue;
@@ -799,7 +906,7 @@ async function loadFinancialData() {
   if (!tbody) return;
   const eventId = document.getElementById('fin-event-select')?.value;
 
-  tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
 
   try {
     const user = await getCurrentUser();
@@ -807,29 +914,33 @@ async function loadFinancialData() {
 
     if (error) throw error;
     if (!data?.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No financial data yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No financial data yet</td></tr>';
       return;
     }
 
     let filtered = data;
     if (eventId) filtered = data.filter(r => r.event_id === eventId);
     if (!filtered.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No data for selected event</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No data for selected event</td></tr>';
       return;
     }
 
-    tbody.innerHTML = filtered.map((r, i) => `<tr>
+    tbody.innerHTML = filtered.map((r, i) => {
+      const gross = Number(r.gross_revenue || 0);
+      const fee = Math.round(gross * 0.05 * 100) / 100;
+      const net = gross - fee;
+      return `<tr>
       <td>${i + 1}</td>
       <td style="font-weight:600">${escapeHTML(r.event_title || '—')}</td>
       <td>${r.total_tickets_sold || 0} tickets</td>
-      <td style="font-size:.8rem">—</td>
-      <td style="font-weight:600">$${Number(r.gross_revenue || 0).toLocaleString()}</td>
-      <td style="font-size:.8rem">—</td>
-      <td style="color:var(--ev-pink);font-weight:700">$${Number(r.net_revenue || 0).toLocaleString()}</td>
-      <td><span class="ev-badge ${Number(r.net_revenue) > 0 ? 'published' : 'pending'}">${Number(r.net_revenue) > 0 ? 'Earned' : 'Pending'}</span></td>
-    </tr>`).join('');
+      <td style="font-weight:600">$${gross.toLocaleString()}</td>
+      <td style="color:var(--ev-danger);font-size:.8rem">-$${fee.toLocaleString()}</td>
+      <td style="color:var(--ev-success);font-weight:700">$${net.toLocaleString()}</td>
+      <td><span class="ev-badge ${net > 0 ? 'published' : 'pending'}">${net > 0 ? 'Earned' : 'Pending'}</span></td>
+    </tr>`;
+    }).join('');
   } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No financial data yet</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No financial data yet</td></tr>';
   }
 }
 
