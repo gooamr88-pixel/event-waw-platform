@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Event Waw &mdash; Discover & Create Events Effortlessly</title>
   <meta name="description" content="Event Waw &mdash; Book tickets for concerts, festivals, exhibitions, sports, and conferences in just a few clicks. All-in-one platform for managing ticketing, sponsors, vendors, and marketing." />
-  <script>(function(){localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')})()</script>
+  <script>(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()</script>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/theme.css" />
   <link rel="stylesheet" href="css/landing-eveenty.css" />
@@ -80,7 +80,7 @@
         </p>
         <div class="ev-hero-buttons">
           <a href="register.html" class="ev-btn-create" id="hero-create">Create Your Event</a>
-          <a href="dashboard.html" class="ev-btn-explore" id="hero-cta">Explore Events</a>
+          <a href="#events" class="ev-btn-explore" id="hero-cta">Explore Events</a>
         </div>
       </div>
       <div class="ev-hero-image">
@@ -383,12 +383,12 @@
     const badge = document.getElementById('ev-fab-badge');
     let isOpen = false;
 
-    function addMessage(html, type) {
+    function addMessage(content, type, isHtml) {
       const wrap = document.createElement('div');
       wrap.className = 'ev-msg ev-msg-' + type;
       const bubble = document.createElement('div');
       bubble.className = 'ev-msg-bubble';
-      bubble.innerHTML = html;
+      if (isHtml) { bubble.innerHTML = content; } else { bubble.textContent = content; }
       wrap.appendChild(bubble);
       msgArea.appendChild(wrap);
       msgArea.scrollTop = msgArea.scrollHeight;
@@ -402,10 +402,10 @@
         btn.className = 'ev-quick-btn';
         btn.textContent = item.q;
         btn.addEventListener('click', function() {
-          addMessage(item.q, 'user');
+          addMessage(item.q, 'user', false);
           wrap.remove();
           setTimeout(function() {
-            addMessage(item.a, 'bot');
+            addMessage(item.a, 'bot', true);
             setTimeout(addQuickReplies, 400);
           }, 500);
         });
@@ -418,7 +418,7 @@
     function handleUserInput() {
       const text = input.value.trim();
       if (!text) return;
-      addMessage(text, 'user');
+      addMessage(text, 'user', false);
       input.value = '';
       const lower = text.toLowerCase();
       let matched = FAQ.find(function(f) {
@@ -427,9 +427,9 @@
       });
       setTimeout(function() {
         if (matched) {
-          addMessage(matched.a, 'bot');
+          addMessage(matched.a, 'bot', true);
         } else {
-          addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.", 'bot');
+          addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.", 'bot', true);
         }
         setTimeout(addQuickReplies, 400);
       }, 600);
@@ -444,7 +444,7 @@
     }
 
     // Init welcome message
-    addMessage("Hey there! Welcome to <b>Event Waw</b>. How can I help you today?", 'bot');
+    addMessage("Hey there! Welcome to <b>Event Waw</b>. How can I help you today?", 'bot', true);
     setTimeout(addQuickReplies, 300);
 
     fab.addEventListener('click', toggleChat);

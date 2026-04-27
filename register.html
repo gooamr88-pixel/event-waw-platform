@@ -151,11 +151,11 @@
     const sendBtn = document.getElementById('ev-chatbox-send');
     const badge = document.getElementById('ev-fab-badge');
     let isOpen = false;
-    function addMessage(html, type) { const w=document.createElement('div');w.className='ev-msg ev-msg-'+type;const b=document.createElement('div');b.className='ev-msg-bubble';b.innerHTML=html;w.appendChild(b);msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
-    function addQuickReplies() { const w=document.createElement('div');w.className='ev-quick-replies';FAQ.forEach(function(item){const btn=document.createElement('button');btn.className='ev-quick-btn';btn.textContent=item.q;btn.addEventListener('click',function(){addMessage(item.q,'user');w.remove();setTimeout(function(){addMessage(item.a,'bot');setTimeout(addQuickReplies,400);},500);});w.appendChild(btn);});msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
-    function handleUserInput() { const t=input.value.trim();if(!t)return;addMessage(t,'user');input.value='';const lower=t.toLowerCase();let matched=FAQ.find(function(f){const kw=f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w){return w.length>3;});return kw.some(function(k){return lower.includes(k);});});setTimeout(function(){if(matched){addMessage(matched.a,'bot');}else{addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.","bot");}setTimeout(addQuickReplies,400);},600); }
+    function addMessage(content, type, isHtml) { const w=document.createElement('div');w.className='ev-msg ev-msg-'+type;const b=document.createElement('div');b.className='ev-msg-bubble';if(isHtml){b.innerHTML=content;}else{b.textContent=content;}w.appendChild(b);msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
+    function addQuickReplies() { const w=document.createElement('div');w.className='ev-quick-replies';FAQ.forEach(function(item){const btn=document.createElement('button');btn.className='ev-quick-btn';btn.textContent=item.q;btn.addEventListener('click',function(){addMessage(item.q,'user',false);w.remove();setTimeout(function(){addMessage(item.a,'bot',true);setTimeout(addQuickReplies,400);},500);});w.appendChild(btn);});msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
+    function handleUserInput() { const t=input.value.trim();if(!t)return;addMessage(t,'user',false);input.value='';const lower=t.toLowerCase();let matched=FAQ.find(function(f){const kw=f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w){return w.length>3;});return kw.some(function(k){return lower.includes(k);});});setTimeout(function(){if(matched){addMessage(matched.a,'bot',true);}else{addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.","bot",true);}setTimeout(addQuickReplies,400);},600); }
     function toggleChat() { isOpen=!isOpen;chatbox.classList.toggle('open',isOpen);fab.classList.toggle('active',isOpen);if(badge)badge.style.display='none';if(isOpen)input.focus(); }
-    addMessage("👋 Hey there! Welcome to <b>Event Waw</b>. How can I help you today?","bot");
+    addMessage("👋 Hey there! Welcome to <b>Event Waw</b>. How can I help you today?","bot",true);
     setTimeout(addQuickReplies,300);
     fab.addEventListener('click',toggleChat);
     closeBtn.addEventListener('click',toggleChat);
@@ -163,7 +163,7 @@
     input.addEventListener('keydown',function(e){if(e.key==='Enter')handleUserInput();});
   })();
   </script>
-  <link rel="stylesheet" href="css/landing-eveenty.css" />
+
 
   <!-- intl-tel-input -->
   <script src="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/js/intlTelInput.min.js"></script>

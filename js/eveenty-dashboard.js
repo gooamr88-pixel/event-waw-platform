@@ -202,7 +202,7 @@ function renderEventsTable(events) {
           <button class="ev-btn-icon" title="Edit" data-action="edit" data-id="${ev.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="ev-btn-icon" title="Delete" data-action="delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-sold="${sold}">
+          <button class="ev-btn-icon" title="Delete" data-action="delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-sold="${sold}" data-status="${ev.status}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
           </button>
         </div>
@@ -231,7 +231,12 @@ async function handleTableAction(e) {
     const id = delBtn.dataset.id;
     const title = delBtn.dataset.title;
     const sold = Number(delBtn.dataset.sold || 0);
+    const status = delBtn.dataset.status || 'published';
     if (sold > 0) { showToast(`Cannot delete: ${sold} ticket(s) sold`, 'error'); return; }
+    if (status !== 'draft') {
+      showToast('Only draft events can be deleted. Set status to "Draft" first.', 'error');
+      return;
+    }
     if (confirm(`Delete "${title}"? This cannot be undone.`)) {
       const result = await deleteEvent(id);
       if (result.success) { showToast('Event deleted', 'success'); await loadDashboard(); }
@@ -450,14 +455,23 @@ function setupCreateModal() {
 
     const eventData = {
       organizer_id: user.id,
-      title: document.getElementById('ev-title').value,
-      description: document.getElementById('ev-desc').value,
-      venue: document.getElementById('ev-venue').value,
-      city: document.getElementById('ev-city').value,
+      title: document.getElementById('ev-title').value.trim().slice(0, 200),
+      description: document.getElementById('ev-desc').value.trim().slice(0, 5000),
+      venue: document.getElementById('ev-venue').value.trim().slice(0, 300),
+      city: document.getElementById('ev-city').value.trim().slice(0, 100),
       date: new Date(document.getElementById('ev-date').value).toISOString(),
-      category: document.getElementById('ev-category').value,
+      category: document.getElementById('ev-category').value.trim(),
       status: 'published',
     };
+
+    if (!eventData.title || eventData.title.length < 3) {
+      showToast('Event title must be at least 3 characters', 'error');
+      btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
+    }
+    if (!eventData.venue) {
+      showToast('Venue is required', 'error');
+      btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
+    }
 
     try {
       const event = await createEvent(eventData);
