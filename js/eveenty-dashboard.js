@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupApprovalPanel();
   setupPromoPanel();
   setupFinancialPanel();
+  setupPayoutPanel();
 
   await loadDashboard();
 });
@@ -316,6 +317,45 @@ function setupTicketsPanel() {
         a.click();
         showToast('CSV exported', 'success');
       };
+
+      // PDF export
+      const pdfBtn = document.getElementById('ticket-pdf-btn');
+      if (pdfBtn) pdfBtn.onclick = () => {
+        const eventName = document.getElementById('ticket-event-select')?.selectedOptions[0]?.textContent || 'Event';
+        const printWin = window.open('', '_blank', 'width=800,height=600');
+        printWin.document.write(`<!DOCTYPE html><html><head><title>Tickets — ${escapeHTML(eventName)}</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #222; }
+            h1 { font-size: 1.3rem; margin-bottom: 4px; }
+            p.sub { color: #666; font-size: .85rem; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+            th { background: #f5f5f5; padding: 10px 8px; text-align: left; font-weight: 700; border-bottom: 2px solid #ddd; }
+            td { padding: 8px; border-bottom: 1px solid #eee; }
+            tr:nth-child(even) { background: #fafafa; }
+            .badge { padding: 3px 8px; border-radius: 4px; font-size: .72rem; font-weight: 600; }
+            .badge-scanned { background: #dcfce7; color: #16a34a; }
+            .badge-pending { background: #fef3c7; color: #d97706; }
+            @media print { body { padding: 0; } }
+          </style></head><body>
+          <h1>🎫 ${escapeHTML(eventName)} — Ticket Report</h1>
+          <p class="sub">Generated: ${new Date().toLocaleString()} • Total: ${tickets.length} tickets</p>
+          <table>
+            <thead><tr><th>#</th><th>Attendee</th><th>Email</th><th>Tier</th><th>Seat</th><th>Status</th><th>Purchase Date</th></tr></thead>
+            <tbody>${tickets.map((t, i) => `<tr>
+              <td>${i + 1}</td>
+              <td><strong>${escapeHTML(t.attendee_name || '—')}</strong></td>
+              <td>${escapeHTML(t.attendee_email || '—')}</td>
+              <td>${escapeHTML(t.tier_name || '—')}</td>
+              <td>${t.seat_section ? t.seat_section + ' R' + t.seat_row + ' S' + t.seat_number : '—'}</td>
+              <td><span class="badge ${t.scanned_at ? 'badge-scanned' : 'badge-pending'}">${t.scanned_at ? '✓ Scanned' : 'Pending'}</span></td>
+              <td>${new Date(t.created_at).toLocaleDateString()}</td>
+            </tr>`).join('')}</tbody>
+          </table>
+          <script>setTimeout(() => { window.print(); }, 300);<\/script>
+        </body></html>`);
+        printWin.document.close();
+        showToast('PDF print dialog opened', 'success');
+      };
     } catch (err) {
       tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty" style="color:var(--ev-danger)">${escapeHTML(err.message)}</td></tr>`;
     }
@@ -487,6 +527,22 @@ function setupCreateModal() {
       e.target.reset();
       showToast('Event created successfully!', 'success');
       await loadDashboard();
+
+      // Show venue map prompt
+      const mapPrompt = document.createElement('div');
+      mapPrompt.className = 'ev-modal-overlay active';
+      mapPrompt.innerHTML = `<div class="ev-modal" style="max-width:420px;text-align:center;padding:32px">
+        <div style="font-size:3rem;margin-bottom:12px">🎉</div>
+        <h2 style="margin-bottom:8px">Event Created!</h2>
+        <p style="color:var(--ev-text-sec);margin-bottom:24px;font-size:.88rem">Want to design a seating map for <strong>${escapeHTML(event.title)}</strong>?</p>
+        <div style="display:flex;gap:10px">
+          <button class="ev-btn ev-btn-outline" style="flex:1" id="map-skip">Skip for Now</button>
+          <a href="venue-designer.html?event_id=${event.id}" class="ev-btn ev-btn-pink" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center">🗺️ Design Venue Map</a>
+        </div>
+      </div>`;
+      document.body.appendChild(mapPrompt);
+      document.getElementById('map-skip').addEventListener('click', () => mapPrompt.remove());
+      mapPrompt.addEventListener('click', (ev) => { if (ev.target === mapPrompt) mapPrompt.remove(); });
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
@@ -777,3 +833,69 @@ async function loadFinancialData() {
   }
 }
 
+/* ══════════════════════════════════
+   PAYOUT SETTINGS PANEL
+   ══════════════════════════════════ */
+function setupPayoutPanel() {
+  // Load existing payout data
+  loadPayoutData();
+
+  document.getElementById('payout-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    try {
+      const user = await getCurrentUser();
+      const payoutData = {
+        bank_name: document.getElementById('bank-name').value.trim(),
+        account_holder: document.getElementById('account-holder').value.trim(),
+        account_number: document.getElementById('account-number').value.trim(),
+        swift_code: document.getElementById('swift-code').value.trim(),
+        payout_currency: document.getElementById('payout-currency').value,
+        payout_email: document.getElementById('payout-email').value.trim(),
+      };
+
+      if (!payoutData.bank_name || !payoutData.account_holder || !payoutData.account_number) {
+        showToast('Please fill all required fields', 'error');
+        return;
+      }
+
+      // Store in profile metadata
+      const { error } = await supabase
+        .from('profiles')
+        .update({ payout_info: payoutData })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      showToast('Payout details saved securely!', 'success');
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '💾 Save Payout Details';
+    }
+  });
+}
+
+async function loadPayoutData() {
+  try {
+    const user = await getCurrentUser();
+    const { data } = await supabase
+      .from('profiles')
+      .select('payout_info')
+      .eq('id', user.id)
+      .single();
+
+    if (data?.payout_info) {
+      const p = data.payout_info;
+      if (p.bank_name) document.getElementById('bank-name').value = p.bank_name;
+      if (p.account_holder) document.getElementById('account-holder').value = p.account_holder;
+      if (p.account_number) document.getElementById('account-number').value = p.account_number;
+      if (p.swift_code) document.getElementById('swift-code').value = p.swift_code;
+      if (p.payout_currency) document.getElementById('payout-currency').value = p.payout_currency;
+      if (p.payout_email) document.getElementById('payout-email').value = p.payout_email;
+    }
+  } catch (_) { /* No payout info yet */ }
+}
