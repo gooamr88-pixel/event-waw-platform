@@ -431,6 +431,8 @@ export class VenueDesignerEngine {
     this.state = { selectedId: null, zoom: 1, panX: 0, panY: 0, canvasW: 1200, canvasH: 800 };
     this.tiers = opts.tiers || [];
     this.onChange = opts.onChange || (() => {});
+    this.snapToGrid = opts.snapToGrid || false;
+    this.gridSize = opts.gridSize || 10;
     this._dragging = null;
     this._resizing = null;
     this._panning = false;
@@ -659,8 +661,14 @@ export class VenueDesignerEngine {
     window.addEventListener('mousemove', (e) => {
       if (this._dragging) {
         const p = this._svgPoint(e);
-        this._dragging.el.x = Math.round(p.x - this._dragging.offsetX);
-        this._dragging.el.y = Math.round(p.y - this._dragging.offsetY);
+        let nx = Math.round(p.x - this._dragging.offsetX);
+        let ny = Math.round(p.y - this._dragging.offsetY);
+        if (this.snapToGrid) {
+          nx = Math.round(nx / this.gridSize) * this.gridSize;
+          ny = Math.round(ny / this.gridSize) * this.gridSize;
+        }
+        this._dragging.el.x = nx;
+        this._dragging.el.y = ny;
         this.render();
       }
       if (this._resizing) {

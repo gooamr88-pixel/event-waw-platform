@@ -210,6 +210,37 @@
   font-weight: 500;
 }
 
+/* ══════ QUICK TEMPLATES ══════ */
+.vd-template-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px;
+}
+.vd-tpl-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 10px 4px 8px; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(212,175,55,.04), rgba(212,175,55,.01));
+  border: 1px solid rgba(212,175,55,.08);
+  color: #e4e4e7; cursor: pointer;
+  font-size: 1.2rem; line-height: 1;
+  transition: all .25s cubic-bezier(.4,0,.2,1);
+  user-select: none;
+}
+.vd-tpl-btn:hover {
+  background: linear-gradient(135deg, rgba(212,175,55,.12), rgba(212,175,55,.06));
+  border-color: rgba(212,175,55,.25);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(212,175,55,.12);
+}
+.vd-tpl-btn:active {
+  transform: scale(.92);
+}
+.vd-tpl-btn span {
+  font-size: .5rem; color: #71717a;
+  font-weight: 600; text-transform: uppercase;
+  letter-spacing: .5px;
+}
+
 /* ══════ PROPERTIES PANEL ══════ */
 .vd-props-scroll {
   flex: 1; overflow-y: auto; padding: 12px;

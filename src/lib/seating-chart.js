@@ -58,6 +58,9 @@ export class SeatingChart {
    * Returns true if a venue map exists, false if fallback needed.
    */
   async init() {
+    // Show loading state
+    this._showLoading();
+
     // 1. Fetch venue map layout
     const { data: mapData, error: mapErr } = await supabase
       .from('venue_maps')
@@ -66,6 +69,7 @@ export class SeatingChart {
       .maybeSingle();
 
     if (mapErr || !mapData) {
+      this._hideLoading();
       console.log('No venue map found for event — using GA fallback');
       return false;
     }
@@ -77,18 +81,32 @@ export class SeatingChart {
     await this.refreshSeatData();
 
     // 3. Render the SVG
+    this._hideLoading();
     this._renderSVG();
 
     // 4. Attach panzoom
     this._initPanzoom();
 
-    // 5. Attach click handler (event delegation on SVG)
+    // 5. Attach click + touch handlers (event delegation on SVG)
     this._attachEvents();
 
     // 6. Start polling for live updates (every 15s)
     this.pollInterval = setInterval(() => this._pollUpdates(), 15000);
 
     return true;
+  }
+
+  _showLoading() {
+    this.container.innerHTML = `
+      <div class="seating-chart-loading">
+        <div class="seat-loader"></div>
+        <span>Loading venue map…</span>
+      </div>`;
+  }
+
+  _hideLoading() {
+    const loader = this.container.querySelector('.seating-chart-loading');
+    if (loader) loader.remove();
   }
 
   /**
@@ -429,11 +447,8 @@ export class SeatingChart {
   _attachEvents() {
     if (!this.svgEl) return;
 
-    // Single delegated click handler on the SVG
-    this.svgEl.addEventListener('click', (e) => {
-      const circle = e.target.closest('circle[data-seat-id]');
-      if (!circle) return;
-
+    // Unified seat interaction handler
+    const handleSeatInteraction = (circle) => {
       const seatId = circle.getAttribute('data-seat-id');
       const seatInfo = this.seatData.get(seatId);
       if (!seatInfo) return;
@@ -456,25 +471,62 @@ export class SeatingChart {
         if (this.selectedSeats.size > 0) {
           const existingTier = this.seatData.get([...this.selectedSeats][0])?.tier_id;
           if (existingTier && existingTier !== seatInfo.tier_id) {
-            // Auto-clear previous selections from different tier
             this.clearSelection();
           }
         }
         this.selectedSeats.add(seatId);
+
+        // Add selection animation
+        circle.classList.add('seat-selected-anim');
+        setTimeout(() => circle.classList.remove('seat-selected-anim'), 300);
+
+        // Haptic feedback on mobile
+        if (navigator.vibrate) navigator.vibrate(15);
       }
 
       this._updateSeatVisual(seatId);
       this.onSelectionChange(this.getSelectedSeats());
+    };
+
+    // Click handler (desktop)
+    this.svgEl.addEventListener('click', (e) => {
+      const circle = e.target.closest('circle[data-seat-id]');
+      if (!circle) return;
+      handleSeatInteraction(circle);
     });
 
-    // Hover tooltip
+    // Touch handler (mobile) — prevents double-fire with click
+    let touchHandled = false;
+    this.svgEl.addEventListener('touchend', (e) => {
+      const touch = e.changedTouches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const circle = el?.closest('circle[data-seat-id]');
+      if (!circle) return;
+
+      e.preventDefault();
+      touchHandled = true;
+      handleSeatInteraction(circle);
+
+      // Show tooltip briefly on touch
+      const seatId = circle.getAttribute('data-seat-id');
+      const d = this.seatData.get(seatId);
+      if (d) {
+        this._showTooltip(circle, d);
+        clearTimeout(this._touchTooltipTimer);
+        this._touchTooltipTimer = setTimeout(() => this._hideTooltip(), 2000);
+      }
+
+      setTimeout(() => { touchHandled = false; }, 100);
+    }, { passive: false });
+
+    // Hover tooltip (desktop only)
     this.svgEl.addEventListener('mouseover', (e) => {
+      if (touchHandled) return;
       const circle = e.target.closest('circle[data-seat-id]');
       if (!circle) return;
       const seatId = circle.getAttribute('data-seat-id');
       const d = this.seatData.get(seatId);
       if (!d) return;
-
       this._showTooltip(circle, d);
     });
 

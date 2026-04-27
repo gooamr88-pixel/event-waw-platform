@@ -30,6 +30,8 @@
         <button class="vd-icon-btn" id="btn-zr" title="Reset">⊙</button>
       </div>
       <div class="vd-topbar-right">
+        <button class="vd-icon-btn" id="btn-snap" title="Toggle Grid Snap" style="font-size:.7rem;font-weight:700;font-family:'JetBrains Mono',monospace;">⊞</button>
+        <button class="vd-icon-btn" id="btn-preview" title="Preview as Attendee">👁</button>
         <button class="vd-del-btn" id="btn-del-map" style="display:none;">🗑 Delete Map</button>
         <button class="vd-save-btn" id="btn-save" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -42,6 +44,16 @@
     <div class="vd-body">
       <!-- LEFT: TOOLBOX + PROPERTIES -->
       <div class="vd-toolbox">
+        <div class="vd-tb-section">
+          <div class="vd-tb-label">Quick Templates</div>
+          <div class="vd-template-grid" id="template-grid">
+            <button class="vd-tpl-btn" data-template="theater" title="Theater Layout">🎭<span>Theater</span></button>
+            <button class="vd-tpl-btn" data-template="arena" title="Arena Layout">🏟️<span>Arena</span></button>
+            <button class="vd-tpl-btn" data-template="classroom" title="Classroom Layout">🏫<span>Class</span></button>
+            <button class="vd-tpl-btn" data-template="tables" title="Round Tables">🍽️<span>Tables</span></button>
+            <button class="vd-tpl-btn" data-template="stadium" title="Stadium Layout">⚽<span>Stadium</span></button>
+          </div>
+        </div>
         <div class="vd-tb-section">
           <div class="vd-tb-label">Elements</div>
           <div class="vd-tb-grid" id="tb-grid"></div>
@@ -94,6 +106,7 @@
       // Init engine
       engine = new VenueDesignerEngine(document.getElementById('vd-canvas'), {
         tiers,
+        snapToGrid: true,
         onChange: () => {
           document.getElementById('btn-save').disabled = false;
           updateProps(); updateStats();
@@ -102,6 +115,8 @@
 
       buildToolbox();
       wireButtons();
+      wireTemplates();
+      wireSnap();
 
       // Load existing
       try {
@@ -257,6 +272,150 @@
       const t = document.getElementById('vd-toast');
       t.textContent = msg; t.className = 'vd-toast vd-toast-' + type; t.style.display = '';
       clearTimeout(t._t); t._t = setTimeout(() => t.style.display = 'none', 4000);
+    }
+
+    /* ── Templates ── */
+    const TEMPLATES = {
+      theater: {
+        label: 'Theater',
+        build: () => {
+          engine.elements = []; engine.state.selectedId = null;
+          engine.addElement('stage', 400, 30);
+          const sectionConfigs = [
+            { label: 'Orchestra Left', x: 80, y: 130, w: 280, h: 200, rows: 8, seats: 10, curve: 80 },
+            { label: 'Orchestra Center', x: 370, y: 110, w: 320, h: 220, rows: 9, seats: 12, curve: 120 },
+            { label: 'Orchestra Right', x: 700, y: 130, w: 280, h: 200, rows: 8, seats: 10, curve: 80 },
+            { label: 'Balcony Left', x: 120, y: 380, w: 240, h: 140, rows: 5, seats: 10, curve: 40 },
+            { label: 'Balcony Center', x: 400, y: 370, w: 260, h: 150, rows: 5, seats: 12, curve: 60 },
+            { label: 'Balcony Right', x: 700, y: 380, w: 240, h: 140, rows: 5, seats: 10, curve: 40 },
+          ];
+          sectionConfigs.forEach(c => {
+            const el = engine.addElement('section', c.x, c.y);
+            Object.assign(el, { label: c.label, w: c.w, h: c.h, rows: c.rows, seatsPerRow: c.seats, curve: c.curve });
+            if (tiers.length) el.tier_id = tiers[0].id;
+          });
+          engine.addElement('exit', 20, 550);
+          engine.addElement('exit', 980, 550);
+          engine.addElement('entrance', 500, 580);
+          engine.render();
+        }
+      },
+      arena: {
+        label: 'Arena',
+        build: () => {
+          engine.elements = []; engine.state.selectedId = null;
+          engine.addElement('stage', 350, 320);
+          const arenaConfigs = [
+            { label: 'North', x: 350, y: 30, w: 360, h: 160, rows: 6, seats: 14, curve: 200 },
+            { label: 'South', x: 350, y: 450, w: 360, h: 160, rows: 6, seats: 14, curve: 200 },
+            { label: 'West', x: 30, y: 120, w: 200, h: 380, rows: 8, seats: 6, curve: 0 },
+            { label: 'East', x: 830, y: 120, w: 200, h: 380, rows: 8, seats: 6, curve: 0 },
+            { label: 'VIP North', x: 420, y: 200, w: 220, h: 80, rows: 3, seats: 10, curve: 100 },
+          ];
+          arenaConfigs.forEach((c, i) => {
+            const el = engine.addElement('section', c.x, c.y);
+            Object.assign(el, { label: c.label, w: c.w, h: c.h, rows: c.rows, seatsPerRow: c.seats, curve: c.curve });
+            if (tiers.length > 1 && i === 4) el.tier_id = tiers[1].id;
+            else if (tiers.length) el.tier_id = tiers[0].id;
+          });
+          engine.addElement('bar', 30, 30);
+          engine.addElement('food', 930, 30);
+          engine.addElement('restroom', 30, 600);
+          engine.addElement('entrance', 930, 600);
+          engine.render();
+        }
+      },
+      classroom: {
+        label: 'Classroom',
+        build: () => {
+          engine.elements = []; engine.state.selectedId = null;
+          engine.addElement('stage', 350, 30);
+          engine.addElement('screen', 350, 100);
+          for (let row = 0; row < 5; row++) {
+            const el = engine.addElement('section', 150, 150 + row * 100);
+            Object.assign(el, { label: `Row ${row + 1}`, w: 800, h: 70, rows: 2, seatsPerRow: 16, curve: 0 });
+            if (tiers.length) el.tier_id = tiers[0].id;
+          }
+          engine.addElement('entrance', 50, 700);
+          engine.addElement('exit', 950, 700);
+          engine.render();
+        }
+      },
+      tables: {
+        label: 'Round Tables',
+        build: () => {
+          engine.elements = []; engine.state.selectedId = null;
+          engine.addElement('stage', 350, 20);
+          engine.addElement('dj', 520, 100);
+          const positions = [
+            [200, 200], [450, 200], [700, 200],
+            [120, 380], [350, 380], [580, 380], [810, 380],
+            [200, 560], [450, 560], [700, 560]
+          ];
+          positions.forEach((p, i) => {
+            const el = engine.addElement('table', p[0], p[1]);
+            el.label = `T${i + 1}`;
+            el.seats = 8;
+          });
+          engine.addElement('bar', 40, 700);
+          engine.addElement('restroom', 900, 700);
+          engine.addElement('entrance', 480, 720);
+          engine.render();
+        }
+      },
+      stadium: {
+        label: 'Stadium',
+        build: () => {
+          engine.elements = []; engine.state.selectedId = null;
+          const el = engine.addElement('stage', 300, 280);
+          Object.assign(el, { w: 500, h: 80, label: 'PITCH' });
+          const stadiumConfigs = [
+            { label: 'North Stand', x: 300, y: 20, w: 500, h: 120, rows: 5, seats: 20, curve: 300 },
+            { label: 'South Stand', x: 300, y: 410, w: 500, h: 120, rows: 5, seats: 20, curve: 300 },
+            { label: 'West Stand', x: 30, y: 80, w: 180, h: 400, rows: 10, seats: 6, curve: 0 },
+            { label: 'East Stand', x: 890, y: 80, w: 180, h: 400, rows: 10, seats: 6, curve: 0 },
+            { label: 'VIP Box', x: 400, y: 180, w: 300, h: 60, rows: 2, seats: 14, curve: 80 },
+          ];
+          stadiumConfigs.forEach((c, i) => {
+            const el = engine.addElement('section', c.x, c.y);
+            Object.assign(el, { label: c.label, w: c.w, h: c.h, rows: c.rows, seatsPerRow: c.seats, curve: c.curve });
+            if (tiers.length > 1 && i === 4) el.tier_id = tiers[1].id;
+            else if (tiers.length) el.tier_id = tiers[0].id;
+          });
+          engine.addElement('entrance', 50, 580);
+          engine.addElement('entrance', 1000, 580);
+          engine.addElement('food', 50, 20);
+          engine.addElement('restroom', 1000, 20);
+          engine.render();
+        }
+      }
+    };
+
+    function wireTemplates() {
+      document.getElementById('template-grid').addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-template]');
+        if (!btn) return;
+        const tplId = btn.dataset.template;
+        const tpl = TEMPLATES[tplId];
+        if (!tpl) return;
+        if (engine.elements.length > 1 && !confirm(`Replace current layout with "${tpl.label}" template?`)) return;
+        tpl.build();
+        document.getElementById('btn-save').disabled = false;
+        toast(`✨ ${tpl.label} template applied`, 'success');
+        updateProps(); updateStats();
+      });
+    }
+
+    function wireSnap() {
+      let snapOn = true;
+      const btn = document.getElementById('btn-snap');
+      btn.style.color = '#d4af37';
+      btn.addEventListener('click', () => {
+        snapOn = !snapOn;
+        engine.snapToGrid = snapOn;
+        btn.style.color = snapOn ? '#d4af37' : '#52525b';
+        toast(snapOn ? 'Grid snap ON' : 'Grid snap OFF', 'info');
+      });
     }
   </script>
 </body>
