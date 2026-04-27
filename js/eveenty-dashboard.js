@@ -301,7 +301,8 @@ function setupTicketsPanel() {
       </tr>`).join('');
 
       // CSV export
-      document.getElementById('ticket-csv-btn')?.onclick = () => {
+      const csvBtn = document.getElementById('ticket-csv-btn');
+      if (csvBtn) csvBtn.onclick = () => {
         const rows = [['Name','Email','Tier','Seat','Status','Date']];
         tickets.forEach(t => rows.push([
           t.attendee_name||'', t.attendee_email||'', t.tier_name||'',
