@@ -225,14 +225,21 @@
         <div class="ev-card-header">
           <span class="ev-card-title">🏷️ Promo Codes</span>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <div class="ev-search-bar" style="max-width:240px"><input type="text" placeholder="Search promo codes…" /><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
-            <button class="ev-btn ev-btn-primary">+ New Promo</button>
+            <div class="ev-search-bar" style="max-width:240px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="promo-search" placeholder="Search promo codes…" /></div>
+            <button class="ev-btn ev-btn-primary" id="new-promo-btn">+ New Promo</button>
           </div>
         </div>
-        <div style="text-align:center;padding:48px 24px;color:var(--ev-text-muted);font-size:.95rem">
-          <div style="font-size:2.5rem;margin-bottom:12px">🏷️</div>
-          <p style="font-weight:600;margin-bottom:4px">No promo codes yet</p>
-          <p style="font-size:.84rem">Create your first promo code to offer discounts.</p>
+        <div class="ev-table-wrap">
+          <table class="ev-table">
+            <thead><tr><th>#</th><th>Code</th><th>Discount</th><th>Uses</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="promo-tbody">
+              <tr><td colspan="7" class="ev-table-empty">
+                <div style="font-size:2.5rem;margin-bottom:12px">🏷️</div>
+                <p style="font-weight:600;margin-bottom:4px">No promo codes yet</p>
+                <p style="font-size:.84rem">Create your first promo code to offer discounts.</p>
+              </td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -244,10 +251,10 @@
         <div class="ev-card-header">
           <div class="ev-event-selector">
             <label>Event:</label>
-            <span class="ev-event-name" id="fin-event-name">—</span>
+            <select class="ev-filter-select" id="fin-event-select"><option value="">All Events</option></select>
           </div>
           <div class="ev-export-group">
-            <button class="ev-btn-icon" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+            <button class="ev-btn-icon" title="Export CSV" id="fin-csv-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
           </div>
         </div>
         <div class="ev-table-wrap">
@@ -315,6 +322,43 @@
           <button type="button" class="ev-btn ev-btn-outline ev-btn-sm" id="add-tier-btn" style="margin-top:6px">+ Add Tier</button>
         </div>
         <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:16px;padding:13px;justify-content:center">🚀 Create Event</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ══════ PROMO CODE MODAL ══════ -->
+  <div class="ev-modal-overlay" id="promo-modal">
+    <div class="ev-modal" style="max-width:480px">
+      <div class="ev-modal-header">
+        <h2>🏷️ New Promo Code</h2>
+        <button class="ev-modal-close" id="promo-modal-close">✕</button>
+      </div>
+      <form id="promo-form">
+        <div class="ev-form-group">
+          <label for="promo-code">Code *</label>
+          <input class="ev-form-input" type="text" id="promo-code" placeholder="e.g. SUMMER20" required style="text-transform:uppercase" />
+        </div>
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label for="promo-discount">Discount (%) *</label>
+            <input class="ev-form-input" type="number" id="promo-discount" placeholder="20" min="1" max="100" required />
+          </div>
+          <div class="ev-form-group">
+            <label for="promo-max-uses">Max Uses</label>
+            <input class="ev-form-input" type="number" id="promo-max-uses" placeholder="100" min="1" />
+          </div>
+        </div>
+        <div class="ev-form-row">
+          <div class="ev-form-group">
+            <label for="promo-event">Event (optional)</label>
+            <select class="ev-form-input" id="promo-event"><option value="">All Events</option></select>
+          </div>
+          <div class="ev-form-group">
+            <label for="promo-expires">Expires</label>
+            <input class="ev-form-input" type="date" id="promo-expires" />
+          </div>
+        </div>
+        <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:16px;padding:13px;justify-content:center">Create Promo Code</button>
       </form>
     </div>
   </div>

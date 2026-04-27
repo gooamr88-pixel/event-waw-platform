@@ -124,6 +124,8 @@ body.ev-dash{font-family:var(--ev-font);background:var(--ev-bg);color:var(--ev-t
 .ev-badge.past{background:#F3E5F5;color:#7B1FA2}
 .ev-badge.pending{background:#FFF8E1;color:#F57F17}
 .ev-badge.rejected{background:#FFEBEE;color:#C62828}
+.ev-badge.review,.ev-badge.in_review{background:#E3F2FD;color:#1565C0}
+.ev-badge.cancelled{background:#ECEFF1;color:#546E7F;text-decoration:line-through}
 
 /* ══════ TABS ══════ */
 .ev-tabs{display:flex;gap:0;border-bottom:2px solid var(--ev-border);margin-bottom:22px}
@@ -263,3 +265,10 @@ body.ev-dash::-webkit-scrollbar-thumb:hover{background:#B0B0B0}
   .ev-welcome-actions{flex-direction:column;width:100%}
   .ev-welcome-actions .ev-btn{width:100%;justify-content:center}
 }
+
+/* ══════ AUTH GUARD OVERLAY ══════ */
+#auth-guard-overlay{position:fixed;inset:0;z-index:99999;background:var(--ev-bg);display:flex;align-items:center;justify-content:center}
+.guard-overlay{display:flex;flex-direction:column;align-items:center;gap:16px;color:var(--ev-text-sec);font-size:.9rem}
+.guard-spinner{width:36px;height:36px;border:3px solid var(--ev-border);border-top-color:var(--ev-yellow);border-radius:50%;animation:evSpin .7s linear infinite}
+#auth-guard-overlay.guard-fade-out{animation:evGuardOut .3s ease forwards}
+@keyframes evGuardOut{to{opacity:0}}

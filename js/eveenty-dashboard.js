@@ -4,7 +4,7 @@
    ═══════════════════════════════════ */
 
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
-import { getOrganizerEvents, createEvent, deleteEvent } from '../src/lib/events.js';
+import { getOrganizerEvents, createEvent, deleteEvent, updateEvent } from '../src/lib/events.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { escapeHTML } from '../src/lib/utils.js';
 
@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCreateModal();
   setupSearch();
   setupSignOut();
+  setupApprovalPanel();
+  setupPromoPanel();
+  setupFinancialPanel();
 
   await loadDashboard();
 });
@@ -140,7 +143,6 @@ async function loadDashboard() {
 
     renderEventsTable(events);
     populateEventSelects(events);
-    if (events.length > 0) document.getElementById('fin-event-name').textContent = events[0].title;
     initCharts(revenueData, events);
     if (revenueData?.length) renderRevenueBreakdown(revenueData);
     setupTicketsPanel(events);
@@ -148,7 +150,7 @@ async function loadDashboard() {
   } catch (err) {
     console.error('Dashboard error:', err);
     document.getElementById('events-tbody').innerHTML =
-      `<tr><td colspan="8" class="ev-table-empty">Failed to load events. Please refresh.</td></tr>`;
+      `<tr><td colspan="8" class="ev-table-empty">${escapeHTML(err.message || 'Failed to load events. Please refresh.')}</td></tr>`;
   }
 }
 
@@ -242,7 +244,7 @@ async function handleTableAction(e) {
    POPULATE EVENT SELECTS
    ══════════════════════════════════ */
 function populateEventSelects(events) {
-  ['ticket-event-select', 'approval-event-select'].forEach(id => {
+  ['ticket-event-select', 'approval-event-select', 'fin-event-select', 'promo-event'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     const first = el.querySelector('option');
@@ -309,7 +311,7 @@ function setupTicketsPanel() {
         showToast('CSV exported', 'success');
       };
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty" style="color:var(--ev-danger)">${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty" style="color:var(--ev-danger)">${escapeHTML(err.message)}</td></tr>`;
     }
   });
 }
@@ -483,6 +485,9 @@ function setupCreateModal() {
    EDIT EVENT MODAL
    ══════════════════════════════════ */
 async function showEditModal(eventId) {
+  // Clean up any existing edit modals to prevent duplicates
+  document.querySelectorAll('.ev-modal-overlay.ev-edit-modal').forEach(m => m.remove());
+
   const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
   if (error || !ev) { showToast('Failed to load event', 'error'); return; }
 
@@ -491,7 +496,7 @@ async function showEditModal(eventId) {
   const timeStr = evDate.toTimeString().slice(0, 5);
 
   const modal = document.createElement('div');
-  modal.className = 'ev-modal-overlay active';
+  modal.className = 'ev-modal-overlay active ev-edit-modal';
   modal.innerHTML = `<div class="ev-modal" style="max-width:480px">
     <div class="ev-modal-header"><h2>✏️ Edit Event</h2><button class="ev-modal-close" id="edit-close">✕</button></div>
     <div style="padding:12px 16px;background:var(--ev-border-lt);border-radius:10px;margin-bottom:18px;font-weight:600;font-size:.9rem">📅 ${escapeHTML(ev.title)}</div>
@@ -511,9 +516,10 @@ async function showEditModal(eventId) {
   </div>`;
   document.body.appendChild(modal);
 
-  document.getElementById('edit-close').addEventListener('click', () => modal.remove());
-  document.getElementById('edit-cancel').addEventListener('click', () => modal.remove());
-  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+  const closeModal = () => modal.remove();
+  document.getElementById('edit-close').addEventListener('click', closeModal);
+  document.getElementById('edit-cancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
   document.getElementById('edit-save').addEventListener('click', async () => {
     const btn = document.getElementById('edit-save');
@@ -530,13 +536,229 @@ async function showEditModal(eventId) {
       const city = document.getElementById('edit-city').value.trim();
       if (venue) updates.venue = venue;
       if (city) updates.city = city;
-      const { error } = await supabase.from('events').update(updates).eq('id', eventId);
-      if (error) throw error;
+      await updateEvent(eventId, updates);
       showToast('Event updated!', 'success');
-      setTimeout(async () => { modal.remove(); await loadDashboard(); }, 500);
+      closeModal();
+      await loadDashboard();
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
       btn.disabled = false; btn.textContent = 'Save Changes';
     }
   });
 }
+
+/* ══════════════════════════════════
+   APPROVAL PANEL
+   ══════════════════════════════════ */
+let approvalTabFilter = 'pending';
+
+function setupApprovalPanel() {
+  // Tab switching
+  document.querySelectorAll('[data-approval-tab]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('[data-approval-tab]').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      approvalTabFilter = tab.dataset.approvalTab;
+      loadApprovalData();
+    });
+  });
+
+  // Event filter
+  document.getElementById('approval-event-select')?.addEventListener('change', () => loadApprovalData());
+}
+
+async function loadApprovalData() {
+  const tbody = document.getElementById('approval-tbody');
+  const eventId = document.getElementById('approval-event-select')?.value;
+  tbody.innerHTML = '<tr><td colspan="9" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
+
+  try {
+    let query = supabase.from('vendor_requests').select('*').eq('status', approvalTabFilter).order('created_at', { ascending: false });
+    if (eventId) query = query.eq('event_id', eventId);
+    const { data, error } = await query;
+
+    if (error) throw error;
+    if (!data?.length) {
+      tbody.innerHTML = `<tr><td colspan="9" class="ev-table-empty">No ${approvalTabFilter} requests</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((r, i) => `<tr>
+      <td>${i + 1}</td>
+      <td style="font-weight:600">${escapeHTML(r.vendor_name || '—')}</td>
+      <td>${escapeHTML(r.vendor_email || '—')}</td>
+      <td>${escapeHTML(r.type || '—')}</td>
+      <td>${escapeHTML(r.name || '—')}</td>
+      <td>${escapeHTML(r.category || '—')}</td>
+      <td>${r.price ? '$' + Number(r.price).toLocaleString() : '—'}</td>
+      <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(r.created_at).toLocaleDateString()}</td>
+      <td><span class="ev-badge ${approvalTabFilter}">${approvalTabFilter}</span></td>
+    </tr>`).join('');
+  } catch (err) {
+    // Table may not exist yet — show empty state gracefully
+    tbody.innerHTML = `<tr><td colspan="9" class="ev-table-empty">No ${approvalTabFilter} requests</td></tr>`;
+  }
+}
+
+/* ══════════════════════════════════
+   PROMO CODE PANEL
+   ══════════════════════════════════ */
+function setupPromoPanel() {
+  const modal = document.getElementById('promo-modal');
+  const openModal = () => modal?.classList.add('active');
+  const closeModal = () => modal?.classList.remove('active');
+
+  document.getElementById('new-promo-btn')?.addEventListener('click', openModal);
+  document.getElementById('promo-modal-close')?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+  // Search
+  document.getElementById('promo-search')?.addEventListener('input', (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll('#promo-tbody tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+
+  // Create promo
+  document.getElementById('promo-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('[type="submit"]');
+    btn.disabled = true; btn.textContent = 'Creating…';
+
+    try {
+      const user = await getCurrentUser();
+      const promoData = {
+        organizer_id: user.id,
+        code: document.getElementById('promo-code').value.trim().toUpperCase(),
+        discount_percent: parseInt(document.getElementById('promo-discount').value) || 0,
+        max_uses: parseInt(document.getElementById('promo-max-uses').value) || null,
+        event_id: document.getElementById('promo-event').value || null,
+        expires_at: document.getElementById('promo-expires').value ? new Date(document.getElementById('promo-expires').value).toISOString() : null,
+        used_count: 0,
+        is_active: true,
+      };
+
+      const { error } = await supabase.from('promo_codes').insert(promoData);
+      if (error) throw error;
+
+      closeModal();
+      e.target.reset();
+      showToast('Promo code created!', 'success');
+      loadPromoCodes();
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Create Promo Code';
+    }
+  });
+
+  // Load on init
+  loadPromoCodes();
+}
+
+async function loadPromoCodes() {
+  const tbody = document.getElementById('promo-tbody');
+  if (!tbody) return;
+
+  try {
+    const user = await getCurrentUser();
+    const { data, error } = await supabase
+      .from('promo_codes')
+      .select('*')
+      .eq('organizer_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    if (!data?.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty">
+        <div style="font-size:2.5rem;margin-bottom:12px">🏷️</div>
+        <p style="font-weight:600;margin-bottom:4px">No promo codes yet</p>
+        <p style="font-size:.84rem">Create your first promo code to offer discounts.</p>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = data.map((p, i) => {
+      const expired = p.expires_at && new Date(p.expires_at) < new Date();
+      const statusClass = !p.is_active ? 'rejected' : expired ? 'past' : 'published';
+      const statusLabel = !p.is_active ? 'Inactive' : expired ? 'Expired' : 'Active';
+      return `<tr>
+        <td>${i + 1}</td>
+        <td style="font-weight:700;font-family:monospace;letter-spacing:1px">${escapeHTML(p.code)}</td>
+        <td style="font-weight:600;color:var(--ev-pink)">${p.discount_percent}%</td>
+        <td>${p.used_count || 0}${p.max_uses ? '/' + p.max_uses : ''}</td>
+        <td style="font-size:.8rem;color:var(--ev-text-sec)">${p.expires_at ? new Date(p.expires_at).toLocaleDateString() : '—'}</td>
+        <td><span class="ev-badge ${statusClass}">${statusLabel}</span></td>
+        <td><button class="ev-btn-icon" title="Delete" data-promo-delete="${p.id}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button></td>
+      </tr>`;
+    }).join('');
+
+    // Delete handler (delegated)
+    tbody.onclick = async (e) => {
+      const delBtn = e.target.closest('[data-promo-delete]');
+      if (!delBtn) return;
+      if (!confirm('Delete this promo code?')) return;
+      const { error } = await supabase.from('promo_codes').delete().eq('id', delBtn.dataset.promoDelete);
+      if (error) showToast('Delete failed: ' + error.message, 'error');
+      else { showToast('Promo deleted', 'success'); loadPromoCodes(); }
+    };
+  } catch (err) {
+    // Table may not exist yet
+    tbody.innerHTML = `<tr><td colspan="7" class="ev-table-empty">
+      <div style="font-size:2.5rem;margin-bottom:12px">🏷️</div>
+      <p style="font-weight:600;margin-bottom:4px">No promo codes yet</p>
+      <p style="font-size:.84rem">Create your first promo code to offer discounts.</p>
+    </td></tr>`;
+  }
+}
+
+/* ══════════════════════════════════
+   FINANCIAL PANEL
+   ══════════════════════════════════ */
+function setupFinancialPanel() {
+  document.getElementById('fin-event-select')?.addEventListener('change', () => loadFinancialData());
+  loadFinancialData();
+}
+
+async function loadFinancialData() {
+  const tbody = document.getElementById('financial-tbody');
+  if (!tbody) return;
+  const eventId = document.getElementById('fin-event-select')?.value;
+
+  tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
+
+  try {
+    const user = await getCurrentUser();
+    const { data, error } = await supabase.rpc('get_organizer_revenue', { p_organizer_id: user.id });
+
+    if (error) throw error;
+    if (!data?.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No financial data yet</td></tr>';
+      return;
+    }
+
+    let filtered = data;
+    if (eventId) filtered = data.filter(r => r.event_id === eventId);
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No data for selected event</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((r, i) => `<tr>
+      <td>${i + 1}</td>
+      <td style="font-weight:600">${escapeHTML(r.event_title || '—')}</td>
+      <td>${r.total_tickets_sold || 0} tickets</td>
+      <td style="font-size:.8rem">—</td>
+      <td style="font-weight:600">$${Number(r.gross_revenue || 0).toLocaleString()}</td>
+      <td style="font-size:.8rem">—</td>
+      <td style="color:var(--ev-pink);font-weight:700">$${Number(r.net_revenue || 0).toLocaleString()}</td>
+      <td><span class="ev-badge ${Number(r.net_revenue) > 0 ? 'published' : 'pending'}">${Number(r.net_revenue) > 0 ? 'Earned' : 'Pending'}</span></td>
+    </tr>`).join('');
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="8" class="ev-table-empty">No financial data yet</td></tr>';
+  }
+}
+
