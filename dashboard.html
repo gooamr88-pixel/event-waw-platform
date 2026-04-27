@@ -58,6 +58,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
         Payout Settings
       </button>
+      <button class="ev-nav-item" data-panel="calendar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5"/></svg>
+        Calendar
+      </button>
     </nav>
     <div class="ev-sidebar-footer">
       <a href="index.html">
@@ -91,7 +95,22 @@
       </button>
     </div>
     <div class="ev-header-right">
-      <select class="ev-lang-select" style="display:none;"><option>EN-US</option></select>
+      <button class="ev-dark-toggle" id="dark-mode-toggle" title="Toggle Dark Mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="ev-notif-bell" id="notif-bell">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        <div class="ev-notif-dropdown" id="notif-dropdown">
+          <div class="ev-notif-dropdown-header">
+            <span>🔔 Notifications</span>
+            <button id="notif-clear">Mark all read</button>
+          </div>
+          <div class="ev-notif-list" id="notif-list">
+            <div class="ev-notif-empty">🎉 No new notifications</div>
+          </div>
+        </div>
+      </div>
       <div class="ev-user-info" id="user-info">
         <div class="ev-user-avatar" id="user-avatar">U</div>
         <div class="ev-user-meta">
@@ -169,6 +188,7 @@
             <select class="ev-filter-select" id="ticket-event-select"><option value="">Select an event…</option></select>
           </div>
           <div class="ev-export-group">
+            <button class="ev-btn ev-btn-outline ev-btn-sm" id="ticket-email-btn" style="font-size:.78rem">📧 Email All</button>
             <button class="ev-btn-icon" title="Export PDF" id="ticket-pdf-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></button>
             <button class="ev-btn-icon" title="Export CSV" id="ticket-csv-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
           </div>
@@ -331,6 +351,22 @@
       </div>
     </div>
 
+    <!-- ════ PANEL: CALENDAR ════ -->
+    <div class="ev-panel" id="panel-calendar">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">📅 Event Calendar</h2>
+      <div class="ev-card">
+        <div class="ev-calendar-header">
+          <div class="ev-calendar-nav">
+            <button id="cal-prev">❮</button>
+            <span class="ev-calendar-month" id="cal-month">—</span>
+            <button id="cal-next">❯</button>
+          </div>
+          <button class="ev-btn ev-btn-outline ev-btn-sm" id="cal-today">Today</button>
+        </div>
+        <div class="ev-calendar-grid" id="cal-grid"></div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ══════ CREATE EVENT MODAL ══════ -->
@@ -341,6 +377,12 @@
         <button class="ev-modal-close" id="create-modal-close">✕</button>
       </div>
       <form id="create-event-form">
+        <div class="ev-cover-upload" id="cover-upload-area">
+          <span class="upload-icon">🖼️</span>
+          <span class="upload-text">Click to upload cover image</span>
+          <input type="file" id="ev-cover-file" accept="image/*" />
+          <div class="upload-overlay">📷 Change Image</div>
+        </div>
         <div class="ev-form-group">
           <label for="ev-title">Event Title *</label>
           <input class="ev-form-input" type="text" id="ev-title" placeholder="e.g. Summer Music Festival" required />

@@ -37,6 +37,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupPromoPanel();
   setupFinancialPanel();
   setupPayoutPanel();
+  setupDarkMode();
+  setupNotifications();
+  setupCalendar();
+  setupCoverUpload();
+  setupEmailAttendees();
 
   await loadDashboard();
 });
@@ -147,6 +152,10 @@ async function loadDashboard() {
     initCharts(revenueData, events);
     if (revenueData?.length) renderRevenueBreakdown(revenueData);
     setupTicketsPanel(events);
+
+    // Feed calendar
+    calEvents = events;
+    renderCalendar();
 
   } catch (err) {
     console.error('Dashboard error:', err);
@@ -594,6 +603,15 @@ function setupCreateModal() {
 
     try {
       const event = await createEvent(eventData);
+
+      // Upload cover image if selected
+      if (pendingCoverFile) {
+        const coverUrl = await uploadCoverImage(event.id);
+        if (coverUrl) {
+          await supabase.from('events').update({ cover_url: coverUrl }).eq('id', event.id);
+        }
+      }
+
       const tierRows = document.querySelectorAll('#tiers-container .ev-form-row, #tiers-container > div');
       for (const row of tierRows) {
         const name = row.querySelector('[data-tier="name"]')?.value;
@@ -1009,4 +1027,326 @@ async function loadPayoutData() {
       if (p.payout_email) document.getElementById('payout-email').value = p.payout_email;
     }
   } catch (_) { /* No payout info yet */ }
+}
+
+/* ══════════════════════════════════
+   🌙 DARK MODE
+   ══════════════════════════════════ */
+function setupDarkMode() {
+  const saved = localStorage.getItem('ev-dash-dark');
+  if (saved === 'true') document.body.classList.add('dark-mode');
+
+  document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('ev-dash-dark', document.body.classList.contains('dark-mode'));
+  });
+}
+
+/* ══════════════════════════════════
+   🔔 NOTIFICATIONS
+   ══════════════════════════════════ */
+let dashNotifications = [];
+
+function setupNotifications() {
+  const bell = document.getElementById('notif-bell');
+  const dropdown = document.getElementById('notif-dropdown');
+
+  // Toggle dropdown
+  bell?.addEventListener('click', (e) => {
+    if (e.target.closest('.ev-notif-dropdown')) return;
+    dropdown.classList.toggle('open');
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!bell?.contains(e.target)) dropdown?.classList.remove('open');
+  });
+
+  // Mark all read
+  document.getElementById('notif-clear')?.addEventListener('click', () => {
+    dashNotifications = [];
+    localStorage.setItem('ev-last-notif', new Date().toISOString());
+    renderNotifications();
+  });
+
+  // Load recent ticket purchases as notifications
+  loadNotifications();
+}
+
+async function loadNotifications() {
+  try {
+    const user = await getCurrentUser();
+    const lastSeen = localStorage.getItem('ev-last-notif') || new Date(Date.now() - 86400000).toISOString();
+
+    const { data: events } = await supabase.from('events').select('id, title').eq('organizer_id', user.id);
+    if (!events?.length) return;
+
+    const { data: tiers } = await supabase.from('ticket_tiers').select('id, event_id').in('event_id', events.map(e => e.id));
+    if (!tiers?.length) return;
+
+    const eventMap = {};
+    events.forEach(e => { eventMap[e.id] = e.title; });
+    const tierEventMap = {};
+    tiers.forEach(t => { tierEventMap[t.id] = t.event_id; });
+
+    const { data: tickets } = await supabase
+      .from('tickets')
+      .select('id, attendee_name, tier_name, created_at, ticket_tier_id')
+      .in('ticket_tier_id', tiers.map(t => t.id))
+      .gt('created_at', lastSeen)
+      .order('created_at', { ascending: false })
+      .limit(20);
+
+    if (tickets?.length) {
+      dashNotifications = tickets.map(t => ({
+        icon: '🎫',
+        text: `<strong>${escapeHTML(t.attendee_name || 'Someone')}</strong> purchased a <strong>${escapeHTML(t.tier_name || '')}</strong> ticket for <strong>${escapeHTML(eventMap[tierEventMap[t.ticket_tier_id]] || '')}</strong>`,
+        time: t.created_at,
+        unread: true
+      }));
+    }
+    renderNotifications();
+  } catch (_) { /* Notifications are optional */ }
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  const bell = document.getElementById('notif-bell');
+  if (!list) return;
+
+  // Remove old badge
+  bell?.querySelector('.ev-notif-badge')?.remove();
+
+  if (!dashNotifications.length) {
+    list.innerHTML = '<div class="ev-notif-empty">🎉 No new notifications</div>';
+    bell?.classList.remove('has-notif');
+    return;
+  }
+
+  // Add badge
+  const badge = document.createElement('span');
+  badge.className = 'ev-notif-badge';
+  badge.textContent = dashNotifications.length;
+  bell?.insertBefore(badge, bell.firstChild);
+  bell?.classList.add('has-notif');
+
+  list.innerHTML = dashNotifications.map(n => `
+    <div class="ev-notif-item ${n.unread ? 'unread' : ''}">
+      <div class="ev-notif-icon">${n.icon}</div>
+      <div class="ev-notif-text">
+        <p>${n.text}</p>
+        <time>${timeAgo(n.time)}</time>
+      </div>
+    </div>
+  `).join('');
+}
+
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days}d ago`;
+}
+
+/* ══════════════════════════════════
+   📅 CALENDAR VIEW
+   ══════════════════════════════════ */
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
+let calEvents = [];
+
+function setupCalendar() {
+  document.getElementById('cal-prev')?.addEventListener('click', () => {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  });
+  document.getElementById('cal-next')?.addEventListener('click', () => {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  });
+  document.getElementById('cal-today')?.addEventListener('click', () => {
+    calMonth = new Date().getMonth();
+    calYear = new Date().getFullYear();
+    renderCalendar();
+  });
+}
+
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  if (!grid) return;
+
+  const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month').textContent = `${monthNames[calMonth]} ${calYear}`;
+
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = new Date();
+
+  let html = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+    .map(d => `<div class="ev-calendar-day-header">${d}</div>`).join('');
+
+  // Previous month fill
+  const prevDays = new Date(calYear, calMonth, 0).getDate();
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="ev-calendar-cell other-month"><div class="ev-calendar-date">${prevDays - i}</div></div>`;
+  }
+
+  // Current month
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(calYear, calMonth, d);
+    const isToday = date.toDateString() === today.toDateString();
+    const dayEvents = calEvents.filter(ev => {
+      const evDate = new Date(ev.date);
+      return evDate.getDate() === d && evDate.getMonth() === calMonth && evDate.getFullYear() === calYear;
+    });
+
+    html += `<div class="ev-calendar-cell${isToday ? ' today' : ''}">`;
+    html += `<div class="ev-calendar-date">${d}</div>`;
+    dayEvents.forEach(ev => {
+      const isPast = new Date(ev.date) < today;
+      const cls = ev.status === 'draft' ? 'draft' : isPast ? 'past' : '';
+      html += `<a href="event-detail.html?id=${ev.id}" class="ev-calendar-event ${cls}" title="${escapeHTML(ev.title)}">${escapeHTML(ev.title)}</a>`;
+    });
+    html += '</div>';
+  }
+
+  // Next month fill
+  const totalCells = firstDay + daysInMonth;
+  const remaining = (7 - (totalCells % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    html += `<div class="ev-calendar-cell other-month"><div class="ev-calendar-date">${i}</div></div>`;
+  }
+
+  grid.innerHTML = html;
+}
+
+/* ══════════════════════════════════
+   📸 COVER IMAGE UPLOAD
+   ══════════════════════════════════ */
+let pendingCoverFile = null;
+
+function setupCoverUpload() {
+  const fileInput = document.getElementById('ev-cover-file');
+  const area = document.getElementById('cover-upload-area');
+  if (!fileInput || !area) return;
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select an image file', 'error'); return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image must be under 5MB', 'error'); return;
+    }
+
+    pendingCoverFile = file;
+
+    // Preview
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      let img = area.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+        area.appendChild(img);
+      }
+      img.src = ev.target.result;
+      area.classList.add('has-image');
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadCoverImage(eventId) {
+  if (!pendingCoverFile) return null;
+  try {
+    const ext = pendingCoverFile.name.split('.').pop();
+    const path = `events/${eventId}/cover.${ext}`;
+    const { error } = await supabase.storage.from('event-covers').upload(path, pendingCoverFile, { upsert: true });
+    if (error) { console.warn('Cover upload failed:', error.message); return null; }
+    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+    pendingCoverFile = null;
+    return urlData?.publicUrl || null;
+  } catch (err) {
+    console.warn('Cover upload error:', err);
+    return null;
+  }
+}
+
+/* ══════════════════════════════════
+   📧 EMAIL ATTENDEES
+   ══════════════════════════════════ */
+function setupEmailAttendees() {
+  document.getElementById('ticket-email-btn')?.addEventListener('click', async () => {
+    const eventId = document.getElementById('ticket-event-select')?.value;
+    if (!eventId) { showToast('Select an event first', 'error'); return; }
+
+    const eventName = document.getElementById('ticket-event-select')?.selectedOptions[0]?.textContent || 'Event';
+
+    // Fetch attendee emails
+    try {
+      const { data: tiers } = await supabase.from('ticket_tiers').select('id').eq('event_id', eventId);
+      if (!tiers?.length) { showToast('No tiers found', 'error'); return; }
+      const { data: tickets } = await supabase
+        .from('tickets')
+        .select('attendee_email, attendee_name')
+        .in('ticket_tier_id', tiers.map(t => t.id));
+
+      const emails = [...new Set((tickets || []).filter(t => t.attendee_email).map(t => t.attendee_email))];
+      if (!emails.length) { showToast('No attendee emails found', 'error'); return; }
+
+      // Show compose modal
+      const modal = document.createElement('div');
+      modal.className = 'ev-modal-overlay active';
+      modal.innerHTML = `<div class="ev-modal" style="max-width:560px">
+        <div class="ev-modal-header">
+          <h2>📧 Email Attendees</h2>
+          <button class="ev-modal-close" id="email-close">✕</button>
+        </div>
+        <div class="ev-email-compose">
+          <div class="ev-email-to">
+            <span>To:</span>
+            <strong>${escapeHTML(eventName)}</strong>
+            <span class="ev-email-count">${emails.length} attendees</span>
+          </div>
+          <div class="ev-form-group">
+            <label>Subject</label>
+            <input class="ev-form-input" type="text" id="email-subject" value="Important Update: ${escapeHTML(eventName)}" />
+          </div>
+          <div class="ev-form-group">
+            <label>Message</label>
+            <textarea class="ev-form-input" id="email-body" rows="6" placeholder="Write your message to all attendees..."></textarea>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="ev-btn ev-btn-outline" id="email-cancel" style="flex:1">Cancel</button>
+            <button class="ev-btn ev-btn-pink" id="email-send" style="flex:1">📨 Open in Email Client</button>
+          </div>
+        </div>
+      </div>`;
+      document.body.appendChild(modal);
+
+      document.getElementById('email-close').onclick = () => modal.remove();
+      document.getElementById('email-cancel').onclick = () => modal.remove();
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      document.getElementById('email-send').addEventListener('click', () => {
+        const subject = encodeURIComponent(document.getElementById('email-subject').value);
+        const body = encodeURIComponent(document.getElementById('email-body').value);
+        const bcc = emails.join(',');
+        window.open(`mailto:?bcc=${bcc}&subject=${subject}&body=${body}`, '_self');
+        showToast('Email client opened with attendee list!', 'success');
+        modal.remove();
+      });
+    } catch (err) {
+      showToast('Error loading attendees: ' + err.message, 'error');
+    }
+  });
 }
