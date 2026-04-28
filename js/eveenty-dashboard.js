@@ -320,6 +320,11 @@ function populateEventSelects(events) {
       opt.textContent = ev.title;
       el.appendChild(opt);
     });
+    // Auto-select first event if available
+    if (events.length > 0 && el.options.length > 1) {
+      el.selectedIndex = 1;
+      el.dispatchEvent(new Event('change'));
+    }
   });
 }
 
@@ -1395,14 +1400,20 @@ function setupApprovalPanel() {
 async function loadApprovalData() {
   const tbody = document.getElementById('approval-tbody');
   const eventId = document.getElementById('approval-event-select')?.value;
+  if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="9" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
 
   try {
-    let query = supabase.from('vendor_requests').select('*').eq('status', approvalTabFilter).order('created_at', { ascending: false });
+    // Check if vendor_requests table exists by doing a safe query
+    let query = supabase.from('vendor_requests').select('*', { count: 'exact', head: false }).eq('status', approvalTabFilter).order('created_at', { ascending: false }).limit(20);
     if (eventId) query = query.eq('event_id', eventId);
     const { data, error } = await query;
 
-    if (error) throw error;
+    if (error) {
+      // Table doesn't exist or permission denied — show friendly message
+      tbody.innerHTML = `<tr><td colspan="9" class="ev-table-empty">No ${approvalTabFilter} requests</td></tr>`;
+      return;
+    }
     if (!data?.length) {
       tbody.innerHTML = `<tr><td colspan="9" class="ev-table-empty">No ${approvalTabFilter} requests</td></tr>`;
       return;
@@ -1417,10 +1428,10 @@ async function loadApprovalData() {
       <td>${escapeHTML(r.category || '—')}</td>
       <td>${r.price ? '$' + Number(r.price).toLocaleString() : '—'}</td>
       <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(r.created_at).toLocaleDateString()}</td>
-      <td><span class="ev-badge ${approvalTabFilter}">${approvalTabFilter}</span></td>
+      <td><span class="ev-badge ${r.status || approvalTabFilter}">${r.status || approvalTabFilter}</span></td>
     </tr>`).join('');
   } catch (err) {
-    // Table may not exist yet — show empty state gracefully
+    // Table doesn't exist — show empty state
     tbody.innerHTML = `<tr><td colspan="9" class="ev-table-empty">No ${approvalTabFilter} requests</td></tr>`;
   }
 }
