@@ -345,15 +345,31 @@ function setupTicketsPanel() {
     }
     tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
     try {
-      const { data: tiers } = await supabase.from('ticket_tiers').select('id, price').eq('event_id', eventId);
+      const { data: tiers } = await supabase.from('ticket_tiers').select('id, name, price').eq('event_id', eventId);
       if (!tiers?.length) { tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No tiers found</td></tr>'; return; }
-      const tierPrices = {};
-      tiers.forEach(t => { tierPrices[t.id] = t.price || 0; });
-      const { data: tickets } = await supabase
+      const tierMap = {};
+      tiers.forEach(t => { tierMap[t.id] = t; });
+
+      // Query tickets with order data for attendee info
+      let tickets = null;
+      // Try full query first (with attendee columns)
+      const { data: fullData, error: fullErr } = await supabase
         .from('tickets')
-        .select('id, attendee_name, attendee_email, tier_name, ticket_tier_id, status, scanned_at, created_at, seat_section, seat_row, seat_number')
+        .select('id, ticket_tier_id, user_id, status, scanned_at, created_at, attendee_name, attendee_email, tier_name, seat_section, seat_row, seat_number, orders(guest_name, guest_email, guest_phone)')
         .in('ticket_tier_id', tiers.map(t => t.id))
         .order('created_at', { ascending: false });
+
+      if (!fullErr && fullData) {
+        tickets = fullData;
+      } else {
+        // Fallback: only core columns
+        const { data: coreData } = await supabase
+          .from('tickets')
+          .select('id, ticket_tier_id, user_id, status, scanned_at, created_at, order_id, orders(guest_name, guest_email, guest_phone)')
+          .in('ticket_tier_id', tiers.map(t => t.id))
+          .order('created_at', { ascending: false });
+        tickets = coreData;
+      }
 
       if (!tickets?.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty">No tickets sold yet</td></tr>';
@@ -365,19 +381,26 @@ function setupTicketsPanel() {
 
       // Update ticket stats
       const scannedCount = tickets.filter(t => t.scanned_at).length;
-      const totalRev = tickets.reduce((s, t) => s + (tierPrices[t.ticket_tier_id] || 0), 0);
+      const totalRev = tickets.reduce((s, t) => s + (tierMap[t.ticket_tier_id]?.price || 0), 0);
       document.getElementById('tkt-stat-sold').textContent = tickets.length;
       document.getElementById('tkt-stat-scanned').textContent = scannedCount;
       document.getElementById('tkt-stat-revenue').textContent = '$' + totalRev.toLocaleString();
-      tbody.innerHTML = tickets.map((t, i) => `<tr>
+      tbody.innerHTML = tickets.map((t, i) => {
+        // Get attendee name from: attendee_name column → order guest_name → user_id
+        const name = t.attendee_name || t.orders?.guest_name || t.user_id?.substring(0, 8) || '—';
+        const email = t.attendee_email || t.orders?.guest_email || '—';
+        const tierName = t.tier_name || tierMap[t.ticket_tier_id]?.name || '—';
+        const seat = t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '—';
+        return `<tr>
         <td>${i + 1}</td>
-        <td style="font-weight:600">${escapeHTML(t.attendee_name || '—')}</td>
-        <td>${escapeHTML(t.attendee_email || '—')}</td>
-        <td>${escapeHTML(t.tier_name || '—')}</td>
-        <td>${t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '—'}</td>
+        <td style="font-weight:600">${escapeHTML(name)}</td>
+        <td>${escapeHTML(email)}</td>
+        <td>${escapeHTML(tierName)}</td>
+        <td>${seat}</td>
         <td><span class="ev-badge ${t.scanned_at ? 'accepted' : 'pending'}">${t.scanned_at ? '✓ Scanned' : 'Pending'}</span></td>
         <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(t.created_at).toLocaleDateString()}</td>
-      </tr>`).join('');
+      </tr>`;
+      }).join('');
 
       // CSV export
       const csvBtn = document.getElementById('ticket-csv-btn');
