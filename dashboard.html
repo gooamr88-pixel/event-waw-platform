@@ -510,26 +510,60 @@
           <div class="ce-col-left">
             <div class="ev-form-group">
               <label>Event Name <span class="ce-req">*</span></label>
-              <input class="ev-form-input" type="text" id="ce-name" placeholder="Name" required />
+              <input class="ev-form-input" type="text" id="ce-name" placeholder="Enter your event name" required />
+            </div>
+
+            <!-- ── Location Details ── -->
+            <div class="ev-form-group">
+              <label>Venue / Place Name <span class="ce-req">*</span></label>
+              <input class="ev-form-input" type="text" id="ce-place" placeholder="e.g. Cairo International Convention Center" />
             </div>
             <div class="ev-form-group">
-              <label>Event Place</label>
-              <input class="ev-form-input" type="text" id="ce-place" placeholder="Place" />
+              <label>Full Address</label>
+              <input class="ev-form-input" type="text" id="ce-address" placeholder="e.g. El Nasr Road, Nasr City" />
             </div>
             <div class="ev-form-row">
               <div class="ev-form-group">
-                <label>Longitude <span class="ce-req">*</span></label>
-                <input class="ev-form-input" type="text" id="ce-longitude" placeholder="Longitude" />
+                <label>City <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="text" id="ce-city" placeholder="e.g. Cairo" />
               </div>
               <div class="ev-form-group">
-                <label>Latitude <span class="ce-req">*</span></label>
-                <input class="ev-form-input" type="text" id="ce-latitude" placeholder="Latitude" />
+                <label>Country <span class="ce-req">*</span></label>
+                <select class="ev-form-input" id="ce-country">
+                  <option value="">Select Country</option>
+                  <option value="EG">Egypt</option>
+                  <option value="SA">Saudi Arabia</option>
+                  <option value="AE">UAE</option>
+                  <option value="US">United States</option>
+                  <option value="CA">Canada</option>
+                  <option value="GB">United Kingdom</option>
+                  <option value="DE">Germany</option>
+                  <option value="FR">France</option>
+                  <option value="TR">Turkey</option>
+                  <option value="JO">Jordan</option>
+                  <option value="LB">Lebanon</option>
+                  <option value="KW">Kuwait</option>
+                  <option value="QA">Qatar</option>
+                  <option value="BH">Bahrain</option>
+                  <option value="OM">Oman</option>
+                  <option value="MA">Morocco</option>
+                  <option value="TN">Tunisia</option>
+                  <option value="OTHER">Other</option>
+                </select>
               </div>
             </div>
-            <div class="ev-form-group">
-              <label>Event Address</label>
-              <input class="ev-form-input" type="text" id="ce-address" placeholder="Event Address" />
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Longitude</label>
+                <input class="ev-form-input" type="number" step="any" id="ce-longitude" placeholder="e.g. 31.3547" />
+              </div>
+              <div class="ev-form-group">
+                <label>Latitude</label>
+                <input class="ev-form-input" type="number" step="any" id="ce-latitude" placeholder="e.g. 30.0595" />
+              </div>
             </div>
+
+            <!-- ── Category & Tags ── -->
             <div class="ev-form-group">
               <label>Category <span class="ce-req">*</span></label>
               <select class="ev-form-input" id="ce-category">
@@ -586,9 +620,11 @@
                 <option value="Asia/Tokyo">Tokyo (JST)</option>
               </select>
             </div>
+
+            <!-- ── Date & Time ── -->
             <div class="ev-form-group">
               <label>Doors Open At</label>
-              <input class="ev-form-input" type="text" id="ce-doors" placeholder="DD / MM / YYYY HH:mm" />
+              <input class="ev-form-input" type="datetime-local" id="ce-doors" />
             </div>
             <div class="ev-form-group">
               <label>Start Date <span class="ce-req">*</span></label>

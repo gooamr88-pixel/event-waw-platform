@@ -542,11 +542,11 @@ let ceKeywords = [];
 
 function resetCreateEventForm() {
   // Reset text/select inputs
-  ['ce-name','ce-place','ce-longitude','ce-latitude','ce-address','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day'].forEach(id => {
+  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  ['ce-category','ce-currency','ce-timezone'].forEach(id => {
+  ['ce-category','ce-currency','ce-timezone','ce-country'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.selectedIndex = 0;
   });
@@ -815,13 +815,14 @@ function setupCreateModal() {
         title: document.getElementById('ce-name')?.value.trim().slice(0, 200),
         description: document.getElementById('ce-overview')?.innerHTML || '',
         venue: document.getElementById('ce-place')?.value.trim().slice(0, 300),
-        city: document.getElementById('ce-address')?.value.trim().slice(0, 100),
+        city: document.getElementById('ce-city')?.value.trim().slice(0, 100) || document.getElementById('ce-address')?.value.trim().slice(0, 100),
         date: document.getElementById('ce-start-date')?.value ? new Date(document.getElementById('ce-start-date').value).toISOString() : new Date().toISOString(),
         category: document.getElementById('ce-category')?.value || 'general',
         status: 'published',
-        // New fields
+        // Location details
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
         latitude: parseFloat(document.getElementById('ce-latitude')?.value) || null,
+        country: document.getElementById('ce-country')?.value || null,
         keywords: ceKeywords.length ? ceKeywords : null,
         pixel_code: document.getElementById('ce-pixel')?.value.trim() || null,
         currency: document.getElementById('ce-currency')?.value || 'USD',
