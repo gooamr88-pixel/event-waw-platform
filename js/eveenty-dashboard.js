@@ -538,6 +538,7 @@ let ceTicketCategories = [];
 let ceTicketsList = [];
 let ceGalleryCount = 1;
 let ceTicketTableListenerAttached = false;
+let ceKeywords = [];
 
 function resetCreateEventForm() {
   // Reset text/select inputs
@@ -574,6 +575,7 @@ function resetCreateEventForm() {
   ceTicketCategories = [];
   ceTicketsList = [];
   ceGalleryCount = 1;
+  ceKeywords = [];
   ceTicketTableListenerAttached = false;
   const catSelect = document.getElementById('ce-ticket-category-select');
   if (catSelect) catSelect.innerHTML = '<option value="">Select Category</option>';
@@ -655,24 +657,23 @@ function setupCreateModal() {
   // ── Keywords ──
   const keywordsInput = document.getElementById('ce-keywords');
   const keywordsWrap = document.getElementById('ce-keywords-tags');
-  const keywords = [];
   keywordsInput?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       const val = keywordsInput.value.trim();
-      if (val && !keywords.includes(val)) {
-        keywords.push(val);
+      if (val && !ceKeywords.includes(val)) {
+        ceKeywords.push(val);
         renderKeywords();
       }
       keywordsInput.value = '';
     }
   });
   function renderKeywords() {
-    keywordsWrap.innerHTML = keywords.map((k, i) =>
+    keywordsWrap.innerHTML = ceKeywords.map((k, i) =>
       `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
     ).join('');
     keywordsWrap.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', () => { keywords.splice(Number(btn.dataset.idx), 1); renderKeywords(); });
+      btn.addEventListener('click', () => { ceKeywords.splice(Number(btn.dataset.idx), 1); renderKeywords(); });
     });
   }
 
@@ -797,6 +798,18 @@ function setupCreateModal() {
     try {
       const user = await getCurrentUser();
       if (!user) return;
+
+      // Collect social links
+      const socialLinks = [];
+      document.querySelectorAll('#ce-social-links .ce-social-row').forEach(row => {
+        const platform = row.querySelector('select')?.value;
+        const url = row.querySelector('input[type="url"]')?.value?.trim();
+        if (platform && url) socialLinks.push({ platform, url });
+      });
+
+      // Collect show_end_time radio
+      const showEndTime = document.querySelector('input[name="ce-show-end"]:checked')?.value !== 'no';
+
       const eventData = {
         organizer_id: user.id,
         title: document.getElementById('ce-name')?.value.trim().slice(0, 200),
@@ -806,21 +819,76 @@ function setupCreateModal() {
         date: document.getElementById('ce-start-date')?.value ? new Date(document.getElementById('ce-start-date').value).toISOString() : new Date().toISOString(),
         category: document.getElementById('ce-category')?.value || 'general',
         status: 'published',
+        // New fields
+        longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
+        latitude: parseFloat(document.getElementById('ce-latitude')?.value) || null,
+        keywords: ceKeywords.length ? ceKeywords : null,
+        pixel_code: document.getElementById('ce-pixel')?.value.trim() || null,
+        currency: document.getElementById('ce-currency')?.value || 'USD',
+        timezone: document.getElementById('ce-timezone')?.value || null,
+        doors_open: document.getElementById('ce-doors')?.value ? new Date(document.getElementById('ce-doors').value).toISOString() : null,
+        end_date: document.getElementById('ce-end-date')?.value ? new Date(document.getElementById('ce-end-date').value).toISOString() : null,
+        show_end_time: showEndTime,
+        website: document.getElementById('ce-website')?.value.trim() || null,
+        social_links: socialLinks.length ? socialLinks : null,
       };
+
       if (!eventData.title || eventData.title.length < 3) { showToast('Event name is required (min 3 chars)', 'error'); btn.disabled = false; btn.innerHTML = '🚀 Publish Event'; return; }
       const event = await createEvent(eventData);
 
-      // Upload cover if exists
-      const mainPhotoArea = document.getElementById('ce-main-photo-area');
-      const coverImg = mainPhotoArea?.querySelector('img');
-      if (coverImg && pendingCoverFile) {
+      // Upload cover image
+      if (pendingCoverFile) {
         const coverUrl = await uploadCoverImage(event.id);
         if (coverUrl) await supabase.from('events').update({ cover_url: coverUrl }).eq('id', event.id);
       }
 
-      // Create ticket tiers
+      // Upload logo image
+      const logoArea = document.getElementById('ce-logo-area');
+      const logoInput = document.getElementById('ce-logo');
+      if (logoInput?.files?.[0]) {
+        const logoUrl = await uploadEventFile(event.id, logoInput.files[0], 'logo');
+        if (logoUrl) await supabase.from('events').update({ logo_url: logoUrl }).eq('id', event.id);
+      }
+
+      // Upload gallery images
+      const galleryInputs = document.querySelectorAll('#ce-gallery-grid input[type="file"]');
+      const galleryUrls = [];
+      for (let i = 0; i < galleryInputs.length; i++) {
+        if (galleryInputs[i].files?.[0]) {
+          const url = await uploadEventFile(event.id, galleryInputs[i].files[0], `gallery_${i}`);
+          if (url) galleryUrls.push(url);
+        }
+      }
+      if (galleryUrls.length) await supabase.from('events').update({ gallery_urls: galleryUrls }).eq('id', event.id);
+
+      // Upload sponsor logos
+      const sponsorInputs = document.querySelectorAll('#ce-sponsors-grid input[type="file"]');
+      const sponsorUrls = [];
+      for (let i = 0; i < sponsorInputs.length; i++) {
+        if (sponsorInputs[i].files?.[0]) {
+          const url = await uploadEventFile(event.id, sponsorInputs[i].files[0], `sponsor_${i}`);
+          if (url) sponsorUrls.push(url);
+        }
+      }
+      if (sponsorUrls.length) await supabase.from('events').update({ sponsor_urls: sponsorUrls }).eq('id', event.id);
+
+      // Get selected ticket type
+      const ticketType = document.querySelector('.ce-ticket-card.selected input')?.value || 'normal';
+
+      // Create ticket tiers with all details
       for (const t of ceTicketsList) {
-        await supabase.from('ticket_tiers').insert({ event_id: event.id, name: t.name, price: t.price, capacity: t.qty });
+        await supabase.from('ticket_tiers').insert({
+          event_id: event.id,
+          name: t.name,
+          price: t.price,
+          capacity: t.qty,
+          ticket_type: ticketType,
+          category: t.category || null,
+          early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+          early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+          max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+          currency: t.currency || 'USD',
+        });
       }
 
       showToast('Event published successfully!', 'success');
@@ -1520,6 +1588,21 @@ async function uploadCoverImage(eventId) {
     return urlData?.publicUrl || null;
   } catch (err) {
     console.warn('Cover upload error:', err);
+    return null;
+  }
+}
+
+async function uploadEventFile(eventId, file, label) {
+  if (!file) return null;
+  try {
+    const ext = file.name.split('.').pop();
+    const path = `events/${eventId}/${label}.${ext}`;
+    const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
+    if (error) { console.warn(`Upload ${label} failed:`, error.message); return null; }
+    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+    return urlData?.publicUrl || null;
+  } catch (err) {
+    console.warn(`Upload ${label} error:`, err);
     return null;
   }
 }
