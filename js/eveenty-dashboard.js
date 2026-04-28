@@ -920,8 +920,98 @@ function setupCreateModal() {
   // ── Publish Event ──
   document.getElementById('ce-publish-btn')?.addEventListener('click', async () => {
     const btn = document.getElementById('ce-publish-btn');
+
+    // ── VALIDATION ──
+    // Clear previous errors
+    document.querySelectorAll('.ce-field-error').forEach(el => el.remove());
+    document.querySelectorAll('.ce-error-border').forEach(el => el.classList.remove('ce-error-border'));
+
+    const errors = [];
+    const markError = (fieldId, message) => {
+      const field = document.getElementById(fieldId);
+      if (!field) return;
+      field.classList.add('ce-error-border');
+      const errEl = document.createElement('div');
+      errEl.className = 'ce-field-error';
+      errEl.textContent = message;
+      field.parentElement.appendChild(errEl);
+      // Auto-clear error when user interacts
+      const clearFn = () => {
+        field.classList.remove('ce-error-border');
+        errEl.remove();
+        field.removeEventListener('input', clearFn);
+        field.removeEventListener('change', clearFn);
+      };
+      field.addEventListener('input', clearFn);
+      field.addEventListener('change', clearFn);
+      errors.push({ fieldId, message });
+    };
+
+    // Tab 1: Basic Information
+    const name = document.getElementById('ce-name')?.value.trim();
+    if (!name || name.length < 3) markError('ce-name', 'Event name is required (min 3 characters)');
+
+    const place = document.getElementById('ce-place')?.value.trim();
+    if (!place) markError('ce-place', 'Venue / Place name is required');
+
+    const city = document.getElementById('ce-city')?.value.trim();
+    if (!city) markError('ce-city', 'City is required');
+
+    const country = document.getElementById('ce-country')?.value;
+    if (!country) markError('ce-country', 'Country is required');
+
+    const category = document.getElementById('ce-category')?.value;
+    if (!category) markError('ce-category', 'Category is required');
+
+    const currency = document.getElementById('ce-currency')?.value;
+    if (!currency) markError('ce-currency', 'Currency is required');
+
+    const timezone = document.getElementById('ce-timezone')?.value;
+    if (!timezone) markError('ce-timezone', 'Time zone is required');
+
+    const startDate = document.getElementById('ce-start-date')?.value;
+    if (!startDate) markError('ce-start-date', 'Start date is required');
+
+    const endDate = document.getElementById('ce-end-date')?.value;
+    if (!endDate) markError('ce-end-date', 'End date is required');
+
+    // Tab 2: Tickets
+    if (ceTicketsList.length === 0) {
+      errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });
+      showToast('⚠️ You must add at least one ticket before publishing', 'error');
+    }
+
+    // If there are errors, show them and stop
+    if (errors.length > 0) {
+      // Build error summary
+      const errorNames = errors.map(e => e.message).join('\n• ');
+      showToast(`⚠️ Please fix ${errors.length} error(s):\n• ${errorNames}`, 'error');
+
+      // Switch to the tab that has the first error
+      const firstError = errors[0];
+      if (firstError.tab === 'tickets') {
+        // Switch to tickets tab
+        document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active'));
+        document.querySelector('[data-ce-tab="tickets"]')?.classList.add('active');
+        document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('ce-step-tickets')?.classList.add('active');
+      } else {
+        // Switch to basic tab
+        document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active'));
+        document.querySelector('[data-ce-tab="basic"]')?.classList.add('active');
+        document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+        document.getElementById('ce-step-basic')?.classList.add('active');
+      }
+
+      // Scroll to first error field
+      const firstField = document.getElementById(firstError.fieldId);
+      if (firstField) firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+      return; // STOP — don't create/update event
+    }
+
     btn.disabled = true;
-    btn.textContent = 'Publishing…';
+    btn.textContent = ceEditingEventId ? 'Updating…' : 'Publishing…';
     try {
       const user = await getCurrentUser();
       if (!user) return;
@@ -937,40 +1027,49 @@ function setupCreateModal() {
       // Collect show_end_time radio
       const showEndTime = document.querySelector('input[name="ce-show-end"]:checked')?.value !== 'no';
 
-      const eventData = {
+      // Core event data (columns that always exist)
+      const coreData = {
         organizer_id: user.id,
-        title: document.getElementById('ce-name')?.value.trim().slice(0, 200),
+        title: name,
         description: document.getElementById('ce-overview')?.innerHTML || '',
-        venue: document.getElementById('ce-place')?.value.trim().slice(0, 300),
-        city: document.getElementById('ce-city')?.value.trim().slice(0, 100) || document.getElementById('ce-address')?.value.trim().slice(0, 100),
-        date: document.getElementById('ce-start-date')?.value ? new Date(document.getElementById('ce-start-date').value).toISOString() : new Date().toISOString(),
-        category: document.getElementById('ce-category')?.value || 'general',
+        venue: place,
+        city: city,
+        date: new Date(startDate).toISOString(),
+        category: category || 'general',
         status: 'published',
-        // Location details
+      };
+
+      // Extra event data (new columns — may not exist yet)
+      const extraData = {
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
         latitude: parseFloat(document.getElementById('ce-latitude')?.value) || null,
-        country: document.getElementById('ce-country')?.value || null,
+        country: country || null,
         keywords: ceKeywords.length ? ceKeywords : null,
         pixel_code: document.getElementById('ce-pixel')?.value.trim() || null,
-        currency: document.getElementById('ce-currency')?.value || 'USD',
-        timezone: document.getElementById('ce-timezone')?.value || null,
+        currency: currency || 'USD',
+        timezone: timezone || null,
         doors_open: document.getElementById('ce-doors')?.value ? new Date(document.getElementById('ce-doors').value).toISOString() : null,
-        end_date: document.getElementById('ce-end-date')?.value ? new Date(document.getElementById('ce-end-date').value).toISOString() : null,
+        end_date: endDate ? new Date(endDate).toISOString() : null,
         show_end_time: showEndTime,
         website: document.getElementById('ce-website')?.value.trim() || null,
         social_links: socialLinks.length ? socialLinks : null,
       };
 
-      if (!eventData.title || eventData.title.length < 3) { showToast('Event name is required (min 3 chars)', 'error'); btn.disabled = false; btn.innerHTML = ceEditingEventId ? '💾 Update Event' : '🚀 Publish Event'; return; }
-
       let event;
       if (ceEditingEventId) {
         // ── UPDATE existing event ──
-        delete eventData.organizer_id; // don't change owner
-        event = await updateEvent(ceEditingEventId, eventData);
+        const allUpdates = { ...coreData, ...extraData };
+        delete allUpdates.organizer_id;
+        event = await updateEvent(ceEditingEventId, allUpdates);
       } else {
-        // ── CREATE new event ──
-        event = await createEvent(eventData);
+        // ── CREATE new event (core first, then extras) ──
+        event = await createEvent(coreData);
+        // Try adding extra fields
+        try {
+          await supabase.from('events').update(extraData).eq('id', event.id);
+        } catch (extraErr) {
+          console.warn('Extra event fields skipped:', extraErr.message);
+        }
       }
 
       // Upload cover image
@@ -1048,14 +1147,28 @@ function setupCreateModal() {
       } else {
         // ── CREATE MODE: insert all tiers ──
         for (const t of ceTicketsList) {
-          await supabase.from('ticket_tiers').insert({
+          // Core insert (columns that always exist)
+          const { data: newTier, error: tierErr } = await supabase.from('ticket_tiers').insert({
             event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
-            ticket_type: ticketType, category: t.category || null,
-            early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-            early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
-            max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-            currency: t.currency || 'USD',
-          });
+          }).select('id').single();
+
+          if (tierErr) {
+            console.warn('Tier insert failed:', tierErr.message);
+            continue;
+          }
+
+          // Try updating with extra columns (may not exist yet)
+          try {
+            await supabase.from('ticket_tiers').update({
+              ticket_type: ticketType, category: t.category || null,
+              early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+              early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+              max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+              currency: t.currency || 'USD',
+            }).eq('id', newTier.id);
+          } catch (extraErr) {
+            console.warn('Extra tier fields skipped:', extraErr.message);
+          }
         }
       }
 

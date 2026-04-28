@@ -570,3 +570,26 @@ body.ev-dash.dark-mode .ev-dark-toggle{background:rgba(99,102,241,.08);border-co
   .ce-social-del{width:100%}
 }
 
+/* ── Form Validation Errors ── */
+.ce-error-border{
+  border-color:#ef4444 !important;
+  box-shadow:0 0 0 3px rgba(239,68,68,.12) !important;
+}
+.ce-field-error{
+  color:#ef4444;
+  font-size:.78rem;
+  font-weight:500;
+  margin-top:6px;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  animation:ceErrorIn .3s ease;
+}
+.ce-field-error::before{
+  content:'⚠';
+  font-size:.7rem;
+}
+@keyframes ceErrorIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
