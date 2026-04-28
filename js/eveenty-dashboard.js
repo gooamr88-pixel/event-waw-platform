@@ -238,7 +238,7 @@ function calcRevenue(ev) {
 
 async function handleTableAction(e) {
   const editBtn = e.target.closest('[data-action="edit"]');
-  if (editBtn) { window.location.href = `event-detail.html?id=${editBtn.dataset.id}`; return; }
+  if (editBtn) { await loadEventForEditing(editBtn.dataset.id); return; }
 
   const mapBtn = e.target.closest('[data-action="map"]');
   if (mapBtn) { window.location.href = `venue-designer.html?event_id=${mapBtn.dataset.id}`; return; }
@@ -539,6 +539,127 @@ let ceTicketsList = [];
 let ceGalleryCount = 1;
 let ceTicketTableListenerAttached = false;
 let ceKeywords = [];
+let ceEditingEventId = null;
+
+/* ── Load Event for Editing ── */
+async function loadEventForEditing(eventId) {
+  try {
+    const { data: ev, error } = await supabase
+      .from('events')
+      .select(`*, ticket_tiers(id, name, price, capacity, ticket_type, category, early_bird_price, early_bird_end, max_scans, currency)`)
+      .eq('id', eventId)
+      .single();
+    if (error || !ev) { showToast('Failed to load event', 'error'); return; }
+
+    // Reset form first
+    resetCreateEventForm();
+    ceEditingEventId = eventId;
+
+    // Update UI to "Edit" mode
+    const breadcrumb = document.querySelector('#panel-create-event .ev-breadcrumb strong');
+    if (breadcrumb) breadcrumb.textContent = 'Edit Event';
+    const publishBtn = document.getElementById('ce-publish-btn');
+    if (publishBtn) publishBtn.innerHTML = '💾 Update Event';
+
+    // ── Fill basic fields ──
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    const setSelect = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val) {
+        const opt = Array.from(el.options).find(o => o.value === val);
+        if (opt) el.value = val;
+      }
+    };
+
+    setVal('ce-name', ev.title);
+    setVal('ce-place', ev.venue);
+    setVal('ce-address', ev.city); // legacy: city was used as address
+    setVal('ce-city', ev.city);
+    setSelect('ce-country', ev.country);
+    setVal('ce-longitude', ev.longitude);
+    setVal('ce-latitude', ev.latitude);
+    setSelect('ce-category', ev.category);
+    setVal('ce-pixel', ev.pixel_code);
+    setSelect('ce-currency', ev.currency);
+    setSelect('ce-timezone', ev.timezone);
+    setVal('ce-website', ev.website);
+
+    // Rich text editor
+    const editor = document.getElementById('ce-overview');
+    if (editor && ev.description) editor.innerHTML = ev.description;
+
+    // Dates — convert ISO to datetime-local format
+    const toLocalDatetime = (iso) => {
+      if (!iso) return '';
+      const d = new Date(iso);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+    setVal('ce-start-date', toLocalDatetime(ev.date));
+    setVal('ce-end-date', toLocalDatetime(ev.end_date));
+    setVal('ce-doors', toLocalDatetime(ev.doors_open));
+
+    // Show End Time radio
+    if (ev.show_end_time === false) {
+      const noRadio = document.querySelector('input[name="ce-show-end"][value="no"]');
+      if (noRadio) noRadio.checked = true;
+    }
+
+    // Keywords
+    if (ev.keywords && Array.isArray(ev.keywords)) {
+      ceKeywords = [...ev.keywords];
+      const tagsWrap = document.getElementById('ce-keywords-tags');
+      if (tagsWrap) {
+        tagsWrap.innerHTML = ceKeywords.map((k, i) =>
+          `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
+        ).join('');
+      }
+    }
+
+    // Social links
+    if (ev.social_links && Array.isArray(ev.social_links) && ev.social_links.length) {
+      const container = document.getElementById('ce-social-links');
+      if (container) {
+        container.innerHTML = ev.social_links.map(link => `
+          <div class="ce-social-row">
+            <select class="ev-form-input ce-social-select">
+              <option value="">Select Platform</option>
+              <option value="facebook" ${link.platform==='facebook'?'selected':''}>Facebook</option>
+              <option value="instagram" ${link.platform==='instagram'?'selected':''}>Instagram</option>
+              <option value="twitter" ${link.platform==='twitter'?'selected':''}>X (Twitter)</option>
+              <option value="tiktok" ${link.platform==='tiktok'?'selected':''}>TikTok</option>
+              <option value="linkedin" ${link.platform==='linkedin'?'selected':''}>LinkedIn</option>
+              <option value="youtube" ${link.platform==='youtube'?'selected':''}>YouTube</option>
+            </select>
+            <input class="ev-form-input" type="url" placeholder="https://..." value="${escapeHTML(link.url || '')}" />
+            <button type="button" class="ce-social-del" title="Remove">🗑️</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    // Load existing ticket tiers
+    if (ev.ticket_tiers && ev.ticket_tiers.length) {
+      ceTicketsList = ev.ticket_tiers.map(t => ({
+        id: t.id,
+        name: t.name,
+        qty: t.capacity,
+        price: t.price,
+        category: t.category || '',
+        earlyPrice: t.early_bird_price || '',
+        earlyEnd: t.early_bird_end || '',
+        currency: t.currency || 'USD',
+      }));
+      renderCeTicketsTable();
+    }
+
+    // Switch to the panel
+    switchToPanel('create-event');
+    showToast('Event loaded for editing', 'info');
+  } catch (err) {
+    showToast('Error loading event: ' + err.message, 'error');
+  }
+}
 
 function resetCreateEventForm() {
   // Reset text/select inputs
@@ -577,6 +698,12 @@ function resetCreateEventForm() {
   ceGalleryCount = 1;
   ceKeywords = [];
   ceTicketTableListenerAttached = false;
+  ceEditingEventId = null;
+  // Reset UI to "Create" mode
+  const breadcrumb = document.querySelector('#panel-create-event .ev-breadcrumb strong');
+  if (breadcrumb) breadcrumb.textContent = 'Create Event';
+  const publishBtn = document.getElementById('ce-publish-btn');
+  if (publishBtn) publishBtn.innerHTML = '🚀 Publish Event';
   const catSelect = document.getElementById('ce-ticket-category-select');
   if (catSelect) catSelect.innerHTML = '<option value="">Select Category</option>';
   const ticketTbody = document.getElementById('ce-tickets-tbody');
@@ -834,8 +961,17 @@ function setupCreateModal() {
         social_links: socialLinks.length ? socialLinks : null,
       };
 
-      if (!eventData.title || eventData.title.length < 3) { showToast('Event name is required (min 3 chars)', 'error'); btn.disabled = false; btn.innerHTML = '🚀 Publish Event'; return; }
-      const event = await createEvent(eventData);
+      if (!eventData.title || eventData.title.length < 3) { showToast('Event name is required (min 3 chars)', 'error'); btn.disabled = false; btn.innerHTML = ceEditingEventId ? '💾 Update Event' : '🚀 Publish Event'; return; }
+
+      let event;
+      if (ceEditingEventId) {
+        // ── UPDATE existing event ──
+        delete eventData.organizer_id; // don't change owner
+        event = await updateEvent(ceEditingEventId, eventData);
+      } else {
+        // ── CREATE new event ──
+        event = await createEvent(eventData);
+      }
 
       // Upload cover image
       if (pendingCoverFile) {
@@ -876,33 +1012,67 @@ function setupCreateModal() {
       // Get selected ticket type
       const ticketType = document.querySelector('.ce-ticket-card.selected input')?.value || 'normal';
 
-      // Create ticket tiers with all details
-      for (const t of ceTicketsList) {
-        await supabase.from('ticket_tiers').insert({
-          event_id: event.id,
-          name: t.name,
-          price: t.price,
-          capacity: t.qty,
-          ticket_type: ticketType,
-          category: t.category || null,
-          early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-          early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
-          max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-          currency: t.currency || 'USD',
-        });
+      if (ceEditingEventId) {
+        // ── UPDATE MODE: delete old tiers (with 0 sales) and re-insert ──
+        const { data: existingTiers } = await supabase.from('ticket_tiers').select('id, sold_count').eq('event_id', event.id);
+        for (const tier of (existingTiers || [])) {
+          if ((tier.sold_count || 0) === 0) {
+            await supabase.from('ticket_tiers').delete().eq('id', tier.id);
+          }
+        }
+        // Insert updated tiers (skip ones that still exist with sales)
+        const remainingIds = (existingTiers || []).filter(t => (t.sold_count || 0) > 0).map(t => t.id);
+        for (const t of ceTicketsList) {
+          if (t.id && remainingIds.includes(t.id)) {
+            // Update existing tier that has sales
+            await supabase.from('ticket_tiers').update({
+              name: t.name, price: t.price, capacity: t.qty,
+              ticket_type: ticketType, category: t.category || null,
+              early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+              early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+              max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+              currency: t.currency || 'USD',
+            }).eq('id', t.id);
+          } else {
+            // Insert new tier
+            await supabase.from('ticket_tiers').insert({
+              event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
+              ticket_type: ticketType, category: t.category || null,
+              early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+              early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+              max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+              currency: t.currency || 'USD',
+            });
+          }
+        }
+      } else {
+        // ── CREATE MODE: insert all tiers ──
+        for (const t of ceTicketsList) {
+          await supabase.from('ticket_tiers').insert({
+            event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
+            ticket_type: ticketType, category: t.category || null,
+            early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+            early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+            max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+            currency: t.currency || 'USD',
+          });
+        }
       }
 
-      showToast('Event published successfully!', 'success');
+      showToast(ceEditingEventId ? 'Event updated successfully!' : 'Event published successfully!', 'success');
+      ceEditingEventId = null;
       switchToPanel('events');
       await loadDashboard();
 
-      // Show services modal
-      setTimeout(() => { document.getElementById('services-modal')?.classList.add('active'); }, 600);
+      // Show services modal only on new events
+      if (!ceEditingEventId) {
+        setTimeout(() => { document.getElementById('services-modal')?.classList.add('active'); }, 600);
+      }
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '🚀 Publish Event';
+      btn.innerHTML = ceEditingEventId ? '💾 Update Event' : '🚀 Publish Event';
     }
   });
 
