@@ -149,10 +149,10 @@ async function loadDashboard() {
     document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '—';
 
     renderEventsTable(events);
+    setupTicketsPanel(events);
     populateEventSelects(events);
     initCharts(revenueData, events);
     if (revenueData?.length) renderRevenueBreakdown(revenueData);
-    setupTicketsPanel(events);
 
     // Feed calendar
     calEvents = events;
