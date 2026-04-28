@@ -14,4 +14,10 @@ ADD COLUMN IF NOT EXISTS payout_info JSONB DEFAULT NULL;
 --  but let's make sure)
 COMMENT ON COLUMN profiles.payout_info IS 'Encrypted bank/payout details for organizer revenue withdrawal';
 
+-- Add organizer_profile column (JSONB for brand/social/payment info)
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS organizer_profile JSONB DEFAULT NULL;
+
+COMMENT ON COLUMN profiles.organizer_profile IS 'Organizer brand info: name, address, bio, social media, payment method';
+
 -- ════════════ ✅ PATCH COMPLETE ════════════

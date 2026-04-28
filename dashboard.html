@@ -62,6 +62,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5"/></svg>
         Calendar
       </button>
+      <div style="height:1px;background:rgba(255,255,255,.12);margin:10px 14px"></div>
+      <button class="ev-nav-item" data-panel="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Profile
+      </button>
     </nav>
     <div class="ev-sidebar-footer">
       <a href="index.html">
@@ -111,11 +116,29 @@
           </div>
         </div>
       </div>
-      <div class="ev-user-info" id="user-info">
-        <div class="ev-user-avatar" id="user-avatar">U</div>
-        <div class="ev-user-meta">
-          <div class="ev-user-name" id="user-name">User</div>
-          <div class="ev-user-email" id="user-email">user@email.com</div>
+      <div class="ev-user-wrap" id="user-wrap">
+        <div class="ev-user-info" id="user-info">
+          <div class="ev-user-avatar" id="user-avatar">U</div>
+          <div class="ev-user-meta">
+            <div class="ev-user-name" id="user-name">User</div>
+            <div class="ev-user-email" id="user-email">user@email.com</div>
+          </div>
+          <svg class="ev-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="ev-user-dropdown" id="user-dropdown">
+          <button class="ev-user-drop-item" id="goto-profile">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Organizer Profile
+          </button>
+          <a href="index.html" class="ev-user-drop-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Exit Dashboard
+          </a>
+          <div class="ev-user-drop-divider"></div>
+          <button class="ev-user-drop-item danger" id="dropdown-signout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
         </div>
       </div>
     </div>
@@ -348,6 +371,101 @@
           </div>
           <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;padding:13px;justify-content:center">💾 Save Payout Details</button>
         </form>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: ORGANIZER PROFILE ════ -->
+    <div class="ev-panel" id="panel-profile">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">👤 Organizer Profile</h2>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:900px">
+        <!-- Left: Brand Info -->
+        <div class="ev-card">
+          <div class="ev-card-header"><span class="ev-card-title">🏢 Brand Information</span></div>
+          <form id="profile-form" style="padding:20px">
+            <div class="ev-form-group">
+              <label for="prof-brand">Name of your Brand *</label>
+              <input class="ev-form-input" type="text" id="prof-brand" placeholder="e.g. Event Waw" required />
+            </div>
+            <div class="ev-form-group">
+              <label for="prof-address">Address *</label>
+              <input class="ev-form-input" type="text" id="prof-address" placeholder="e.g. Cairo, Egypt" required />
+            </div>
+            <div class="ev-form-group">
+              <label for="prof-bio">Write about your Brand *</label>
+              <textarea class="ev-form-input" id="prof-bio" rows="4" placeholder="Tell attendees and vendors about your brand story..." required style="resize:vertical"></textarea>
+            </div>
+            <div class="ev-form-group">
+              <label for="prof-phone">Phone Number</label>
+              <input class="ev-form-input" type="tel" id="prof-phone" placeholder="+20 xxx xxx xxxx" />
+            </div>
+            <div class="ev-form-group">
+              <label for="prof-website">Website</label>
+              <input class="ev-form-input" type="url" id="prof-website" placeholder="https://yoursite.com" />
+            </div>
+            <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;padding:13px;justify-content:center">💾 Save Profile</button>
+          </form>
+        </div>
+        <!-- Right: Social + Payment -->
+        <div>
+          <div class="ev-card" style="margin-bottom:20px">
+            <div class="ev-card-header"><span class="ev-card-title">🔗 Social Media</span></div>
+            <div style="padding:20px">
+              <div class="ev-form-group">
+                <label>Instagram</label>
+                <div class="ev-social-input">
+                  <span class="ev-social-prefix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="5"/><circle cx="17.5" cy="6.5" r="1.5"/></svg></span>
+                  <input class="ev-form-input" type="text" id="prof-ig" placeholder="/Username" />
+                </div>
+              </div>
+              <div class="ev-form-group">
+                <label>TikTok</label>
+                <div class="ev-social-input">
+                  <span class="ev-social-prefix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12a4 4 0 104 4V4a5 5 0 005 5"/></svg></span>
+                  <input class="ev-form-input" type="text" id="prof-tiktok" placeholder="/Username" />
+                </div>
+              </div>
+              <div class="ev-form-group">
+                <label>Facebook</label>
+                <div class="ev-social-input">
+                  <span class="ev-social-prefix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg></span>
+                  <input class="ev-form-input" type="text" id="prof-fb" placeholder="/Username" />
+                </div>
+              </div>
+              <div class="ev-form-group">
+                <label>X (Twitter)</label>
+                <div class="ev-social-input">
+                  <span class="ev-social-prefix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l11.733 16h4.267l-11.733-16zM4 20l6.768-6.768M13.232 10.232L20 4"/></svg></span>
+                  <input class="ev-form-input" type="text" id="prof-x" placeholder="/Username" />
+                </div>
+              </div>
+              <div class="ev-form-group">
+                <label>LinkedIn</label>
+                <div class="ev-social-input">
+                  <span class="ev-social-prefix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></span>
+                  <input class="ev-form-input" type="text" id="prof-linkedin" placeholder="/Username" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ev-card">
+            <div class="ev-card-header"><span class="ev-card-title">💳 Payment Method</span></div>
+            <div style="padding:20px">
+              <div class="ev-form-group">
+                <label for="prof-payment">Preferred Payment</label>
+                <select class="ev-form-input" id="prof-payment">
+                  <option value="bank">Bank Transfer</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="stripe">Stripe</option>
+                  <option value="vodafone_cash">Vodafone Cash</option>
+                  <option value="instapay">InstaPay</option>
+                </select>
+              </div>
+              <div style="padding:12px;background:rgba(242,140,0,.04);border:1px solid rgba(242,140,0,.1);border-radius:10px;font-size:.78rem;color:var(--ev-text-sec)">
+                ℹ️ Payment details are managed in <a href="#" class="ev-link" id="goto-payout-link">Payout Settings</a>.
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

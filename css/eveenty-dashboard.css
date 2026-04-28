@@ -58,13 +58,38 @@ body.ev-dash{font-family:var(--ev-font);background:var(--ev-bg);color:var(--ev-t
 .ev-header-link.create-event{color:#fff;font-weight:600;background:#F28C00;border-color:#F28C00;border-radius:10px;padding:8px 18px;box-shadow:0 2px 8px rgba(242,140,0,.25)}
 .ev-header-link.create-event:hover{background:#D97B00;box-shadow:0 4px 14px rgba(242,140,0,.3);transform:translateY(-1px)}
 .ev-header-right{display:flex;align-items:center;gap:12px}
-.ev-lang-select{padding:6px 10px;border:1px solid var(--ev-border);border-radius:8px;font-size:.78rem;color:var(--ev-text-sec);background:var(--ev-white);cursor:pointer}
+
+/* ══════ USER DROPDOWN ══════ */
+.ev-user-wrap{position:relative}
 .ev-user-info{display:flex;align-items:center;gap:10px;cursor:pointer;padding:5px 10px;border-radius:10px;transition:var(--ev-tr)}
 .ev-user-info:hover{background:var(--ev-border-lt)}
 .ev-user-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#F28C00,#D97B00);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.85rem;box-shadow:0 2px 8px rgba(242,140,0,.25)}
 .ev-user-meta{text-align:right}
 .ev-user-name{font-size:.82rem;font-weight:600;color:var(--ev-text)}
 .ev-user-email{font-size:.68rem;color:var(--ev-text-sec)}
+.ev-user-chevron{width:14px;height:14px;color:var(--ev-text-muted);transition:transform .3s cubic-bezier(.4,0,.2,1);flex-shrink:0}
+.ev-user-wrap:hover .ev-user-chevron,.ev-user-wrap.open .ev-user-chevron{transform:rotate(180deg)}
+.ev-user-dropdown{position:absolute;top:calc(100% + 6px);right:0;width:220px;background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius);box-shadow:var(--ev-shadow-lg);z-index:200;opacity:0;visibility:hidden;transform:translateY(-6px);transition:all .25s cubic-bezier(.4,0,.2,1);overflow:hidden;padding:6px}
+.ev-user-wrap:hover .ev-user-dropdown,.ev-user-wrap.open .ev-user-dropdown{opacity:1;visibility:visible;transform:translateY(0)}
+.ev-user-drop-item{display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;border-radius:8px;font-size:.82rem;font-weight:500;color:var(--ev-text-sec);background:none;border:none;cursor:pointer;text-decoration:none;transition:all .15s ease;font-family:inherit}
+.ev-user-drop-item:hover{background:var(--ev-yellow-light);color:var(--ev-text)}
+.ev-user-drop-item svg{width:16px;height:16px;flex-shrink:0;opacity:.6}
+.ev-user-drop-item:hover svg{opacity:1}
+.ev-user-drop-item.danger{color:rgba(220,38,38,.7)}
+.ev-user-drop-item.danger:hover{background:rgba(239,68,68,.06);color:#dc2626}
+.ev-user-drop-item.danger:hover svg{color:#dc2626}
+.ev-user-drop-divider{height:1px;background:var(--ev-border);margin:4px 8px}
+body.ev-dash.dark-mode .ev-user-dropdown{background:var(--ev-white);border-color:var(--ev-border)}
+body.ev-dash.dark-mode .ev-user-drop-item:hover{background:rgba(242,140,0,.06)}
+
+/* ══════ SOCIAL MEDIA INPUTS ══════ */
+.ev-social-input{display:flex;align-items:center;gap:0;border:1px solid var(--ev-border);border-radius:10px;overflow:hidden;transition:border-color .2s}
+.ev-social-input:focus-within{border-color:var(--ev-yellow);box-shadow:0 0 0 3px rgba(245,197,24,.1)}
+.ev-social-prefix{display:flex;align-items:center;justify-content:center;width:42px;height:42px;background:var(--ev-border-lt);flex-shrink:0;border-right:1px solid var(--ev-border)}
+.ev-social-prefix svg{width:18px;height:18px;color:var(--ev-text-muted)}
+.ev-social-input .ev-form-input{border:none;border-radius:0;padding:10px 14px}
+.ev-social-input .ev-form-input:focus{box-shadow:none}
+body.ev-dash.dark-mode .ev-social-prefix{background:var(--ev-border-lt);border-color:var(--ev-border)}
 
 /* ══════ MAIN CONTENT ══════ */
 .ev-main{margin-left:var(--ev-sidebar-w);margin-top:var(--ev-header-h);padding:32px;min-height:calc(100vh - var(--ev-header-h))}
@@ -247,6 +272,7 @@ body.ev-dash::-webkit-scrollbar-thumb:hover{background:#B0B0B0}
   .ev-chart-grid{grid-template-columns:1fr}
   .ev-welcome{flex-direction:column;text-align:center}
   .ev-welcome-actions{justify-content:center}
+  #panel-profile>div{grid-template-columns:1fr!important}
 }
 @media(max-width:768px){
   .ev-sidebar{transform:translateX(-100%)}
