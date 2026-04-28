@@ -399,8 +399,8 @@
 
     async function renderEvent(event) {
       document.title = `${event.title} — Event Waw`;
-      document.getElementById('event-cover').src = event.cover_image || 'images/event-concert.png';
-      document.getElementById('event-cover-main').src = event.cover_image || 'images/event-concert.png';
+      document.getElementById('event-cover').src = event.cover_url || event.cover_image || 'images/event-concert.png';
+      document.getElementById('event-cover-main').src = event.cover_url || event.cover_image || 'images/event-concert.png';
       document.getElementById('event-title').textContent = event.title;
       document.getElementById('event-category').textContent = event.category || 'Event';
       document.getElementById('event-description').textContent = event.description || 'No description available.';
@@ -507,11 +507,11 @@
     }
 
     function renderTiers(tiers) {
-      const sorted = [...tiers].sort((a, b) => a.sort_order - b.sort_order);
+      const sorted = [...tiers].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       const list = document.getElementById('tiers-list');
       
       list.innerHTML = sorted.map(tier => {
-        const avail = tier.capacity - tier.sold_count;
+        const avail = (tier.capacity || 0) - (tier.sold_count || 0);
         const soldOut = avail <= 0;
         quantities[tier.id] = 0;
         const desc = tier.description || '';
@@ -558,7 +558,7 @@
       const tier = eventData?.ticket_tiers?.find(t => t.id === tierId);
       if (!tier) return;
       
-      const avail = tier.capacity - tier.sold_count;
+      const avail = (tier.capacity || 0) - (tier.sold_count || 0);
       const newQty = Math.max(0, Math.min(10, Math.min(avail, (quantities[tierId] || 0) + delta)));
       quantities[tierId] = newQty;
       
