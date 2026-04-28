@@ -485,67 +485,421 @@
       </div>
     </div>
 
-  </main>
+    <!-- ════ PANEL: CREATE EVENT ════ -->
+    <div class="ev-panel" id="panel-create-event">
+      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="ce-back-home">Home</a> <span>/</span> <strong>Create Event</strong></div>
 
-  <!-- ══════ CREATE EVENT MODAL ══════ -->
-  <div class="ev-modal-overlay" id="create-modal">
-    <div class="ev-modal">
-      <div class="ev-modal-header">
-        <h2>🎪 Create New Event</h2>
-        <button class="ev-modal-close" id="create-modal-close">✕</button>
+      <!-- Wizard Tabs -->
+      <div class="ce-tabs-wrap">
+        <div class="ce-tabs">
+          <button class="ce-tab active" data-ce-tab="basic"><span class="ce-tab-dot"></span> Basic Information</button>
+          <button class="ce-tab" data-ce-tab="tickets"><span class="ce-tab-dot"></span> Tickets</button>
+          <button class="ce-tab" data-ce-tab="publishing"><span class="ce-tab-dot"></span> Publishing</button>
+        </div>
+        <div class="ce-progress"><div class="ce-progress-bar" id="ce-progress-bar"></div></div>
       </div>
-      <form id="create-event-form">
-        <div class="ev-cover-upload" id="cover-upload-area">
-          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;opacity:.35;color:var(--ev-text-muted)"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-          <span class="upload-text">Click to upload cover image</span>
-          <input type="file" id="ev-cover-file" accept="image/*" />
-          <div class="upload-overlay">Change Image</div>
+
+      <!-- ═══ TAB 1: BASIC INFORMATION ═══ -->
+      <div class="ce-step active" id="ce-step-basic">
+        <div class="ce-step-header">
+          <h3>Basic Information</h3>
+          <button class="ev-btn ev-btn-primary" id="ce-save-basic" type="button">Save &amp; Continue…</button>
         </div>
-        <div class="ev-form-group">
-          <label for="ev-title">Event Title *</label>
-          <input class="ev-form-input" type="text" id="ev-title" placeholder="e.g. Summer Music Festival" required />
-        </div>
-        <div class="ev-form-group">
-          <label for="ev-desc">Description</label>
-          <textarea class="ev-form-input" id="ev-desc" rows="3" placeholder="Tell attendees about your event…" style="resize:vertical"></textarea>
-        </div>
-        <div class="ev-form-row">
-          <div class="ev-form-group">
-            <label for="ev-date">Date & Time *</label>
-            <input class="ev-form-input" type="datetime-local" id="ev-date" required />
-          </div>
-          <div class="ev-form-group">
-            <label for="ev-category">Category</label>
-            <select class="ev-form-input" id="ev-category">
-              <option value="general">General</option><option value="music">Music</option>
-              <option value="gala">Gala</option><option value="conference">Conference</option>
-              <option value="sports">Sports</option><option value="workshop">Workshop</option>
-            </select>
-          </div>
-        </div>
-        <div class="ev-form-row">
-          <div class="ev-form-group">
-            <label for="ev-venue">Venue *</label>
-            <input class="ev-form-input" type="text" id="ev-venue" placeholder="Stadium, Hotel…" required />
-          </div>
-          <div class="ev-form-group">
-            <label for="ev-city">City</label>
-            <input class="ev-form-input" type="text" id="ev-city" value="Cairo" />
-          </div>
-        </div>
-        <div class="ev-form-group">
-          <label>Ticket Tiers</label>
-          <div id="tiers-container">
-            <div class="ev-form-row" style="grid-template-columns:1fr 100px 80px;margin-bottom:8px">
-              <input class="ev-form-input" type="text" placeholder="Tier name (e.g. General)" data-tier="name" required />
-              <input class="ev-form-input" type="number" placeholder="Price" data-tier="price" min="0" required />
-              <input class="ev-form-input" type="number" placeholder="Qty" data-tier="capacity" min="1" required />
+        <div class="ce-two-col">
+          <!-- LEFT COLUMN -->
+          <div class="ce-col-left">
+            <div class="ev-form-group">
+              <label>Event Name <span class="ce-req">*</span></label>
+              <input class="ev-form-input" type="text" id="ce-name" placeholder="Name" required />
+            </div>
+            <div class="ev-form-group">
+              <label>Event Place</label>
+              <input class="ev-form-input" type="text" id="ce-place" placeholder="Place" />
+            </div>
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Longitude <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="text" id="ce-longitude" placeholder="Longitude" />
+              </div>
+              <div class="ev-form-group">
+                <label>Latitude <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="text" id="ce-latitude" placeholder="Latitude" />
+              </div>
+            </div>
+            <div class="ev-form-group">
+              <label>Event Address</label>
+              <input class="ev-form-input" type="text" id="ce-address" placeholder="Event Address" />
+            </div>
+            <div class="ev-form-group">
+              <label>Category <span class="ce-req">*</span></label>
+              <select class="ev-form-input" id="ce-category">
+                <option value="">Select Category</option>
+                <option value="trade_show">Trade Show</option>
+                <option value="conference">Conference</option>
+                <option value="music">Music</option>
+                <option value="gala">Gala</option>
+                <option value="sports">Sports</option>
+                <option value="workshop">Workshop</option>
+                <option value="exhibition">Exhibition</option>
+                <option value="festival">Festival</option>
+                <option value="networking">Networking</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="ev-form-group">
+              <label>Event Keywords <span class="ce-info-icon" title="Keywords help people find your event">ⓘ</span></label>
+              <input class="ev-form-input" type="text" id="ce-keywords" placeholder="Type a keyword and press Enter" />
+              <div class="ce-tags-wrap" id="ce-keywords-tags"></div>
+            </div>
+            <div class="ev-form-group">
+              <label>Pixel Code <span class="ce-info-icon" title="Facebook Pixel tracking code">ⓘ</span></label>
+              <input class="ev-form-input" type="text" id="ce-pixel" placeholder="e.g. 357950757988869" />
+            </div>
+            <div class="ev-form-group">
+              <label>Event Currency <span class="ce-req">*</span></label>
+              <select class="ev-form-input" id="ce-currency">
+                <option value="">Select Currency</option>
+                <option value="USD">USD — US Dollar</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — British Pound</option>
+                <option value="CAD">CAD — Canadian Dollar</option>
+                <option value="AED">AED — UAE Dirham</option>
+                <option value="SAR">SAR — Saudi Riyal</option>
+                <option value="EGP">EGP — Egyptian Pound</option>
+              </select>
+            </div>
+            <div class="ev-form-group">
+              <label>Time Zone <span class="ce-req">*</span></label>
+              <select class="ev-form-input" id="ce-timezone">
+                <option value="">Select...</option>
+                <option value="America/New_York">Eastern Time (ET)</option>
+                <option value="America/Chicago">Central Time (CT)</option>
+                <option value="America/Denver">Mountain Time (MT)</option>
+                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                <option value="America/Toronto">Toronto (ET)</option>
+                <option value="Europe/London">London (GMT/BST)</option>
+                <option value="Europe/Paris">Paris (CET)</option>
+                <option value="Europe/Berlin">Berlin (CET)</option>
+                <option value="Asia/Dubai">Dubai (GST)</option>
+                <option value="Asia/Riyadh">Riyadh (AST)</option>
+                <option value="Africa/Cairo">Cairo (EET)</option>
+                <option value="Asia/Tokyo">Tokyo (JST)</option>
+              </select>
+            </div>
+            <div class="ev-form-group">
+              <label>Doors Open At</label>
+              <input class="ev-form-input" type="text" id="ce-doors" placeholder="DD / MM / YYYY HH:mm" />
+            </div>
+            <div class="ev-form-group">
+              <label>Start Date <span class="ce-req">*</span></label>
+              <input class="ev-form-input" type="datetime-local" id="ce-start-date" required />
+            </div>
+            <div class="ev-form-group">
+              <label>End Date <span class="ce-req">*</span></label>
+              <input class="ev-form-input" type="datetime-local" id="ce-end-date" required />
+            </div>
+            <div class="ev-form-group">
+              <label>Show End Time?</label>
+              <div class="ce-radio-group">
+                <label class="ce-radio"><input type="radio" name="ce-show-end" value="yes" checked /> Yes</label>
+                <label class="ce-radio"><input type="radio" name="ce-show-end" value="no" /> No</label>
+              </div>
+            </div>
+            <div class="ev-form-group">
+              <label>Event Website</label>
+              <input class="ev-form-input" type="url" id="ce-website" placeholder="https://..." />
+            </div>
+            <div class="ev-form-group">
+              <label>Social Media Links</label>
+              <div id="ce-social-links">
+                <div class="ce-social-row">
+                  <select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select>
+                  <input class="ev-form-input" type="url" placeholder="https://..." />
+                  <button type="button" class="ce-social-del" title="Remove">🗑️</button>
+                </div>
+              </div>
+              <button type="button" class="ce-add-link" id="ce-add-social">+ Add Link</button>
             </div>
           </div>
-          <button type="button" class="ev-btn ev-btn-outline ev-btn-sm" id="add-tier-btn" style="margin-top:6px">+ Add Tier</button>
+          <!-- RIGHT COLUMN -->
+          <div class="ce-col-right">
+            <div class="ev-form-group">
+              <label>Overview</label>
+              <div class="ce-editor-toolbar">
+                <select class="ce-editor-select"><option>Normal</option><option>Heading 1</option><option>Heading 2</option></select>
+                <select class="ce-editor-select"><option>Sans Serif</option><option>Serif</option><option>Monospace</option></select>
+                <select class="ce-editor-select"><option>Normal</option><option>Small</option><option>Large</option></select>
+                <button type="button" class="ce-editor-btn" data-cmd="bold"><b>B</b></button>
+                <button type="button" class="ce-editor-btn" data-cmd="italic"><i>I</i></button>
+                <button type="button" class="ce-editor-btn" data-cmd="underline"><u>U</u></button>
+                <button type="button" class="ce-editor-btn" data-cmd="strikeThrough"><s>S</s></button>
+                <button type="button" class="ce-editor-btn" data-cmd="insertOrderedList">☰</button>
+                <button type="button" class="ce-editor-btn" data-cmd="insertUnorderedList">≡</button>
+                <button type="button" class="ce-editor-btn" data-cmd="justifyCenter">⫼</button>
+                <button type="button" class="ce-editor-btn" data-cmd="createLink">🔗</button>
+                <button type="button" class="ce-editor-btn" data-cmd="removeFormat">Tx</button>
+              </div>
+              <div class="ce-editor-area" id="ce-overview" contenteditable="true"></div>
+            </div>
+            <div class="ce-uploads-row">
+              <div class="ce-upload-box">
+                <label>Main Photo</label>
+                <div class="ce-upload-area" id="ce-main-photo-area">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span>Upload Photo</span>
+                  <small>Size (100 * 100)</small>
+                  <small>accepted formats: jpg, jpeg, png</small>
+                  <input type="file" accept="image/jpeg,image/png" id="ce-main-photo" />
+                </div>
+              </div>
+              <div class="ce-upload-box">
+                <label>Image of the Logo</label>
+                <div class="ce-upload-area" id="ce-logo-area">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span>Upload Photo</span>
+                  <small>Size (100 * 100)</small>
+                  <small>accepted formats: jpg, jpeg, png</small>
+                  <input type="file" accept="image/jpeg,image/png" id="ce-logo" />
+                </div>
+              </div>
+            </div>
+            <div class="ce-gallery-section">
+              <div class="ce-gallery-header">
+                <label>Event Gallery</label>
+                <button type="button" class="ce-add-link" id="ce-add-gallery">+ Add Photo</button>
+              </div>
+              <div class="ce-gallery-grid" id="ce-gallery-grid">
+                <div class="ce-gallery-item">
+                  <label>Photo 1</label>
+                  <div class="ce-upload-area ce-gallery-upload">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                    <span>Upload Photo</span>
+                    <small>Size (100 * 100)</small>
+                    <input type="file" accept="image/jpeg,image/png" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="ce-sponsors-section">
+              <div class="ce-gallery-header">
+                <label>Sponsors Logos</label>
+                <button type="button" class="ce-add-link" id="ce-add-sponsor">+ Add Sponsor Logo</button>
+              </div>
+              <div class="ce-gallery-grid" id="ce-sponsors-grid"></div>
+            </div>
+          </div>
         </div>
-        <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:16px;padding:13px;justify-content:center">🚀 Create Event</button>
-      </form>
+      </div>
+
+      <!-- ═══ TAB 2: TICKETS ═══ -->
+      <div class="ce-step" id="ce-step-tickets">
+        <div class="ce-step-header">
+          <h3>Tickets</h3>
+          <button class="ev-btn ev-btn-primary" id="ce-save-tickets" type="button">Save &amp; Continue…</button>
+        </div>
+        <div class="ce-two-col">
+          <div class="ce-col-left">
+            <!-- Step 1: Choose ticket type -->
+            <div class="ce-ticket-type-box">
+              <h4>Step 1: Choose ticket type</h4>
+              <p class="ce-ticket-type-desc"><strong>Normal ticket:</strong> Attendees pay immediately and get instant access.<br><strong>Registration ticket:</strong> You collect requests, approve them, then send payment link.</p>
+              <div class="ce-ticket-type-cards">
+                <label class="ce-ticket-card selected">
+                  <input type="radio" name="ce-ticket-type" value="normal" checked />
+                  <strong>Normal ticket</strong>
+                  <span>Attendees pay immediately and get instant access.</span>
+                </label>
+                <label class="ce-ticket-card">
+                  <input type="radio" name="ce-ticket-type" value="registration" />
+                  <strong>Registration ticket</strong>
+                  <span>Collect requests, approve them, then send payment link.</span>
+                </label>
+              </div>
+            </div>
+            <h4 style="margin:20px 0 14px;font-size:.92rem">Step 2: Ticket details</h4>
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Ticket Name <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="text" id="ce-ticket-name" placeholder="Name" required />
+              </div>
+              <div class="ev-form-group">
+                <label>Available Number <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="number" id="ce-ticket-qty" placeholder="1" min="1" value="1" required />
+              </div>
+            </div>
+            <div class="ce-ticket-cat-notice">
+              <p><strong>Ticket categories are required</strong></p>
+              <p>Before creating tickets, you must create at least one ticket category.</p>
+            </div>
+            <button type="button" class="ev-btn ev-btn-pink" id="ce-add-ticket-cat-btn" style="margin-bottom:18px">+ Add Ticket Category</button>
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Ticket Price <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="number" id="ce-ticket-price" placeholder="eg: 10" min="0" step="0.01" required />
+              </div>
+              <div class="ev-form-group">
+                <label>Ticket Category <span class="ce-req">*</span></label>
+                <select class="ev-form-input" id="ce-ticket-category-select">
+                  <option value="">Select Category</option>
+                </select>
+              </div>
+            </div>
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Maximum number of scans <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="number" id="ce-max-scans" value="1" min="1" />
+              </div>
+              <div class="ev-form-group">
+                <label>Maximum scans per day</label>
+                <input class="ev-form-input" type="number" id="ce-max-scans-day" placeholder="eg: 10" min="1" />
+              </div>
+            </div>
+            <button type="button" class="ev-btn ev-btn-primary" id="ce-add-ticket-btn" style="margin-top:8px">+ Add Tickets Settings</button>
+          </div>
+          <div class="ce-col-right">
+            <div class="ev-card">
+              <h4 style="font-size:.92rem;margin-bottom:14px">Early Bird Ticket (Sale Time)</h4>
+              <div class="ev-form-group">
+                <label>Early Bird Price</label>
+                <input class="ev-form-input" type="number" id="ce-early-price" placeholder="eg: 10" min="0" step="0.01" />
+              </div>
+              <div class="ev-form-group">
+                <label>End Date</label>
+                <input class="ev-form-input" type="datetime-local" id="ce-early-end" />
+              </div>
+            </div>
+            <!-- Tickets types table -->
+            <div class="ev-card" style="margin-top:20px">
+              <h4 style="font-size:.92rem;margin-bottom:14px;display:flex;align-items:center;gap:6px">🎫 Tickets types</h4>
+              <div class="ev-table-wrap">
+                <table class="ev-table" id="ce-tickets-table">
+                  <thead><tr><th>Ticket Type</th><th>Price</th><th>Quantity</th><th>Early Bird End Time</th><th>Early Bird Sale Price</th><th></th></tr></thead>
+                  <tbody id="ce-tickets-tbody">
+                    <tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ TAB 3: PUBLISHING ═══ -->
+      <div class="ce-step" id="ce-step-publishing">
+        <div class="ce-step-header">
+          <h3>Publishing</h3>
+          <button class="ev-btn ev-btn-pink" id="ce-publish-btn" type="button">🚀 Publish Event</button>
+        </div>
+        <!-- Submit for approval -->
+        <div class="ev-card" style="max-width:800px;margin:0 auto 24px">
+          <h4 style="text-align:center;font-size:1.1rem;margin-bottom:20px">Submit for approval</h4>
+          <div class="ce-stripe-box">
+            <div class="ce-stripe-header">
+              <div class="ce-stripe-icon">S</div>
+              <div>
+                <strong>Stripe Account</strong> <span class="ev-badge pending" style="font-size:.65rem">Incomplete</span>
+                <p style="font-size:.8rem;color:var(--ev-text-sec);margin-top:2px">Complete your account verification to start accepting payments</p>
+              </div>
+            </div>
+            <p style="font-size:.84rem;color:var(--ev-text-sec);margin:14px 0 10px">You are missing the following requirements for verification:</p>
+            <div class="ce-stripe-reqs">
+              <ul>
+                <li>Business Profile - Mcc</li>
+                <li>Business Profile - Url</li>
+                <li>Business Type</li>
+                <li>External Account</li>
+                <li>Relationship - Representative</li>
+                <li>Tos Acceptance - Date</li>
+                <li>Tos Acceptance - Ip</li>
+              </ul>
+            </div>
+            <p style="font-size:.8rem;color:var(--ev-text-sec);text-align:center;margin:16px 0 12px">If you'd like to use a different account, you can complete onboarding again.</p>
+            <div style="text-align:center">
+              <button class="ev-btn ev-btn-pink" id="ce-complete-verify">Complete Verification</button>
+            </div>
+          </div>
+        </div>
+        <!-- Event Preview -->
+        <div class="ev-card" style="max-width:800px;margin:0 auto">
+          <div class="ce-preview-card" id="ce-preview-card">
+            <div class="ce-preview-img" id="ce-preview-img">
+              <div class="ce-preview-placeholder">No cover image</div>
+            </div>
+            <div class="ce-preview-info">
+              <h3 id="ce-preview-title">Event Name</h3>
+              <div class="ce-preview-date">
+                <div class="ce-preview-cal"><span class="ce-cal-month" id="ce-preview-month">MAY</span><span class="ce-cal-day" id="ce-preview-day">02</span></div>
+                <div><strong id="ce-preview-datestr">Saturday, 02 May 2026</strong><br><span style="color:var(--ev-text-sec);font-size:.82rem" id="ce-preview-timestr">2:30 AM - May 02 ,5:00 AM</span></div>
+              </div>
+              <div class="ce-preview-location">
+                <div class="ce-preview-loc-icon">📍</div>
+                <div><strong id="ce-preview-venue">Venue</strong><br><span style="color:var(--ev-text-sec);font-size:.82rem" id="ce-preview-addr">Address</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══════ TICKET CATEGORY MODAL ══════ -->
+  <div class="ev-modal-overlay" id="ticket-cat-modal">
+    <div class="ev-modal" style="max-width:420px">
+      <div class="ev-modal-header">
+        <h2>Add Ticket Category</h2>
+        <button class="ev-modal-close" id="ticket-cat-modal-close">✕</button>
+      </div>
+      <div class="ev-form-group">
+        <label>Category <span class="ce-req">*</span></label>
+        <input class="ev-form-input" type="text" id="ticket-cat-name" placeholder="Name" />
+      </div>
+      <div class="ev-form-group">
+        <label>Description</label>
+        <textarea class="ev-form-input" id="ticket-cat-desc" rows="4" placeholder="Description" style="resize:vertical"></textarea>
+      </div>
+      <p style="font-size:.82rem;color:var(--ev-text-sec);margin-bottom:14px" id="ticket-cat-count">Current ticket category number: 0</p>
+      <div style="text-align:right">
+        <button class="ev-btn ev-btn-primary" id="ticket-cat-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════ SERVICES NEEDS MODAL ══════ -->
+  <div class="ev-modal-overlay" id="services-modal">
+    <div class="ev-modal" style="max-width:640px">
+      <div class="ev-modal-header">
+        <div>
+          <div style="font-size:1.3rem;margin-bottom:4px">⭐</div>
+          <h2 style="font-size:1.05rem">Let's help you with your event needs <button class="ev-modal-close" id="services-modal-close" style="display:inline-flex;margin-left:8px;vertical-align:middle">✕</button></h2>
+          <p style="font-size:.82rem;color:var(--ev-text-sec);margin-top:4px">Provide a few details, and we'll connect you with the right services to make your event a success</p>
+        </div>
+      </div>
+      <div class="ev-form-row" style="margin-bottom:16px">
+        <div class="ev-form-group"><label>Email</label><input class="ev-form-input" type="email" id="svc-email" placeholder="Email here" /></div>
+        <div class="ev-form-group"><label>Phone number</label>
+          <div style="display:flex;gap:6px"><select class="ev-form-input" style="max-width:90px"><option>CA +1</option><option>US +1</option><option>UK +44</option><option>EG +20</option></select><input class="ev-form-input" type="tel" id="svc-phone" placeholder="(416) 123-4567" /></div>
+        </div>
+      </div>
+      <label style="font-size:.84rem;font-weight:600;color:var(--ev-text-sec);margin-bottom:10px;display:block">What service are you looking for</label>
+      <div class="ce-services-grid">
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="venue" /> Find a venue</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="guards" /> Get guards</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="photographers" /> Hire photographers</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="djs" /> Find DJs</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="tents" /> Rent tents</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="ushers" /> Find ushers</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="checkin" /> Set up check-in</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="explore" /> Explore services</label>
+        <label class="ce-service-check"><input type="checkbox" name="svc" value="custom" /> Request a service</label>
+      </div>
+      <div class="ev-form-group" style="margin-top:16px">
+        <label>Any special request</label>
+        <textarea class="ev-form-input" id="svc-request" rows="3" placeholder="Provide details..." style="resize:vertical"></textarea>
+      </div>
+      <div style="text-align:right;margin-top:14px">
+        <button class="ev-btn ev-btn-pink" id="svc-submit">Submit</button>
+      </div>
     </div>
   </div>
 

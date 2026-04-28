@@ -40,7 +40,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupDarkMode();
   setupNotifications();
   setupCalendar();
-  setupCoverUpload();
   setupEmailAttendees();
   setupUserDropdown();
   setupProfilePanel();
@@ -199,7 +198,7 @@ function renderEventsTable(events) {
     const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
     const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
     let statusClass = isPast ? 'past' : ev.status;
-    let statusLabel = isPast ? 'Past' : ev.status;
+    let statusLabel = isPast ? 'Past' : (ev.status ? ev.status.charAt(0).toUpperCase() + ev.status.slice(1) : 'Draft');
 
     return `<tr>
       <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
@@ -239,7 +238,7 @@ function calcRevenue(ev) {
 
 async function handleTableAction(e) {
   const editBtn = e.target.closest('[data-action="edit"]');
-  if (editBtn) { showEditModal(editBtn.dataset.id); return; }
+  if (editBtn) { window.location.href = `event-detail.html?id=${editBtn.dataset.id}`; return; }
 
   const mapBtn = e.target.closest('[data-action="map"]');
   if (mapBtn) { window.location.href = `venue-designer.html?event_id=${mapBtn.dataset.id}`; return; }
@@ -264,12 +263,7 @@ async function handleTableAction(e) {
     const id = delBtn.dataset.id;
     const title = delBtn.dataset.title;
     const sold = Number(delBtn.dataset.sold || 0);
-    const status = delBtn.dataset.status || 'published';
-    if (sold > 0) { showToast(`Cannot delete: ${sold} ticket(s) sold`, 'error'); return; }
-    if (status !== 'draft') {
-      showToast('Only draft events can be deleted. Set status to "Draft" first.', 'error');
-      return;
-    }
+    if (sold > 0) { showToast(`Cannot delete "${title}": ${sold} ticket(s) already sold`, 'error'); return; }
     if (confirm(`Delete "${title}"? This cannot be undone.`)) {
       const result = await deleteEvent(id);
       if (result.success) { showToast('Event deleted', 'success'); await loadDashboard(); }
@@ -538,110 +532,397 @@ function setupSearch() {
 }
 
 /* ══════════════════════════════════
-   CREATE EVENT MODAL
+   CREATE EVENT PANEL (Full Page Wizard)
    ══════════════════════════════════ */
+let ceTicketCategories = [];
+let ceTicketsList = [];
+let ceGalleryCount = 1;
+let ceTicketTableListenerAttached = false;
+
+function resetCreateEventForm() {
+  // Reset text/select inputs
+  ['ce-name','ce-place','ce-longitude','ce-latitude','ce-address','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['ce-category','ce-currency','ce-timezone'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.selectedIndex = 0;
+  });
+  document.getElementById('ce-ticket-qty') && (document.getElementById('ce-ticket-qty').value = '1');
+  document.getElementById('ce-max-scans') && (document.getElementById('ce-max-scans').value = '1');
+  // Reset rich text editor
+  const editor = document.getElementById('ce-overview');
+  if (editor) editor.innerHTML = '';
+  // Reset image uploads
+  ['ce-main-photo-area','ce-logo-area'].forEach(id => {
+    const area = document.getElementById(id);
+    if (area) { area.classList.remove('has-image'); area.querySelector('img')?.remove(); }
+  });
+  // Reset gallery & sponsors
+  const galleryGrid = document.getElementById('ce-gallery-grid');
+  if (galleryGrid) galleryGrid.innerHTML = `<div class="ce-gallery-item"><label>Photo 1</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div></div>`;
+  const sponsorsGrid = document.getElementById('ce-sponsors-grid');
+  if (sponsorsGrid) sponsorsGrid.innerHTML = '';
+  // Reset social links to 1 empty row
+  const socialLinks = document.getElementById('ce-social-links');
+  if (socialLinks) socialLinks.innerHTML = `<div class="ce-social-row"><select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">🗑️</button></div>`;
+  // Reset keywords tags
+  const tagsWrap = document.getElementById('ce-keywords-tags');
+  if (tagsWrap) tagsWrap.innerHTML = '';
+  // Reset ticket categories & ticket list
+  ceTicketCategories = [];
+  ceTicketsList = [];
+  ceGalleryCount = 1;
+  ceTicketTableListenerAttached = false;
+  const catSelect = document.getElementById('ce-ticket-category-select');
+  if (catSelect) catSelect.innerHTML = '<option value="">Select Category</option>';
+  const ticketTbody = document.getElementById('ce-tickets-tbody');
+  if (ticketTbody) ticketTbody.innerHTML = '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>';
+  // Reset ticket type to Normal
+  document.querySelectorAll('.ce-ticket-card').forEach(c => c.classList.remove('selected'));
+  const normalCard = document.querySelector('.ce-ticket-card:first-child');
+  if (normalCard) { normalCard.classList.add('selected'); normalCard.querySelector('input').checked = true; }
+  // Reset tabs to Basic
+  document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active','completed'));
+  document.querySelector('[data-ce-tab="basic"]')?.classList.add('active');
+  document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+  document.getElementById('ce-step-basic')?.classList.add('active');
+  const progressBar = document.getElementById('ce-progress-bar');
+  if (progressBar) progressBar.style.width = '33%';
+  // Reset cover file
+  pendingCoverFile = null;
+}
+
 function setupCreateModal() {
-  const modal = document.getElementById('create-modal');
-  const open = () => modal.classList.add('active');
-  const close = () => modal.classList.remove('active');
+  // Open create event panel instead of modal
+  const openPanel = () => { resetCreateEventForm(); switchToPanel('create-event'); };
 
-  document.getElementById('header-create-event')?.addEventListener('click', (e) => { e.preventDefault(); open(); });
-  document.getElementById('welcome-create-btn')?.addEventListener('click', open);
-  document.getElementById('create-modal-close')?.addEventListener('click', close);
-  modal?.addEventListener('click', (e) => { if (e.target === modal) close(); });
+  document.getElementById('header-create-event')?.addEventListener('click', (e) => { e.preventDefault(); openPanel(); });
+  document.getElementById('welcome-create-btn')?.addEventListener('click', openPanel);
 
-  // Add tier
-  document.getElementById('add-tier-btn')?.addEventListener('click', () => {
-    const container = document.getElementById('tiers-container');
-    const row = document.createElement('div');
-    row.className = 'ev-form-row';
-    row.style.cssText = 'grid-template-columns:1fr 100px 80px;margin-bottom:8px;';
-    row.innerHTML = `
-      <input class="ev-form-input" type="text" placeholder="Tier name" data-tier="name" required />
-      <input class="ev-form-input" type="number" placeholder="Price" data-tier="price" min="0" required />
-      <input class="ev-form-input" type="number" placeholder="Qty" data-tier="capacity" min="1" required />`;
-    container.appendChild(row);
+  // Back to home
+  document.getElementById('ce-back-home')?.addEventListener('click', (e) => { e.preventDefault(); switchToPanel('events'); });
+
+  // ── Tab switching ──
+  const tabs = document.querySelectorAll('[data-ce-tab]');
+  const steps = { basic: 'ce-step-basic', tickets: 'ce-step-tickets', publishing: 'ce-step-publishing' };
+  const tabOrder = ['basic', 'tickets', 'publishing'];
+
+  function switchCeTab(tabName) {
+    tabs.forEach(t => t.classList.remove('active'));
+    Object.values(steps).forEach(id => document.getElementById(id)?.classList.remove('active'));
+    const tab = document.querySelector(`[data-ce-tab="${tabName}"]`);
+    if (tab) tab.classList.add('active');
+    document.getElementById(steps[tabName])?.classList.add('active');
+    // Mark completed tabs
+    const idx = tabOrder.indexOf(tabName);
+    tabOrder.forEach((t, i) => {
+      const el = document.querySelector(`[data-ce-tab="${t}"]`);
+      if (i < idx) el?.classList.add('completed');
+      else el?.classList.remove('completed');
+    });
+    // Update progress
+    const progress = document.getElementById('ce-progress-bar');
+    if (progress) progress.style.width = `${((idx + 1) / tabOrder.length) * 100}%`;
+    // Update preview when switching to publishing
+    if (tabName === 'publishing') updateCePreview();
+  }
+
+  tabs.forEach(tab => tab.addEventListener('click', () => switchCeTab(tab.dataset.ceTab)));
+
+  // Save & Continue buttons
+  document.getElementById('ce-save-basic')?.addEventListener('click', () => {
+    const name = document.getElementById('ce-name')?.value.trim();
+    if (!name || name.length < 3) { showToast('Event name must be at least 3 characters', 'error'); return; }
+    switchCeTab('tickets');
+  });
+  document.getElementById('ce-save-tickets')?.addEventListener('click', () => switchCeTab('publishing'));
+
+  // ── Rich Text Editor ──
+  document.querySelectorAll('.ce-editor-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cmd = btn.dataset.cmd;
+      if (cmd === 'createLink') {
+        const url = prompt('Enter URL:');
+        if (url) document.execCommand(cmd, false, url);
+      } else {
+        document.execCommand(cmd, false, null);
+      }
+    });
   });
 
-  // Submit
-  document.getElementById('create-event-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('[type="submit"]');
+  // ── Keywords ──
+  const keywordsInput = document.getElementById('ce-keywords');
+  const keywordsWrap = document.getElementById('ce-keywords-tags');
+  const keywords = [];
+  keywordsInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const val = keywordsInput.value.trim();
+      if (val && !keywords.includes(val)) {
+        keywords.push(val);
+        renderKeywords();
+      }
+      keywordsInput.value = '';
+    }
+  });
+  function renderKeywords() {
+    keywordsWrap.innerHTML = keywords.map((k, i) =>
+      `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
+    ).join('');
+    keywordsWrap.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => { keywords.splice(Number(btn.dataset.idx), 1); renderKeywords(); });
+    });
+  }
+
+  // ── Social Links ──
+  document.getElementById('ce-add-social')?.addEventListener('click', () => {
+    const container = document.getElementById('ce-social-links');
+    const row = document.createElement('div');
+    row.className = 'ce-social-row';
+    row.innerHTML = `<select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">🗑️</button>`;
+    container.appendChild(row);
+  });
+  document.getElementById('ce-social-links')?.addEventListener('click', (e) => {
+    const del = e.target.closest('.ce-social-del');
+    if (del) del.closest('.ce-social-row')?.remove();
+  });
+
+  // ── Image Uploads ──
+  setupCeUpload('ce-main-photo', 'ce-main-photo-area');
+  setupCeUpload('ce-logo', 'ce-logo-area');
+
+  // ── Gallery ──
+  document.getElementById('ce-add-gallery')?.addEventListener('click', () => {
+    ceGalleryCount++;
+    const grid = document.getElementById('ce-gallery-grid');
+    const item = document.createElement('div');
+    item.className = 'ce-gallery-item';
+    item.innerHTML = `<label>Photo ${ceGalleryCount}</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div>`;
+    grid.appendChild(item);
+    const fileInput = item.querySelector('input[type="file"]');
+    const area = item.querySelector('.ce-upload-area');
+    fileInput.addEventListener('change', (e) => handleCeFileUpload(e, area));
+  });
+
+  // ── Sponsors ──
+  document.getElementById('ce-add-sponsor')?.addEventListener('click', () => {
+    const grid = document.getElementById('ce-sponsors-grid');
+    const count = grid.children.length + 1;
+    const item = document.createElement('div');
+    item.className = 'ce-gallery-item';
+    item.innerHTML = `<label>Sponsor ${count}</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Logo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div>`;
+    grid.appendChild(item);
+    const fileInput = item.querySelector('input[type="file"]');
+    const area = item.querySelector('.ce-upload-area');
+    fileInput.addEventListener('change', (e) => handleCeFileUpload(e, area));
+  });
+
+  // Initial gallery upload listener
+  const initialGalleryInput = document.querySelector('#ce-gallery-grid input[type="file"]');
+  const initialGalleryArea = document.querySelector('#ce-gallery-grid .ce-upload-area');
+  if (initialGalleryInput && initialGalleryArea) {
+    initialGalleryInput.addEventListener('change', (e) => handleCeFileUpload(e, initialGalleryArea));
+  }
+
+  // ── Ticket Type Cards ──
+  document.querySelectorAll('.ce-ticket-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.ce-ticket-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      card.querySelector('input').checked = true;
+    });
+  });
+
+  // ── Ticket Category Modal ──
+  const ticketCatModal = document.getElementById('ticket-cat-modal');
+  document.getElementById('ce-add-ticket-cat-btn')?.addEventListener('click', () => {
+    document.getElementById('ticket-cat-count').textContent = `Current ticket category number: ${ceTicketCategories.length}`;
+    ticketCatModal?.classList.add('active');
+  });
+  document.getElementById('ticket-cat-modal-close')?.addEventListener('click', () => ticketCatModal?.classList.remove('active'));
+  ticketCatModal?.addEventListener('click', (e) => { if (e.target === ticketCatModal) ticketCatModal.classList.remove('active'); });
+
+  document.getElementById('ticket-cat-save')?.addEventListener('click', () => {
+    const name = document.getElementById('ticket-cat-name')?.value.trim();
+    if (!name) { showToast('Category name is required', 'error'); return; }
+    ceTicketCategories.push({ name, desc: document.getElementById('ticket-cat-desc')?.value.trim() || '' });
+    // Update select
+    const select = document.getElementById('ce-ticket-category-select');
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+    document.getElementById('ticket-cat-name').value = '';
+    document.getElementById('ticket-cat-desc').value = '';
+    ticketCatModal?.classList.remove('active');
+    showToast(`Category "${name}" added!`, 'success');
+  });
+
+  // ── Add Ticket ──
+  document.getElementById('ce-add-ticket-btn')?.addEventListener('click', () => {
+    const name = document.getElementById('ce-ticket-name')?.value.trim();
+    const qty = parseInt(document.getElementById('ce-ticket-qty')?.value) || 1;
+    const price = parseFloat(document.getElementById('ce-ticket-price')?.value) || 0;
+    const category = document.getElementById('ce-ticket-category-select')?.value;
+    const earlyPrice = document.getElementById('ce-early-price')?.value || '';
+    const earlyEnd = document.getElementById('ce-early-end')?.value || '';
+    if (!name) { showToast('Ticket name is required', 'error'); return; }
+    if (!price && price !== 0) { showToast('Ticket price is required', 'error'); return; }
+    const currency = document.getElementById('ce-currency')?.value || 'USD';
+    ceTicketsList.push({ name, qty, price, category, earlyPrice, earlyEnd, currency });
+    renderCeTicketsTable();
+    // Reset
+    document.getElementById('ce-ticket-name').value = '';
+    document.getElementById('ce-ticket-qty').value = '1';
+    document.getElementById('ce-ticket-price').value = '';
+    showToast('Ticket added!', 'success');
+  });
+
+  // ── Services Modal ──
+  const svcModal = document.getElementById('services-modal');
+  document.getElementById('services-modal-close')?.addEventListener('click', () => svcModal?.classList.remove('active'));
+  svcModal?.addEventListener('click', (e) => { if (e.target === svcModal) svcModal.classList.remove('active'); });
+  document.getElementById('svc-submit')?.addEventListener('click', () => {
+    showToast('Service request submitted!', 'success');
+    svcModal?.classList.remove('active');
+  });
+
+  // ── Publish Event ──
+  document.getElementById('ce-publish-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('ce-publish-btn');
     btn.disabled = true;
-    btn.textContent = 'Creating…';
-
-    const user = await getCurrentUser();
-    if (!user) return;
-
-    const eventData = {
-      organizer_id: user.id,
-      title: document.getElementById('ev-title').value.trim().slice(0, 200),
-      description: document.getElementById('ev-desc').value.trim().slice(0, 5000),
-      venue: document.getElementById('ev-venue').value.trim().slice(0, 300),
-      city: document.getElementById('ev-city').value.trim().slice(0, 100),
-      date: new Date(document.getElementById('ev-date').value).toISOString(),
-      category: document.getElementById('ev-category').value.trim(),
-      status: 'published',
-    };
-
-    if (!eventData.title || eventData.title.length < 3) {
-      showToast('Event title must be at least 3 characters', 'error');
-      btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
-    }
-    if (!eventData.venue) {
-      showToast('Venue is required', 'error');
-      btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
-    }
-    if (new Date(eventData.date) < new Date()) {
-      showToast('Event date cannot be in the past', 'error');
-      btn.disabled = false; btn.innerHTML = '🚀 Create Event'; return;
-    }
-
+    btn.textContent = 'Publishing…';
     try {
+      const user = await getCurrentUser();
+      if (!user) return;
+      const eventData = {
+        organizer_id: user.id,
+        title: document.getElementById('ce-name')?.value.trim().slice(0, 200),
+        description: document.getElementById('ce-overview')?.innerHTML || '',
+        venue: document.getElementById('ce-place')?.value.trim().slice(0, 300),
+        city: document.getElementById('ce-address')?.value.trim().slice(0, 100),
+        date: document.getElementById('ce-start-date')?.value ? new Date(document.getElementById('ce-start-date').value).toISOString() : new Date().toISOString(),
+        category: document.getElementById('ce-category')?.value || 'general',
+        status: 'published',
+      };
+      if (!eventData.title || eventData.title.length < 3) { showToast('Event name is required (min 3 chars)', 'error'); btn.disabled = false; btn.innerHTML = '🚀 Publish Event'; return; }
       const event = await createEvent(eventData);
 
-      // Upload cover image if selected
-      if (pendingCoverFile) {
+      // Upload cover if exists
+      const mainPhotoArea = document.getElementById('ce-main-photo-area');
+      const coverImg = mainPhotoArea?.querySelector('img');
+      if (coverImg && pendingCoverFile) {
         const coverUrl = await uploadCoverImage(event.id);
-        if (coverUrl) {
-          await supabase.from('events').update({ cover_url: coverUrl }).eq('id', event.id);
-        }
+        if (coverUrl) await supabase.from('events').update({ cover_url: coverUrl }).eq('id', event.id);
       }
 
-      const tierRows = document.querySelectorAll('#tiers-container .ev-form-row, #tiers-container > div');
-      for (const row of tierRows) {
-        const name = row.querySelector('[data-tier="name"]')?.value;
-        const price = parseFloat(row.querySelector('[data-tier="price"]')?.value) || 0;
-        const capacity = parseInt(row.querySelector('[data-tier="capacity"]')?.value) || 100;
-        if (name) await supabase.from('ticket_tiers').insert({ event_id: event.id, name, price, capacity });
+      // Create ticket tiers
+      for (const t of ceTicketsList) {
+        await supabase.from('ticket_tiers').insert({ event_id: event.id, name: t.name, price: t.price, capacity: t.qty });
       }
-      close();
-      e.target.reset();
-      showToast('Event created successfully!', 'success');
+
+      showToast('Event published successfully!', 'success');
+      switchToPanel('events');
       await loadDashboard();
 
-      // Show venue map prompt
-      const mapPrompt = document.createElement('div');
-      mapPrompt.className = 'ev-modal-overlay active';
-      mapPrompt.innerHTML = `<div class="ev-modal" style="max-width:420px;text-align:center;padding:32px">
-        <div style="font-size:3rem;margin-bottom:12px">🎉</div>
-        <h2 style="margin-bottom:8px">Event Created!</h2>
-        <p style="color:var(--ev-text-sec);margin-bottom:24px;font-size:.88rem">Want to design a seating map for <strong>${escapeHTML(event.title)}</strong>?</p>
-        <div style="display:flex;gap:10px">
-          <button class="ev-btn ev-btn-outline" style="flex:1" id="map-skip">Skip for Now</button>
-          <a href="venue-designer.html?event_id=${event.id}" class="ev-btn ev-btn-pink" style="flex:1;text-decoration:none;display:flex;align-items:center;justify-content:center">🗺️ Design Venue Map</a>
-        </div>
-      </div>`;
-      document.body.appendChild(mapPrompt);
-      document.getElementById('map-skip').addEventListener('click', () => mapPrompt.remove());
-      mapPrompt.addEventListener('click', (ev) => { if (ev.target === mapPrompt) mapPrompt.remove(); });
+      // Show services modal
+      setTimeout(() => { document.getElementById('services-modal')?.classList.add('active'); }, 600);
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = '🚀 Create Event';
+      btn.innerHTML = '🚀 Publish Event';
     }
   });
+
+  // Stripe verification button
+  document.getElementById('ce-complete-verify')?.addEventListener('click', () => {
+    showToast('Stripe verification flow will be integrated', 'info');
+  });
+}
+
+function setupCeUpload(inputId, areaId) {
+  const input = document.getElementById(inputId);
+  const area = document.getElementById(areaId);
+  if (!input || !area) return;
+  input.addEventListener('change', (e) => handleCeFileUpload(e, area));
+}
+
+function handleCeFileUpload(e, area) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Please select an image file', 'error'); return; }
+  if (file.size > 5 * 1024 * 1024) { showToast('Image must be under 5MB', 'error'); return; }
+  // Store for main photo upload
+  if (area.id === 'ce-main-photo-area') pendingCoverFile = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    let img = area.querySelector('img');
+    if (!img) { img = document.createElement('img'); area.appendChild(img); }
+    img.src = ev.target.result;
+    area.classList.add('has-image');
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderCeTicketsTable() {
+  const tbody = document.getElementById('ce-tickets-tbody');
+  if (!ceTicketsList.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>';
+    return;
+  }
+  tbody.innerHTML = ceTicketsList.map((t, i) => {
+    const sym = t.currency === 'CAD' ? 'CA$' : t.currency === 'EUR' ? '€' : t.currency === 'GBP' ? '£' : '$';
+    return `<tr>
+      <td style="font-weight:600">${escapeHTML(t.name)}</td>
+      <td>${sym}${Number(t.price).toFixed(2)}</td>
+      <td style="color:var(--ev-yellow);font-weight:600">${t.qty}</td>
+      <td>${t.earlyEnd ? new Date(t.earlyEnd).toLocaleDateString() : 'Not Set'}</td>
+      <td>${t.earlyPrice ? sym + Number(t.earlyPrice).toFixed(2) : '—'}</td>
+      <td><button class="ev-btn-icon" title="Remove" data-del-ticket="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+    </tr>`;
+  }).join('');
+  if (!ceTicketTableListenerAttached) {
+    ceTicketTableListenerAttached = true;
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-del-ticket]');
+      if (btn) { ceTicketsList.splice(Number(btn.dataset.delTicket), 1); renderCeTicketsTable(); }
+    });
+  }
+}
+
+function updateCePreview() {
+  const title = document.getElementById('ce-name')?.value.trim() || 'Event Name';
+  document.getElementById('ce-preview-title').textContent = title;
+  const venue = document.getElementById('ce-place')?.value.trim() || 'Venue';
+  const addr = document.getElementById('ce-address')?.value.trim() || '';
+  document.getElementById('ce-preview-venue').textContent = venue;
+  document.getElementById('ce-preview-addr').textContent = addr;
+  const startDate = document.getElementById('ce-start-date')?.value;
+  const endDate = document.getElementById('ce-end-date')?.value;
+  if (startDate) {
+    const d = new Date(startDate);
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    document.getElementById('ce-preview-month').textContent = months[d.getMonth()];
+    document.getElementById('ce-preview-day').textContent = String(d.getDate()).padStart(2, '0');
+    document.getElementById('ce-preview-datestr').textContent = d.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    let timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    if (endDate) {
+      const ed = new Date(endDate);
+      timeStr += ` - ${ed.toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}, ${ed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+    }
+    document.getElementById('ce-preview-timestr').textContent = timeStr;
+  }
+  // Preview image
+  const mainImg = document.getElementById('ce-main-photo-area')?.querySelector('img');
+  const previewImgDiv = document.getElementById('ce-preview-img');
+  if (mainImg) {
+    let pImg = previewImgDiv.querySelector('img');
+    if (!pImg) { pImg = document.createElement('img'); previewImgDiv.innerHTML = ''; previewImgDiv.appendChild(pImg); }
+    pImg.src = mainImg.src;
+  }
 }
 
 /* ══════════════════════════════════
@@ -1226,40 +1507,6 @@ function renderCalendar() {
    📸 COVER IMAGE UPLOAD
    ══════════════════════════════════ */
 let pendingCoverFile = null;
-
-function setupCoverUpload() {
-  const fileInput = document.getElementById('ev-cover-file');
-  const area = document.getElementById('cover-upload-area');
-  if (!fileInput || !area) return;
-
-  fileInput.addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Validate
-    if (!file.type.startsWith('image/')) {
-      showToast('Please select an image file', 'error'); return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      showToast('Image must be under 5MB', 'error'); return;
-    }
-
-    pendingCoverFile = file;
-
-    // Preview
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      let img = area.querySelector('img');
-      if (!img) {
-        img = document.createElement('img');
-        area.appendChild(img);
-      }
-      img.src = ev.target.result;
-      area.classList.add('has-image');
-    };
-    reader.readAsDataURL(file);
-  });
-}
 
 async function uploadCoverImage(eventId) {
   if (!pendingCoverFile) return null;
