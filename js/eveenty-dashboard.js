@@ -1495,13 +1495,15 @@ function setupPromoPanel() {
 
     try {
       const user = await getCurrentUser();
+      const discountVal = parseInt(document.getElementById('promo-discount').value) || 0;
       const promoData = {
         organizer_id: user.id,
         code: document.getElementById('promo-code').value.trim().toUpperCase(),
-        discount_percent: parseInt(document.getElementById('promo-discount').value) || 0,
-        max_uses: parseInt(document.getElementById('promo-max-uses').value) || null,
+        discount_type: 'percentage',
+        discount_value: discountVal,
+        max_uses: parseInt(document.getElementById('promo-max-uses').value) || 100,
         event_id: document.getElementById('promo-event').value || null,
-        expires_at: document.getElementById('promo-expires').value ? new Date(document.getElementById('promo-expires').value).toISOString() : null,
+        valid_until: document.getElementById('promo-expires').value ? new Date(document.getElementById('promo-expires').value).toISOString() : null,
         used_count: 0,
         is_active: true,
       };
@@ -1547,15 +1549,17 @@ async function loadPromoCodes() {
     }
 
     tbody.innerHTML = data.map((p, i) => {
-      const expired = p.expires_at && new Date(p.expires_at) < new Date();
-      const statusClass = !p.is_active ? 'rejected' : expired ? 'past' : 'published';
-      const statusLabel = !p.is_active ? 'Inactive' : expired ? 'Expired' : 'Active';
+      const expired = p.valid_until && new Date(p.valid_until) < new Date();
+      const maxedOut = p.max_uses && p.used_count >= p.max_uses;
+      const statusClass = !p.is_active ? 'rejected' : expired ? 'past' : maxedOut ? 'past' : 'published';
+      const statusLabel = !p.is_active ? 'Inactive' : expired ? 'Expired' : maxedOut ? 'Maxed Out' : 'Active';
+      const discountDisplay = p.discount_type === 'fixed' ? '$' + p.discount_value : (p.discount_value || p.discount_percent || 0) + '%';
       return `<tr>
         <td>${i + 1}</td>
         <td style="font-weight:700;font-family:monospace;letter-spacing:1px">${escapeHTML(p.code)}</td>
-        <td style="font-weight:600;color:var(--ev-pink)">${p.discount_percent}%</td>
+        <td style="font-weight:600;color:var(--ev-pink)">${discountDisplay}</td>
         <td>${p.used_count || 0}${p.max_uses ? '/' + p.max_uses : ''}</td>
-        <td style="font-size:.8rem;color:var(--ev-text-sec)">${p.expires_at ? new Date(p.expires_at).toLocaleDateString() : '—'}</td>
+        <td style="font-size:.8rem;color:var(--ev-text-sec)">${p.valid_until ? new Date(p.valid_until).toLocaleDateString() : '—'}</td>
         <td><span class="ev-badge ${statusClass}">${statusLabel}</span></td>
         <td><button class="ev-btn-icon" title="Delete" data-promo-delete="${p.id}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>

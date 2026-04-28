@@ -298,6 +298,17 @@ serve(async (req) => {
       p_amount: qty,
     });
 
+    // ── Increment promo code usage ──
+    const promoId = session.metadata?.promo_id;
+    if (promoId) {
+      try {
+        await supabase.rpc('increment_promo_usage', { p_promo_id: promoId });
+        console.log(`🏷️ Promo ${session.metadata?.promo_code} usage incremented`);
+      } catch (promoErr) {
+        console.warn('Failed to increment promo usage (non-critical):', promoErr);
+      }
+    }
+
     // ── Seated checkout: mark seats as permanently sold ──
     if (seatIdsRaw) {
       try {

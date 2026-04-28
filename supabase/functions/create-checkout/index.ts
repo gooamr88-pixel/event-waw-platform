@@ -28,7 +28,7 @@ serve(async (req) => {
       return errorResponse(400, 'Invalid JSON body');
     }
 
-    const { tier_id, quantity = 1, is_guest = false, seat_ids } = body;
+    const { tier_id, quantity = 1, is_guest = false, seat_ids, promo_code } = body;
 
     // Detect assigned-seating mode: seat_ids is an optional array of UUIDs
     const isSeatedCheckout = Array.isArray(seat_ids) && seat_ids.length > 0;
@@ -53,6 +53,58 @@ serve(async (req) => {
     }
 
     const adminClient = createAdminClient();
+
+    // ════════════════════════════════════════════════
+    // PROMO CODE VALIDATION (applies to both guest & auth)
+    // ════════════════════════════════════════════════
+    let promoDiscount = 0; // percentage discount (0-100) or fixed amount
+    let promoDiscountType = 'percentage';
+    let promoId: string | null = null;
+
+    if (promo_code && typeof promo_code === 'string') {
+      // Look up the tier to get event_id
+      const { data: tierLookup } = await adminClient
+        .from('ticket_tiers')
+        .select('event_id')
+        .eq('id', tier_id)
+        .single();
+
+      if (tierLookup) {
+        const { data: promo } = await adminClient
+          .from('promo_codes')
+          .select('*')
+          .eq('code', promo_code.trim().toUpperCase())
+          .eq('event_id', tierLookup.event_id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (promo) {
+          const now = new Date();
+          const expired = promo.valid_until && new Date(promo.valid_until) < now;
+          const maxedOut = promo.max_uses && promo.used_count >= promo.max_uses;
+
+          if (!expired && !maxedOut) {
+            promoDiscount = promo.discount_value || 0;
+            promoDiscountType = promo.discount_type || 'percentage';
+            promoId = promo.id;
+            console.log(`🏷️ Promo ${promo.code} applied: ${promoDiscount}${promoDiscountType === 'percentage' ? '%' : '$'} off`);
+          }
+        }
+      }
+    }
+
+    // Helper: apply discount to unit price (in cents)
+    function applyDiscount(unitAmountCents: number): number {
+      if (promoDiscount <= 0) return unitAmountCents;
+      if (promoDiscountType === 'fixed') {
+        // Fixed discount spread across quantity
+        const discountCents = Math.round(promoDiscount * 100 / qty);
+        return Math.max(50, unitAmountCents - discountCents); // Stripe minimum $0.50
+      }
+      // Percentage
+      const discounted = unitAmountCents * (1 - promoDiscount / 100);
+      return Math.max(50, Math.round(discounted)); // Stripe minimum $0.50
+    }
 
     // ════════════════════════════════════════════════
     // GUEST CHECKOUT PATH — No auth required
@@ -125,7 +177,7 @@ serve(async (req) => {
                 name: `${res.event_title} — ${res.tier_name}`,
                 description: `${qty}x ticket(s) · Guest: ${guest_name.trim()}`,
               },
-              unit_amount: Math.round(res.tier_price * 100),
+              unit_amount: applyDiscount(Math.round(res.tier_price * 100)),
             },
             quantity: qty,
           },
@@ -141,8 +193,8 @@ serve(async (req) => {
           guest_email: sanitizedEmail,
           guest_phone: guest_phone.trim(),
           guest_national_id: guest_national_id.trim(),
-          // Seated checkout: pass seat_ids so webhook can mark them as sold
           ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
+          ...(promoId ? { promo_id: promoId, promo_code: promo_code } : {}),
         },
         success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&guest=true`,
         cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
@@ -232,7 +284,7 @@ serve(async (req) => {
               name: `${res.event_title} — ${res.tier_name}`,
               description: `${qty}x ticket(s)`,
             },
-            unit_amount: Math.round(res.tier_price * 100), // Stripe uses cents
+            unit_amount: applyDiscount(Math.round(res.tier_price * 100)), // Apply promo discount
           },
           quantity: qty,
         },
@@ -244,8 +296,8 @@ serve(async (req) => {
         tier_id: tier_id,
         quantity: String(qty),
         is_guest: 'false',
-        // Seated checkout: pass seat_ids so webhook can mark them as sold
         ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
+        ...(promoId ? { promo_id: promoId, promo_code: promo_code } : {}),
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,

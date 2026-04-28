@@ -73,7 +73,7 @@ export async function getTierAvailability(tierId) {
  * 2. Creates a Stripe Checkout Session
  * 3. Returns the checkout URL
  */
-export async function createCheckout({ tierId, quantity }) {
+export async function createCheckout({ tierId, quantity, promoCode }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
     throw new Error('Your session has expired. Please sign in again.');
@@ -87,7 +87,7 @@ export async function createCheckout({ tierId, quantity }) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ tier_id: tierId, quantity }),
+      body: JSON.stringify({ tier_id: tierId, quantity, promo_code: promoCode || undefined }),
     }
   );
 
@@ -104,7 +104,7 @@ export async function createCheckout({ tierId, quantity }) {
  * Sends guest info + tier selection to the Edge Function.
  * Returns { checkout_url, reservation_id }.
  */
-export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, guestNationalId }) {
+export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, guestNationalId, promoCode }) {
   const response = await fetch(
     'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
@@ -121,6 +121,7 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
         guest_email: guestEmail,
         guest_phone: guestPhone,
         guest_national_id: guestNationalId,
+        promo_code: promoCode || undefined,
       }),
     }
   );

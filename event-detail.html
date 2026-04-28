@@ -183,6 +183,25 @@
             </div>
 
             <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light);">
+              <!-- Promo Code -->
+              <div id="promo-section" style="margin-bottom:16px;">
+                <div style="display:flex;gap:8px;align-items:stretch;">
+                  <input type="text" class="fi" id="promo-input" placeholder="Promo code" style="flex:1;text-transform:uppercase;letter-spacing:1px;font-family:monospace;font-size:0.88rem;" />
+                  <button type="button" class="btn btn-outline" id="apply-promo-btn" style="white-space:nowrap;padding:0 16px;font-size:0.82rem;">Apply</button>
+                </div>
+                <div id="promo-status" style="margin-top:6px;font-size:0.8rem;display:none;"></div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;" id="subtotal-row" style="display:none;">
+                <span style="color:var(--text-muted);font-size:0.85rem;">Subtotal</span>
+                <span id="subtotal-price" style="font-size:1rem;color:var(--text-muted);"></span>
+              </div>
+              <div id="discount-row" style="display:none;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="color:#22c55e;font-size:0.85rem;font-weight:600;">🏷️ Discount (<span id="discount-label"></span>)</span>
+                  <span id="discount-amount" style="font-size:1rem;font-weight:600;color:#22c55e;">-$0</span>
+                </div>
+              </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
                 <span id="total-price" style="font-size:1.3rem;font-weight:700;">$0</span>
@@ -594,18 +613,131 @@
       }
     };
 
+    // ── Promo Code State ──
+    let appliedPromo = null; // { id, code, discount_type, discount_value }
+
+    document.getElementById('apply-promo-btn')?.addEventListener('click', async () => {
+      const input = document.getElementById('promo-input');
+      const status = document.getElementById('promo-status');
+      const code = input.value.trim().toUpperCase();
+      const btn = document.getElementById('apply-promo-btn');
+
+      if (!code) { status.style.display = 'block'; status.style.color = '#ef4444'; status.textContent = '⚠ Enter a promo code'; return; }
+      if (!eventData?.id) return;
+
+      btn.disabled = true; btn.textContent = 'Checking…';
+
+      try {
+        const { data, error } = await supabase
+          .from('promo_codes')
+          .select('*')
+          .eq('code', code)
+          .eq('event_id', eventData.id)
+          .eq('is_active', true)
+          .maybeSingle();
+
+        if (error || !data) {
+          status.style.display = 'block'; status.style.color = '#ef4444';
+          status.textContent = '❌ Invalid promo code';
+          appliedPromo = null;
+          updateTotal();
+          return;
+        }
+
+        // Check expiry
+        if (data.valid_until && new Date(data.valid_until) < new Date()) {
+          status.style.display = 'block'; status.style.color = '#ef4444';
+          status.textContent = '❌ This promo code has expired';
+          appliedPromo = null; updateTotal(); return;
+        }
+
+        // Check max uses
+        if (data.max_uses && data.used_count >= data.max_uses) {
+          status.style.display = 'block'; status.style.color = '#ef4444';
+          status.textContent = '❌ This promo code has reached its usage limit';
+          appliedPromo = null; updateTotal(); return;
+        }
+
+        // Valid!
+        appliedPromo = {
+          id: data.id,
+          code: data.code,
+          discount_type: data.discount_type || 'percentage',
+          discount_value: data.discount_value || 0,
+        };
+
+        const discLabel = appliedPromo.discount_type === 'fixed'
+          ? `$${appliedPromo.discount_value} off`
+          : `${appliedPromo.discount_value}% off`;
+
+        status.style.display = 'block';
+        status.style.color = '#22c55e';
+        status.innerHTML = `✅ <strong>${data.code}</strong> applied — ${discLabel}`;
+        input.disabled = true;
+        btn.textContent = '✓ Applied';
+        btn.style.borderColor = '#22c55e';
+        btn.style.color = '#22c55e';
+
+        updateTotal();
+      } catch (err) {
+        status.style.display = 'block'; status.style.color = '#ef4444';
+        status.textContent = '❌ Error validating code';
+        appliedPromo = null; updateTotal();
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    // Allow removing promo
+    document.getElementById('promo-input')?.addEventListener('input', () => {
+      if (appliedPromo) {
+        appliedPromo = null;
+        const btn = document.getElementById('apply-promo-btn');
+        const input = document.getElementById('promo-input');
+        input.disabled = false;
+        btn.textContent = 'Apply';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        document.getElementById('promo-status').style.display = 'none';
+        document.getElementById('discount-row').style.display = 'none';
+        document.getElementById('subtotal-row').style.display = 'none';
+        updateTotal();
+      }
+    });
+
     function updateTotal() {
-      let total = 0;
+      let subtotal = 0;
       let hasSelection = false;
       
       for (const [tierId, qty] of Object.entries(quantities)) {
         if (qty > 0) {
           hasSelection = true;
           const tier = eventData?.ticket_tiers?.find(t => t.id === tierId);
-          if (tier) total += tier.price * qty;
+          if (tier) subtotal += tier.price * qty;
         }
       }
 
+      let discount = 0;
+      if (appliedPromo && subtotal > 0) {
+        if (appliedPromo.discount_type === 'fixed') {
+          discount = Math.min(appliedPromo.discount_value, subtotal);
+        } else {
+          discount = Math.round(subtotal * (appliedPromo.discount_value / 100) * 100) / 100;
+        }
+
+        // Show discount breakdown
+        document.getElementById('subtotal-row').style.display = 'flex';
+        document.getElementById('subtotal-price').textContent = `$${subtotal.toLocaleString()}`;
+        document.getElementById('discount-row').style.display = 'block';
+        document.getElementById('discount-label').textContent = appliedPromo.discount_type === 'fixed'
+          ? `$${appliedPromo.discount_value}` : `${appliedPromo.discount_value}%`;
+        document.getElementById('discount-amount').textContent = `-$${discount.toLocaleString()}`;
+      } else {
+        document.getElementById('subtotal-row').style.display = 'none';
+        document.getElementById('discount-row').style.display = 'none';
+      }
+
+      const total = Math.max(0, subtotal - discount);
       document.getElementById('total-price').textContent = `$${total.toLocaleString()}`;
       document.getElementById('checkout-btn').disabled = !hasSelection;
       document.getElementById('guest-checkout-btn').disabled = !hasSelection;
@@ -850,7 +982,7 @@
           }
 
           const firstItem = items[0];
-          const result = await createCheckout({ tierId: firstItem.tierId, quantity: firstItem.qty });
+          const result = await createCheckout({ tierId: firstItem.tierId, quantity: firstItem.qty, promoCode: appliedPromo?.code || null });
 
           if (result.checkout_url) {
             // Show reservation timer before redirect
@@ -994,6 +1126,7 @@
             guestEmail: email,
             guestPhone: phone,
             guestNationalId: nid,
+            promoCode: appliedPromo?.code || null,
           });
 
           if (result.checkout_url) {
