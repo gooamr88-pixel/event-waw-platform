@@ -599,6 +599,27 @@
   50% { transform: scale(1.15); }
 }
 
+/* Typing Indicator */
+.ev-typing-indicator .ev-msg-bubble {
+  display: flex; align-items: center; gap: 4px;
+  padding: 14px 18px !important; min-width: 60px;
+}
+.ev-typing-indicator .ev-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(255,255,255,0.35);
+  animation: evTypingBounce 1.4s ease-in-out infinite;
+}
+.ev-typing-indicator .ev-dot:nth-child(2) { animation-delay: 0.15s; }
+.ev-typing-indicator .ev-dot:nth-child(3) { animation-delay: 0.3s; }
+@keyframes evTypingBounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+.ev-chatbox-send:disabled {
+  opacity: 0.5; cursor: not-allowed;
+  transform: none !important;
+}
+
 /* ── 13. RESPONSIVE ── */
 
 /* ── Tablet & Small Desktop (≤1024px) ── */

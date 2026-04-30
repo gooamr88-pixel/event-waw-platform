@@ -380,14 +380,15 @@
 
   <script>
   (function() {
+    const GEMINI_ENDPOINT = 'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/gemini-chat';
     const FAQ = [
-      { q: "How do I buy tickets?", a: "Browse our <a href='dashboard.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
+      { q: "How do I buy tickets?", a: "Browse our <a href='events.html'>Events page</a>, pick an event, select your seats and ticket type, then pay securely with Stripe. Your QR code ticket is delivered instantly!" },
       { q: "How do I find events near me?", a: "On the Events page, click <b>\"Use My Location\"</b> and we'll auto-sort events by distance. You can also filter by city, category, and date." },
       { q: "Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy." },
       { q: "How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>. You can set pricing, venue, seating charts, and manage tickets." },
       { q: "How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly. One scan = one entry." },
-      { q: "How can I contact support?", a: "You can reach us at <b>support@eventwaw.com</b> or use the contact form on this page. We typically respond within 24 hours." },
-      { q: "Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments - your card details never touch our servers. Everything is encrypted with bank-level security." },
+      { q: "How can I contact support?", a: "You can reach us at <b>support@eventwaw.com</b>, or message us on WhatsApp at <a href='https://wa.me/16196666620' target='_blank'><b>+1 (619) 666-6620</b></a>. We typically respond within 24 hours." },
+      { q: "Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers. Everything is encrypted with bank-level security." },
       { q: "What roles does the platform support?", a: "Event Waw supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools." }
     ];
 
@@ -399,6 +400,8 @@
     const sendBtn = document.getElementById('ev-chatbox-send');
     const badge = document.getElementById('ev-fab-badge');
     let isOpen = false;
+    let chatHistory = [];
+    let isSending = false;
 
     function addMessage(content, type, isHtml) {
       const wrap = document.createElement('div');
@@ -409,22 +412,37 @@
       wrap.appendChild(bubble);
       msgArea.appendChild(wrap);
       msgArea.scrollTop = msgArea.scrollHeight;
+      return wrap;
+    }
+
+    function showTyping() {
+      const wrap = document.createElement('div');
+      wrap.className = 'ev-msg ev-msg-bot ev-typing-indicator';
+      wrap.innerHTML = '<div class="ev-msg-bubble"><span class="ev-dot"></span><span class="ev-dot"></span><span class="ev-dot"></span></div>';
+      msgArea.appendChild(wrap);
+      msgArea.scrollTop = msgArea.scrollHeight;
+      return wrap;
     }
 
     function addQuickReplies() {
+      const existing = msgArea.querySelector('.ev-quick-replies');
+      if (existing) existing.remove();
       const wrap = document.createElement('div');
       wrap.className = 'ev-quick-replies';
-      FAQ.forEach(function(item, i) {
+      FAQ.forEach(function(item) {
         const btn = document.createElement('button');
         btn.className = 'ev-quick-btn';
         btn.textContent = item.q;
         btn.addEventListener('click', function() {
+          if (isSending) return;
           addMessage(item.q, 'user', false);
+          chatHistory.push({ role: 'user', text: item.q });
           wrap.remove();
           setTimeout(function() {
             addMessage(item.a, 'bot', true);
+            chatHistory.push({ role: 'model', text: item.a });
             setTimeout(addQuickReplies, 400);
-          }, 500);
+          }, 400);
         });
         wrap.appendChild(btn);
       });
@@ -432,24 +450,66 @@
       msgArea.scrollTop = msgArea.scrollHeight;
     }
 
-    function handleUserInput() {
-      const text = input.value.trim();
-      if (!text) return;
-      addMessage(text, 'user', false);
-      input.value = '';
-      const lower = text.toLowerCase();
-      let matched = FAQ.find(function(f) {
-        const keywords = f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w) { return w.length > 3; });
+    function matchFAQ(text) {
+      var lower = text.toLowerCase();
+      return FAQ.find(function(f) {
+        var keywords = f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w) { return w.length > 3; });
         return keywords.some(function(kw) { return lower.includes(kw); });
       });
-      setTimeout(function() {
-        if (matched) {
-          addMessage(matched.a, 'bot', true);
-        } else {
-          addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.", 'bot', true);
-        }
-        setTimeout(addQuickReplies, 400);
-      }, 600);
+    }
+
+    async function askGemini(text) {
+      try {
+        var resp = await fetch(GEMINI_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, history: chatHistory.slice(-10) }),
+        });
+        if (!resp.ok) throw new Error('API error');
+        var data = await resp.json();
+        return data.reply || null;
+      } catch (e) {
+        console.warn('Gemini chat error:', e);
+        return null;
+      }
+    }
+
+    async function handleUserInput() {
+      var text = input.value.trim();
+      if (!text || isSending) return;
+      isSending = true;
+      input.value = '';
+      sendBtn.disabled = true;
+      addMessage(text, 'user', false);
+      chatHistory.push({ role: 'user', text: text });
+      var qr = msgArea.querySelector('.ev-quick-replies');
+      if (qr) qr.remove();
+
+      // 1. Try FAQ match first (instant)
+      var faqMatch = matchFAQ(text);
+      if (faqMatch) {
+        setTimeout(function() {
+          addMessage(faqMatch.a, 'bot', true);
+          chatHistory.push({ role: 'model', text: faqMatch.a });
+          isSending = false; sendBtn.disabled = false;
+          setTimeout(addQuickReplies, 400);
+        }, 400);
+        return;
+      }
+
+      // 2. Call Gemini API
+      var typing = showTyping();
+      var reply = await askGemini(text);
+      typing.remove();
+
+      if (reply) {
+        addMessage(reply, 'bot', true);
+        chatHistory.push({ role: 'model', text: reply });
+      } else {
+        addMessage("I'm having trouble connecting right now. Try one of the quick questions below, or email us at <b>support@eventwaw.com</b>.", 'bot', true);
+      }
+      isSending = false; sendBtn.disabled = false;
+      setTimeout(addQuickReplies, 400);
     }
 
     function toggleChat() {
@@ -460,8 +520,8 @@
       if (isOpen) input.focus();
     }
 
-    // Init welcome message
-    addMessage("Hey there! Welcome to <b>Event Waw</b>. How can I help you today?", 'bot', true);
+    addMessage("Hey there! 👋 I'm <b>Waw Assistant</b>, your AI helper for Event Waw. Ask me anything about events, tickets, or our platform!", 'bot', true);
+    chatHistory.push({ role: 'model', text: "Hey there! I'm Waw Assistant, your AI helper for Event Waw. Ask me anything about events, tickets, or our platform!" });
     setTimeout(addQuickReplies, 300);
 
     fab.addEventListener('click', toggleChat);
