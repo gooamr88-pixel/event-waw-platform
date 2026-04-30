@@ -10,28 +10,28 @@
 
 /* ══════════════════════════════════
    LIGHT THEME (Default)
-   Warm Ivory · Rich Depth · Premium Feel
+   Clean White · Deep Blue · Premium Feel
    ══════════════════════════════════ */
 
 :root {
   /* ── Brand ── */
-  --accent-primary:    #b8941f;
-  --accent-light:      #d4af37;
-  --accent-dark:       #8b711e;
-  --accent-gradient:   linear-gradient(135deg, #c9a42e 0%, #9a7b1a 50%, #7d6415 100%);
-  --accent-subtle:     rgba(154, 123, 26, 0.06);
-  --accent-subtle-border: rgba(154, 123, 26, 0.12);
+  --accent-primary:    #2563EB;
+  --accent-light:      #60A5FA;
+  --accent-dark:       #1D4ED8;
+  --accent-gradient:   linear-gradient(135deg, #2563EB 0%, #1D4ED8 50%, #1E40AF 100%);
+  --accent-subtle:     rgba(37, 99, 235, 0.06);
+  --accent-subtle-border: rgba(37, 99, 235, 0.12);
   --success:           #16a34a;
   --error:             #dc2626;
   --warning:           #f59e0b;
   --info:              #3b82f6;
 
   /* ── Backgrounds ── */
-  --bg-primary:        #faf9f6;
-  --bg-secondary:      #f3f1ec;
-  --bg-tertiary:       #eceae3;
+  --bg-primary:        #f8fafc;
+  --bg-secondary:      #f1f5f9;
+  --bg-tertiary:       #e2e8f0;
   --bg-card:           #ffffff;
-  --bg-card-hover:     #fefdfb;
+  --bg-card-hover:     #f8fafc;
   --bg-glass:          rgba(255, 255, 255, 0.7);
   --bg-glass-border:   rgba(0, 0, 0, 0.05);
   --bg-input:          #ffffff;
@@ -44,14 +44,14 @@
   --text-muted:        #6b6b78;
   --text-faint:        #9ca3af;
   --text-on-accent:    #ffffff;
-  --text-link:         #b8941f;
-  --text-link-hover:   #9a7b1a;
+  --text-link:         #2563EB;
+  --text-link-hover:   #1D4ED8;
 
   /* ── Borders ── */
   --border-primary:    rgba(0, 0, 0, 0.08);
   --border-light:      rgba(0, 0, 0, 0.04);
   --border-heavy:      rgba(0, 0, 0, 0.12);
-  --border-focus:      rgba(154, 123, 26, 0.4);
+  --border-focus:      rgba(37, 99, 235, 0.4);
   --border-color:      rgba(0, 0, 0, 0.08);
 
   /* ── Shadows ── */
@@ -60,13 +60,13 @@
   --shadow-md:         0 4px 12px rgba(0, 0, 0, 0.06), 0 12px 40px rgba(0, 0, 0, 0.06);
   --shadow-lg:         0 8px 32px rgba(0, 0, 0, 0.08), 0 24px 64px rgba(0, 0, 0, 0.06);
   --shadow-glow:       0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-  --shadow-accent:     0 4px 16px rgba(154, 123, 26, 0.15);
-  --shadow-focus:      0 0 0 3px rgba(154, 123, 26, 0.06);
+  --shadow-accent:     0 4px 16px rgba(37, 99, 235, 0.15);
+  --shadow-focus:      0 0 0 3px rgba(37, 99, 235, 0.06);
 
   /* ── Hover States ── */
   --hover-bg:          rgba(0, 0, 0, 0.02);
-  --hover-border:      rgba(154, 123, 26, 0.2);
-  --hover-card:        0 8px 30px rgba(0, 0, 0, 0.08), 0 20px 50px rgba(154, 123, 26, 0.04);
+  --hover-border:      rgba(37, 99, 235, 0.2);
+  --hover-card:        0 8px 30px rgba(0, 0, 0, 0.08), 0 20px 50px rgba(37, 99, 235, 0.04);
 
   /* ── Navbar ── */
   --nav-bg:            rgba(255, 255, 255, 0.82);
@@ -74,21 +74,21 @@
   --nav-shadow:        0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.03);
   --nav-shadow-scrolled: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(0, 0, 0, 0.06);
   --nav-link:          #4a4a52;
-  --nav-link-hover:    #b8941f;
+  --nav-link-hover:    #2563EB;
   --nav-pill-bg:       rgba(0, 0, 0, 0.03);
   --nav-pill-border:   rgba(0, 0, 0, 0.04);
 
   /* ── Scrollbar ── */
-  --scrollbar-track:   #faf9f6;
-  --scrollbar-thumb:   #d4d4d8;
-  --scrollbar-hover:   #a1a1aa;
+  --scrollbar-track:   #f8fafc;
+  --scrollbar-thumb:   #cbd5e1;
+  --scrollbar-hover:   #94a3b8;
 
   /* ── Misc ── */
-  --selection-bg:      rgba(154, 123, 26, 0.18);
+  --selection-bg:      rgba(37, 99, 235, 0.18);
   --skeleton-bg:       rgba(0, 0, 0, 0.04);
   --particle-color:    rgba(0, 0, 0, 0.08);
   --ambient-glow:      transparent;
-  --code-bg:           #f5f3ee;
+  --code-bg:           #f0f4ff;
   --tooltip-bg:        #ffffff;
   --tooltip-shadow:    0 8px 30px rgba(0, 0, 0, 0.12);
   color-scheme: light;
@@ -107,17 +107,17 @@
 
 /* ══════════════════════════════════
    DARK THEME
-   Deep Navy/Slate · Cinematic Gold Glow
+   Deep Navy/Slate · Electric Blue Glow
    ══════════════════════════════════ */
 
 [data-theme="dark"] {
   /* ── Brand ── */
-  --accent-primary:    #D4AF37;
-  --accent-light:      #E8C84A;
-  --accent-dark:       #A8872B;
-  --accent-gradient:   linear-gradient(135deg, #D4AF37, #A8872B);
-  --accent-subtle:     rgba(212, 175, 55, 0.06);
-  --accent-subtle-border: rgba(212, 175, 55, 0.12);
+  --accent-primary:    #60A5FA;
+  --accent-light:      #93C5FD;
+  --accent-dark:       #3B82F6;
+  --accent-gradient:   linear-gradient(135deg, #60A5FA, #3B82F6);
+  --accent-subtle:     rgba(96, 165, 250, 0.06);
+  --accent-subtle-border: rgba(96, 165, 250, 0.12);
 
   /* ── Backgrounds ── */
   --bg-primary:        #09090b;
@@ -136,30 +136,30 @@
   --text-secondary:    #a1a1aa;
   --text-muted:        #71717a;
   --text-faint:        #52525b;
-  --text-on-accent:    #09090b;
-  --text-link:         #D4AF37;
-  --text-link-hover:   #E8C84A;
+  --text-on-accent:    #ffffff;
+  --text-link:         #60A5FA;
+  --text-link-hover:   #93C5FD;
 
   /* ── Borders ── */
   --border-primary:    rgba(255, 255, 255, 0.06);
   --border-light:      rgba(255, 255, 255, 0.04);
   --border-heavy:      rgba(255, 255, 255, 0.1);
-  --border-focus:      rgba(212, 175, 55, 0.4);
+  --border-focus:      rgba(96, 165, 250, 0.4);
   --border-color:      rgba(255, 255, 255, 0.06);
 
   /* ── Shadows ── */
   --shadow-xs:         0 1px 2px rgba(0, 0, 0, 0.2);
   --shadow-sm:         0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md:         0 4px 16px rgba(0, 0, 0, 0.4), 0 0 60px rgba(212, 175, 55, 0.03);
-  --shadow-lg:         0 10px 40px rgba(0, 0, 0, 0.5), 0 0 80px rgba(212, 175, 55, 0.04);
-  --shadow-glow:       0 8px 32px rgba(212, 175, 55, 0.08), 0 0 60px rgba(212, 175, 55, 0.04);
-  --shadow-accent:     0 4px 20px rgba(212, 175, 55, 0.25);
-  --shadow-focus:      0 0 0 3px rgba(212, 175, 55, 0.1);
+  --shadow-md:         0 4px 16px rgba(0, 0, 0, 0.4), 0 0 60px rgba(96, 165, 250, 0.03);
+  --shadow-lg:         0 10px 40px rgba(0, 0, 0, 0.5), 0 0 80px rgba(96, 165, 250, 0.04);
+  --shadow-glow:       0 8px 32px rgba(96, 165, 250, 0.08), 0 0 60px rgba(96, 165, 250, 0.04);
+  --shadow-accent:     0 4px 20px rgba(96, 165, 250, 0.25);
+  --shadow-focus:      0 0 0 3px rgba(96, 165, 250, 0.1);
 
   /* ── Hover States ── */
   --hover-bg:          rgba(255, 255, 255, 0.02);
-  --hover-border:      rgba(212, 175, 55, 0.3);
-  --hover-card:        0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(212, 175, 55, 0.06);
+  --hover-border:      rgba(96, 165, 250, 0.3);
+  --hover-card:        0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(96, 165, 250, 0.06);
 
   /* ── Navbar ── */
   --nav-bg:            rgba(15, 15, 20, 0.4);
@@ -177,9 +177,9 @@
   --scrollbar-hover:   #52525b;
 
   /* ── Misc ── */
-  --selection-bg:      rgba(212, 175, 55, 0.2);
+  --selection-bg:      rgba(96, 165, 250, 0.2);
   --skeleton-bg:       rgba(255, 255, 255, 0.04);
-  --particle-color:    rgba(212, 175, 55, 0.4);
+  --particle-color:    rgba(96, 165, 250, 0.4);
   --ambient-glow:      linear-gradient(180deg, rgba(59, 130, 246, 0.08) 0%, rgba(59, 130, 246, 0.03) 40%, transparent 70%);
   --code-bg:           #1e1e22;
   --tooltip-bg:        #27272a;
@@ -336,7 +336,7 @@
   box-shadow: var(--shadow-accent);
 }
 .btn-primary:hover {
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.4);
+  box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
 }
 
 /* ── Cards ── */
@@ -485,7 +485,7 @@ footer .text-muted { color: #a1a1aa; }
 
 /* ── Auth Pages ── */
 [data-theme="light"] .auth-bg-ov {
-  background: radial-gradient(ellipse at 30% 20%, rgba(154, 123, 26, 0.05), transparent 50%),
+  background: radial-gradient(ellipse at 30% 20%, rgba(37, 99, 235, 0.05), transparent 50%),
               radial-gradient(ellipse at 70% 80%, rgba(59, 130, 246, 0.03), transparent 50%),
               rgba(250, 249, 246, 0.9);
 }

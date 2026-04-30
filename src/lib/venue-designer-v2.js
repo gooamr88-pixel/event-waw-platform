@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════
+﻿/* ═══════════════════════════════════
    EVENT WAW — Venue Designer Engine V2
    Professional Drag & Drop Canvas Editor
    ═══════════════════════════════════ */
@@ -20,7 +20,7 @@ export const ELEMENT_TYPES = {
   BARRIER:   { id: 'barrier',   label: 'Barrier',     icon: '🚧', color: '#ef4444' },
   RESTROOM:  { id: 'restroom',  label: 'Restroom',    icon: '🚻', color: '#6b7280' },
   EXIT:      { id: 'exit',      label: 'Exit',        icon: '🚪', color: '#14b8a6' },
-  FOOD:      { id: 'food',      label: 'Food Court',  icon: '🍔', color: '#f97316' },
+  FOOD:      { id: 'food',      label: 'Food Court',  icon: '🍔', color: '#3B82F6' },
   DJ:        { id: 'dj',        label: 'DJ Booth',    icon: '🎧', color: '#ec4899' },
   MERCH:     { id: 'merch',     label: 'Merchandise', icon: '🛍️', color: '#a855f7' },
   SCREEN:    { id: 'screen',    label: 'Screen',      icon: '📺', color: '#06b6d4' },

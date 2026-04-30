@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════
+﻿/* ═══════════════════════════════════
    EVENT WAW — Interactive Seating Chart Engine
    SVG-based renderer with panzoom (3.4KB)
    ═══════════════════════════════════ */
@@ -12,7 +12,7 @@ const TIER_COLORS = [
   '#8b5cf6', // Purple
   '#3b82f6', // Blue
   '#22c55e', // Green
-  '#f97316', // Orange
+  '#3B82F6', // Orange
   '#ec4899', // Pink
   '#14b8a6', // Teal
   '#ef4444', // Red

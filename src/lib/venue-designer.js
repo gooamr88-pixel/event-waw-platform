@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════
+﻿/* ═══════════════════════════════════
    EVENT WAW — Venue Designer Engine
    Generates layout_json + bulk-creates seats
    ═══════════════════════════════════ */
@@ -267,7 +267,7 @@ export function renderPreviewSVG(layoutJson, container) {
   }
 
   // Sections
-  const tierColors = ['#d4af37', '#8b5cf6', '#3b82f6', '#22c55e', '#f97316', '#ec4899', '#14b8a6', '#ef4444'];
+  const tierColors = ['#d4af37', '#8b5cf6', '#3b82f6', '#22c55e', '#3B82F6', '#ec4899', '#14b8a6', '#ef4444'];
   const tierColorMap = {};
   let colorIdx = 0;
 

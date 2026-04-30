@@ -1,7 +1,7 @@
-/* ═══════════════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════════════
    EVENT WAW — Auth Pages (Login / Register)
    Matches the landing page design system exactly.
-   Orange brand: #F28C00 · DM Sans · Premium feel
+   Blue brand: #2563EB · DM Sans · Premium feel
    ═══════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
@@ -10,7 +10,7 @@
 
 body.eveenty-auth {
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-  background: #faf9f6;
+  background: #f8fafc;
   min-height: 100vh;
   overflow-x: hidden;
   color: #1a1a1f;
@@ -26,7 +26,7 @@ body.eveenty-auth {
 /* ═══ LEFT PANEL — Branding ═══ */
 .ev-auth-left {
   flex: 0 0 480px;
-  background: #faf9f6;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -46,7 +46,7 @@ body.eveenty-auth {
 .ev-logo-icon {
   width: 48px;
   height: 48px;
-  color: #F28C00;
+  color: #2563EB;
   flex-shrink: 0;
 }
 .ev-logo-icon svg {
@@ -62,7 +62,7 @@ body.eveenty-auth {
   line-height: 1;
 }
 .ev-logo-text .ev-logo-dot {
-  color: #F28C00;
+  color: #2563EB;
 }
 .ev-logo-tagline {
   font-size: 0.68rem;
@@ -113,18 +113,18 @@ body.eveenty-auth {
   flex-shrink: 0;
 }
 
-/* Organizers Card — Deep Burnt Orange */
+/* Organizers Card — Deep Navy Blue */
 .ev-card--hosts {
-  background: linear-gradient(135deg, #BF6B00, #9A5500);
+  background: linear-gradient(135deg, #1E3A8A, #172554);
   top: 0;
   left: 0;
   width: 200px;
   z-index: 2;
 }
 
-/* Attendees Card — Bright Golden */
+/* Attendees Card — Bright Sky Blue */
 .ev-card--exhibitors {
-  background: linear-gradient(135deg, #FFB74D, #FFA726);
+  background: linear-gradient(135deg, #93C5FD, #60A5FA);
   color: #1a1a2e;
   top: 100px;
   left: 140px;
@@ -132,12 +132,12 @@ body.eveenty-auth {
   z-index: 3;
 }
 .ev-card--exhibitors h3 { color: #1a1a2e; }
-.ev-card--exhibitors ul li { color: #3a2800; }
+.ev-card--exhibitors ul li { color: #1e3a5f; }
 .ev-card--exhibitors ul li::before { color: #1a1a2e; }
 
-/* Partners Card — Rich Amber */
+/* Partners Card — Rich Blue */
 .ev-card--sponsors {
-  background: linear-gradient(135deg, #F28C00, #D97B00);
+  background: linear-gradient(135deg, #2563EB, #1D4ED8);
   top: 190px;
   left: 0;
   width: 280px;
@@ -175,7 +175,7 @@ body.eveenty-auth {
   justify-content: flex-start;
   padding: 40px 60px 40px;
   overflow-y: auto;
-  background: #faf9f6;
+  background: #f8fafc;
 }
 .ev-auth-right-inner {
   width: 100%;
@@ -217,7 +217,7 @@ body.eveenty-auth {
   color: #fff;
   margin-bottom: 7px;
 }
-.ev-label .required { color: #F28C00; margin-left: 2px; }
+.ev-label .required { color: #2563EB; margin-left: 2px; }
 
 /* Inputs */
 .ev-input {
@@ -235,8 +235,8 @@ body.eveenty-auth {
 }
 .ev-input::placeholder { color: #aaa; font-size: 0.84rem; }
 .ev-input:focus {
-  border-color: #F28C00;
-  box-shadow: 0 0 0 3px rgba(242,140,0,0.08);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
 }
 
 /* Select */
@@ -259,7 +259,7 @@ body.eveenty-auth {
   background-position: right 14px center;
   background-size: 14px;
 }
-.ev-select:focus { border-color: #F28C00; color: #333; }
+.ev-select:focus { border-color: #2563EB; color: #333; }
 .ev-select option { color: #333; }
 
 /* Salutation Radio Group */
@@ -276,7 +276,7 @@ body.eveenty-auth {
 .ev-radio {
   width: 16px;
   height: 16px;
-  accent-color: #F28C00;
+  accent-color: #2563EB;
   cursor: pointer;
 }
 
@@ -308,16 +308,16 @@ body.eveenty-auth {
   color: #333; font-size: 0.9rem; font-family: 'DM Sans', sans-serif;
 }
 .ev-fg .iti .iti__tel-input:focus {
-  outline: none; border-color: #F28C00;
-  box-shadow: 0 0 0 3px rgba(242,140,0,0.12);
+  outline: none; border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
 }
 .ev-fg .iti__country-container { border-radius: 8px 0 0 8px; }
 .ev-fg .iti__selected-country { border-radius: 8px 0 0 8px; padding: 0 8px; }
-.ev-fg .iti__selected-country:focus { outline: none; box-shadow: inset 0 0 0 2px #F28C00; }
+.ev-fg .iti__selected-country:focus { outline: none; box-shadow: inset 0 0 0 2px #2563EB; }
 .ev-fg .iti__country-list { border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.18); border: 1px solid #ddd; }
-.ev-fg .iti__country.iti__highlight { background: #FFF3E0; }
+.ev-fg .iti__country.iti__highlight { background: #EFF6FF; }
 .ev-fg .iti__search-input { border-radius: 6px; border-color: #ddd; font-family: 'DM Sans', sans-serif; }
-.ev-fg .iti__search-input:focus { border-color: #F28C00; outline: none; box-shadow: 0 0 0 2px rgba(242,140,0,0.12); }
+.ev-fg .iti__search-input:focus { border-color: #2563EB; outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,0.12); }
 
 /* Remember me / Forgot password row */
 .ev-remember-row {
@@ -337,17 +337,17 @@ body.eveenty-auth {
 .ev-remember input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #F28C00;
+  accent-color: #2563EB;
   cursor: pointer;
 }
 .ev-forgot-link {
   font-size: 0.82rem;
-  color: #F28C00;
+  color: #2563EB;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
-.ev-forgot-link:hover { color: #FFA726; }
+.ev-forgot-link:hover { color: #60A5FA; }
 
 /* Terms Checkbox */
 .ev-terms-label {
@@ -363,19 +363,19 @@ body.eveenty-auth {
 .ev-terms-label input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  accent-color: #F28C00;
+  accent-color: #2563EB;
   cursor: pointer;
   flex-shrink: 0;
   margin-top: 2px;
 }
 .ev-terms-label a {
-  color: #F28C00;
+  color: #2563EB;
   text-decoration: none;
   font-weight: 500;
 }
 .ev-terms-label a:hover { text-decoration: underline; }
-.ev-terms-label a.yellow-link { color: #FFA726; }
-.ev-terms-label a.yellow-link:hover { color: #FFB74D; }
+.ev-terms-label a.yellow-link { color: #60A5FA; }
+.ev-terms-label a.yellow-link:hover { color: #93C5FD; }
 
 /* Submit Button */
 .ev-submit-btn {
@@ -386,7 +386,7 @@ body.eveenty-auth {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: #F28C00;
+  background: #2563EB;
   color: #fff;
   border: none;
   border-radius: 24px;
@@ -397,9 +397,9 @@ body.eveenty-auth {
   transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
 }
 .ev-submit-btn:hover {
-  background: #D97B00;
+  background: #1D4ED8;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(242,140,0,0.3);
+  box-shadow: 0 4px 16px rgba(37,99,235,0.3);
 }
 .ev-submit-btn:active { transform: translateY(0); }
 .ev-submit-btn:disabled {
@@ -473,7 +473,7 @@ body.eveenty-auth {
   color: #6b6b78;
 }
 .ev-auth-footer a {
-  color: #F28C00;
+  color: #2563EB;
   font-weight: 600;
   text-decoration: none;
 }
@@ -488,7 +488,7 @@ body.eveenty-auth {
   color: #6b6b78; font-size: 0.75rem; font-weight: 500;
   text-decoration: none; transition: color 0.2s;
 }
-.ev-legal-links a:hover { color: #F28C00; }
+.ev-legal-links a:hover { color: #2563EB; }
 .ev-legal-dot {
   width: 3px; height: 3px; border-radius: 50%;
   background: #555; display: inline-block;
@@ -527,11 +527,11 @@ body.eveenty-auth {
 }
 @keyframes evSpin { to { transform: rotate(360deg); } }
 
-/* Orange Top Bar */
+/* Blue Top Bar */
 .ev-top-bar {
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, #D97B00, #F28C00, #FFA726);
+  background: linear-gradient(90deg, #1D4ED8, #2563EB, #60A5FA);
   position: fixed;
   top: 0;
   left: 0;
@@ -548,7 +548,7 @@ body.eveenty-auth {
 .ev-otp-section { display: none; }
 .ev-otp-icon-wrap {
   width: 64px; height: 64px; margin: 0 auto; border-radius: 50%;
-  background: rgba(242,140,0,0.08); border: 1px solid rgba(242,140,0,0.2);
+  background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2);
   display: flex; align-items: center; justify-content: center;
 }
 .ev-otp-inputs { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; }
@@ -556,10 +556,10 @@ body.eveenty-auth {
   width: 48px; height: 56px; text-align: center; font-size: 1.4rem; font-weight: 700;
   font-family: 'DM Sans', sans-serif; color: #333; background: #fff;
   border: 1.5px solid #ddd; border-radius: 10px; transition: all 0.2s;
-  caret-color: #F28C00; outline: none;
+  caret-color: #2563EB; outline: none;
 }
-.ev-otp-digit:focus { border-color: #F28C00; box-shadow: 0 0 0 3px rgba(242,140,0,0.08); }
-.ev-otp-digit.filled { border-color: rgba(242,140,0,0.4); background: rgba(242,140,0,0.04); }
+.ev-otp-digit:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.ev-otp-digit.filled { border-color: rgba(37,99,235,0.4); background: rgba(37,99,235,0.04); }
 .ev-otp-digit.error { border-color: #ef4444; background: rgba(239,68,68,0.04); animation: evShake 0.4s ease; }
 .ev-otp-dash { color: #999; font-size: 1.2rem; font-weight: 300; padding: 0 2px; }
 @keyframes evShake {
@@ -568,10 +568,10 @@ body.eveenty-auth {
   75% { transform: translateX(4px); }
 }
 .ev-link-btn {
-  background: none; border: none; color: #F28C00; font-weight: 600;
+  background: none; border: none; color: #2563EB; font-weight: 600;
   cursor: pointer; transition: color 0.2s; font-size: inherit; font-family: inherit;
 }
-.ev-link-btn:hover { color: #FFA726; }
+.ev-link-btn:hover { color: #60A5FA; }
 .ev-link-btn:disabled { color: #888; cursor: default; }
 
 /* ═══ RESPONSIVE ═══ */

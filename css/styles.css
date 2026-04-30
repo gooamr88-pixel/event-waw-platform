@@ -1,4 +1,4 @@
-/* ═══════════════════════════════════════════════
+﻿/* ═══════════════════════════════════════════════
    VIA — PREMIUM DESIGN SYSTEM
    Adapted from Roya/Nabda Architecture
    Gold · Black · Blue Glow · Cinematic
@@ -61,8 +61,8 @@ body {
    ══════════════════════════════════ */
 [data-theme="light"] {
   /* ── Backgrounds ── */
-  --bg-primary: #faf9f6;
-  --bg-secondary: #f3f1ec;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
   --bg-card: #ffffff;
   --bg-glass: rgba(255, 255, 255, 0.6);
   --bg-glass-border: rgba(0, 0, 0, 0.06);
@@ -249,7 +249,7 @@ body {
   box-shadow: 0 1px 2px rgba(0,0,0,.03);
 }
 [data-theme="light"] .soc-btn:hover {
-  background: #fefdfb;
+  background: #f8fafc;
   border-color: rgba(168,136,37,.25);
   box-shadow: 0 4px 12px rgba(168,136,37,.06);
 }
@@ -263,7 +263,7 @@ body {
 [data-theme="light"] .f-footer { color: #475569; }
 
 /* ── Scrollbar (Light) ── */
-[data-theme="light"] ::-webkit-scrollbar-track { background: #faf9f6; }
+[data-theme="light"] ::-webkit-scrollbar-track { background: #f8fafc; }
 [data-theme="light"] ::-webkit-scrollbar-thumb { background: #d4d4d8; }
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
 
@@ -2406,7 +2406,7 @@ button { cursor: pointer; }
 }
 .seat-tooltip-available { color: #22c55e; }
 .seat-tooltip-sold { color: #ef4444; }
-.seat-tooltip-reserved { color: #f97316; }
+.seat-tooltip-reserved { color: #3B82F6; }
 
 /* Tier legend */
 .seating-legend {
