@@ -735,3 +735,245 @@
   .ev-quick-btn { font-size: 0.7rem; padding: 6px 10px; }
 }
 
+
+/* ═══════════════════════════════════════════
+   14. LOGIN HOVER DROPDOWN — Role Cards
+   ═══════════════════════════════════════════ */
+
+.nav-login-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-login-dropdown {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: 320px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-primary, rgba(0,0,0,0.08));
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.3s cubic-bezier(0.16,1,0.3,1),
+              visibility 0.3s,
+              transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nav-login-wrap:hover .nav-login-dropdown,
+.nav-login-wrap:focus-within .nav-login-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* Arrow pointer */
+.login-drop-arrow {
+  position: absolute;
+  top: -7px;
+  right: 24px;
+  width: 14px;
+  height: 14px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-primary, rgba(0,0,0,0.08));
+  border-right: none;
+  border-bottom: none;
+  transform: rotate(45deg);
+  z-index: 1;
+}
+
+/* Header */
+.login-drop-header {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border-light, rgba(0,0,0,0.04));
+  position: relative;
+  z-index: 2;
+  background: var(--bg-card, #fff);
+}
+.login-drop-title {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary, #1a1a1f);
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+.login-drop-sub {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted, #6b6b78);
+  font-weight: 500;
+}
+
+/* Role Cards */
+.login-drop-roles {
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.login-role-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  position: relative;
+}
+.login-role-card:hover {
+  background: rgba(37, 99, 235, 0.04);
+  border-color: rgba(37, 99, 235, 0.12);
+  transform: translateX(2px);
+}
+
+.login-role-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+.login-role-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Organizer — Blue */
+.login-role-organizer .login-role-icon {
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+  color: #2563EB;
+}
+.login-role-organizer:hover .login-role-icon {
+  background: #2563EB;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+
+/* Attendee — Teal */
+.login-role-attendee .login-role-icon {
+  background: rgba(20, 184, 166, 0.08);
+  border: 1px solid rgba(20, 184, 166, 0.15);
+  color: #14b8a6;
+}
+.login-role-attendee:hover .login-role-icon {
+  background: #14b8a6;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.25);
+}
+
+/* Partner — Purple */
+.login-role-partner .login-role-icon {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+.login-role-partner:hover .login-role-icon {
+  background: #8b5cf6;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+}
+
+.login-role-info {
+  flex: 1;
+  min-width: 0;
+}
+.login-role-info strong {
+  display: block;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a1f);
+  margin-bottom: 1px;
+  line-height: 1.3;
+}
+.login-role-info span {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted, #6b6b78);
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.login-role-arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--text-faint, #9ca3af);
+  flex-shrink: 0;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: all 0.2s ease;
+}
+.login-role-card:hover .login-role-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--text-primary, #1a1a1f);
+}
+
+/* Footer */
+.login-drop-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--border-light, rgba(0,0,0,0.04));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-secondary, #f1f5f9);
+}
+.login-drop-footer span {
+  font-size: 0.72rem;
+  color: var(--text-muted, #6b6b78);
+  font-weight: 500;
+}
+.login-drop-footer a {
+  font-size: 0.72rem;
+  color: #2563EB;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.login-drop-footer a:hover {
+  color: #1D4ED8;
+}
+
+/* Dark mode support */
+[data-theme="dark"] .nav-login-dropdown {
+  background: #1a1a22;
+  border-color: rgba(255,255,255,0.06);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .login-drop-arrow {
+  background: #1a1a22;
+  border-color: rgba(255,255,255,0.06);
+}
+[data-theme="dark"] .login-drop-header {
+  background: #1a1a22;
+  border-color: rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .login-role-card:hover {
+  background: rgba(96, 165, 250, 0.06);
+  border-color: rgba(96, 165, 250, 0.12);
+}
+[data-theme="dark"] .login-drop-footer {
+  background: #151518;
+  border-color: rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .login-drop-footer a {
+  color: #60A5FA;
+}
+
+/* Hide dropdown on mobile — dropdown doesn't work well with touch */
+@media (max-width: 768px) {
+  .nav-login-dropdown { display: none !important; }
+}
