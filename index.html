@@ -102,29 +102,21 @@
       </div>
       <div class="ev-hero-image">
         <div class="ev-hero-slider" id="hero-slider">
-          <div class="ev-hero-track" id="hero-track">
-            <div class="ev-hero-slide">
-              <img src="images/hero-event-poster.png" alt="Featured Event" loading="eager" />
-            </div>
-            <div class="ev-hero-slide">
-              <img src="images/event-concert.png" alt="Live Concert" loading="lazy" />
-            </div>
-            <div class="ev-hero-slide">
-              <img src="images/event-gala.png" alt="Gala Night" loading="lazy" />
-            </div>
-            <div class="ev-hero-slide">
-              <img src="images/event-conference.png" alt="Conference" loading="lazy" />
-            </div>
-            <div class="ev-hero-slide">
-              <img src="images/role-event-host.png" alt="Event Host" loading="lazy" />
-            </div>
+          <div class="ev-hero-slide active">
+            <img src="images/hero-event-poster.png" alt="Featured Event" loading="eager" />
           </div>
-          <button class="ev-hero-arrow ev-hero-arrow-left" id="hero-prev" aria-label="Previous">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-          </button>
-          <button class="ev-hero-arrow ev-hero-arrow-right" id="hero-next" aria-label="Next">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-          </button>
+          <div class="ev-hero-slide">
+            <img src="images/event-concert.png" alt="Live Concert" loading="lazy" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/event-gala.png" alt="Gala Night" loading="lazy" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/event-conference.png" alt="Conference" loading="lazy" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/role-event-host.png" alt="Event Host" loading="lazy" />
+          </div>
         </div>
         <div class="ev-hero-dots" id="hero-dots">
           <button class="ev-hero-dot active" data-slide="0" aria-label="Slide 1"></button>
@@ -531,7 +523,7 @@
       if (authState.user && authState.isFullyAuth) {
         const signinBtn = document.getElementById('nav-signin');
         const signupBtn = document.getElementById('nav-signup');
-        if (signinBtn) { signinBtn.textContent = 'Dashboard'; signinBtn.href = 'dashboard.html'; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; }
+        if (signinBtn) { signinBtn.textContent = 'Dashboard'; signinBtn.href = 'dashboard.html'; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; var roleDrop = document.querySelector('.nav-role-dropdown'); if (roleDrop) roleDrop.style.display = 'none'; }
         if (signupBtn) { signupBtn.textContent = 'Sign Out'; signupBtn.href = '#'; signupBtn.classList.remove('btn-primary'); signupBtn.classList.add('btn-outline'); signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
         const navLinks = document.getElementById('nav-links');
         if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = 'Dashboard'; el.href = 'dashboard.html'; } }
@@ -760,64 +752,44 @@
   <!-- Hero Image Slider -->
   <script>
   (function(){
-    var track = document.getElementById('hero-track');
-    var dots = document.querySelectorAll('#hero-dots .ev-hero-dot');
-    var prevBtn = document.getElementById('hero-prev');
-    var nextBtn = document.getElementById('hero-next');
-    if (!track) return;
-
-    var slides = track.children;
-    var total = slides.length;
-    var current = 0;
-    var timer = null;
+    const slides = document.querySelectorAll('#hero-slider .ev-hero-slide');
+    const dots = document.querySelectorAll('#hero-dots .ev-hero-dot');
+    if (!slides.length) return;
+    let current = 0;
+    let timer = null;
 
     function goTo(index) {
-      if (index < 0) index = total - 1;
-      if (index >= total) index = 0;
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
       current = index;
-      track.style.transform = 'translateX(-' + (current * 100) + '%)';
-      // Update dots
-      for (var i = 0; i < dots.length; i++) {
-        dots[i].classList.toggle('active', i === current);
-      }
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+
+    function next() {
+      goTo((current + 1) % slides.length);
     }
 
     function startAuto() {
-      stopAuto();
-      timer = setInterval(function() { goTo(current + 1); }, 4000);
+      timer = setInterval(next, 4000);
     }
 
     function stopAuto() {
-      if (timer) clearInterval(timer);
+      clearInterval(timer);
     }
 
-    // Arrow clicks
-    if (prevBtn) prevBtn.addEventListener('click', function() { stopAuto(); goTo(current - 1); startAuto(); });
-    if (nextBtn) nextBtn.addEventListener('click', function() { stopAuto(); goTo(current + 1); startAuto(); });
-
-    // Dot clicks
-    for (var d = 0; d < dots.length; d++) {
-      (function(i) {
-        dots[i].addEventListener('click', function() { stopAuto(); goTo(i); startAuto(); });
-      })(d);
-    }
-
-    // Pause on hover
-    var slider = document.getElementById('hero-slider');
-    if (slider) {
-      slider.addEventListener('mouseenter', stopAuto);
-      slider.addEventListener('mouseleave', startAuto);
-    }
-
-    // Touch swipe
-    var touchStartX = 0;
-    if (slider) {
-      slider.addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; stopAuto(); }, { passive: true });
-      slider.addEventListener('touchend', function(e) {
-        var diff = touchStartX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > 40) { goTo(diff > 0 ? current + 1 : current - 1); }
+    dots.forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        stopAuto();
+        goTo(parseInt(dot.dataset.slide));
         startAuto();
-      }, { passive: true });
+      });
+    });
+
+    var sliderEl = document.getElementById('hero-slider');
+    if (sliderEl) {
+      sliderEl.addEventListener('mouseenter', stopAuto);
+      sliderEl.addEventListener('mouseleave', startAuto);
     }
 
     startAuto();

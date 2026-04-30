@@ -105,67 +105,45 @@
 }
 .ev-btn-explore:hover { border-color: #2563EB; color: #2563EB; }
 .ev-hero-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  width: 100%;
-  max-width: 500px;
-  margin: 0 auto;
 }
 
-/* Hero Slider — Horizontal Slide */
+/* Hero Slider */
 .ev-hero-slider {
   position: relative;
   width: 100%;
+  height: 480px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.12);
 }
 
-.ev-hero-track {
-  display: flex;
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  will-change: transform;
+.ev-hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
 
-.ev-hero-slide {
-  min-width: 100%;
-  flex-shrink: 0;
+.ev-hero-slide.active {
+  opacity: 1;
+  z-index: 1;
 }
 
 .ev-hero-slide img {
   width: 100%;
-  aspect-ratio: 3/4;
+  height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 20px;
 }
-
-/* Arrows */
-.ev-hero-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.85);
-  border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 5;
-  color: #1a1a1f;
-  transition: all 0.2s ease;
-  padding: 0;
-}
-.ev-hero-arrow:hover {
-  background: #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-  transform: translateY(-50%) scale(1.08);
-}
-.ev-hero-arrow svg { width: 16px; height: 16px; }
-.ev-hero-arrow-left { left: 10px; }
-.ev-hero-arrow-right { right: 10px; }
 
 /* Dots */
 .ev-hero-dots {
@@ -197,16 +175,6 @@
 
 .ev-hero-dot:hover {
   opacity: 0.7;
-}
-
-/* Dark mode arrows */
-[data-theme="dark"] .ev-hero-arrow {
-  background: rgba(30,30,40,0.85);
-  border-color: rgba(255,255,255,0.08);
-  color: #e4e4e7;
-}
-[data-theme="dark"] .ev-hero-arrow:hover {
-  background: #1e1e28;
 }
 
 /* ── 4. STATS BAR ── */
@@ -717,6 +685,7 @@
   .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
   .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
   .ev-hero-buttons { justify-content: center; }
+  .ev-hero-slider { height: 350px; }
   .ev-hero-image { max-width: 80%; margin: 0 auto; }
   .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
 
@@ -783,6 +752,7 @@
   .ev-hero-desc { font-size: 0.85rem; }
   .ev-btn-create, .ev-btn-explore { padding: 12px 22px; font-size: 0.88rem; }
   .eveenty-landing .hero-wrapper { padding: 70px 0 32px !important; }
+  .ev-hero-slider { height: 280px; }
 
   /* Stats */
   .ev-stats-bar { padding: 24px 0; }
