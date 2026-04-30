@@ -104,14 +104,20 @@
   font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
 }
 .ev-btn-explore:hover { border-color: #2563EB; color: #2563EB; }
-.ev-hero-image { display: flex; justify-content: center; position: relative; }
+.ev-hero-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
 
 /* Hero Slider */
 .ev-hero-slider {
   position: relative;
   width: 100%;
+  max-width: 500px;
   aspect-ratio: 3/4;
-  max-height: 520px;
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.12);
@@ -119,7 +125,10 @@
 
 .ev-hero-slide {
   position: absolute;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   transition: opacity 0.8s ease;
 }
@@ -134,6 +143,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 20px;
 }
 
 /* Dots */
@@ -676,7 +686,7 @@
   .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
   .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
   .ev-hero-buttons { justify-content: center; }
-  .ev-hero-image img { max-width: 80%; margin: 0 auto; }
+  .ev-hero-slider { max-width: 80%; margin: 0 auto; }
   .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
 
   /* Stats */
