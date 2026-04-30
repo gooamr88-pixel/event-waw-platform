@@ -101,7 +101,30 @@
         </div>
       </div>
       <div class="ev-hero-image">
-        <img src="images/hero-event-poster.png" alt="Featured Event" loading="eager" />
+        <div class="ev-hero-slider" id="hero-slider">
+          <div class="ev-hero-slide active">
+            <img src="images/hero-event-poster.png" alt="Featured Event" loading="eager" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/event-concert.png" alt="Live Concert" loading="lazy" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/event-gala.png" alt="Gala Night" loading="lazy" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/event-conference.png" alt="Conference" loading="lazy" />
+          </div>
+          <div class="ev-hero-slide">
+            <img src="images/role-event-host.png" alt="Event Host" loading="lazy" />
+          </div>
+        </div>
+        <div class="ev-hero-dots" id="hero-dots">
+          <button class="ev-hero-dot active" data-slide="0" aria-label="Slide 1"></button>
+          <button class="ev-hero-dot" data-slide="1" aria-label="Slide 2"></button>
+          <button class="ev-hero-dot" data-slide="2" aria-label="Slide 3"></button>
+          <button class="ev-hero-dot" data-slide="3" aria-label="Slide 4"></button>
+          <button class="ev-hero-dot" data-slide="4" aria-label="Slide 5"></button>
+        </div>
       </div>
     </div>
   </div>
@@ -723,6 +746,53 @@
     const mo = new MutationObserver(() => setTimeout(updateArrows, 100));
     mo.observe(track, { childList: true });
     setTimeout(updateArrows, 500);
+  })();
+  </script>
+
+  <!-- Hero Image Slider -->
+  <script>
+  (function(){
+    const slides = document.querySelectorAll('#hero-slider .ev-hero-slide');
+    const dots = document.querySelectorAll('#hero-dots .ev-hero-dot');
+    if (!slides.length) return;
+    let current = 0;
+    let timer = null;
+
+    function goTo(index) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = index;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+
+    function next() {
+      goTo((current + 1) % slides.length);
+    }
+
+    function startAuto() {
+      timer = setInterval(next, 4000);
+    }
+
+    function stopAuto() {
+      clearInterval(timer);
+    }
+
+    dots.forEach(function(dot) {
+      dot.addEventListener('click', function() {
+        stopAuto();
+        goTo(parseInt(dot.dataset.slide));
+        startAuto();
+      });
+    });
+
+    var sliderEl = document.getElementById('hero-slider');
+    if (sliderEl) {
+      sliderEl.addEventListener('mouseenter', stopAuto);
+      sliderEl.addEventListener('mouseleave', startAuto);
+    }
+
+    startAuto();
   })();
   </script>
 
