@@ -104,78 +104,8 @@
   font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
 }
 .ev-btn-explore:hover { border-color: #2563EB; color: #2563EB; }
-.ev-hero-image {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-
-/* Hero Slider */
-.ev-hero-slider {
-  position: relative;
-  width: 100%;
-  height: 480px;
-  border-radius: 20px;
-  overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-}
-
-.ev-hero-slide {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0;
-  transition: opacity 0.8s ease;
-}
-
-.ev-hero-slide.active {
-  opacity: 1;
-  z-index: 1;
-}
-
-.ev-hero-slide img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  border-radius: 20px;
-}
-
-/* Dots */
-.ev-hero-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.ev-hero-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  border: none;
-  background: var(--text-faint, #9ca3af);
-  opacity: 0.4;
-  cursor: pointer;
-  padding: 0;
-  transition: all 0.3s ease;
-}
-
-.ev-hero-dot.active {
-  width: 24px;
-  border-radius: 4px;
-  background: #2563EB;
-  opacity: 1;
-}
-
-.ev-hero-dot:hover {
-  opacity: 0.7;
-}
+.ev-hero-image { display: flex; justify-content: center; }
+.ev-hero-image img { max-width: 100%; height: auto; border-radius: 20px; }
 
 /* ── 4. STATS BAR ── */
 .ev-stats-bar { background: #1a1a22; padding: 40px 0; }
@@ -685,8 +615,7 @@
   .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
   .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
   .ev-hero-buttons { justify-content: center; }
-  .ev-hero-slider { height: 350px; }
-  .ev-hero-image { max-width: 80%; margin: 0 auto; }
+  .ev-hero-image img { max-width: 80%; margin: 0 auto; }
   .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
 
   /* Stats */
@@ -752,7 +681,6 @@
   .ev-hero-desc { font-size: 0.85rem; }
   .ev-btn-create, .ev-btn-explore { padding: 12px 22px; font-size: 0.88rem; }
   .eveenty-landing .hero-wrapper { padding: 70px 0 32px !important; }
-  .ev-hero-slider { height: 280px; }
 
   /* Stats */
   .ev-stats-bar { padding: 24px 0; }
