@@ -500,7 +500,7 @@
       if (authState.user && authState.isFullyAuth) {
         const signinBtn = document.getElementById('nav-signin');
         const signupBtn = document.getElementById('nav-signup');
-        if (signinBtn) { signinBtn.textContent = 'Dashboard'; signinBtn.href = 'dashboard.html'; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; }
+        if (signinBtn) { signinBtn.textContent = 'Dashboard'; signinBtn.href = 'dashboard.html'; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; const roleDropdown = document.querySelector('.nav-role-dropdown'); if (roleDropdown) roleDropdown.remove(); }
         if (signupBtn) { signupBtn.textContent = 'Sign Out'; signupBtn.href = '#'; signupBtn.classList.remove('btn-primary'); signupBtn.classList.add('btn-outline'); signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
         const navLinks = document.getElementById('nav-links');
         if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = 'Dashboard'; el.href = 'dashboard.html'; } }
