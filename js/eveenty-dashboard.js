@@ -688,17 +688,14 @@ async function loadEventForEditing(eventId) {
 }
 
 function resetCreateEventForm() {
-  // Reset listing type chooser
+  // Reset listing type chooser — show chooser, hide wizard
   const listingChooser = document.getElementById('ce-listing-chooser');
-  const tabsWrap = document.getElementById('ce-tabs-wrap');
+  const wizardContent = document.getElementById('ce-wizard-content');
   if (listingChooser) listingChooser.style.display = '';
-  if (tabsWrap) tabsWrap.style.display = 'none';
+  if (wizardContent) wizardContent.style.display = 'none';
   document.querySelectorAll('input[name="ce-listing-type"]').forEach(r => r.checked = false);
   const continueBtn = document.getElementById('ce-listing-continue');
   if (continueBtn) continueBtn.disabled = true;
-  // Hide listing banner
-  const banner = document.getElementById('ce-listing-banner');
-  if (banner) banner.style.display = 'none';
   // Reset tickets tab visibility
   const ticketsTab = document.getElementById('ce-tab-tickets');
   const ticketsStep = document.getElementById('ce-step-tickets');
@@ -798,13 +795,11 @@ function setupCreateModal() {
 
   listingContinueBtn?.addEventListener('click', () => {
     if (!ceListingType) return;
-    // Hide chooser, show wizard + banner
+    // Hide chooser, show entire wizard content
     if (listingChooser) listingChooser.style.display = 'none';
-    if (tabsWrap) tabsWrap.style.display = '';
-    
-    // Show listing banner
-    const banner = document.getElementById('ce-listing-banner');
-    if (banner) banner.style.display = '';
+    const wizardContent = document.getElementById('ce-wizard-content');
+    if (wizardContent) wizardContent.style.display = '';
+
     // Update banner content
     const bannerIcon = document.getElementById('ce-banner-icon');
     const bannerLabel = document.getElementById('ce-banner-label');
@@ -818,10 +813,6 @@ function setupCreateModal() {
       if (bannerLabel) bannerLabel.textContent = 'Display & Sell Tickets';
       if (bannerDesc) bannerDesc.textContent = 'Full ticketing with Stripe payments & QR entry';
     }
-
-    // Show all step contents
-    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
-    document.getElementById('ce-step-basic')?.classList.add('active');
 
     // Currency field — only relevant when selling tickets
     const currencyGroup = document.getElementById('ce-currency-group');
@@ -842,6 +833,10 @@ function setupCreateModal() {
     document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active','completed'));
     document.querySelector('[data-ce-tab="basic"]')?.classList.add('active');
 
+    // Ensure basic step is active
+    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('ce-step-basic')?.classList.add('active');
+
     // Update progress
     const progress = document.getElementById('ce-progress-bar');
     const totalSteps = ceListingType === 'display_only' ? 2 : 3;
@@ -851,11 +846,8 @@ function setupCreateModal() {
   // "Change Type" button — go back to chooser
   document.getElementById('ce-listing-change')?.addEventListener('click', () => {
     if (listingChooser) listingChooser.style.display = '';
-    if (tabsWrap) tabsWrap.style.display = 'none';
-    const banner = document.getElementById('ce-listing-banner');
-    if (banner) banner.style.display = 'none';
-    // Hide all steps
-    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+    const wizardContent = document.getElementById('ce-wizard-content');
+    if (wizardContent) wizardContent.style.display = 'none';
   });
 
   // Make listing type accessible to publish handler
@@ -1878,21 +1870,40 @@ async function loadNotifications() {
     const tierEventMap = {};
     tiers.forEach(t => { tierEventMap[t.id] = t.event_id; });
 
+    // Also get tier names for display
+    const { data: tiersWithNames } = await supabase.from('ticket_tiers').select('id, name, event_id').in('event_id', events.map(e => e.id));
+    const tierNameMap = {};
+    (tiersWithNames || []).forEach(t => { tierNameMap[t.id] = t.name; tierEventMap[t.id] = t.event_id; });
+
     const { data: tickets } = await supabase
       .from('tickets')
-      .select('id, attendee_name, tier_name, created_at, ticket_tier_id')
+      .select('*')
       .in('ticket_tier_id', tiers.map(t => t.id))
       .gt('created_at', lastSeen)
       .order('created_at', { ascending: false })
       .limit(20);
 
     if (tickets?.length) {
-      dashNotifications = tickets.map(t => ({
-        icon: '🎫',
-        text: `<strong>${escapeHTML(t.attendee_name || 'Someone')}</strong> purchased a <strong>${escapeHTML(t.tier_name || '')}</strong> ticket for <strong>${escapeHTML(eventMap[tierEventMap[t.ticket_tier_id]] || '')}</strong>`,
-        time: t.created_at,
-        unread: true
-      }));
+      // Try to get attendee names from orders
+      const orderIds = [...new Set(tickets.map(t => t.order_id).filter(Boolean))];
+      let orderMap = {};
+      if (orderIds.length) {
+        try {
+          const { data: orders } = await supabase.from('orders').select('id, guest_name').in('id', orderIds);
+          if (orders) orders.forEach(o => { orderMap[o.id] = o; });
+        } catch (_) {}
+      }
+
+      dashNotifications = tickets.map(t => {
+        const guestName = orderMap[t.order_id]?.guest_name || t.attendee_name || 'Someone';
+        const tierName = tierNameMap[t.ticket_tier_id] || '';
+        return {
+          icon: '🎫',
+          text: `<strong>${escapeHTML(guestName)}</strong> purchased a <strong>${escapeHTML(tierName)}</strong> ticket for <strong>${escapeHTML(eventMap[tierEventMap[t.ticket_tier_id]] || '')}</strong>`,
+          time: t.created_at,
+          unread: true
+        };
+      });
     }
     renderNotifications();
   } catch (_) { /* Notifications are optional */ }
@@ -2067,10 +2078,22 @@ function setupEmailAttendees() {
       if (!tiers?.length) { showToast('No tiers found', 'error'); return; }
       const { data: tickets } = await supabase
         .from('tickets')
-        .select('attendee_email, attendee_name')
+        .select('*')
         .in('ticket_tier_id', tiers.map(t => t.id));
 
-      const emails = [...new Set((tickets || []).filter(t => t.attendee_email).map(t => t.attendee_email))];
+      // Get emails from orders table (where guest emails are stored)
+      const orderIds = [...new Set((tickets || []).map(t => t.order_id).filter(Boolean))];
+      let allEmails = [];
+      // First try attendee_email on tickets (if column exists)
+      (tickets || []).forEach(t => { if (t.attendee_email) allEmails.push(t.attendee_email); });
+      // Also try orders table
+      if (orderIds.length) {
+        try {
+          const { data: orders } = await supabase.from('orders').select('id, guest_email').in('id', orderIds);
+          if (orders) orders.forEach(o => { if (o.guest_email) allEmails.push(o.guest_email); });
+        } catch (_) {}
+      }
+      const emails = [...new Set(allEmails)];
       if (!emails.length) { showToast('No attendee emails found', 'error'); return; }
 
       // Show compose modal

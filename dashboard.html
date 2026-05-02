@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard — Event Waw</title>
   <meta name="description" content="Manage your events, tickets, analytics, and finances — Event Waw Organizer Dashboard." />
-  <link rel="stylesheet" href="css/eveenty-dashboard.css?v=20260502" />
+  <link rel="stylesheet" href="css/eveenty-dashboard.css?v=20260502b" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 </head>
@@ -552,8 +552,11 @@
         </div>
       </div>
 
+      <!-- ═══ WIZARD CONTENT (hidden until listing type chosen) ═══ -->
+      <div id="ce-wizard-content" style="display:none">
+
       <!-- Listing Type Banner (shows while filling form) -->
-      <div class="ce-listing-banner" id="ce-listing-banner" style="display:none">
+      <div class="ce-listing-banner" id="ce-listing-banner">
         <div class="ce-listing-banner-left">
           <span class="ce-listing-banner-icon" id="ce-banner-icon">📢</span>
           <div>
@@ -565,7 +568,7 @@
       </div>
 
       <!-- Wizard Tabs (hidden until listing type chosen) -->
-      <div class="ce-tabs-wrap" id="ce-tabs-wrap" style="display:none">
+      <div class="ce-tabs-wrap" id="ce-tabs-wrap">
         <div class="ce-tabs">
           <button class="ce-tab active" data-ce-tab="basic"><span class="ce-tab-dot"></span> Basic Information</button>
           <button class="ce-tab" data-ce-tab="tickets" id="ce-tab-tickets"><span class="ce-tab-dot"></span> Tickets</button>
@@ -575,7 +578,7 @@
       </div>
 
       <!-- ═══ TAB 1: BASIC INFORMATION ═══ -->
-      <div class="ce-step" id="ce-step-basic">
+      <div class="ce-step active" id="ce-step-basic">
         <div class="ce-step-header">
           <h3>Basic Information</h3>
           <button class="ev-btn ev-btn-primary" id="ce-save-basic" type="button">Save &amp; Continue…</button>
@@ -968,6 +971,7 @@
           </div>
         </div>
       </div>
+      </div><!-- /ce-wizard-content -->
     </div>
 
   </main>

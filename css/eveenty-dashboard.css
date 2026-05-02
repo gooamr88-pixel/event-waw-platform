@@ -440,7 +440,7 @@ body.ev-dash.dark-mode .ev-dark-toggle{background:rgba(99,102,241,.08);border-co
 .ce-info-icon{color:var(--ev-text-muted);cursor:help;font-size:.82rem}
 
 /* ═══ Listing Type Chooser — Premium ═══ */
-.ce-listing-chooser{background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:48px 36px 40px;text-align:center;box-shadow:var(--ev-shadow-md);animation:evFadeIn .4s ease;position:relative;overflow:hidden}
+.ce-listing-chooser{background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:48px 36px 40px;text-align:center;box-shadow:var(--ev-shadow-md);animation:evFadeIn .4s ease;position:relative;overflow:hidden;min-height:calc(100vh - 180px);display:flex;flex-direction:column;justify-content:center}
 .ce-listing-chooser::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563EB,#60A5FA,#93C5FD,#60A5FA,#2563EB);background-size:200% 100%;animation:ceGradientSlide 3s ease infinite}
 @keyframes ceGradientSlide{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .ce-listing-header{margin-bottom:32px}
