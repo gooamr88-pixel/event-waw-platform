@@ -1,10 +1,11 @@
-﻿/* ═══════════════════════════════════
+/* ═══════════════════════════════════
    EVENT WAW — Interactive Seating Chart Engine
    SVG-based renderer with panzoom (3.4KB)
    ═══════════════════════════════════ */
 
 import panzoom from 'https://esm.sh/panzoom@9';
 import { supabase } from './supabase.js';
+import { setSafeHTML } from './dom.js';
 
 // ── Tier color palette (up to 8 tiers, cyclical) ──
 const TIER_COLORS = [
@@ -97,11 +98,11 @@ export class SeatingChart {
   }
 
   _showLoading() {
-    this.container.innerHTML = `
+    setSafeHTML(this.container, `
       <div class="seating-chart-loading">
         <div class="seat-loader"></div>
         <span>Loading venue map…</span>
-      </div>`;
+      </div>`);
   }
 
   _hideLoading() {
@@ -353,7 +354,7 @@ export class SeatingChart {
     }
 
     // Mount
-    this.container.innerHTML = '';
+    this.container.textContent = '';
     this.container.appendChild(svg);
     this.svgEl = svg;
   }
@@ -412,7 +413,7 @@ export class SeatingChart {
   _renderZoomControls() {
     const controls = document.createElement('div');
     controls.className = 'seating-zoom-controls';
-    controls.innerHTML = `
+    setSafeHTML(controls, `
       <button class="zoom-btn" data-action="in" aria-label="Zoom in">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
@@ -422,7 +423,7 @@ export class SeatingChart {
       <button class="zoom-btn" data-action="reset" aria-label="Reset zoom">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3.5 3.5v5h5"/><path d="M3.5 8.5A9 9 0 1 1 5 14"/></svg>
       </button>
-    `;
+    `);
 
     controls.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
@@ -578,12 +579,12 @@ export class SeatingChart {
                         data.status === 'sold' ? 'Sold' :
                         data.status === 'reserved' ? 'Reserved' : 'Unavailable';
 
-    tooltip.innerHTML = `
+    setSafeHTML(tooltip, `
       <div class="seat-tooltip-title">${data.tier_name || 'General'}</div>
       <div class="seat-tooltip-info">Row ${data.row_label} · Seat ${data.seat_number}</div>
       <div class="seat-tooltip-price">$${Number(data.tier_price).toLocaleString()}</div>
       <div class="seat-tooltip-status seat-tooltip-${data.status}">${statusLabel}</div>
-    `;
+    `);
 
     // Position relative to container
     const containerRect = this.container.getBoundingClientRect();

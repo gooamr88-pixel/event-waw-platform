@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════
+/* ═══════════════════════════════════
    EVENT WAW — Venue Designer Engine
    Generates layout_json + bulk-creates seats
    ═══════════════════════════════════ */
@@ -315,6 +315,6 @@ export function renderPreviewSVG(layoutJson, container) {
     }
   }
 
-  container.innerHTML = '';
+  container.textContent = '';
   container.appendChild(svg);
 }

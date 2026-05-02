@@ -6,6 +6,7 @@
    ═══════════════════════════════════ */
 
 import { supabase, getCurrentUser, getCurrentProfile } from './supabase.js';
+import { setSafeHTML } from './dom.js';
 
 /* ── Loading Overlay ── */
 
@@ -19,12 +20,12 @@ function showLoadingOverlay() {
 
   const overlay = document.createElement('div');
   overlay.id = 'auth-guard-overlay';
-  overlay.innerHTML = `
+  setSafeHTML(overlay, `
     <div class="guard-overlay">
       <div class="guard-spinner"></div>
       <p>Verifying access…</p>
     </div>
-  `;
+  `);
   document.body.prepend(overlay);
 }
 
@@ -306,7 +307,7 @@ export async function upgradeToOrganizer() {
 function showUpgradeModal(requiredRole) {
   const modal = document.createElement('div');
   modal.id = 'upgrade-modal';
-  modal.innerHTML = `
+  setSafeHTML(modal, `
     <style>
       #upgrade-modal {
         position: fixed; inset: 0; z-index: 99998;
@@ -386,14 +387,14 @@ function showUpgradeModal(requiredRole) {
       </div>
       <p id="upgrade-status"></p>
     </div>
-  `;
+  `);
   document.body.appendChild(modal);
 
   document.getElementById('upgrade-confirm-btn').addEventListener('click', async () => {
     const btn = document.getElementById('upgrade-confirm-btn');
     const status = document.getElementById('upgrade-status');
     btn.disabled = true;
-    btn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Upgrading…';
+    setSafeHTML(btn, '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Upgrading…');
 
     const success = await upgradeToOrganizer();
     if (success) {
@@ -405,7 +406,7 @@ function showUpgradeModal(requiredRole) {
       status.style.color = '#ef4444';
       status.style.display = 'block';
       btn.disabled = false;
-      btn.innerHTML = 'Upgrade to Organizer';
+      btn.textContent = 'Upgrade to Organizer';
     }
   });
 }

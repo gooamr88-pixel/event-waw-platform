@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════
+/* ═══════════════════════════════════
    EVENT WAW — Venue Designer Engine V2
    Professional Drag & Drop Canvas Editor
    ═══════════════════════════════════ */
@@ -73,7 +73,7 @@ export function renderCanvas(elements, container, state) {
   if (!svg) {
     svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('class', 'vd-canvas');
-    container.innerHTML = '';
+    container.textContent = '';
     container.appendChild(svg);
   }
 
@@ -88,7 +88,7 @@ export function renderCanvas(elements, container, state) {
   let defs = svg.querySelector('defs');
   if (!defs) {
     defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    defs.innerHTML = `
+    defs.insertAdjacentHTML('beforeend', `
       <pattern id="vd-grid" width="40" height="40" patternUnits="userSpaceOnUse">
         <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,.025)" stroke-width="0.5"/>
       </pattern>
@@ -103,7 +103,7 @@ export function renderCanvas(elements, container, state) {
       <linearGradient id="vd-curtain-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8b1a1a"/><stop offset=".3" stop-color="#a52222"/><stop offset=".5" stop-color="#6b1414"/><stop offset=".7" stop-color="#a52222"/><stop offset="1" stop-color="#8b1a1a"/></linearGradient>
       <linearGradient id="vd-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5c3d2e"/><stop offset=".5" stop-color="#6d4c3d"/><stop offset="1" stop-color="#4a3020"/></linearGradient>
       <linearGradient id="vd-metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#888"/><stop offset=".5" stop-color="#666"/><stop offset="1" stop-color="#444"/></linearGradient>
-      <radialGradient id="vd-spot"><stop offset="0" stop-color="rgba(212,175,55,.12)"/><stop offset="1" stop-color="transparent"/></radialGradient>`;
+      <radialGradient id="vd-spot"><stop offset="0" stop-color="rgba(212,175,55,.12)"/><stop offset="1" stop-color="transparent"/></radialGradient>`);
     svg.appendChild(defs);
   }
 

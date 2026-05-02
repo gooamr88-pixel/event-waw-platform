@@ -5,6 +5,7 @@
 
 import { SeatingChart } from './seating-chart.js';
 import { createSeatedCheckout, createGuestSeatedCheckout } from './events.js';
+import { setSafeHTML } from './dom.js';
 
 /**
  * Initialize the seating chart UI on the event-detail page.
@@ -18,7 +19,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
   if (!mountEl) return false;
 
   // Build the shell HTML
-  mountEl.innerHTML = `
+  setSafeHTML(mountEl, `
     <div id="seating-panel" style="display:none;">
       <div class="seating-header">
         <div class="seating-header-title">🗺️ Choose Your <span style="color:var(--accent-primary)">Seats</span></div>
@@ -48,7 +49,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
         </div>
       </div>
     </div>
-  `;
+  `);
 
   const chartContainer = document.getElementById('seating-chart-mount');
   const panel = document.getElementById('seating-panel');
@@ -62,7 +63,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
   const hasMap = await chart.init();
 
   if (!hasMap) {
-    mountEl.innerHTML = '';
+    mountEl.textContent = '';
     return false;
   }
 
@@ -83,7 +84,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
 
     const btn = document.getElementById('checkout-seats-btn');
     btn.disabled = true;
-    btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving…';
+    setSafeHTML(btn, '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving…');
 
     try {
       const tierId = chart.getSelectedTierId();
@@ -103,7 +104,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
       alert(err.message || 'Failed to reserve seats. Please try again.');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = 'Checkout <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+      setSafeHTML(btn, 'Checkout <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>');
     }
   });
 
@@ -121,7 +122,7 @@ function renderLegend(chart) {
   if (!container) return;
 
   const legend = chart.getTierLegend();
-  container.innerHTML = legend.map(t => `
+  setSafeHTML(container, legend.map(t => `
     <div class="seating-legend-item" data-tier-id="${t.tier_id}">
       <span class="seating-legend-dot" style="background:${t.color}"></span>
       <span class="seating-legend-name">${escapeHTML(t.tier_name)}</span>
@@ -133,7 +134,7 @@ function renderLegend(chart) {
       <span style="display:flex;align-items:center;gap:4px;"><span class="seating-legend-dot" style="background:var(--seat-sold);width:8px;height:8px;opacity:.4"></span><span style="font-size:0.7rem;color:var(--text-muted)">Sold</span></span>
       <span style="display:flex;align-items:center;gap:4px;"><span class="seating-legend-dot" style="background:#fff;width:8px;height:8px;border:2px solid var(--accent-primary)"></span><span style="font-size:0.7rem;color:var(--text-muted)">Selected</span></span>
     </div>
-  `;
+  `);
 
   // Click to filter by tier
   let activeTier = null;
@@ -182,7 +183,7 @@ function updateSelectionBar(seats, chart) {
   const total = seats.reduce((sum, s) => sum + Number(s.tier_price), 0);
   const tierName = seats[0]?.tier_name || 'Selected';
 
-  countText.innerHTML = `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''} · ${escapeHTML(tierName)}`;
+  setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''} · ${escapeHTML(tierName)}`);
   totalText.textContent = `$${total.toLocaleString()}`;
 
   // Also update legend availability counts
@@ -198,7 +199,11 @@ function renderLegendCounts(chart) {
 }
 
 function escapeHTML(str) {
-  const el = document.createElement('span');
-  el.textContent = str;
-  return el.innerHTML;
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }

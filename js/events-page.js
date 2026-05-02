@@ -5,6 +5,7 @@ import { getEvents } from '../src/lib/events.js';
 import { escapeHTML } from '../src/lib/utils.js';
 import { detectUserLocation, sortByProximity, formatDistance } from '../src/lib/geo.js';
 import { semiProtectPage, updateNavForAuth, performSignOut } from '../src/lib/guard.js';
+import { setSafeHTML } from '../src/lib/dom.js';
 
 const PER_PAGE = 12;
 let allEvents = [], filtered = [], userLocation = null, currentPage = 1;
@@ -136,7 +137,7 @@ function updateResultsMeta(showing, total) {
   text += ` event${total !== 1 ? 's' : ''}`;
   if (searchQuery.trim()) text += ` for "<strong>${escapeHTML(searchQuery)}</strong>"`;
   if (userLocation && userLocation.city) text += ` near <strong>${escapeHTML(userLocation.city)}</strong>`;
-  el.innerHTML = text;
+  setSafeHTML(el, text);
 }
 
 function renderEvents(events) {
@@ -160,7 +161,7 @@ function renderEvents(events) {
     const card = document.createElement('div');
     card.className = 'ep-event-card';
     card.onclick = () => window.location.href = `event-detail.html?id=${ev.id}`;
-    card.innerHTML = `
+    setSafeHTML(card, `
       <div class="ep-card-image">
         <img src="${escapeHTML(ev.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(ev.title)}" loading="lazy" />
         <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(badge)}</div>
@@ -174,7 +175,7 @@ function renderEvents(events) {
           <div class="ep-card-price">${minPrice > 0 ? '$' + minPrice.toLocaleString() : 'Free'}<small>${prices.length > 1 ? '+' : ''}</small></div>
           <span class="ep-card-cta">View Details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></span>
         </div>
-      </div>`;
+      </div>`);
     grid.appendChild(card);
   });
 }
@@ -184,11 +185,11 @@ function renderPagination(totalPages) {
   if (!el) return;
   if (totalPages <= 1) { el.style.display = 'none'; return; }
   el.style.display = '';
-  el.innerHTML = '';
+  el.textContent = '';
   // Prev
   const prev = document.createElement('button');
   prev.className = 'ep-page-btn'; prev.disabled = currentPage <= 1;
-  prev.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>';
+  setSafeHTML(prev, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>');
   prev.onclick = () => { currentPage--; applyAndRender(); window.scrollTo({ top: 400, behavior: 'smooth' }); };
   el.appendChild(prev);
   // Pages
@@ -206,7 +207,7 @@ function renderPagination(totalPages) {
   // Next
   const next = document.createElement('button');
   next.className = 'ep-page-btn'; next.disabled = currentPage >= totalPages;
-  next.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>';
+  setSafeHTML(next, '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>');
   next.onclick = () => { currentPage++; applyAndRender(); window.scrollTo({ top: 400, behavior: 'smooth' }); };
   el.appendChild(next);
 }
