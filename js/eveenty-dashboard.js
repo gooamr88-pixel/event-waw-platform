@@ -688,6 +688,20 @@ async function loadEventForEditing(eventId) {
 }
 
 function resetCreateEventForm() {
+  // Reset listing type chooser
+  const listingChooser = document.getElementById('ce-listing-chooser');
+  const tabsWrap = document.getElementById('ce-tabs-wrap');
+  if (listingChooser) listingChooser.style.display = '';
+  if (tabsWrap) tabsWrap.style.display = 'none';
+  document.querySelectorAll('input[name="ce-listing-type"]').forEach(r => r.checked = false);
+  const continueBtn = document.getElementById('ce-listing-continue');
+  if (continueBtn) continueBtn.disabled = true;
+  // Reset tickets tab visibility
+  const ticketsTab = document.getElementById('ce-tab-tickets');
+  const ticketsStep = document.getElementById('ce-step-tickets');
+  if (ticketsTab) ticketsTab.style.display = '';
+  if (ticketsStep) ticketsStep.style.display = '';
+
   // Reset text/select inputs
   ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day'].forEach(id => {
     const el = document.getElementById(id);
@@ -759,12 +773,69 @@ function setupCreateModal() {
   // Back to home
   document.getElementById('ce-back-home')?.addEventListener('click', (e) => { e.preventDefault(); switchToPanel('events'); });
 
+  // ── Listing Type Chooser ──
+  let ceListingType = null; // 'display_only' or 'display_and_sell'
+
+  const listingRadios = document.querySelectorAll('input[name="ce-listing-type"]');
+  const listingContinueBtn = document.getElementById('ce-listing-continue');
+  const listingChooser = document.getElementById('ce-listing-chooser');
+  const tabsWrap = document.getElementById('ce-tabs-wrap');
+  const ticketsTab = document.getElementById('ce-tab-tickets');
+  const ticketsStep = document.getElementById('ce-step-tickets');
+
+  listingRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      ceListingType = radio.value;
+      if (listingContinueBtn) listingContinueBtn.disabled = false;
+    });
+  });
+
+  listingContinueBtn?.addEventListener('click', () => {
+    if (!ceListingType) return;
+    // Hide chooser, show wizard
+    if (listingChooser) listingChooser.style.display = 'none';
+    if (tabsWrap) tabsWrap.style.display = '';
+
+    // Show all step contents
+    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('ce-step-basic')?.classList.add('active');
+
+    if (ceListingType === 'display_only') {
+      // Hide tickets tab & step
+      if (ticketsTab) ticketsTab.style.display = 'none';
+      if (ticketsStep) ticketsStep.style.display = 'none';
+    } else {
+      // Show tickets tab & step
+      if (ticketsTab) ticketsTab.style.display = '';
+      if (ticketsStep) ticketsStep.style.display = '';
+    }
+
+    // Reset tabs
+    document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active','completed'));
+    document.querySelector('[data-ce-tab="basic"]')?.classList.add('active');
+
+    // Update progress
+    const progress = document.getElementById('ce-progress-bar');
+    const totalSteps = ceListingType === 'display_only' ? 2 : 3;
+    if (progress) progress.style.width = `${(1 / totalSteps) * 100}%`;
+  });
+
+  // Make listing type accessible to publish handler
+  window.__ceListingType = () => ceListingType;
+
   // ── Tab switching ──
   const tabs = document.querySelectorAll('[data-ce-tab]');
   const steps = { basic: 'ce-step-basic', tickets: 'ce-step-tickets', publishing: 'ce-step-publishing' };
-  const tabOrder = ['basic', 'tickets', 'publishing'];
+
+  function getTabOrder() {
+    return ceListingType === 'display_only' ? ['basic', 'publishing'] : ['basic', 'tickets', 'publishing'];
+  }
 
   function switchCeTab(tabName) {
+    const tabOrder = getTabOrder();
+    // Skip tickets tab if display_only
+    if (ceListingType === 'display_only' && tabName === 'tickets') return;
+
     tabs.forEach(t => t.classList.remove('active'));
     Object.values(steps).forEach(id => document.getElementById(id)?.classList.remove('active'));
     const tab = document.querySelector(`[data-ce-tab="${tabName}"]`);
@@ -790,7 +861,8 @@ function setupCreateModal() {
   document.getElementById('ce-save-basic')?.addEventListener('click', () => {
     const name = document.getElementById('ce-name')?.value.trim();
     if (!name || name.length < 3) { showToast('Event name must be at least 3 characters', 'error'); return; }
-    switchCeTab('tickets');
+    // If display_only, skip to publishing; otherwise go to tickets
+    switchCeTab(ceListingType === 'display_only' ? 'publishing' : 'tickets');
   });
   document.getElementById('ce-save-tickets')?.addEventListener('click', () => switchCeTab('publishing'));
 
@@ -1001,8 +1073,9 @@ function setupCreateModal() {
     const endDate = document.getElementById('ce-end-date')?.value;
     if (!endDate) markError('ce-end-date', 'End date is required');
 
-    // Tab 2: Tickets
-    if (ceTicketsList.length === 0) {
+    // Tab 2: Tickets (skip validation for display_only)
+    const listingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : 'display_and_sell';
+    if (listingType !== 'display_only' && ceTicketsList.length === 0) {
       errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });
       showToast('⚠️ You must add at least one ticket before publishing', 'error');
     }
@@ -1053,6 +1126,9 @@ function setupCreateModal() {
       // Collect show_end_time radio
       const showEndTime = document.querySelector('input[name="ce-show-end"]:checked')?.value !== 'no';
 
+      // Get listing type
+      const listingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : 'display_and_sell';
+
       // Core event data (columns that always exist)
       const coreData = {
         organizer_id: user.id,
@@ -1067,6 +1143,7 @@ function setupCreateModal() {
 
       // Extra event data (new columns — may not exist yet)
       const extraData = {
+        listing_type: listingType,
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
         latitude: parseFloat(document.getElementById('ce-latitude')?.value) || null,
         country: country || null,

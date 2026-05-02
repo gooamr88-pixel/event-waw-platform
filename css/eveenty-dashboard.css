@@ -439,6 +439,31 @@ body.ev-dash.dark-mode .ev-dark-toggle{background:rgba(99,102,241,.08);border-co
 .ce-req{color:#2563EB;font-weight:700}
 .ce-info-icon{color:var(--ev-text-muted);cursor:help;font-size:.82rem}
 
+/* ═══ Listing Type Chooser ═══ */
+.ce-listing-chooser{background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:40px 32px;text-align:center;box-shadow:var(--ev-shadow);animation:evFadeIn .35s ease}
+.ce-listing-header{margin-bottom:28px}
+.ce-listing-icon{font-size:2.2rem;margin-bottom:10px}
+.ce-listing-header h3{font-size:1.3rem;font-weight:800;color:var(--ev-text);margin-bottom:6px}
+.ce-listing-header p{font-size:.88rem;color:var(--ev-text-sec)}
+.ce-listing-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:700px;margin:0 auto 28px}
+.ce-listing-card{cursor:pointer;position:relative}
+.ce-listing-card input[type="radio"]{position:absolute;opacity:0;pointer-events:none}
+.ce-listing-card-inner{border:2px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:28px 22px;transition:all .25s ease;background:var(--ev-bg);text-align:left;height:100%;display:flex;flex-direction:column;gap:14px}
+.ce-listing-card-inner:hover{border-color:rgba(37,99,235,.4);background:rgba(37,99,235,.02);transform:translateY(-2px);box-shadow:0 4px 16px rgba(37,99,235,.08)}
+.ce-listing-card input:checked ~ .ce-listing-card-inner{border-color:#2563EB;background:rgba(37,99,235,.04);box-shadow:0 0 0 3px rgba(37,99,235,.12),0 4px 16px rgba(37,99,235,.08)}
+.ce-listing-card-icon{font-size:2rem;line-height:1}
+.ce-listing-card-content strong{display:block;font-size:1rem;font-weight:700;color:var(--ev-text);margin-bottom:4px}
+.ce-listing-card-content span{font-size:.82rem;color:var(--ev-text-sec);line-height:1.5}
+.ce-listing-card-features{display:flex;flex-direction:column;gap:6px;margin-top:4px;padding-top:12px;border-top:1px solid var(--ev-border)}
+.ce-listing-feature{font-size:.78rem;font-weight:600;color:var(--ev-success);display:flex;align-items:center;gap:6px}
+.ce-listing-feature.dim{color:var(--ev-text-muted);opacity:.6}
+.ce-listing-action{display:flex;justify-content:center}
+.ce-listing-action .ev-btn{min-width:200px;justify-content:center;font-size:.92rem;padding:12px 28px;border-radius:12px}
+.ce-listing-action .ev-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+@media(max-width:640px){
+  .ce-listing-options{grid-template-columns:1fr}
+}
+
 /* ═══ Wizard Tabs ═══ */
 .ce-tabs-wrap{margin-bottom:24px}
 .ce-tabs{display:flex;gap:0;border-bottom:none;margin-bottom:0;position:relative}
