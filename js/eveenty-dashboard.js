@@ -688,11 +688,7 @@ async function loadEventForEditing(eventId) {
 }
 
 function resetCreateEventForm() {
-  // Reset listing type chooser
-  const listingChooser = document.getElementById('ce-listing-chooser');
-  const tabsWrap = document.getElementById('ce-tabs-wrap');
-  if (listingChooser) listingChooser.style.display = '';
-  if (tabsWrap) tabsWrap.style.display = 'none';
+  // Reset listing type chooser (in its own panel now)
   document.querySelectorAll('input[name="ce-listing-type"]').forEach(r => r.checked = false);
   const continueBtn = document.getElementById('ce-listing-continue');
   if (continueBtn) continueBtn.disabled = true;
@@ -767,22 +763,26 @@ function resetCreateEventForm() {
 }
 
 function setupCreateModal() {
-  // Open create event panel instead of modal
-  const openPanel = () => { resetCreateEventForm(); switchToPanel('create-event'); };
+  // Open listing type chooser panel (not create-event directly)
+  const openPanel = () => { resetCreateEventForm(); switchToPanel('listing-type'); };
 
   document.getElementById('header-create-event')?.addEventListener('click', (e) => { e.preventDefault(); openPanel(); });
   document.getElementById('welcome-create-btn')?.addEventListener('click', openPanel);
 
-  // Back to home
+  // Back to home from listing type chooser
+  document.getElementById('lt-back-home')?.addEventListener('click', (e) => { e.preventDefault(); switchToPanel('events'); });
+
+  // Back to home from create event form
   document.getElementById('ce-back-home')?.addEventListener('click', (e) => { e.preventDefault(); switchToPanel('events'); });
+
+  // Back to listing type chooser from create event form
+  document.getElementById('ce-back-listing')?.addEventListener('click', (e) => { e.preventDefault(); switchToPanel('listing-type'); });
 
   // ── Listing Type Chooser ──
   let ceListingType = null; // 'display_only' or 'display_and_sell'
 
   const listingRadios = document.querySelectorAll('input[name="ce-listing-type"]');
   const listingContinueBtn = document.getElementById('ce-listing-continue');
-  const listingChooser = document.getElementById('ce-listing-chooser');
-  const tabsWrap = document.getElementById('ce-tabs-wrap');
   const ticketsTab = document.getElementById('ce-tab-tickets');
   const ticketsStep = document.getElementById('ce-step-tickets');
 
@@ -795,13 +795,6 @@ function setupCreateModal() {
 
   listingContinueBtn?.addEventListener('click', () => {
     if (!ceListingType) return;
-    // Hide chooser, show wizard
-    if (listingChooser) listingChooser.style.display = 'none';
-    if (tabsWrap) tabsWrap.style.display = '';
-
-    // Show all step contents
-    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
-    document.getElementById('ce-step-basic')?.classList.add('active');
 
     // Currency field — only relevant when selling tickets
     const currencyGroup = document.getElementById('ce-currency-group');
@@ -818,6 +811,10 @@ function setupCreateModal() {
       if (currencyGroup) currencyGroup.style.display = '';
     }
 
+    // Set up the form steps
+    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+    document.getElementById('ce-step-basic')?.classList.add('active');
+
     // Reset tabs
     document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active','completed'));
     document.querySelector('[data-ce-tab="basic"]')?.classList.add('active');
@@ -826,6 +823,9 @@ function setupCreateModal() {
     const progress = document.getElementById('ce-progress-bar');
     const totalSteps = ceListingType === 'display_only' ? 2 : 3;
     if (progress) progress.style.width = `${(1 / totalSteps) * 100}%`;
+
+    // Switch to the create event panel
+    switchToPanel('create-event');
   });
 
   // Make listing type accessible to publish handler

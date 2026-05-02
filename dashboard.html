@@ -485,11 +485,10 @@
       </div>
     </div>
 
-    <!-- ════ PANEL: CREATE EVENT ════ -->
-    <div class="ev-panel" id="panel-create-event">
-      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="ce-back-home">Home</a> <span>/</span> <strong>Create Event</strong></div>
+    <!-- ════ PANEL: LISTING TYPE CHOOSER ════ -->
+    <div class="ev-panel" id="panel-listing-type">
+      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="lt-back-home">Home</a> <span>/</span> <strong>Create Event</strong></div>
 
-      <!-- ═══ LISTING TYPE CHOOSER ═══ -->
       <div class="ce-listing-chooser" id="ce-listing-chooser">
         <div class="ce-listing-header">
           <div class="ce-listing-icon">🎯</div>
@@ -507,7 +506,7 @@
               </div>
               <div class="ce-listing-card-features">
                 <div class="ce-listing-feature">✓ Event listing page</div>
-                <div class="ce-listing-feature">✓ Search & discovery</div>
+                <div class="ce-listing-feature">✓ Search &amp; discovery</div>
                 <div class="ce-listing-feature">✓ Social sharing</div>
                 <div class="ce-listing-feature dim">✗ No ticket sales</div>
               </div>
@@ -518,7 +517,7 @@
             <div class="ce-listing-card-inner">
               <div class="ce-listing-card-icon">🎫</div>
               <div class="ce-listing-card-content">
-                <strong>Display & Sell Tickets</strong>
+                <strong>Display &amp; Sell Tickets</strong>
                 <span>List your event and sell tickets directly through Event Waw with secure Stripe payments and QR code entry.</span>
               </div>
               <div class="ce-listing-card-features">
@@ -534,9 +533,14 @@
           <button class="ev-btn ev-btn-primary" id="ce-listing-continue" disabled>Continue →</button>
         </div>
       </div>
+    </div>
 
-      <!-- Wizard Tabs (hidden until listing type chosen) -->
-      <div class="ce-tabs-wrap" id="ce-tabs-wrap" style="display:none">
+    <!-- ════ PANEL: CREATE EVENT ════ -->
+    <div class="ev-panel" id="panel-create-event">
+      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="ce-back-listing">← Back</a> <span>/</span> <a href="#" class="ev-link" id="ce-back-home">Home</a> <span>/</span> <strong id="ce-breadcrumb-title">Create Event</strong></div>
+
+      <!-- Wizard Tabs -->
+      <div class="ce-tabs-wrap" id="ce-tabs-wrap">
         <div class="ce-tabs">
           <button class="ce-tab active" data-ce-tab="basic"><span class="ce-tab-dot"></span> Basic Information</button>
           <button class="ce-tab" data-ce-tab="tickets" id="ce-tab-tickets"><span class="ce-tab-dot"></span> Tickets</button>
