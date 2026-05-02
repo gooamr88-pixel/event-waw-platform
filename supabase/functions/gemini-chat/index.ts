@@ -41,16 +41,30 @@ RULES:
 6. Never make up event names, prices, or dates. Say "check the Events page" instead.
 7. Do NOT generate code, essays, or long content.`;
 
+// List of Gemini model endpoints to try (fallback chain)
+const GEMINI_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-flash-latest',
+];
+
 serve(async (req) => {
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
 
   if (!GEMINI_API_KEY) {
-    return errorResponse(500, 'Chat service not configured', {}, req);
+    console.error('GEMINI_API_KEY is not set. Run: supabase secrets set GEMINI_API_KEY=your_key_here');
+    return errorResponse(500, 'Chat service not configured — API key missing', {}, req);
   }
 
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (_parseErr) {
+      return errorResponse(400, 'Invalid JSON body', {}, req);
+    }
+
     const { message, history = [] } = body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
@@ -75,53 +89,84 @@ serve(async (req) => {
     for (const msg of recentHistory) {
       contents.push({
         role: msg.role === 'user' ? 'user' : 'model',
-        parts: [{ text: msg.text }],
+        parts: [{ text: msg.text || '' }],
       });
     }
 
     // Add current user message
     contents.push({ role: 'user', parts: [{ text: message.trim() }] });
 
-    // Call Gemini API
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-    const geminiResp = await fetch(geminiUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        contents,
-        generationConfig: {
-          temperature: 0.7,
-          topP: 0.9,
-          maxOutputTokens: 300,
-        },
-        safetySettings: [
-          { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-          { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-          { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-          { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        ],
-      }),
+    const requestBody = JSON.stringify({
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.9,
+        maxOutputTokens: 300,
+      },
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+      ],
     });
 
-    if (!geminiResp.ok) {
-      const errData = await geminiResp.text();
-      console.error('Gemini API error:', geminiResp.status, errData);
-      return errorResponse(502, 'Chat service temporarily unavailable', {}, req);
+    // Try each model in the fallback chain
+    let lastError = '';
+    for (const model of GEMINI_MODELS) {
+      try {
+        const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+
+        const geminiResp = await fetch(geminiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: requestBody,
+        });
+
+        if (!geminiResp.ok) {
+          const errData = await geminiResp.text();
+          console.error(`Gemini API error (${model}):`, geminiResp.status, errData);
+          lastError = `${model}: ${geminiResp.status}`;
+
+          // If it's an auth error (invalid API key), don't try other models
+          if (geminiResp.status === 400 || geminiResp.status === 401 || geminiResp.status === 403) {
+            return errorResponse(502, 'Chat service authentication failed — check API key', { detail: `status ${geminiResp.status}` }, req);
+          }
+
+          // For 404 (model not found) or 429 (quota), try next model
+          continue;
+        }
+
+        const geminiData = await geminiResp.json();
+        const reply = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!reply) {
+          // Check if the response was blocked by safety filters
+          const blockReason = geminiData?.candidates?.[0]?.finishReason;
+          if (blockReason === 'SAFETY') {
+            return jsonResponse({ reply: "I can only help with Event Waw topics — events, tickets, and our platform. Let me know how I can assist!" }, 200, req);
+          }
+          console.error(`No reply text from ${model}:`, JSON.stringify(geminiData));
+          lastError = `${model}: empty response`;
+          continue;
+        }
+
+        return jsonResponse({ reply: reply.trim() }, 200, req);
+
+      } catch (fetchErr) {
+        console.error(`Fetch error for ${model}:`, fetchErr);
+        lastError = `${model}: ${fetchErr.message}`;
+        continue;
+      }
     }
 
-    const geminiData = await geminiResp.json();
-    const reply = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!reply) {
-      return errorResponse(502, 'No response from chat service', {}, req);
-    }
-
-    return jsonResponse({ reply: reply.trim() }, 200, req);
+    // All models failed
+    console.error('All Gemini models failed. Last error:', lastError);
+    return errorResponse(502, 'Chat service temporarily unavailable', { detail: lastError }, req);
 
   } catch (err) {
     console.error('Gemini chat error:', err);
-    return errorResponse(500, 'Internal error', {}, req);
+    return errorResponse(500, 'Internal error', { detail: err.message }, req);
   }
 });

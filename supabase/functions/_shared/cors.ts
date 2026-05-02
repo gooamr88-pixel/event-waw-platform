@@ -12,6 +12,12 @@ const ALLOWED_ORIGINS = [
   'https://event-waw-platform.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
+  'http://localhost:8080',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:8080',
+  'http://127.0.0.1:5500',  // VS Code Live Server
+  'http://localhost:5500',
 ];
 
 // Also check env var for any additional origin
@@ -21,13 +27,27 @@ if (envOrigin && !ALLOWED_ORIGINS.includes(envOrigin)) {
 }
 
 /**
+ * Check if an origin is allowed (supports Vercel preview URLs and null origin).
+ */
+function isAllowedOrigin(origin: string): boolean {
+  if (!origin || origin === 'null') return true; // file:// protocol sends 'null'
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  // Allow any Vercel preview deployment
+  if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
+
+/**
  * Get CORS headers for a specific request, matching the Origin dynamically.
  */
 function getCorsHeaders(req?: Request): Record<string, string> {
   const origin = req?.headers?.get('Origin') || '';
-  const matched = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  // For null origin (file://), use wildcard; otherwise match the actual origin
+  const allowOrigin = (!origin || origin === 'null')
+    ? '*'
+    : isAllowedOrigin(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
-    'Access-Control-Allow-Origin': matched,
+    'Access-Control-Allow-Origin': allowOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   };

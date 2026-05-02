@@ -458,20 +458,68 @@
       });
     }
 
-    async function askGemini(text) {
-      try {
-        var resp = await fetch(GEMINI_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, history: chatHistory.slice(-10) }),
-        });
-        if (!resp.ok) throw new Error('API error');
-        var data = await resp.json();
-        return data.reply || null;
-      } catch (e) {
-        console.warn('Gemini chat error:', e);
-        return null;
+    async function askGemini(text, retries) {
+      retries = retries || 2;
+      for (var attempt = 0; attempt < retries; attempt++) {
+        try {
+          var controller = new AbortController();
+          var timeout = setTimeout(function() { controller.abort(); }, 15000);
+          var resp = await fetch(GEMINI_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, history: chatHistory.slice(-10) }),
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
+          if (resp.ok) {
+            var data = await resp.json();
+            return { reply: data.reply || null, error: null };
+          }
+          // Parse error details from response
+          var errBody = {};
+          try { errBody = await resp.json(); } catch(_) {}
+          var errMsg = errBody.error || 'Unknown error';
+          // Don't retry auth/config errors
+          if (resp.status === 400 || resp.status === 401 || resp.status === 403 || resp.status === 500) {
+            return { reply: null, error: errMsg, status: resp.status };
+          }
+          // Retry on 429, 502, 503, 504
+          if (attempt < retries - 1) {
+            await new Promise(function(r) { setTimeout(r, 1000 * (attempt + 1)); });
+            continue;
+          }
+          return { reply: null, error: errMsg, status: resp.status };
+        } catch (e) {
+          clearTimeout(timeout);
+          console.warn('Gemini chat error (attempt ' + (attempt+1) + '):', e);
+          if (e.name === 'AbortError') {
+            if (attempt < retries - 1) continue;
+            return { reply: null, error: 'timeout' };
+          }
+          if (attempt < retries - 1) {
+            await new Promise(function(r) { setTimeout(r, 1000); });
+            continue;
+          }
+          return { reply: null, error: 'network' };
+        }
       }
+      return { reply: null, error: 'network' };
+    }
+
+    function getErrorMessage(result) {
+      if (result.error === 'timeout') {
+        return "The response is taking too long. Please try again or reach us on WhatsApp at <a href='https://wa.me/16196666620' target='_blank'><b>+1 (619) 666-6620</b></a>.";
+      }
+      if (result.error === 'network') {
+        return "I can't reach the server right now. Check your internet connection, or contact us on WhatsApp at <a href='https://wa.me/16196666620' target='_blank'><b>+1 (619) 666-6620</b></a>.";
+      }
+      if (result.status === 429) {
+        return "You're sending messages too quickly! Please wait a moment and try again. 😊";
+      }
+      if (result.status === 500 && result.error && result.error.includes('API key')) {
+        return "Our chat service is being configured. In the meantime, try the quick questions below or reach us on WhatsApp at <a href='https://wa.me/16196666620' target='_blank'><b>+1 (619) 666-6620</b></a>.";
+      }
+      return "I'm having trouble connecting right now. Try one of the quick questions below, or reach us on WhatsApp at <a href='https://wa.me/16196666620' target='_blank'><b>+1 (619) 666-6620</b></a>.";
     }
 
     async function handleUserInput() {
@@ -497,16 +545,16 @@
         return;
       }
 
-      // 2. Call Gemini API
+      // 2. Call Gemini API with retry
       var typing = showTyping();
-      var reply = await askGemini(text);
+      var result = await askGemini(text);
       typing.remove();
 
-      if (reply) {
-        addMessage(reply, 'bot', true);
-        chatHistory.push({ role: 'model', text: reply });
+      if (result.reply) {
+        addMessage(result.reply, 'bot', true);
+        chatHistory.push({ role: 'model', text: result.reply });
       } else {
-        addMessage("I'm having trouble connecting right now. Try one of the quick questions below, or reach us on WhatsApp at <a href='https://wa.me/16196666620' target='_blank'><b>+1 (619) 666-6620</b></a>.", 'bot', true);
+        addMessage(getErrorMessage(result), 'bot', true);
       }
       isSending = false; sendBtn.disabled = false;
       setTimeout(addQuickReplies, 400);
