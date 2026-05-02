@@ -646,6 +646,20 @@ body.ev-dash.dark-mode .ce-listing-banner{background:rgba(37,99,235,.08);border-
   .ce-social-row{grid-template-columns:1fr}
   .ce-social-del{width:100%}
 }
+/* ═══ GOOGLE PLACES SEARCH & MAP ═══ */
+.ce-google-search-wrap{position:relative;display:flex;align-items:center}
+.ce-google-search-icon{position:absolute;left:14px;color:var(--ev-text-muted);display:flex;align-items:center;pointer-events:none}
+.ce-google-input{padding-left:42px;padding-right:90px}
+.ce-google-badge{position:absolute;right:14px;display:flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;color:var(--ev-text-muted);pointer-events:none;opacity:.8}
+.ce-map-container{border:1px solid var(--ev-border);border-radius:12px;overflow:hidden;background:var(--ev-bg);box-shadow:var(--ev-shadow)}
+.ce-map-preview{height:200px;width:100%;background:var(--ev-border-lt)}
+.ce-map-address-bar{padding:12px 16px;background:var(--ev-white);display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--ev-border)}
+.ce-map-address-info{display:flex;align-items:center;gap:10px;min-width:0}
+.ce-map-address-info div{display:flex;flex-direction:column;min-width:0}
+.ce-map-address-info strong{font-size:.82rem;font-weight:700;color:var(--ev-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ce-map-address-info span{font-size:.72rem;color:var(--ev-text-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ce-map-open-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(37,99,235,.08);color:#2563EB;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;transition:all .2s;flex-shrink:0}
+.ce-map-open-btn:hover{background:rgba(37,99,235,.15);transform:translateY(-1px)}
 
 /* ── Form Validation Errors ── */
 .ce-error-border{
