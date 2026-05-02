@@ -679,6 +679,40 @@ async function loadEventForEditing(eventId) {
       renderCeTicketsTable();
     }
 
+    // Skip chooser — go directly to form for editing
+    const listingChooser = document.getElementById('ce-listing-chooser');
+    const wizardContent = document.getElementById('ce-wizard-content');
+    if (listingChooser) listingChooser.style.display = 'none';
+    if (wizardContent) wizardContent.style.display = 'block';
+
+    // Determine listing type from DB data
+    const editListingType = ev.listing_type || (ev.ticket_tiers?.length ? 'display_and_sell' : 'display_only');
+    window.__ceListingType = () => editListingType;
+
+    // Configure form based on listing type
+    const bannerIcon = document.getElementById('ce-banner-icon');
+    const bannerLabel = document.getElementById('ce-banner-label');
+    const bannerDesc = document.getElementById('ce-banner-desc');
+    const ticketsTab = document.getElementById('ce-tab-tickets');
+    const ticketsStep = document.getElementById('ce-step-tickets');
+    const currencyGroup = document.getElementById('ce-currency-group');
+
+    if (editListingType === 'display_only') {
+      if (bannerIcon) bannerIcon.textContent = '📢';
+      if (bannerLabel) bannerLabel.textContent = 'Display Only';
+      if (bannerDesc) bannerDesc.textContent = 'Event showcase — no ticket sales';
+      if (ticketsTab) ticketsTab.style.display = 'none';
+      if (ticketsStep) ticketsStep.style.display = 'none';
+      if (currencyGroup) currencyGroup.style.display = 'none';
+    } else {
+      if (bannerIcon) bannerIcon.textContent = '🎫';
+      if (bannerLabel) bannerLabel.textContent = 'Display & Sell Tickets';
+      if (bannerDesc) bannerDesc.textContent = 'Full ticketing with Stripe payments & QR entry';
+      if (ticketsTab) ticketsTab.style.display = '';
+      if (ticketsStep) ticketsStep.style.display = '';
+      if (currencyGroup) currencyGroup.style.display = '';
+    }
+
     // Switch to the panel
     switchToPanel('create-event');
     showToast('Event loaded for editing', 'info');
@@ -798,7 +832,7 @@ function setupCreateModal() {
     // Hide chooser, show entire wizard content
     if (listingChooser) listingChooser.style.display = 'none';
     const wizardContent = document.getElementById('ce-wizard-content');
-    if (wizardContent) wizardContent.style.display = '';
+    if (wizardContent) wizardContent.style.display = 'block';
 
     // Update banner content
     const bannerIcon = document.getElementById('ce-banner-icon');
