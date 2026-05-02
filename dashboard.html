@@ -485,62 +485,87 @@
       </div>
     </div>
 
-    <!-- ════ PANEL: LISTING TYPE CHOOSER ════ -->
-    <div class="ev-panel" id="panel-listing-type">
-      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="lt-back-home">Home</a> <span>/</span> <strong>Create Event</strong></div>
+    <!-- ════ PANEL: CREATE EVENT ════ -->
+    <div class="ev-panel" id="panel-create-event">
+      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="ce-back-home">Home</a> <span>/</span> <strong>Create Event</strong></div>
 
+      <!-- ═══ LISTING TYPE CHOOSER ═══ -->
       <div class="ce-listing-chooser" id="ce-listing-chooser">
         <div class="ce-listing-header">
-          <div class="ce-listing-icon">🎯</div>
-          <h3>What would you like to do?</h3>
-          <p>Choose how your event will appear on Event Waw</p>
+          <div class="ce-listing-badge-wrap"><span class="ce-listing-step-badge">Step 1</span></div>
+          <h3>How would you like to list your event?</h3>
+          <p>This determines what features and forms you'll see. Choose wisely — it affects your event's experience on Event Waw.</p>
         </div>
         <div class="ce-listing-options">
           <label class="ce-listing-card" id="ce-listing-display">
             <input type="radio" name="ce-listing-type" value="display_only" />
             <div class="ce-listing-card-inner">
-              <div class="ce-listing-card-icon">📢</div>
+              <div class="ce-listing-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="ce-listing-card-top">
+                <div class="ce-listing-card-icon-wrap display"><span>📢</span></div>
+                <div class="ce-listing-card-label">FREE</div>
+              </div>
               <div class="ce-listing-card-content">
                 <strong>Display Only</strong>
-                <span>Showcase your event on our platform for visibility. Attendees can view event details but won't purchase tickets here.</span>
+                <span>Showcase your event for maximum visibility. Attendees will see all details but won't buy tickets through us.</span>
               </div>
               <div class="ce-listing-card-features">
-                <div class="ce-listing-feature">✓ Event listing page</div>
-                <div class="ce-listing-feature">✓ Search &amp; discovery</div>
-                <div class="ce-listing-feature">✓ Social sharing</div>
-                <div class="ce-listing-feature dim">✗ No ticket sales</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Event listing page</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Search &amp; discovery</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Social sharing</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Analytics dashboard</div>
+                <div class="ce-listing-feature no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No ticket sales</div>
+                <div class="ce-listing-feature no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> No payment processing</div>
               </div>
+              <div class="ce-listing-card-footer">Best for awareness &amp; promotion</div>
             </div>
           </label>
           <label class="ce-listing-card" id="ce-listing-sell">
             <input type="radio" name="ce-listing-type" value="display_and_sell" />
             <div class="ce-listing-card-inner">
-              <div class="ce-listing-card-icon">🎫</div>
+              <div class="ce-listing-card-check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
+              <div class="ce-listing-card-top">
+                <div class="ce-listing-card-icon-wrap sell"><span>🎫</span></div>
+                <div class="ce-listing-card-label popular">★ POPULAR</div>
+              </div>
               <div class="ce-listing-card-content">
                 <strong>Display &amp; Sell Tickets</strong>
-                <span>List your event and sell tickets directly through Event Waw with secure Stripe payments and QR code entry.</span>
+                <span>Full-featured listing with integrated ticket sales, Stripe payments, attendee management, and QR code entry.</span>
               </div>
               <div class="ce-listing-card-features">
-                <div class="ce-listing-feature">✓ Event listing page</div>
-                <div class="ce-listing-feature">✓ Ticket management</div>
-                <div class="ce-listing-feature">✓ Secure payments</div>
-                <div class="ce-listing-feature">✓ QR code tickets</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Event listing page</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Ticket management</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Secure Stripe payments</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> QR code tickets</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Revenue analytics</div>
+                <div class="ce-listing-feature ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Attendee check-in scanner</div>
               </div>
+              <div class="ce-listing-card-footer">Best for monetized events</div>
             </div>
           </label>
         </div>
         <div class="ce-listing-action">
-          <button class="ev-btn ev-btn-primary" id="ce-listing-continue" disabled>Continue →</button>
+          <button class="ev-btn ev-btn-primary ce-listing-continue-btn" id="ce-listing-continue" disabled>
+            <span>Continue to Event Details</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+          </button>
         </div>
       </div>
-    </div>
 
-    <!-- ════ PANEL: CREATE EVENT ════ -->
-    <div class="ev-panel" id="panel-create-event">
-      <div class="ev-breadcrumb"><a href="#" class="ev-link" id="ce-back-listing">← Back</a> <span>/</span> <a href="#" class="ev-link" id="ce-back-home">Home</a> <span>/</span> <strong id="ce-breadcrumb-title">Create Event</strong></div>
+      <!-- Listing Type Banner (shows while filling form) -->
+      <div class="ce-listing-banner" id="ce-listing-banner" style="display:none">
+        <div class="ce-listing-banner-left">
+          <span class="ce-listing-banner-icon" id="ce-banner-icon">📢</span>
+          <div>
+            <strong id="ce-banner-label">Display Only</strong>
+            <span id="ce-banner-desc">Event showcase — no ticket sales</span>
+          </div>
+        </div>
+        <button class="ce-listing-change-btn" id="ce-listing-change">← Change Type</button>
+      </div>
 
-      <!-- Wizard Tabs -->
-      <div class="ce-tabs-wrap" id="ce-tabs-wrap">
+      <!-- Wizard Tabs (hidden until listing type chosen) -->
+      <div class="ce-tabs-wrap" id="ce-tabs-wrap" style="display:none">
         <div class="ce-tabs">
           <button class="ce-tab active" data-ce-tab="basic"><span class="ce-tab-dot"></span> Basic Information</button>
           <button class="ce-tab" data-ce-tab="tickets" id="ce-tab-tickets"><span class="ce-tab-dot"></span> Tickets</button>

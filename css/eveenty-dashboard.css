@@ -439,30 +439,82 @@ body.ev-dash.dark-mode .ev-dark-toggle{background:rgba(99,102,241,.08);border-co
 .ce-req{color:#2563EB;font-weight:700}
 .ce-info-icon{color:var(--ev-text-muted);cursor:help;font-size:.82rem}
 
-/* ═══ Listing Type Chooser ═══ */
-.ce-listing-chooser{background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:40px 32px;text-align:center;box-shadow:var(--ev-shadow);animation:evFadeIn .35s ease}
-.ce-listing-header{margin-bottom:28px}
-.ce-listing-icon{font-size:2.2rem;margin-bottom:10px}
-.ce-listing-header h3{font-size:1.3rem;font-weight:800;color:var(--ev-text);margin-bottom:6px}
-.ce-listing-header p{font-size:.88rem;color:var(--ev-text-sec)}
-.ce-listing-options{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:700px;margin:0 auto 28px}
+/* ═══ Listing Type Chooser — Premium ═══ */
+.ce-listing-chooser{background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:48px 36px 40px;text-align:center;box-shadow:var(--ev-shadow-md);animation:evFadeIn .4s ease;position:relative;overflow:hidden}
+.ce-listing-chooser::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#2563EB,#60A5FA,#93C5FD,#60A5FA,#2563EB);background-size:200% 100%;animation:ceGradientSlide 3s ease infinite}
+@keyframes ceGradientSlide{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.ce-listing-header{margin-bottom:32px}
+.ce-listing-badge-wrap{margin-bottom:14px}
+.ce-listing-step-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:50px;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#2563EB;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.15)}
+.ce-listing-header h3{font-size:1.4rem;font-weight:800;color:var(--ev-text);margin-bottom:8px;letter-spacing:-.02em}
+.ce-listing-header p{font-size:.88rem;color:var(--ev-text-sec);max-width:520px;margin:0 auto;line-height:1.6}
+
+/* Options Grid */
+.ce-listing-options{display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:760px;margin:0 auto 32px}
 .ce-listing-card{cursor:pointer;position:relative}
 .ce-listing-card input[type="radio"]{position:absolute;opacity:0;pointer-events:none}
-.ce-listing-card-inner{border:2px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:28px 22px;transition:all .25s ease;background:var(--ev-bg);text-align:left;height:100%;display:flex;flex-direction:column;gap:14px}
-.ce-listing-card-inner:hover{border-color:rgba(37,99,235,.4);background:rgba(37,99,235,.02);transform:translateY(-2px);box-shadow:0 4px 16px rgba(37,99,235,.08)}
-.ce-listing-card input:checked ~ .ce-listing-card-inner{border-color:#2563EB;background:rgba(37,99,235,.04);box-shadow:0 0 0 3px rgba(37,99,235,.12),0 4px 16px rgba(37,99,235,.08)}
-.ce-listing-card-icon{font-size:2rem;line-height:1}
-.ce-listing-card-content strong{display:block;font-size:1rem;font-weight:700;color:var(--ev-text);margin-bottom:4px}
-.ce-listing-card-content span{font-size:.82rem;color:var(--ev-text-sec);line-height:1.5}
-.ce-listing-card-features{display:flex;flex-direction:column;gap:6px;margin-top:4px;padding-top:12px;border-top:1px solid var(--ev-border)}
-.ce-listing-feature{font-size:.78rem;font-weight:600;color:var(--ev-success);display:flex;align-items:center;gap:6px}
-.ce-listing-feature.dim{color:var(--ev-text-muted);opacity:.6}
+
+/* Card Inner */
+.ce-listing-card-inner{border:2px solid var(--ev-border);border-radius:var(--ev-radius-lg);padding:28px 24px 20px;transition:all .3s cubic-bezier(.4,0,.2,1);background:var(--ev-bg);text-align:left;height:100%;display:flex;flex-direction:column;gap:16px;position:relative}
+.ce-listing-card-inner:hover{border-color:rgba(37,99,235,.35);transform:translateY(-4px);box-shadow:0 8px 30px rgba(37,99,235,.1)}
+
+/* Selected State */
+.ce-listing-card input:checked ~ .ce-listing-card-inner{border-color:#2563EB;background:rgba(37,99,235,.03);box-shadow:0 0 0 3px rgba(37,99,235,.1),0 8px 30px rgba(37,99,235,.12)}
+
+/* Check Circle */
+.ce-listing-card-check{position:absolute;top:16px;right:16px;width:28px;height:28px;border-radius:50%;border:2px solid var(--ev-border);background:var(--ev-white);display:flex;align-items:center;justify-content:center;transition:all .25s;opacity:.4}
+.ce-listing-card-check svg{width:14px;height:14px;opacity:0;transition:opacity .2s}
+.ce-listing-card input:checked ~ .ce-listing-card-inner .ce-listing-card-check{border-color:#2563EB;background:#2563EB;opacity:1}
+.ce-listing-card input:checked ~ .ce-listing-card-inner .ce-listing-card-check svg{opacity:1;color:#fff}
+
+/* Card Top — Icon + Label */
+.ce-listing-card-top{display:flex;align-items:center;gap:12px}
+.ce-listing-card-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0}
+.ce-listing-card-icon-wrap.display{background:linear-gradient(135deg,rgba(37,99,235,.08),rgba(37,99,235,.15))}
+.ce-listing-card-icon-wrap.sell{background:linear-gradient(135deg,rgba(37,99,235,.1),rgba(29,78,216,.2))}
+.ce-listing-card-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:3px 10px;border-radius:6px;color:var(--ev-text-sec);background:var(--ev-border-lt);border:1px solid var(--ev-border)}
+.ce-listing-card-label.popular{color:#fff;background:linear-gradient(135deg,#2563EB,#1D4ED8);border-color:transparent;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+
+/* Card Content */
+.ce-listing-card-content strong{display:block;font-size:1.05rem;font-weight:700;color:var(--ev-text);margin-bottom:6px}
+.ce-listing-card-content span{font-size:.82rem;color:var(--ev-text-sec);line-height:1.55}
+
+/* Features List */
+.ce-listing-card-features{display:flex;flex-direction:column;gap:7px;padding-top:14px;border-top:1px solid var(--ev-border)}
+.ce-listing-feature{font-size:.78rem;font-weight:500;display:flex;align-items:center;gap:8px}
+.ce-listing-feature svg{flex-shrink:0}
+.ce-listing-feature.ok{color:var(--ev-success)}
+.ce-listing-feature.no{color:var(--ev-text-muted);opacity:.55}
+
+/* Footer */
+.ce-listing-card-footer{margin-top:auto;padding-top:12px;border-top:1px dashed var(--ev-border);font-size:.72rem;font-weight:600;color:var(--ev-text-muted);text-transform:uppercase;letter-spacing:.5px;text-align:center}
+
+/* Continue Button */
 .ce-listing-action{display:flex;justify-content:center}
-.ce-listing-action .ev-btn{min-width:200px;justify-content:center;font-size:.92rem;padding:12px 28px;border-radius:12px}
-.ce-listing-action .ev-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.ce-listing-continue-btn{min-width:240px;justify-content:center;font-size:.92rem;padding:14px 32px;border-radius:12px;gap:10px}
+.ce-listing-continue-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ═══ Listing Banner (persists while filling form) ═══ */
+.ce-listing-banner{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);border-radius:var(--ev-radius);margin-bottom:18px;animation:evFadeIn .3s ease}
+.ce-listing-banner-left{display:flex;align-items:center;gap:12px}
+.ce-listing-banner-icon{font-size:1.3rem}
+.ce-listing-banner-left strong{display:block;font-size:.84rem;font-weight:700;color:var(--ev-text)}
+.ce-listing-banner-left span{font-size:.74rem;color:var(--ev-text-sec)}
+.ce-listing-change-btn{background:none;border:1px solid var(--ev-border);border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:600;color:var(--ev-text-sec);cursor:pointer;transition:all .2s;font-family:inherit}
+.ce-listing-change-btn:hover{border-color:#2563EB;color:#2563EB;background:rgba(37,99,235,.04)}
+
 @media(max-width:640px){
   .ce-listing-options{grid-template-columns:1fr}
+  .ce-listing-chooser{padding:28px 18px 24px}
+  .ce-listing-banner{flex-direction:column;gap:10px;text-align:center}
+  .ce-listing-banner-left{flex-direction:column;gap:6px}
 }
+
+/* Dark mode */
+body.ev-dash.dark-mode .ce-listing-chooser{background:var(--ev-white);border-color:var(--ev-border)}
+body.ev-dash.dark-mode .ce-listing-card-inner{background:var(--ev-bg);border-color:var(--ev-border)}
+body.ev-dash.dark-mode .ce-listing-card input:checked ~ .ce-listing-card-inner{background:rgba(37,99,235,.06);border-color:#2563EB}
+body.ev-dash.dark-mode .ce-listing-banner{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.2)}
 
 /* ═══ Wizard Tabs ═══ */
 .ce-tabs-wrap{margin-bottom:24px}
