@@ -701,6 +701,9 @@ function resetCreateEventForm() {
   const ticketsStep = document.getElementById('ce-step-tickets');
   if (ticketsTab) ticketsTab.style.display = '';
   if (ticketsStep) ticketsStep.style.display = '';
+  // Reset currency group visibility
+  const currencyGroup = document.getElementById('ce-currency-group');
+  if (currencyGroup) currencyGroup.style.display = '';
 
   // Reset text/select inputs
   ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day'].forEach(id => {
@@ -800,14 +803,19 @@ function setupCreateModal() {
     document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
     document.getElementById('ce-step-basic')?.classList.add('active');
 
+    // Currency field — only relevant when selling tickets
+    const currencyGroup = document.getElementById('ce-currency-group');
+
     if (ceListingType === 'display_only') {
-      // Hide tickets tab & step
+      // Hide tickets tab, step, and currency
       if (ticketsTab) ticketsTab.style.display = 'none';
       if (ticketsStep) ticketsStep.style.display = 'none';
+      if (currencyGroup) currencyGroup.style.display = 'none';
     } else {
-      // Show tickets tab & step
+      // Show tickets tab, step, and currency
       if (ticketsTab) ticketsTab.style.display = '';
       if (ticketsStep) ticketsStep.style.display = '';
+      if (currencyGroup) currencyGroup.style.display = '';
     }
 
     // Reset tabs
