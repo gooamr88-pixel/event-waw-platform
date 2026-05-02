@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    EVENT WAW — Auth Pages (Login / Register)
    Matches the landing page design system exactly.
    Blue brand: #2563EB · DM Sans · Premium feel
@@ -76,94 +76,120 @@ body.eveenty-auth {
 
 /* Cards Container */
 .ev-cards-area {
-  position: relative;
-  width: 380px;
-  height: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 380px;
 }
 
 /* Info Cards */
 .ev-card {
-  position: absolute;
-  border-radius: 16px;
-  padding: 22px 24px;
+  position: relative;
+  border-radius: 14px;
+  padding: 20px 22px;
   color: #fff;
-  z-index: 1;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  overflow: hidden;
+}
+.ev-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+.ev-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: 14px 0 0 14px;
 }
 .ev-card h3 {
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-weight: 700;
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ev-card h3 .ev-card-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  flex-shrink: 0;
 }
 .ev-card ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 .ev-card ul li {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 400;
-  margin-bottom: 5px;
+  margin-bottom: 6px;
   display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  line-height: 1.4;
+  align-items: center;
+  gap: 8px;
+  line-height: 1.45;
 }
+.ev-card ul li:last-child { margin-bottom: 0; }
 .ev-card ul li::before {
-  content: '•';
+  content: '✓';
+  font-size: 0.7rem;
   font-weight: 700;
   flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Organizers Card — Deep Navy Blue */
 .ev-card--hosts {
   background: linear-gradient(135deg, #1E3A8A, #172554);
-  top: 0;
-  left: 0;
-  width: 200px;
-  z-index: 2;
+}
+.ev-card--hosts::before { background: #60A5FA; }
+.ev-card--hosts h3 .ev-card-icon { background: rgba(96,165,250,0.2); }
+.ev-card--hosts ul li::before {
+  background: rgba(96,165,250,0.15);
+  color: #93C5FD;
 }
 
 /* Attendees Card — Bright Sky Blue */
 .ev-card--exhibitors {
-  background: linear-gradient(135deg, #93C5FD, #60A5FA);
-  color: #1a1a2e;
-  top: 100px;
-  left: 140px;
-  width: 230px;
-  z-index: 3;
+  background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+  color: #1e3a5f;
 }
+.ev-card--exhibitors::before { background: #2563EB; }
 .ev-card--exhibitors h3 { color: #1a1a2e; }
+.ev-card--exhibitors h3 .ev-card-icon { background: rgba(37,99,235,0.12); }
 .ev-card--exhibitors ul li { color: #1e3a5f; }
-.ev-card--exhibitors ul li::before { color: #1a1a2e; }
+.ev-card--exhibitors ul li::before {
+  background: rgba(37,99,235,0.1);
+  color: #2563EB;
+}
 
 /* Partners Card — Rich Blue */
 .ev-card--sponsors {
   background: linear-gradient(135deg, #2563EB, #1D4ED8);
-  top: 190px;
-  left: 0;
-  width: 280px;
-  z-index: 2;
+}
+.ev-card--sponsors::before { background: #93C5FD; }
+.ev-card--sponsors h3 .ev-card-icon { background: rgba(255,255,255,0.15); }
+.ev-card--sponsors ul li::before {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
 }
 
-/* Circle decoration */
+/* Circle decoration — hidden in new layout */
 .ev-circle-deco {
-  position: absolute;
-  width: 220px;
-  height: 220px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(200,200,200,0.25), rgba(180,180,180,0.1));
-  top: 120px;
-  right: 10px;
-  z-index: 1;
-}
-.ev-circle-deco::after {
-  content: 'W';
-  position: absolute;
-  bottom: 30px;
-  right: 45px;
-  font-size: 2.8rem;
-  font-weight: 800;
-  color: rgba(150,150,150,0.2);
-  font-family: 'DM Sans', sans-serif;
+  display: none;
 }
 
 /* ═══ RIGHT PANEL — Form ═══ */
@@ -577,7 +603,7 @@ body.eveenty-auth {
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 1024px) {
   .ev-auth-left { flex: 0 0 380px; padding: 30px 30px 30px 40px; }
-  .ev-cards-area { width: 320px; height: 310px; transform: scale(0.9); }
+  .ev-cards-area { max-width: 320px; }
   .ev-auth-right { padding: 30px 40px; }
 }
 
