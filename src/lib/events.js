@@ -356,14 +356,23 @@ export async function deleteEvent(eventId) {
       }
     } catch (_) { /* storage cleanup is best-effort */ }
 
-    // 7. Delete the event itself
-    const { error: deleteErr } = await supabase
+    // 7. Delete the event itself — use .select() to verify rows were actually removed
+    const { data: deleted, error: deleteErr } = await supabase
       .from('events')
       .delete()
-      .eq('id', eventId);
+      .eq('id', eventId)
+      .select('id');
 
     if (deleteErr) {
       return { success: false, error: deleteErr.message };
+    }
+
+    // RLS can silently block the delete: 0 rows removed, no error
+    if (!deleted || deleted.length === 0) {
+      return {
+        success: false,
+        error: 'Deletion was blocked — you may not have permission to delete this event, or its status prevents deletion.',
+      };
     }
 
     return { success: true };

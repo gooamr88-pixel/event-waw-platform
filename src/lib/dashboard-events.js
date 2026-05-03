@@ -174,15 +174,19 @@ export function showDeleteConfirmModal(eventId, eventTitle) {
     btn.textContent = 'Deleting...';
     try {
       const result = await deleteEvent(eventId);
-      close();
       if (result.success) {
+        close();
         showToast('Event deleted successfully', 'success');
         if (window.loadDashboard) await window.loadDashboard();
       } else {
-        showToast(result.error || 'Delete failed', 'error');
+        // Keep modal open so user sees the problem
+        btn.disabled = false;
+        btn.textContent = 'Delete Event';
+        showToast(result.error || 'Delete failed — please try again', 'error');
       }
     } catch (err) {
-      close();
+      btn.disabled = false;
+      btn.textContent = 'Delete Event';
       showToast('Delete failed: ' + err.message, 'error');
     }
   });
