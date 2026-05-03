@@ -25,62 +25,30 @@ const DANGEROUS_TAGS = 'script, iframe, object, embed';
  * children of <body>.
  */
 export function safeHTML(htmlString) {
-  const trimmed = htmlString.trimStart();
+  // <template> safely parses all structural tags (<tr>, <thead>, <td>, <option>) without wrappers
+  // and keeps contents strictly inert (preventing execution) until explicitly added to the DOM.
+  const template = document.createElement('template');
+  template.innerHTML = htmlString;
+  const fragment = document.createDocumentFragment();
+  fragment.appendChild(template.content.cloneNode(true));
 
-  // Detect table-fragment HTML that DOMParser would discard
-  const isTableFragment = /^<(tr|td|th)[\s>]/i.test(trimmed);
-  const isOptionFragment = /^<option[\s>]/i.test(trimmed);
+  // 1. Strip dangerous execution tags
+  const DANGEROUS_TAGS = 'script, iframe, object, embed';
+  fragment.querySelectorAll(DANGEROUS_TAGS).forEach(el => el.remove());
 
-  let wrapped = htmlString;
-  if (isTableFragment) {
-    wrapped = `<table><tbody>${htmlString}</tbody></table>`;
-  } else if (isOptionFragment) {
-    wrapped = `<select>${htmlString}</select>`;
-  }
-
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(wrapped, 'text/html');
-
-  // 1. Strip dangerous tags
-  doc.querySelectorAll(DANGEROUS_TAGS).forEach(el => el.remove());
-
-  // 2. Strip ONLY dangerous attributes — everything else is preserved
-  doc.querySelectorAll('*').forEach(el => {
+  // 2. Strip dangerous attributes, preserve all others (class, style, id, colspan, src, alt, etc.)
+  fragment.querySelectorAll('*').forEach(el => {
     for (let i = el.attributes.length - 1; i >= 0; i--) {
       const attr = el.attributes[i];
       const name = attr.name.toLowerCase();
       const value = attr.value.trim().toLowerCase();
 
-      // Remove event-handler attributes (onclick, onerror, onload …)
-      if (name.startsWith('on')) {
+      // Remove event handlers and javascript URIs
+      if (name.startsWith('on') || value.startsWith('javascript:')) {
         el.removeAttribute(attr.name);
-        continue;
-      }
-
-      // Remove javascript: protocol in any attribute value
-      if (value.startsWith('javascript:')) {
-        el.removeAttribute(attr.name);
-        continue;
       }
     }
   });
-
-  // 3. Build a DocumentFragment from the correct source nodes
-  const fragment = document.createDocumentFragment();
-
-  if (isTableFragment) {
-    const tbody = doc.querySelector('tbody');
-    if (tbody) {
-      Array.from(tbody.childNodes).forEach(node => fragment.appendChild(node));
-    }
-  } else if (isOptionFragment) {
-    const select = doc.querySelector('select');
-    if (select) {
-      Array.from(select.childNodes).forEach(node => fragment.appendChild(node));
-    }
-  } else {
-    Array.from(doc.body.childNodes).forEach(node => fragment.appendChild(node));
-  }
 
   return fragment;
 }

@@ -61,8 +61,9 @@ export function setupCreateModal() {
   if (timezoneSelect) {
     try {
       const timezones = Intl.supportedValuesOf('timeZone');
-      timezoneSelect.innerHTML = '<option value="">Select Time Zone</option>' +
+      const optionsHTML = '<option value="">Select Time Zone</option>' +
         timezones.map(tz => `<option value="${tz}">${tz.replace(/_/g, ' ')}</option>`).join('');
+      setSafeHTML(timezoneSelect, optionsHTML);
     } catch (e) {
       console.warn('Intl.supportedValuesOf not supported, timezone select fallback to default.');
     }
