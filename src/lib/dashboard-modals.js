@@ -40,6 +40,34 @@ export function setupCreateModal() {
   // Open create event panel instead of modal
   const openPanel = () => { resetCreateEventForm(); switchToPanel('create-event'); };
 
+  // ── Dynamically Populate Categories ──
+  const EVENT_CATEGORIES = [
+    'Music & Concerts', 'Technology & Innovation', 'Business & Professional',
+    'Sports & Fitness', 'Education & Learning', 'Arts & Culture',
+    'Food & Drink', 'Health & Wellness', 'Community & Culture',
+    'Family & Kids', 'Fashion & Beauty', 'Film & Media',
+    'Hobbies & Special Interest', 'Travel & Outdoor', 'Charity & Causes',
+    'Spirituality & Religion', 'Science & Tech', 'Auto, Boat & Air',
+    'Government & Politics', 'Other'
+  ];
+  const categorySelect = document.getElementById('ce-category');
+  if (categorySelect) {
+    categorySelect.innerHTML = '<option value="">Select Category</option>' +
+      EVENT_CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+  }
+
+  // ── Dynamically Populate Time Zones ──
+  const timezoneSelect = document.getElementById('ce-timezone');
+  if (timezoneSelect) {
+    try {
+      const timezones = Intl.supportedValuesOf('timeZone');
+      timezoneSelect.innerHTML = '<option value="">Select Time Zone</option>' +
+        timezones.map(tz => `<option value="${tz}">${tz.replace(/_/g, ' ')}</option>`).join('');
+    } catch (e) {
+      console.warn('Intl.supportedValuesOf not supported, timezone select fallback to default.');
+    }
+  }
+
   document.getElementById('header-create-event')?.addEventListener('click', (e) => { e.preventDefault(); openPanel(); });
   document.getElementById('welcome-create-btn')?.addEventListener('click', openPanel);
 
