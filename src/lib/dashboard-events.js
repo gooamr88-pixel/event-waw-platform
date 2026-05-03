@@ -92,14 +92,7 @@ export async function handleTableAction(e) {
     const title = delBtn.dataset.title;
     const sold = Number(delBtn.dataset.sold || 0);
     if (sold > 0) { showToast(`Cannot delete "${title}": ${sold} ticket(s) already sold`, 'error'); return; }
-    if (confirm(`Delete "${title}"? This cannot be undone.`)) {
-      const result = await deleteEvent(id);
-      if (result.success) { 
-        showToast('Event deleted', 'success'); 
-        if (window.loadDashboard) await window.loadDashboard(); 
-      }
-      else { showToast(result.error || 'Delete failed', 'error'); }
-    }
+    showDeleteConfirmModal(id, title);
   }
 }
 
@@ -133,6 +126,66 @@ export async function duplicateEvent(eventId) {
   } catch (err) {
     showToast('Duplicate failed: ' + err.message, 'error');
   }
+}
+
+/**
+ * Professional delete confirmation modal - replaces native confirm().
+ */
+export function showDeleteConfirmModal(eventId, eventTitle) {
+  // Remove any previous instance
+  document.getElementById('ev-delete-confirm-modal')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'ev-delete-confirm-modal';
+  overlay.className = 'ev-modal-overlay active';
+  overlay.style.cssText = 'z-index:10000';
+
+  setSafeHTML(overlay, `
+    <div class="ev-modal" style="max-width:420px;text-align:center;padding:32px 28px">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#ef4444" stroke-width="2">
+          <path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+        </svg>
+      </div>
+      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--ev-text)">Delete Event</h3>
+      <p style="font-size:.88rem;color:var(--ev-text-sec);margin-bottom:6px;line-height:1.5">
+        Are you sure you want to delete <strong style="color:var(--ev-text)">${escapeHTML(eventTitle)}</strong>?
+      </p>
+      <p style="font-size:.78rem;color:#ef4444;margin-bottom:24px">This action is permanent and cannot be undone.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="ev-btn ev-btn-outline" id="ev-del-cancel" style="flex:1;max-width:160px;padding:11px">Cancel</button>
+        <button class="ev-btn" id="ev-del-confirm" style="flex:1;max-width:160px;padding:11px;background:#ef4444;color:#fff;border:none;font-weight:600">Delete Event</button>
+      </div>
+    </div>
+  `);
+
+  document.body.appendChild(overlay);
+
+  // Close handlers
+  const close = () => overlay.remove();
+  overlay.querySelector('#ev-del-cancel').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  // Confirm handler
+  overlay.querySelector('#ev-del-confirm').addEventListener('click', async () => {
+    const btn = overlay.querySelector('#ev-del-confirm');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+    try {
+      const result = await deleteEvent(eventId);
+      close();
+      if (result.success) {
+        showToast('Event deleted successfully', 'success');
+        if (window.loadDashboard) await window.loadDashboard();
+      } else {
+        showToast(result.error || 'Delete failed', 'error');
+      }
+    } catch (err) {
+      close();
+      showToast('Delete failed: ' + err.message, 'error');
+    }
+  });
 }
 
 export function populateEventSelects(events) {

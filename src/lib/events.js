@@ -279,43 +279,38 @@ export async function getVenueMap(eventId) {
  * @returns {{ success: boolean, error?: string }}
  */
 export async function deleteEvent(eventId) {
-  // 1. Check for existing tickets - BLOCK deletion if any exist
-  const { count: ticketCount, error: countErr } = await supabase
-    .from('tickets')
-    .select('id', { count: 'exact', head: true })
-    .in('ticket_tier_id', 
-      supabase.from('ticket_tiers').select('id').eq('event_id', eventId)
-    );
+  // 1. Fetch tier IDs for this event (two-step; subquery in .in() is NOT supported by supabase-js v2)
+  const { data: tiers, error: tiersErr } = await supabase
+    .from('ticket_tiers')
+    .select('id')
+    .eq('event_id', eventId);
 
-  // If the subquery approach fails, fall back to a two-step check
-  if (countErr) {
-    const { data: tiers } = await supabase
-      .from('ticket_tiers')
-      .select('id')
-      .eq('event_id', eventId);
-
-    if (tiers && tiers.length > 0) {
-      const tierIds = tiers.map(t => t.id);
-      const { count } = await supabase
-        .from('tickets')
-        .select('id', { count: 'exact', head: true })
-        .in('ticket_tier_id', tierIds);
-
-      if (count && count > 0) {
-        return {
-          success: false,
-          error: `Cannot delete: ${count} ticket(s) have been issued for this event. Cancel all tickets first.`,
-        };
-      }
-    }
-  } else if (ticketCount && ticketCount > 0) {
-    return {
-      success: false,
-      error: `Cannot delete: ${ticketCount} ticket(s) have been issued for this event. Cancel all tickets first.`,
-    };
+  if (tiersErr) {
+    return { success: false, error: 'Failed to look up ticket tiers: ' + tiersErr.message };
   }
 
-  // 2. Delete venue map + seats (seats FK-cascade from venue_maps)
+  const tierIds = (tiers || []).map(t => t.id);
+
+  // 2. Check for existing tickets — BLOCK deletion if any exist
+  if (tierIds.length > 0) {
+    const { count, error: countErr } = await supabase
+      .from('tickets')
+      .select('id', { count: 'exact', head: true })
+      .in('ticket_tier_id', tierIds);
+
+    if (countErr) {
+      return { success: false, error: 'Failed to check tickets: ' + countErr.message };
+    }
+
+    if (count && count > 0) {
+      return {
+        success: false,
+        error: `Cannot delete: ${count} ticket(s) have been issued for this event. Cancel all tickets first.`,
+      };
+    }
+  }
+
+  // 3. Delete venue map + seats (seats FK-cascade from venue_maps)
   const { data: venueMap } = await supabase
     .from('venue_maps')
     .select('id')
@@ -327,13 +322,18 @@ export async function deleteEvent(eventId) {
     await supabase.from('venue_maps').delete().eq('id', venueMap.id);
   }
 
-  // 3. Delete expired/active reservations
+  // 4. Delete expired/active reservations
   await supabase.from('reservations').delete().eq('event_id', eventId);
 
-  // 4. Delete ticket tiers
+  // 5. Delete event images (if table exists)
+  try {
+    await supabase.from('event_images').delete().eq('event_id', eventId);
+  } catch (_) { /* table may not exist */ }
+
+  // 6. Delete ticket tiers
   await supabase.from('ticket_tiers').delete().eq('event_id', eventId);
 
-  // 5. Delete the event itself
+  // 7. Delete the event itself
   const { error: deleteErr } = await supabase
     .from('events')
     .delete()

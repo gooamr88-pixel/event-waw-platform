@@ -528,13 +528,19 @@ export function setupCreateModal() {
         if (logoUrl) await supabase.from('events').update({ logo_url: logoUrl }).eq('id', event.id);
       }
 
-      // Upload gallery images
-      const galleryInputs = document.querySelectorAll('#ce-gallery-grid input[type="file"]');
+      // Upload gallery images (merge with existing URLs)
+      const galleryItems = document.querySelectorAll('#ce-gallery-grid .ce-gallery-item');
       const galleryUrls = [];
-      for (let i = 0; i < galleryInputs.length; i++) {
-        if (galleryInputs[i].files?.[0]) {
-          const url = await uploadEventFile(event.id, galleryInputs[i].files[0], `gallery_${i}`);
+      for (let i = 0; i < galleryItems.length; i++) {
+        const item = galleryItems[i];
+        const fileInput = item.querySelector('input[type="file"]');
+        if (fileInput?.files?.[0]) {
+          // New file uploaded — upload it
+          const url = await uploadEventFile(event.id, fileInput.files[0], `gallery_${i}`);
           if (url) galleryUrls.push(url);
+        } else if (item.dataset.existingUrl) {
+          // Existing URL from edit mode — preserve it
+          galleryUrls.push(item.dataset.existingUrl);
         }
       }
       if (galleryUrls.length) await supabase.from('events').update({ gallery_urls: galleryUrls }).eq('id', event.id);
@@ -745,6 +751,51 @@ export async function loadEventForEditing(eventId) {
         currency: t.currency || 'USD',
       }));
       renderCeTicketsTable();
+    }
+
+    // ── Populate cover image preview ──
+    if (ev.cover_url) {
+      const mainArea = document.getElementById('ce-main-photo-area');
+      if (mainArea) {
+        let img = mainArea.querySelector('img');
+        if (!img) { img = document.createElement('img'); mainArea.appendChild(img); }
+        img.src = ev.cover_url;
+        mainArea.classList.add('has-image');
+      }
+    }
+
+    // ── Populate logo image preview ──
+    if (ev.logo_url) {
+      const logoArea = document.getElementById('ce-logo-area');
+      if (logoArea) {
+        let img = logoArea.querySelector('img');
+        if (!img) { img = document.createElement('img'); logoArea.appendChild(img); }
+        img.src = ev.logo_url;
+        logoArea.classList.add('has-image');
+      }
+    }
+
+    // ── Populate gallery images (Issue #5) ──
+    if (ev.gallery_urls && Array.isArray(ev.gallery_urls) && ev.gallery_urls.length) {
+      const galleryGrid = document.getElementById('ce-gallery-grid');
+      if (galleryGrid) {
+        galleryGrid.textContent = '';
+        ev.gallery_urls.forEach((url, i) => {
+          const item = document.createElement('div');
+          item.className = 'ce-gallery-item';
+          item.dataset.existingUrl = url;
+          setSafeHTML(item, `<label>Photo ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(url)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
+          galleryGrid.appendChild(item);
+          const fileInput = item.querySelector('input[type="file"]');
+          const area = item.querySelector('.ce-upload-area');
+          fileInput.addEventListener('change', (e) => {
+            handleCeFileUpload(e, area);
+            // Clear existing URL since user chose new file
+            delete item.dataset.existingUrl;
+          });
+        });
+        ceGalleryCount = ev.gallery_urls.length;
+      }
     }
 
     // Skip chooser — go directly to form for editing

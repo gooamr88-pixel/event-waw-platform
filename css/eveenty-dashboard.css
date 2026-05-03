@@ -539,8 +539,8 @@ body.ev-dash.dark-mode .ce-listing-banner{background:rgba(37,99,235,.08);border-
 
 /* ═══ Step Sections ═══ */
 .ce-step{display:none;animation:evFadeIn .35s ease}
-.ce-step.active{display:block}
-.ce-step-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding:18px 24px;background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg)}
+.ce-step.active{display:flex;flex-direction:column}
+.ce-step-header{display:flex;justify-content:space-between;align-items:center;padding:18px 24px;background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius-lg);order:99;margin-top:24px}
 .ce-step-header h3{font-size:1.05rem;font-weight:700}
 
 /* ═══ Two Column Layout ═══ */
