@@ -856,28 +856,39 @@ export async function initGooglePlacesAutocomplete() {
 
   // Guard: wait for Google Maps API to load
   if (typeof google === 'undefined' || !google.maps || !google.maps.importLibrary) {
-    // Retry after API has had more time to load
     setTimeout(() => initGooglePlacesAutocomplete(), 500);
     return;
   }
 
   try {
-    const { Autocomplete } = await google.maps.importLibrary('places');
-    const { Map } = await google.maps.importLibrary('maps');
-    const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
+    const { PlaceAutocompleteElement } = await google.maps.importLibrary('places');
 
-    const searchInput = document.getElementById('ce-google-search');
-    if (!searchInput) return;
+    const searchWrap = document.querySelector('.ce-google-search-wrap');
+    if (!searchWrap) return;
 
-    const autocomplete = new Autocomplete(searchInput, {
+    // Remove the old static input + decorations — PlaceAutocompleteElement owns the input
+    const oldInput = document.getElementById('ce-google-search');
+    if (oldInput) oldInput.remove();
+    searchWrap.querySelector('.ce-google-search-icon')?.remove();
+    searchWrap.querySelector('.ce-google-badge')?.remove();
+
+    // Create modern PlaceAutocompleteElement
+    const autocompleteEl = new PlaceAutocompleteElement({
       types: ['establishment', 'geocode'],
-      fields: ['name', 'formatted_address', 'geometry', 'address_components', 'place_id', 'website', 'utc_offset_minutes', 'types'],
     });
+    autocompleteEl.id = 'ce-google-search';
+    autocompleteEl.setAttribute('placeholder', 'Search for a venue, address, or place...');
+    searchWrap.appendChild(autocompleteEl);
 
-    autocomplete.addListener('place_changed', () => {
-      const place = autocomplete.getPlace();
-      if (!place.geometry) {
-        showToast('No details available for this place', 'error');
+    // Listen for modern gmp-placeselect event
+    autocompleteEl.addEventListener('gmp-placeselect', async ({ place }) => {
+      try {
+        await place.fetchFields({
+          fields: ['displayName', 'formattedAddress', 'location', 'addressComponents', 'websiteURI', 'types'],
+        });
+      } catch (fetchErr) {
+        console.warn('fetchFields failed:', fetchErr);
+        showToast('Could not load place details', 'error');
         return;
       }
 
@@ -890,50 +901,54 @@ export async function initGooglePlacesAutocomplete() {
         if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
       };
 
-      // Venue name
-      if (place.name) setField('ce-place', place.name);
+      // Venue name (new API: displayName)
+      const venueName = place.displayName || '';
+      if (venueName) setField('ce-place', venueName);
 
-      // Full address
-      if (place.formatted_address) setField('ce-address', place.formatted_address);
+      // Full address (new API: formattedAddress)
+      const fullAddress = place.formattedAddress || '';
+      if (fullAddress) setField('ce-address', fullAddress);
 
-      // Parse address components
-      let city = '', countryCode = '', countryName = '';
-      if (place.address_components) {
-        for (const comp of place.address_components) {
-          if (comp.types.includes('locality')) city = comp.long_name;
-          if (comp.types.includes('administrative_area_level_1') && !city) city = comp.long_name;
+      // Parse address components (new API: longText / shortText)
+      let city = '', countryCode = '';
+      if (place.addressComponents) {
+        for (const comp of place.addressComponents) {
+          if (comp.types.includes('locality')) city = comp.longText;
+          if (comp.types.includes('administrative_area_level_1') && !city) city = comp.longText;
           if (comp.types.includes('country')) {
-            countryCode = comp.short_name;
-            countryName = comp.long_name;
+            countryCode = comp.shortText;
           }
         }
       }
 
-      // City
       if (city) setField('ce-city', city);
 
-      // Country
       const selectCode = ISO_TO_SELECT[countryCode] || 'OTHER';
       setSelect('ce-country', selectCode);
 
-      // Latitude & Longitude
-      const lat = place.geometry.location.lat();
-      const lng = place.geometry.location.lng();
-      setField('ce-latitude', lat.toFixed(6));
-      setField('ce-longitude', lng.toFixed(6));
+      // Latitude & Longitude (new API: place.location is a LatLng)
+      if (place.location) {
+        const lat = place.location.lat();
+        const lng = place.location.lng();
+        setField('ce-latitude', lat.toFixed(6));
+        setField('ce-longitude', lng.toFixed(6));
 
-      // Timezone (auto-detect from country)
+        // ── Show Map Preview ──
+        showGoogleMapPreview(lat, lng, venueName, fullAddress);
+      }
+
+      // Timezone
       const tz = COUNTRY_TIMEZONE_MAP[countryCode];
       if (tz) setSelect('ce-timezone', tz);
 
-      // Currency (auto-detect from country)
+      // Currency
       const currency = COUNTRY_CURRENCY_MAP[countryCode];
       if (currency) setSelect('ce-currency', currency);
 
-      // Website (if available from Google)
-      if (place.website) {
+      // Website (new API: websiteURI)
+      if (place.websiteURI) {
         const websiteField = document.getElementById('ce-website');
-        if (websiteField && !websiteField.value) setField('ce-website', place.website);
+        if (websiteField && !websiteField.value) setField('ce-website', place.websiteURI);
       }
 
       // Add venue type as keyword
@@ -943,26 +958,12 @@ export async function initGooglePlacesAutocomplete() {
           .map(t => t.replace(/_/g, ' '))
           .slice(0, 2);
         venueTypeKeywords.forEach(kw => {
-          if (!ceKeywords.includes(kw)) {
-            ceKeywords.push(kw);
-          }
+          if (!ceKeywords.includes(kw)) ceKeywords.push(kw);
         });
-        // Re-render keywords
-        const tagsWrap = document.getElementById('ce-keywords-tags');
-        if (tagsWrap) {
-          setSafeHTML(tagsWrap, ceKeywords.map((k, i) =>
-            `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">x</button></span>`
-          ).join(''));
-          tagsWrap.querySelectorAll('button').forEach(btn => {
-            btn.addEventListener('click', () => { ceKeywords.splice(Number(btn.dataset.idx), 1); renderGoogleKeywords(); });
-          });
-        }
+        renderGoogleKeywords();
       }
 
-      // ── Show Map Preview ──
-      showGoogleMapPreview(lat, lng, place.name, place.formatted_address);
-
-      // Highlight filled fields with a brief green flash
+      // Highlight filled fields
       ['ce-place', 'ce-address', 'ce-city', 'ce-country', 'ce-latitude', 'ce-longitude', 'ce-timezone', 'ce-currency'].forEach(id => {
         const el = document.getElementById(id);
         if (el && el.value) {
@@ -973,14 +974,13 @@ export async function initGooglePlacesAutocomplete() {
         }
       });
 
-      showToast(`Location filled: ${place.name || place.formatted_address}`, 'success');
+      showToast(`Location filled: ${venueName || fullAddress}`, 'success');
     });
 
     googleAutocompleteInitialized = true;
-    console.log('Google Places Autocomplete initialized');
+    console.log('Google Places (PlaceAutocompleteElement) initialized');
   } catch (err) {
     console.warn('Google Places init failed:', err);
-    // Allow retry on next panel open
     googleAutocompleteInitialized = false;
   }
 }
@@ -1077,7 +1077,7 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
     console.warn('Interactive map failed, using static fallback:', err);
     setSafeHTML(mapDiv, `<iframe 
       width="100%" height="100%" frameborder="0" style="border:0;border-radius:12px" 
-      src="https://www.google.com/maps/embed/v1/place?key=AIzaSyCqKRXXkjYNaGYjjPSm0OUxPAPxbfJnqEY&q=${lat},${lng}&zoom=16" 
+      src="https://www.google.com/maps/embed/v1/place?key=AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4&q=${lat},${lng}&zoom=16" 
       allowfullscreen loading="lazy"></iframe>`);
   }
 }
