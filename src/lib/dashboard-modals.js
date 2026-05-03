@@ -196,37 +196,57 @@ export function setupCreateModal() {
 
   tabs.forEach(tab => tab.addEventListener('click', () => switchCeTab(tab.dataset.ceTab)));
 
-  // Save & Continue buttons — uses direct DOM manipulation for reliability
+  // Save & Continue buttons — fully self-contained, no dependency on switchCeTab
   document.getElementById('ce-save-basic')?.addEventListener('click', () => {
     const name = document.getElementById('ce-name')?.value.trim();
     if (!name || name.length < 3) { showToast('Event name must be at least 3 characters', 'error'); return; }
     const targetTab = ceListingType === 'display_only' ? 'publishing' : 'tickets';
-    console.log('[CE] Save Basic -> switching to:', targetTab, '| ceListingType:', ceListingType);
-    switchCeTab(targetTab);
-    // Fallback: if switchCeTab didn't activate the step, force it
-    const targetStep = document.getElementById(steps[targetTab]);
-    if (targetStep && !targetStep.classList.contains('active')) {
-      console.warn('[CE] switchCeTab fallback: forcing step activation for', targetTab);
-      document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
-      targetStep.classList.add('active');
-      document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active'));
-      const tabEl = document.querySelector(`[data-ce-tab="${targetTab}"]`);
-      if (tabEl) tabEl.classList.add('active');
+
+    // 1. Deactivate all steps and tabs
+    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('[data-ce-tab]').forEach(t => { t.classList.remove('active'); t.classList.remove('completed'); });
+
+    // 2. Activate target step
+    const stepEl = document.getElementById(steps[targetTab]);
+    if (stepEl) stepEl.classList.add('active');
+
+    // 3. Activate target tab + mark previous tabs completed
+    const tabEl = document.querySelector(`[data-ce-tab="${targetTab}"]`);
+    if (tabEl) tabEl.classList.add('active');
+    document.querySelector('[data-ce-tab="basic"]')?.classList.add('completed');
+
+    // 4. Update progress bar
+    const tabOrder = ceListingType === 'display_only' ? ['basic', 'publishing'] : ['basic', 'tickets', 'publishing'];
+    const idx = tabOrder.indexOf(targetTab);
+    const progress = document.getElementById('ce-progress-bar');
+    if (progress) progress.style.width = `${((idx + 1) / tabOrder.length) * 100}%`;
+
+    // 5. Update preview if going to publishing
+    if (targetTab === 'publishing') {
+      try { updateCePreview(); } catch (e) { console.warn('Preview update failed:', e); }
     }
   });
+
   document.getElementById('ce-save-tickets')?.addEventListener('click', () => {
-    console.log('[CE] Save Tickets -> switching to publishing');
-    switchCeTab('publishing');
-    // Fallback: if switchCeTab didn't activate the step, force it
+    // 1. Deactivate all steps and tabs
+    document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('[data-ce-tab]').forEach(t => { t.classList.remove('active'); t.classList.remove('completed'); });
+
+    // 2. Activate publishing step
     const pubStep = document.getElementById('ce-step-publishing');
-    if (pubStep && !pubStep.classList.contains('active')) {
-      console.warn('[CE] switchCeTab fallback: forcing publishing activation');
-      document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
-      pubStep.classList.add('active');
-      document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active'));
-      document.querySelector('[data-ce-tab="publishing"]')?.classList.add('active');
-      updateCePreview();
-    }
+    if (pubStep) pubStep.classList.add('active');
+
+    // 3. Activate publishing tab + mark previous tabs completed
+    document.querySelector('[data-ce-tab="publishing"]')?.classList.add('active');
+    document.querySelector('[data-ce-tab="basic"]')?.classList.add('completed');
+    document.querySelector('[data-ce-tab="tickets"]')?.classList.add('completed');
+
+    // 4. Update progress bar to 100%
+    const progress = document.getElementById('ce-progress-bar');
+    if (progress) progress.style.width = '100%';
+
+    // 5. Update preview
+    try { updateCePreview(); } catch (e) { console.warn('Preview update failed:', e); }
   });
 
   // ── Rich Text Editor ──
