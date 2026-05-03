@@ -166,14 +166,20 @@ export function setupCreateModal() {
   const tabs = document.querySelectorAll('[data-ce-tab]');
   const steps = { basic: 'ce-step-basic', tickets: 'ce-step-tickets', publishing: 'ce-step-publishing' };
 
+  function getListingType() {
+    return typeof window.__ceListingType === 'function'
+      ? window.__ceListingType()
+      : ceListingType;
+  }
+
   function getTabOrder() {
-    return ceListingType === 'display_only' ? ['basic', 'publishing'] : ['basic', 'tickets', 'publishing'];
+    return getListingType() === 'display_only' ? ['basic', 'publishing'] : ['basic', 'tickets', 'publishing'];
   }
 
   function switchCeTab(tabName) {
     const tabOrder = getTabOrder();
     // Skip tickets tab if display_only
-    if (ceListingType === 'display_only' && tabName === 'tickets') return;
+    if (getListingType() === 'display_only' && tabName === 'tickets') return;
 
     tabs.forEach(t => t.classList.remove('active'));
     Object.values(steps).forEach(id => document.getElementById(id)?.classList.remove('active'));
@@ -196,11 +202,17 @@ export function setupCreateModal() {
 
   tabs.forEach(tab => tab.addEventListener('click', () => switchCeTab(tab.dataset.ceTab)));
 
-  // Save & Continue buttons — fully self-contained, no dependency on switchCeTab
+  // Save & Continue buttons — resolves listing type from both create and edit flows
   document.getElementById('ce-save-basic')?.addEventListener('click', () => {
     const name = document.getElementById('ce-name')?.value.trim();
     if (!name || name.length < 3) { showToast('Event name must be at least 3 characters', 'error'); return; }
-    const targetTab = ceListingType === 'display_only' ? 'publishing' : 'tickets';
+
+    // Resolve listing type: window.__ceListingType() works in EDIT mode,
+    // ceListingType closure var works in CREATE mode
+    const listingType = typeof window.__ceListingType === 'function'
+      ? window.__ceListingType()
+      : ceListingType;
+    const targetTab = listingType === 'display_only' ? 'publishing' : 'tickets';
 
     // 1. Deactivate all steps and tabs
     document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
@@ -216,7 +228,7 @@ export function setupCreateModal() {
     document.querySelector('[data-ce-tab="basic"]')?.classList.add('completed');
 
     // 4. Update progress bar
-    const tabOrder = ceListingType === 'display_only' ? ['basic', 'publishing'] : ['basic', 'tickets', 'publishing'];
+    const tabOrder = listingType === 'display_only' ? ['basic', 'publishing'] : ['basic', 'tickets', 'publishing'];
     const idx = tabOrder.indexOf(targetTab);
     const progress = document.getElementById('ce-progress-bar');
     if (progress) progress.style.width = `${((idx + 1) / tabOrder.length) * 100}%`;
