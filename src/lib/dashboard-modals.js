@@ -3,9 +3,39 @@ import { createEvent, updateEvent } from './events.js';
 import { escapeHTML } from './utils.js';
 import { showToast, switchToPanel } from './dashboard-ui.js';
 import { safeQuery } from './api.js';
-import { loadDashboard } from '../js/eveenty-dashboard.js';
+import { setSafeHTML } from './dom.js';
 
+/* ── Module-level state (migrated from God File) ── */
 let pendingCoverFile = null;
+let ceKeywords = [];
+let ceTicketsList = [];
+let ceEditingEventId = null;
+let ceGalleryCount = 1;
+let ceTicketCategories = [];
+let ceTicketTableListenerAttached = false;
+let googleAutocompleteInitialized = false;
+let googleMapInstance = null;
+let googleMapMarker = null;
+
+/** Country code -> timezone mapping for common countries */
+const COUNTRY_TIMEZONE_MAP = {
+  EG: 'Africa/Cairo', SA: 'Asia/Riyadh', AE: 'Asia/Dubai', US: 'America/New_York',
+  CA: 'America/Toronto', GB: 'Europe/London', DE: 'Europe/Berlin', FR: 'Europe/Paris',
+  TR: 'Europe/Istanbul', JO: 'Asia/Amman', LB: 'Asia/Beirut', KW: 'Asia/Kuwait',
+  QA: 'Asia/Qatar', BH: 'Asia/Bahrain', OM: 'Asia/Muscat', MA: 'Africa/Casablanca',
+  TN: 'Africa/Tunis', JP: 'Asia/Tokyo',
+};
+
+/** ISO country -> select option mapping */
+const ISO_TO_SELECT = {
+  EG: 'EG', SA: 'SA', AE: 'AE', US: 'US', CA: 'CA', GB: 'GB', DE: 'DE', FR: 'FR',
+  TR: 'TR', JO: 'JO', LB: 'LB', KW: 'KW', QA: 'QA', BH: 'BH', OM: 'OM', MA: 'MA', TN: 'TN',
+};
+
+/** Country code -> default currency */
+const COUNTRY_CURRENCY_MAP = {
+  EG: 'EGP', SA: 'SAR', AE: 'AED', US: 'USD', CA: 'CAD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
+};
 export function setupCreateModal() {
   // Open create event panel instead of modal
   const openPanel = () => { resetCreateEventForm(); switchToPanel('create-event'); };
@@ -557,7 +587,7 @@ export function setupCreateModal() {
       showToast(ceEditingEventId ? 'Event updated successfully!' : 'Event published successfully!', 'success');
       ceEditingEventId = null;
       switchToPanel('events');
-      await loadDashboard();
+      if (window.loadDashboard) await window.loadDashboard();
 
       // Show services modal only on new events
       if (!ceEditingEventId) {
@@ -1209,7 +1239,7 @@ export async function showEditModal(eventId) {
       await updateEvent(eventId, updates);
       showToast('Event updated!', 'success');
       closeModal();
-      await loadDashboard();
+      if (window.loadDashboard) await window.loadDashboard();
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
       btn.disabled = false; btn.textContent = 'Save Changes';

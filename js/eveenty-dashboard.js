@@ -46,6 +46,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupUserDropdown();
   setupProfilePanel();
 
+  // Register globals for cross-module calls
+  window.loadDashboard = loadDashboard;
+  window.loadEventForEditing = loadEventForEditing;
+
   await loadDashboard();
 });
 
@@ -65,7 +69,7 @@ function setupSignOut() {
    ================================== */
 let calEvents = [];
 
-async function loadDashboard() {
+export async function loadDashboard() {
   try {
     const user = await getCurrentUser();
     const events = await getOrganizerEvents();
@@ -149,29 +153,4 @@ function setupNotifications() {
   loadNotifications();
 }
 
-/* ==================================
-   GOOGLE PLACES AUTOCOMPLETE
-   ================================== */
-let googleMapInstance = null;
-let googleMapMarker = null;
-let googleAutocompleteInitialized = false;
-
-/** Country code -> timezone mapping for common countries */
-const COUNTRY_TIMEZONE_MAP = {
-  EG: 'Africa/Cairo', SA: 'Asia/Riyadh', AE: 'Asia/Dubai', US: 'America/New_York',
-  CA: 'America/Toronto', GB: 'Europe/London', DE: 'Europe/Berlin', FR: 'Europe/Paris',
-  TR: 'Europe/Istanbul', JO: 'Asia/Amman', LB: 'Asia/Beirut', KW: 'Asia/Kuwait',
-  QA: 'Asia/Qatar', BH: 'Asia/Bahrain', OM: 'Asia/Muscat', MA: 'Africa/Casablanca',
-  TN: 'Africa/Tunis', JP: 'Asia/Tokyo',
-};
-
-/** ISO country -> select option mapping */
-const ISO_TO_SELECT = {
-  EG: 'EG', SA: 'SA', AE: 'AE', US: 'US', CA: 'CA', GB: 'GB', DE: 'DE', FR: 'FR',
-  TR: 'TR', JO: 'JO', LB: 'LB', KW: 'KW', QA: 'QA', BH: 'BH', OM: 'OM', MA: 'MA', TN: 'TN',
-};
-
-/** Country code -> default currency */
-const COUNTRY_CURRENCY_MAP = {
-  EG: 'EGP', SA: 'SAR', AE: 'AED', US: 'USD', CA: 'CAD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
-};
+/* Google Maps variables and constants moved to src/lib/dashboard-modals.js */

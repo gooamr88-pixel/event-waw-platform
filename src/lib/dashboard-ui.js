@@ -1,4 +1,5 @@
 import { escapeHTML } from './utils.js';
+import { setSafeHTML } from './dom.js';
 
 export function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
@@ -63,22 +64,7 @@ export function setupSidebar() {
   document.getElementById('payout-btn')?.addEventListener('click', () => switchToPanel('financial'));
 }
 
-export function setupDarkMode() {
-  const btn = document.getElementById('theme-toggle');
-  if (!btn) return;
-  const isDark = localStorage.getItem('ev-theme') === 'dark';
-  if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
-  btn.addEventListener('click', () => {
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (dark) {
-      document.documentElement.removeAttribute('data-theme');
-      localStorage.setItem('ev-theme', 'light');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      localStorage.setItem('ev-theme', 'dark');
-    }
-  });
-}
+// NOTE: setupDarkMode is in dashboard-payout.js (uses #dark-mode-toggle)
 
 export function setupUserInfo({ user, profile }) {
   const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
