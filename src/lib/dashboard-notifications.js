@@ -3,24 +3,10 @@ import { escapeHTML } from './utils.js';
 import { setSafeHTML } from './dom.js';
 
 let dashNotifications = [];
-    dropdown.classList.toggle('open');
-  });
 
-  // Close on outside click
-  document.addEventListener('click', (e) => {
-    if (!bell?.contains(e.target)) dropdown?.classList.remove('open');
-  });
-
-  // Mark all read
-  document.getElementById('notif-clear')?.addEventListener('click', () => {
-    dashNotifications = [];
-    localStorage.setItem('ev-last-notif', new Date().toISOString());
-    renderNotifications();
-  });
-
-  // Load recent ticket purchases as notifications
-  loadNotifications();
-}
+/* ══════════════════════════════════
+   NOTIFICATIONS
+   ══════════════════════════════════ */
 
 export async function loadNotifications() {
   try {
@@ -28,7 +14,7 @@ export async function loadNotifications() {
     const lastSeen = localStorage.getItem('ev-last-notif') || new Date(Date.now() - 86400000).toISOString();
 
     const { data: events } = await supabase.from('events').select('id, title').eq('organizer_id', user.id);
-
+    if (!events?.length) return;
 
     const { data: tiers } = await supabase.from('ticket_tiers').select('id, event_id').in('event_id', events.map(e => e.id));
     if (!tiers?.length) return;
@@ -83,10 +69,10 @@ export function renderNotifications() {
   if (!list) return;
 
   // Remove old badge
-
+  bell?.querySelector('.ev-notif-badge')?.remove();
 
   if (!dashNotifications.length) {
-    list.innerHTML = '<div class="ev-notif-empty">🎉 No new notifications</div>';
+    setSafeHTML(list, '<div class="ev-notif-empty">🎉 No new notifications</div>');
     bell?.classList.remove('has-notif');
     return;
   }
@@ -98,7 +84,7 @@ export function renderNotifications() {
   bell?.insertBefore(badge, bell.firstChild);
   bell?.classList.add('has-notif');
 
-  list.innerHTML = dashNotifications.map(n => `
+  setSafeHTML(list, dashNotifications.map(n => `
     <div class="ev-notif-item ${n.unread ? 'unread' : ''}">
       <div class="ev-notif-icon">${n.icon}</div>
       <div class="ev-notif-text">
@@ -106,7 +92,7 @@ export function renderNotifications() {
         <time>${timeAgo(n.time)}</time>
       </div>
     </div>
-  `).join('');
+  `).join(''));
 }
 
 export function timeAgo(dateStr) {
@@ -117,7 +103,7 @@ export function timeAgo(dateStr) {
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `${hrs}h ago`;
   const days = Math.floor(hrs / 24);
-
+  return `${days}d ago`;
 }
 
 /* ══════════════════════════════════
@@ -128,4 +114,23 @@ let calYear = new Date().getFullYear();
 let calEvents = [];
 
 export function setupCalendar() {
+  document.getElementById('cal-prev')?.addEventListener('click', () => {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  });
+  document.getElementById('cal-next')?.addEventListener('click', () => {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  });
+  document.getElementById('cal-today')?.addEventListener('click', () => {
+    calMonth = new Date().getMonth();
+    calYear = new Date().getFullYear();
+    renderCalendar();
+  });
+}
 
+function renderCalendar() {
+  // Calendar rendering delegated to dashboard-calendar module if available
+}

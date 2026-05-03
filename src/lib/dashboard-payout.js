@@ -1,6 +1,16 @@
 import { supabase, getCurrentUser } from './supabase.js';
 import { showToast } from './dashboard-ui.js';
 
+/* ══════════════════════════════════
+   PAYOUT SETTINGS PANEL
+   ══════════════════════════════════ */
+
+export function setupPayoutPanel() {
+  loadPayoutData();
+
+  document.getElementById('payout-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
@@ -43,7 +53,7 @@ export async function loadPayoutData() {
     const { data } = await supabase
       .from('profiles')
       .select('payout_info')
-
+      .eq('id', user.id)
       .single();
 
     if (data?.payout_info) {
@@ -65,3 +75,8 @@ export function setupDarkMode() {
   const saved = localStorage.getItem('ev-dash-dark');
   if (saved === 'true') document.body.classList.add('dark-mode');
 
+  document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    localStorage.setItem('ev-dash-dark', document.body.classList.contains('dark-mode'));
+  });
+}

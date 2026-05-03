@@ -1,6 +1,6 @@
 import { supabase, getCurrentUser, getCurrentProfile } from './supabase.js';
 import { showToast } from './dashboard-ui.js';
-import { safeQuery } from './api.js';
+import { switchToPanel } from './dashboard-ui.js';
 
 export function setupProfilePanel() {
   loadProfileData();
@@ -52,6 +52,34 @@ export function setupProfilePanel() {
   });
 }
 
+async function loadProfileData() {
+  try {
+    const user = await getCurrentUser();
+    const { data } = await supabase
+      .from('profiles')
+      .select('organizer_profile')
+      .eq('id', user.id)
+      .single();
+
+    if (data?.organizer_profile) {
+      const p = data.organizer_profile;
+      if (p.brand_name) document.getElementById('prof-brand').value = p.brand_name;
+      if (p.address) document.getElementById('prof-address').value = p.address;
+      if (p.bio) document.getElementById('prof-bio').value = p.bio;
+      if (p.phone) document.getElementById('prof-phone').value = p.phone;
+      if (p.website) document.getElementById('prof-website').value = p.website;
+      if (p.payment_method) document.getElementById('prof-payment').value = p.payment_method;
+      if (p.social) {
+        if (p.social.instagram) document.getElementById('prof-ig').value = p.social.instagram;
+        if (p.social.tiktok) document.getElementById('prof-tiktok').value = p.social.tiktok;
+        if (p.social.facebook) document.getElementById('prof-fb').value = p.social.facebook;
+        if (p.social.x) document.getElementById('prof-x').value = p.social.x;
+        if (p.social.linkedin) document.getElementById('prof-linkedin').value = p.social.linkedin;
+      }
+    }
+  } catch (_) { /* No profile data yet */ }
+}
+
 export function setupUserDropdown() {
   // "Organizer Profile" button in dropdown
   document.getElementById('goto-profile')?.addEventListener('click', () => {
@@ -72,4 +100,3 @@ export function setupUserDropdown() {
     switchToPanel('payout');
   });
 }
-

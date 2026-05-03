@@ -10,7 +10,7 @@ import { renderCalendar } from '../src/lib/dashboard-calendar.js';
 import { setupEmailAttendees } from '../src/lib/dashboard-attendees.js';
 import { setupProfilePanel, setupUserDropdown } from '../src/lib/dashboard-profile.js';
 import { setupPayoutPanel, renderRevenueBreakdown, initCharts } from '../src/lib/dashboard-analytics.js';
-import { setupPromoPanel } from '../src/lib/dashboard-vendors.js';
+import { setupPromoPanel, setupApprovalPanel } from '../src/lib/dashboard-vendors.js';
 import { loadPromoCodes, setupFinancialPanel } from '../src/lib/dashboard-promos.js';
 import { loadPayoutData, setupDarkMode } from '../src/lib/dashboard-payout.js';
 import { loadNotifications, renderNotifications, timeAgo, setupCalendar } from '../src/lib/dashboard-notifications.js';
@@ -18,10 +18,10 @@ import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase
 import { getOrganizerEvents, createEvent, deleteEvent, updateEvent } from '../src/lib/events.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { escapeHTML } from '../src/lib/utils.js';
-
-/* ══════════════════════════════════
-   TOAST NOTIFICATIONS
-   ══════════════════════════════════ */
+import { showToast, animateCounter, setupSidebar, setupUserInfo } from '../src/lib/dashboard-ui.js';
+import { renderEventsTable, populateEventSelects } from '../src/lib/dashboard-events.js';
+import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
+import { setSafeHTML } from '../src/lib/dom.js';
 
 /* ══════════════════════════════════
    INIT
@@ -49,18 +49,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadDashboard();
 });
 
-/* ── User Info ── */
-
-/* ── Sign Out ── */
-
 /* ══════════════════════════════════
-   SIDEBAR NAVIGATION
+   SIGN OUT
    ══════════════════════════════════ */
-
+function setupSignOut() {
+  document.getElementById('sign-out-btn')?.addEventListener('click', async () => {
+    if (confirm('Are you sure you want to sign out?')) {
+      await performSignOut('/login.html');
+    }
+  });
+}
 
 /* ══════════════════════════════════
    LOAD DASHBOARD DATA
    ══════════════════════════════════ */
+let calEvents = [];
+
 async function loadDashboard() {
   try {
     const user = await getCurrentUser();
@@ -110,53 +114,40 @@ async function loadDashboard() {
 
   } catch (err) {
     console.error('Dashboard error:', err);
-    document.getElementById('events-tbody').innerHTML =
-      `<tr><td colspan="8" class="ev-table-empty">${escapeHTML(err.message || 'Failed to load events. Please refresh.')}</td></tr>`;
+    const tbody = document.getElementById('events-tbody');
+    if (tbody) {
+      setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty">${escapeHTML(err.message || 'Failed to load events. Please refresh.')}</td></tr>`);
+    }
   }
 }
 
-/* ── Animated Counter ── */
-
 /* ══════════════════════════════════
-   EVENTS TABLE
+   🔔 NOTIFICATIONS
    ══════════════════════════════════ */
+function setupNotifications() {
+  const bell = document.getElementById('notif-bell');
+  const dropdown = document.getElementById('notif-dropdown');
 
+  // Toggle dropdown
+  bell?.addEventListener('click', (e) => {
+    if (e.target.closest('.ev-notif-dropdown')) return;
+    dropdown?.classList.toggle('open');
+  });
 
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!bell?.contains(e.target)) dropdown?.classList.remove('open');
+  });
 
+  // Mark all read
+  document.getElementById('notif-clear')?.addEventListener('click', () => {
+    localStorage.setItem('ev-last-notif', new Date().toISOString());
+    renderNotifications();
+  });
 
-
-/* ══════════════════════════════════
-   POPULATE EVENT SELECTS
-   ══════════════════════════════════ */
-
-/* ══════════════════════════════════
-   TICKETS PANEL
-   ══════════════════════════════════ */
-
-/* ══════════════════════════════════
-   CHARTS
-   ══════════════════════════════════ */
-let revenueChartInstance = null, tierChartInstance = null;
-
-
-/* ══════════════════════════════════
-   REVENUE BREAKDOWN
-   ══════════════════════════════════ */
-   SEARCH
-   ══════════════════════════════════ */
-
-/* ══════════════════════════════════
-   CREATE EVENT PANEL (Full Page Wizard)
-   ══════════════════════════════════ */
-let ceTicketCategories = [];
-let ceTicketsList = [];
-let ceGalleryCount = 1;
-let ceTicketTableListenerAttached = false;
-let ceKeywords = [];
-let ceEditingEventId = null;
-
-/* ── Load Event for Editing ── */
-
+  // Load recent ticket purchases as notifications
+  loadNotifications();
+}
 
 /* ══════════════════════════════════
    GOOGLE PLACES AUTOCOMPLETE
@@ -184,124 +175,3 @@ const ISO_TO_SELECT = {
 const COUNTRY_CURRENCY_MAP = {
   EG: 'EGP', SA: 'SAR', AE: 'AED', US: 'USD', CA: 'CAD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
 };
-
-
-
-
-
-
-
-
-
-/* ══════════════════════════════════
-   EDIT EVENT MODAL
-   ══════════════════════════════════ */
-
-/* ══════════════════════════════════
-   APPROVAL PANEL
-   ══════════════════════════════════ */
-
-function setupApprovalPanel() {
-  // Tab switching
-
-async function loadApprovalData() {
-  const tbody = document.getElementById('approval-tbody');
-  const openModal = () => modal?.classList.add('active');
-  const closeModal = () => modal?.classList.remove('active');
-
-  document.getElementById('new-promo-btn')?.addEventListener('click', openModal);
-    const user = await getCurrentUser();
-  loadFinancialData();
-}
-
-async function loadFinancialData() {
-  tbody.innerHTML = '<tr><td colspan="7" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>';
-
-  document.getElementById('payout-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = e.target.querySelector('[type="submit"]');
-      .eq('id', user.id)
-
-  document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('ev-dash-dark', document.body.classList.contains('dark-mode'));
-  });
-}
-
-/* ══════════════════════════════════
-   🔔 NOTIFICATIONS
-   ══════════════════════════════════ */
-
-function setupNotifications() {
-  const bell = document.getElementById('notif-bell');
-  const dropdown = document.getElementById('notif-dropdown');
-
-  // Toggle dropdown
-  bell?.addEventListener('click', (e) => {
-    if (e.target.closest('.ev-notif-dropdown')) return;
-    if (!events?.length) return;
-  bell?.querySelector('.ev-notif-badge')?.remove();
-  return `${days}d ago`;
-  document.getElementById('cal-prev')?.addEventListener('click', () => {
-    calMonth--;
-    if (calMonth < 0) { calMonth = 11; calYear--; }
-    renderCalendar();
-  });
-  document.getElementById('cal-next')?.addEventListener('click', () => {
-    calMonth++;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
-    renderCalendar();
-  });
-  document.getElementById('cal-today')?.addEventListener('click', () => {
-    calMonth = new Date().getMonth();
-    calYear = new Date().getFullYear();
-    renderCalendar();
-  });
-}
-
-
-/* ══════════════════════════════════
-   📸 COVER IMAGE UPLOAD
-   ══════════════════════════════════ */
-
-
-
-/* ══════════════════════════════════
-   📧 EMAIL ATTENDEES
-   ══════════════════════════════════ */
-
-/* ══════════════════════════════════
-   👤 USER DROPDOWN
-   ══════════════════════════════════ */
-
-/* ══════════════════════════════════
-   🏢 ORGANIZER PROFILE PANEL
-   ══════════════════════════════════ */
-
-async function loadProfileData() {
-  try {
-    const user = await getCurrentUser();
-    const { data } = await supabase
-      .from('profiles')
-      .select('organizer_profile')
-      .eq('id', user.id)
-      .single();
-
-    if (data?.organizer_profile) {
-      const p = data.organizer_profile;
-      if (p.brand_name) document.getElementById('prof-brand').value = p.brand_name;
-      if (p.address) document.getElementById('prof-address').value = p.address;
-      if (p.bio) document.getElementById('prof-bio').value = p.bio;
-      if (p.phone) document.getElementById('prof-phone').value = p.phone;
-      if (p.website) document.getElementById('prof-website').value = p.website;
-      if (p.payment_method) document.getElementById('prof-payment').value = p.payment_method;
-      if (p.social) {
-        if (p.social.instagram) document.getElementById('prof-ig').value = p.social.instagram;
-        if (p.social.tiktok) document.getElementById('prof-tiktok').value = p.social.tiktok;
-        if (p.social.facebook) document.getElementById('prof-fb').value = p.social.facebook;
-        if (p.social.x) document.getElementById('prof-x').value = p.social.x;
-        if (p.social.linkedin) document.getElementById('prof-linkedin').value = p.social.linkedin;
-      }
-    }
-  } catch (_) { /* No profile data yet */ }
-}
