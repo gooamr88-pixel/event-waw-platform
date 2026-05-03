@@ -564,24 +564,27 @@ export function setupCreateModal() {
         event = await createEvent(coreData);
         // Try adding extra fields
         try {
-          await supabase.from('events').update(extraData).eq('id', event.id);
+          const { error: extraError } = await supabase.from('events').update(extraData).eq('id', event.id);
+          if (extraError) console.warn('Extra event fields skipped:', extraError.message);
         } catch (extraErr) {
           console.warn('Extra event fields skipped:', extraErr.message);
         }
       }
 
+      // ── Collect all image URLs, then update in ONE call ──
+      const imageUpdates = {};
+
       // Upload cover image
       if (pendingCoverFile) {
         const coverUrl = await uploadCoverImage(event.id);
-        if (coverUrl) await supabase.from('events').update({ cover_url: coverUrl }).eq('id', event.id);
+        if (coverUrl) imageUpdates.cover_url = coverUrl;
       }
 
       // Upload logo image
-      const logoArea = document.getElementById('ce-logo-area');
       const logoInput = document.getElementById('ce-logo');
       if (logoInput?.files?.[0]) {
         const logoUrl = await uploadEventFile(event.id, logoInput.files[0], 'logo');
-        if (logoUrl) await supabase.from('events').update({ logo_url: logoUrl }).eq('id', event.id);
+        if (logoUrl) imageUpdates.logo_url = logoUrl;
       }
 
       // Upload gallery images (merge with existing URLs)
@@ -591,26 +594,37 @@ export function setupCreateModal() {
         const item = galleryItems[i];
         const fileInput = item.querySelector('input[type="file"]');
         if (fileInput?.files?.[0]) {
-          // New file uploaded — upload it
           const url = await uploadEventFile(event.id, fileInput.files[0], `gallery_${i}`);
           if (url) galleryUrls.push(url);
         } else if (item.dataset.existingUrl) {
-          // Existing URL from edit mode — preserve it
           galleryUrls.push(item.dataset.existingUrl);
         }
       }
-      if (galleryUrls.length) await supabase.from('events').update({ gallery_urls: galleryUrls }).eq('id', event.id);
+      if (galleryUrls.length) imageUpdates.gallery_urls = galleryUrls;
 
       // Upload sponsor logos
-      const sponsorInputs = document.querySelectorAll('#ce-sponsors-grid input[type="file"]');
+      const sponsorItems = document.querySelectorAll('#ce-sponsors-grid .ce-gallery-item');
       const sponsorUrls = [];
-      for (let i = 0; i < sponsorInputs.length; i++) {
-        if (sponsorInputs[i].files?.[0]) {
-          const url = await uploadEventFile(event.id, sponsorInputs[i].files[0], `sponsor_${i}`);
+      for (let i = 0; i < sponsorItems.length; i++) {
+        const fileInput = sponsorItems[i].querySelector('input[type="file"]');
+        if (fileInput?.files?.[0]) {
+          const url = await uploadEventFile(event.id, fileInput.files[0], `sponsor_${i}`);
           if (url) sponsorUrls.push(url);
+        } else if (sponsorItems[i].dataset.existingUrl) {
+          sponsorUrls.push(sponsorItems[i].dataset.existingUrl);
         }
       }
-      if (sponsorUrls.length) await supabase.from('events').update({ sponsor_urls: sponsorUrls }).eq('id', event.id);
+      if (sponsorUrls.length) imageUpdates.sponsor_urls = sponsorUrls;
+
+      // Apply all image updates in a single call (resilient)
+      if (Object.keys(imageUpdates).length > 0) {
+        try {
+          const { error: imgErr } = await supabase.from('events').update(imageUpdates).eq('id', event.id);
+          if (imgErr) console.warn('Image fields update failed:', imgErr.message);
+        } catch (imgCatchErr) {
+          console.warn('Image fields update skipped:', imgCatchErr.message);
+        }
+      }
 
       // Get selected ticket type
       const ticketType = document.querySelector('.ce-ticket-card.selected input')?.value || 'normal';

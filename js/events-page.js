@@ -163,7 +163,7 @@ function renderEvents(events) {
     card.onclick = () => window.location.href = `event-detail.html?id=${ev.id}`;
     setSafeHTML(card, `
       <div class="ep-card-image">
-        <img src="${escapeHTML(ev.cover_image) || 'images/event-concert.png'}" alt="${escapeHTML(ev.title)}" loading="lazy" />
+        <img src="${escapeHTML(ev.cover_url || ev.cover_image || 'images/event-concert.png')}" alt="${escapeHTML(ev.title)}" loading="lazy" />
         <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(badge)}</div>
         ${distHtml}
       </div>
