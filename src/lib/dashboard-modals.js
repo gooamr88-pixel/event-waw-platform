@@ -196,14 +196,38 @@ export function setupCreateModal() {
 
   tabs.forEach(tab => tab.addEventListener('click', () => switchCeTab(tab.dataset.ceTab)));
 
-  // Save & Continue buttons
+  // Save & Continue buttons — uses direct DOM manipulation for reliability
   document.getElementById('ce-save-basic')?.addEventListener('click', () => {
     const name = document.getElementById('ce-name')?.value.trim();
     if (!name || name.length < 3) { showToast('Event name must be at least 3 characters', 'error'); return; }
-    // If display_only, skip to publishing; otherwise go to tickets
-    switchCeTab(ceListingType === 'display_only' ? 'publishing' : 'tickets');
+    const targetTab = ceListingType === 'display_only' ? 'publishing' : 'tickets';
+    console.log('[CE] Save Basic -> switching to:', targetTab, '| ceListingType:', ceListingType);
+    switchCeTab(targetTab);
+    // Fallback: if switchCeTab didn't activate the step, force it
+    const targetStep = document.getElementById(steps[targetTab]);
+    if (targetStep && !targetStep.classList.contains('active')) {
+      console.warn('[CE] switchCeTab fallback: forcing step activation for', targetTab);
+      document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+      targetStep.classList.add('active');
+      document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active'));
+      const tabEl = document.querySelector(`[data-ce-tab="${targetTab}"]`);
+      if (tabEl) tabEl.classList.add('active');
+    }
   });
-  document.getElementById('ce-save-tickets')?.addEventListener('click', () => switchCeTab('publishing'));
+  document.getElementById('ce-save-tickets')?.addEventListener('click', () => {
+    console.log('[CE] Save Tickets -> switching to publishing');
+    switchCeTab('publishing');
+    // Fallback: if switchCeTab didn't activate the step, force it
+    const pubStep = document.getElementById('ce-step-publishing');
+    if (pubStep && !pubStep.classList.contains('active')) {
+      console.warn('[CE] switchCeTab fallback: forcing publishing activation');
+      document.querySelectorAll('.ce-step').forEach(s => s.classList.remove('active'));
+      pubStep.classList.add('active');
+      document.querySelectorAll('[data-ce-tab]').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-ce-tab="publishing"]')?.classList.add('active');
+      updateCePreview();
+    }
+  });
 
   // ── Rich Text Editor ──
   document.querySelectorAll('.ce-editor-btn').forEach(btn => {
