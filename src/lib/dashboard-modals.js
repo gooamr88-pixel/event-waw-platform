@@ -52,8 +52,8 @@ export function setupCreateModal() {
   ];
   const categorySelect = document.getElementById('ce-category');
   if (categorySelect) {
-    categorySelect.innerHTML = '<option value="">Select Category</option>' +
-      EVENT_CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+    setSafeHTML(categorySelect, '<option value="">Select Category</option>' +
+      EVENT_CATEGORIES.map(cat => `<option value="${cat}">${cat}</option>`).join(''));
   }
 
   // ── Dynamically Populate Time Zones ──
@@ -457,7 +457,8 @@ export function setupCreateModal() {
     if (!category) markError('ce-category', 'Category is required');
 
     const currency = document.getElementById('ce-currency')?.value;
-    if (!currency) markError('ce-currency', 'Currency is required');
+    const resolvedListingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : ceListingType;
+    if (resolvedListingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
 
     const timezone = document.getElementById('ce-timezone')?.value;
     if (!timezone) markError('ce-timezone', 'Time zone is required');
@@ -469,7 +470,7 @@ export function setupCreateModal() {
     if (!endDate) markError('ce-end-date', 'End date is required');
 
     // Tab 2: Tickets (skip validation for display_only)
-    const listingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : 'display_and_sell';
+    const listingType = resolvedListingType || 'display_and_sell';
     if (listingType !== 'display_only' && ceTicketsList.length === 0) {
       errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });
       showToast('⚠️ You must add at least one ticket before publishing', 'error');
@@ -689,13 +690,14 @@ export function setupCreateModal() {
         }
       }
 
-      showToast(ceEditingEventId ? 'Event updated successfully!' : 'Event published successfully!', 'success');
+      const wasEditing = !!ceEditingEventId;
+      showToast(wasEditing ? 'Event updated successfully!' : 'Event published successfully!', 'success');
       ceEditingEventId = null;
       switchToPanel('events');
       if (window.loadDashboard) await window.loadDashboard();
 
       // Show services modal only on new events
-      if (!ceEditingEventId) {
+      if (!wasEditing) {
         setTimeout(() => { document.getElementById('services-modal')?.classList.add('active'); }, 600);
       }
     } catch (err) {
@@ -783,6 +785,9 @@ export async function loadEventForEditing(eventId) {
         setSafeHTML(tagsWrap, ceKeywords.map((k, i) =>
           `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">x</button></span>`
         ).join(''));
+        tagsWrap.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', () => { ceKeywords.splice(Number(btn.dataset.idx), 1); renderGoogleKeywords(); });
+        });
       }
     }
 
@@ -956,7 +961,14 @@ export function resetCreateEventForm() {
   });
   // Reset gallery & sponsors
   const galleryGrid = document.getElementById('ce-gallery-grid');
-  if (galleryGrid) setSafeHTML(galleryGrid, `<div class="ce-gallery-item"><label>Photo 1</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div></div>`);
+  if (galleryGrid) {
+    setSafeHTML(galleryGrid, `<div class="ce-gallery-item"><label>Photo 1</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div></div>`);
+    const newGalleryInput = galleryGrid.querySelector('input[type="file"]');
+    const newGalleryArea = galleryGrid.querySelector('.ce-upload-area');
+    if (newGalleryInput && newGalleryArea) {
+      newGalleryInput.addEventListener('change', (e) => handleCeFileUpload(e, newGalleryArea));
+    }
+  }
   const sponsorsGrid = document.getElementById('ce-sponsors-grid');
   if (sponsorsGrid) sponsorsGrid.textContent = '';
   // Reset social links to 1 empty row
@@ -1164,7 +1176,7 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
           <span>${escapeHTML(address || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</span>
         </div>
       </div>
-      <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="ce-map-open-btn" title="Open in Google Maps">
+      <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="ce-map-open-btn" title="Open in Google Maps">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         Open in Maps
       </a>`);
@@ -1351,8 +1363,8 @@ export async function showEditModal(eventId) {
       <input type="hidden" id="edit-status" value="${ev.status}" />
     </div>
     <div style="display:flex;gap:10px;margin-top:18px">
-      <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1">Cancel</button>
-      <button class="ev-btn ev-btn-pink" id="edit-save" style="width:100%;margin-top:10px">Save Changes</button>
+      <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1;padding:11px">Cancel</button>
+      <button class="ev-btn ev-btn-pink" id="edit-save" style="flex:1;padding:11px">Save Changes</button>
     </div>
   </div>`);
   document.body.appendChild(modal);

@@ -5,13 +5,6 @@ import { setSafeHTML } from './dom.js';
 let revenueChartInstance = null, tierChartInstance = null;
 
 /* ==================================
-   PAYOUT SETTINGS PANEL
-   ================================== */
-export function setupPayoutPanel() {
-  // Payout panel setup is in dashboard-payout.js
-}
-
-/* ==================================
    REVENUE BREAKDOWN
    ================================== */
 export function renderRevenueBreakdown(data) {

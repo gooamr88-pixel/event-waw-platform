@@ -42,7 +42,7 @@ export function setupPayoutPanel() {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = ' Save Payout Details';
+      btn.textContent = 'Save Payout Details';
     }
   });
 }
@@ -72,11 +72,21 @@ export async function loadPayoutData() {
     DARK MODE
    ================================== */
 export function setupDarkMode() {
-  const saved = localStorage.getItem('ev-dash-dark');
-  if (saved === 'true') document.body.classList.add('dark-mode');
+  const toggle = document.getElementById('dark-mode-toggle');
+  // Sync initial state (FOUC script in HTML already set data-theme on <html>)
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) document.body.classList.add('dark-mode');
 
-  document.getElementById('dark-mode-toggle')?.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('ev-dash-dark', document.body.classList.contains('dark-mode'));
+  toggle?.addEventListener('click', () => {
+    const nowDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (nowDark) {
+      document.documentElement.removeAttribute('data-theme');
+      document.body.classList.remove('dark-mode');
+      localStorage.setItem('ev-theme', 'light');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.body.classList.add('dark-mode');
+      localStorage.setItem('ev-theme', 'dark');
+    }
   });
 }

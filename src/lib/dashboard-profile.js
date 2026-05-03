@@ -32,7 +32,7 @@ export function setupProfilePanel() {
       if (!profileData.brand_name || !profileData.address || !profileData.bio) {
         showToast('Please fill all required fields', 'error');
         btn.disabled = false;
-        btn.textContent = ' Save Profile';
+        btn.textContent = 'Save Profile';
         return;
       }
 
@@ -47,7 +47,7 @@ export function setupProfilePanel() {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = ' Save Profile';
+      btn.textContent = 'Save Profile';
     }
   });
 }
@@ -88,10 +88,28 @@ export function setupUserDropdown() {
 
   // "Sign Out" in dropdown
   document.getElementById('dropdown-signout')?.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to sign out?')) {
+    // Professional sign-out confirmation
+    const overlay = document.createElement('div');
+    overlay.className = 'ev-modal-overlay active';
+    overlay.style.cssText = 'z-index:10000';
+    overlay.innerHTML = `<div class="ev-modal" style="max-width:380px;text-align:center;padding:32px 28px">
+      <div style="width:48px;height:48px;border-radius:50%;background:rgba(37,99,235,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </div>
+      <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px">Sign Out</h3>
+      <p style="font-size:.85rem;color:var(--ev-text-sec);margin-bottom:24px">Are you sure you want to sign out of your account?</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="ev-btn ev-btn-outline" id="signout-cancel" style="flex:1;max-width:140px;padding:10px">Cancel</button>
+        <button class="ev-btn" id="signout-confirm" style="flex:1;max-width:140px;padding:10px;background:#2563eb;color:#fff;border:none;font-weight:600">Sign Out</button>
+      </div>
+    </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#signout-cancel').addEventListener('click', () => overlay.remove());
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+    overlay.querySelector('#signout-confirm').addEventListener('click', async () => {
       await supabase.auth.signOut();
       window.location.href = 'login.html';
-    }
+    });
   });
 
   // "Payout Settings" link inside profile panel

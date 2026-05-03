@@ -1,9 +1,34 @@
 import { escapeHTML } from './utils.js';
 import { setSafeHTML } from './dom.js';
 
-export let calMonth = new Date().getMonth();
-export let calYear = new Date().getFullYear();
-export let calEvents = [];
+let calMonth = new Date().getMonth();
+let calYear = new Date().getFullYear();
+let calEvents = [];
+
+/** Set the events array used by the calendar renderer */
+export function setCalendarEvents(events) {
+  calEvents = events;
+}
+
+/** Wire prev/next/today buttons */
+export function setupCalendar() {
+  document.getElementById('cal-prev')?.addEventListener('click', () => {
+    calMonth--;
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  });
+  document.getElementById('cal-next')?.addEventListener('click', () => {
+    calMonth++;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    renderCalendar();
+  });
+  document.getElementById('cal-today')?.addEventListener('click', () => {
+    calMonth = new Date().getMonth();
+    calYear = new Date().getFullYear();
+    renderCalendar();
+  });
+}
+
 export function renderCalendar() {
   const grid = document.getElementById('cal-grid');
   if (!grid) return;
@@ -52,4 +77,3 @@ export function renderCalendar() {
 
   setSafeHTML(grid, html);
 }
-

@@ -6,19 +6,19 @@
 import { resetCreateEventForm, initGooglePlacesAutocomplete, renderGoogleKeywords, showGoogleMapPreview, setupCeUpload, handleCeFileUpload, renderCeTicketsTable, updateCePreview, showEditModal, uploadCoverImage, uploadEventFile } from '../src/lib/dashboard-modals.js';
 import { setupCreateModal, loadEventForEditing } from '../src/lib/dashboard-modals.js';
 import { setupSearch } from '../src/lib/dashboard-search.js';
-import { renderCalendar } from '../src/lib/dashboard-calendar.js';
+import { renderCalendar, setupCalendar, setCalendarEvents } from '../src/lib/dashboard-calendar.js';
 import { setupEmailAttendees } from '../src/lib/dashboard-attendees.js';
 import { setupProfilePanel, setupUserDropdown } from '../src/lib/dashboard-profile.js';
-import { setupPayoutPanel, renderRevenueBreakdown, initCharts } from '../src/lib/dashboard-analytics.js';
+import { renderRevenueBreakdown, initCharts } from '../src/lib/dashboard-analytics.js';
 import { setupPromoPanel, setupApprovalPanel } from '../src/lib/dashboard-vendors.js';
-import { loadPromoCodes, setupFinancialPanel } from '../src/lib/dashboard-promos.js';
-import { loadPayoutData, setupDarkMode } from '../src/lib/dashboard-payout.js';
-import { loadNotifications, renderNotifications, timeAgo, setupCalendar } from '../src/lib/dashboard-notifications.js';
+import { loadPromoCodes, setupFinancialPanel, setupPromoForm } from '../src/lib/dashboard-promos.js';
+import { loadPayoutData, setupDarkMode, setupPayoutPanel } from '../src/lib/dashboard-payout.js';
+import { loadNotifications, renderNotifications, timeAgo } from '../src/lib/dashboard-notifications.js';
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
 import { getOrganizerEvents, createEvent, deleteEvent, updateEvent } from '../src/lib/events.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { escapeHTML } from '../src/lib/utils.js';
-import { showToast, animateCounter, setupSidebar, setupUserInfo } from '../src/lib/dashboard-ui.js';
+import { showToast, animateCounter, setupSidebar, setupUserInfo, setupGlobalKeyboardManager, getSwitchId } from '../src/lib/dashboard-ui.js';
 import { renderEventsTable, populateEventSelects } from '../src/lib/dashboard-events.js';
 import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
@@ -45,6 +45,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupEmailAttendees();
   setupUserDropdown();
   setupProfilePanel();
+  setupPromoForm();
+  loadPromoCodes();            // Initial load for promos
+  setupUserDropdownToggle();   // H-3: click-toggle + aria-expanded
+  setupGlobalKeyboardManager(); // H-3: Escape key handler
 
   // Register globals for cross-module calls
   window.loadDashboard = loadDashboard;
@@ -57,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
    SIGN OUT
    ================================== */
 function setupSignOut() {
-  document.getElementById('sign-out-btn')?.addEventListener('click', async () => {
+  document.getElementById('signout-btn')?.addEventListener('click', async () => {
     if (confirm('Are you sure you want to sign out?')) {
       await performSignOut('/login.html');
     }
@@ -67,12 +71,15 @@ function setupSignOut() {
 /* ==================================
    LOAD DASHBOARD DATA
    ================================== */
-let calEvents = [];
-
 export async function loadDashboard() {
+  // ── H-1: capture switch-id to detect stale responses ──
+  const mySwitch = getSwitchId();
+
   try {
     const user = await getCurrentUser();
+    if (getSwitchId() !== mySwitch) return; // stale
     const events = await getOrganizerEvents();
+    if (getSwitchId() !== mySwitch) return; // stale
 
     // Stats
     const total = events.length;
@@ -91,6 +98,7 @@ export async function loadDashboard() {
     let totalTickets = 0, totalRevenue = 0, totalScanned = 0, revenueData = null;
     try {
       const { data } = await supabase.rpc('get_organizer_revenue', { p_organizer_id: user.id });
+      if (getSwitchId() !== mySwitch) return; // stale
       revenueData = data;
       if (data) {
         data.forEach(r => {
@@ -100,6 +108,8 @@ export async function loadDashboard() {
         });
       }
     } catch (e) { console.warn('Revenue RPC skipped:', e.message); }
+
+    if (getSwitchId() !== mySwitch) return; // final stale check before DOM writes
 
     const scanRate = totalTickets > 0 ? Math.round((totalScanned / totalTickets) * 100) : 0;
     document.getElementById('ana-tickets').textContent = totalTickets.toLocaleString();
@@ -113,7 +123,7 @@ export async function loadDashboard() {
     if (revenueData?.length) renderRevenueBreakdown(revenueData);
 
     // Feed calendar
-    calEvents = events;
+    setCalendarEvents(events);
     renderCalendar();
 
   } catch (err) {
@@ -132,15 +142,22 @@ function setupNotifications() {
   const bell = document.getElementById('notif-bell');
   const dropdown = document.getElementById('notif-dropdown');
 
+  // ── H-3: set initial aria-expanded ──
+  bell?.setAttribute('aria-expanded', 'false');
+
   // Toggle dropdown
   bell?.addEventListener('click', (e) => {
     if (e.target.closest('.ev-notif-dropdown')) return;
-    dropdown?.classList.toggle('open');
+    const isOpen = dropdown?.classList.toggle('open');
+    bell.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
   });
 
   // Close on outside click
   document.addEventListener('click', (e) => {
-    if (!bell?.contains(e.target)) dropdown?.classList.remove('open');
+    if (!bell?.contains(e.target)) {
+      dropdown?.classList.remove('open');
+      bell?.setAttribute('aria-expanded', 'false');
+    }
   });
 
   // Mark all read
@@ -151,6 +168,35 @@ function setupNotifications() {
 
   // Load recent ticket purchases as notifications
   loadNotifications();
+}
+
+/* ==================================
+   USER DROPDOWN (click-toggle + a11y)
+   ================================== */
+function setupUserDropdownToggle() {
+  const userWrap = document.getElementById('user-wrap');
+  const userInfo = document.getElementById('user-info');
+  if (!userWrap || !userInfo) return;
+
+  // ── H-3: set initial aria state ──
+  userInfo.setAttribute('role', 'button');
+  userInfo.setAttribute('aria-haspopup', 'true');
+  userInfo.setAttribute('aria-expanded', 'false');
+
+  // Click to toggle
+  userInfo.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const isOpen = userWrap.classList.toggle('open');
+    userInfo.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+
+  // Close on outside click
+  document.addEventListener('click', (e) => {
+    if (!userWrap.contains(e.target)) {
+      userWrap.classList.remove('open');
+      userInfo.setAttribute('aria-expanded', 'false');
+    }
+  });
 }
 
 /* Google Maps variables and constants moved to src/lib/dashboard-modals.js */

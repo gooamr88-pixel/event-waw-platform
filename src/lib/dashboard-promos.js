@@ -1,6 +1,6 @@
 import { supabase, getCurrentUser } from './supabase.js';
 import { escapeHTML } from './utils.js';
-import { setSafeHTML } from './dom.js';
+import { setSafeHTML, generateSkeletonRows } from './dom.js';
 import { showToast } from './dashboard-ui.js';
 
 /* ==================================
@@ -16,6 +16,7 @@ async function loadFinancialData() {
   const tbody = document.getElementById('financial-tbody');
   if (!tbody) return;
   const eventId = document.getElementById('fin-event-select')?.value;
+  setSafeHTML(tbody, generateSkeletonRows(['20px', '180px', '100px', '120px', '100px', '120px', '80px'], 5));
 
   try {
     const user = await getCurrentUser();
@@ -57,9 +58,12 @@ async function loadFinancialData() {
    PROMO CODES CRUD
    ================================== */
 
+let promoDeleteListenerAttached = false;
+
 export async function loadPromoCodes() {
   const tbody = document.getElementById('promo-tbody');
   if (!tbody) return;
+  setSafeHTML(tbody, generateSkeletonRows(['20px', '140px', '100px', '80px', '100px', '80px', '60px'], 5));
 
   try {
     const user = await getCurrentUser();
@@ -97,19 +101,88 @@ export async function loadPromoCodes() {
       </tr>`;
     }).join(''));
 
-    // Delete handler (delegated)
-    tbody.onclick = async (e) => {
-      const delBtn = e.target.closest('[data-promo-delete]');
-      if (!delBtn) return;
-      if (!confirm('Delete this promo code?')) return;
-      const { error } = await supabase.from('promo_codes').delete().eq('id', delBtn.dataset.promoDelete);
-      if (error) showToast('Delete failed: ' + error.message, 'error');
-      else { showToast('Promo deleted', 'success'); loadPromoCodes(); }
-    };
+    // Delete handler (delegated, attached once)
+    if (!promoDeleteListenerAttached) {
+      promoDeleteListenerAttached = true;
+      tbody.addEventListener('click', async (e) => {
+        const delBtn = e.target.closest('[data-promo-delete]');
+        if (!delBtn || delBtn.dataset.confirming) return;
+        const promoId = delBtn.dataset.promoDelete;
+
+        // Show inline confirm
+        delBtn.dataset.confirming = 'true';
+        const origHTML = delBtn.innerHTML;
+        delBtn.innerHTML = '<span style="font-size:.65rem;font-weight:700;color:#ef4444">Sure?</span>';
+
+        const resetTimer = setTimeout(() => {
+          delBtn.innerHTML = origHTML;
+          delete delBtn.dataset.confirming;
+        }, 3000);
+
+        delBtn.addEventListener('click', async function confirmHandler(ev) {
+          ev.stopPropagation();
+          clearTimeout(resetTimer);
+          delBtn.removeEventListener('click', confirmHandler);
+          delBtn.innerHTML = '<span style="font-size:.65rem">...</span>';
+          const { error } = await supabase.from('promo_codes').delete().eq('id', promoId);
+          if (error) showToast('Delete failed: ' + error.message, 'error');
+          else { showToast('Promo deleted', 'success'); loadPromoCodes(); }
+        }, { once: true });
+      });
+    }
   } catch (err) {
     setSafeHTML(tbody, `<tr><td colspan="7" class="ev-table-empty">
       <p style="font-weight:600;margin-bottom:4px">No promo codes yet</p>
       <p style="font-size:.84rem">Create your first promo code to offer discounts.</p>
     </td></tr>`);
   }
+}
+
+/* ==================================
+   PROMO FORM SUBMIT (was missing)
+   ================================== */
+export function setupPromoForm() {
+  const form = document.getElementById('promo-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector('[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    try {
+      const user = await getCurrentUser();
+      const code = document.getElementById('promo-code')?.value.trim().toUpperCase();
+      const discount = parseFloat(document.getElementById('promo-discount')?.value);
+      const maxUses = parseInt(document.getElementById('promo-max-uses')?.value) || null;
+      const eventId = document.getElementById('promo-event')?.value || null;
+      const expires = document.getElementById('promo-expires')?.value || null;
+
+      if (!code || code.length < 2) { showToast('Code must be at least 2 characters', 'error'); return; }
+      if (!discount || discount < 1 || discount > 100) { showToast('Discount must be 1-100%', 'error'); return; }
+
+      const { error } = await supabase.from('promo_codes').insert({
+        organizer_id: user.id,
+        code,
+        discount_percent: discount,
+        max_uses: maxUses,
+        event_id: eventId,
+        valid_until: expires ? new Date(expires).toISOString() : null,
+        is_active: true,
+        used_count: 0,
+      });
+
+      if (error) throw error;
+      showToast(`Promo code "${code}" created!`, 'success');
+      form.reset();
+      document.getElementById('promo-modal')?.classList.remove('active');
+      loadPromoCodes();
+    } catch (err) {
+      showToast('Error: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Create Promo Code';
+    }
+  });
 }

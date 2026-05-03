@@ -1,6 +1,21 @@
 import { escapeHTML } from './utils.js';
 import { setSafeHTML } from './dom.js';
 
+/* ── H-1 Race-condition guard state ── */
+let _activePanel = 'events';
+let _switchId   = 0;   // monotonic counter — increments on every switchToPanel
+
+/** Return the name of the currently-active panel. */
+export function getActivePanel() { return _activePanel; }
+
+/**
+ * Return the current switch-id.
+ * Panel data-loaders should capture this value BEFORE their first await,
+ * then compare after each await. If it changed, another tab was clicked
+ * and the response is stale — bail out.
+ */
+export function getSwitchId() { return _switchId; }
+
 export function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
@@ -25,6 +40,10 @@ export function animateCounter(id, target) {
 }
 
 export function switchToPanel(panelName) {
+  // ── H-1: update race-condition guards ──
+  _activePanel = panelName;
+  _switchId++;
+
   const items = document.querySelectorAll('.ev-nav-item');
   const panels = document.querySelectorAll('.ev-panel');
   items.forEach(i => i.classList.remove('active'));
@@ -77,4 +96,49 @@ export function setupUserInfo({ user, profile }) {
   if (userAvatarEl) userAvatarEl.textContent = name.charAt(0).toUpperCase();
   const welcomeEl = document.getElementById('welcome-name');
   if (welcomeEl) welcomeEl.textContent = name.split(' ')[0];
+}
+
+/* ══════════════════════════════════════
+   H-3  Global Keyboard Manager
+   Close dropdowns on Escape, toggle
+   aria-expanded for a11y compliance.
+   ══════════════════════════════════════ */
+export function setupGlobalKeyboardManager() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+
+    let handled = false;
+
+    // ── Close notification dropdown ──
+    const notifDropdown = document.getElementById('notif-dropdown');
+    const notifBell     = document.getElementById('notif-bell');
+    if (notifDropdown?.classList.contains('open')) {
+      notifDropdown.classList.remove('open');
+      notifBell?.setAttribute('aria-expanded', 'false');
+      handled = true;
+    }
+
+    // ── Close user dropdown ──
+    const userWrap     = document.getElementById('user-wrap');
+    const userDropdown = document.getElementById('user-dropdown');
+    if (userWrap?.classList.contains('open')) {
+      userWrap.classList.remove('open');
+      userWrap.querySelector('#user-info')?.setAttribute('aria-expanded', 'false');
+      handled = true;
+    }
+
+    // ── Close any open modal overlays (topmost first) ──
+    if (!handled) {
+      const openModals = document.querySelectorAll('.ev-modal-overlay.active');
+      if (openModals.length) {
+        openModals[openModals.length - 1].remove();
+        handled = true;
+      }
+    }
+
+    if (handled) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  });
 }

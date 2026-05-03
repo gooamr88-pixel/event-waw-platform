@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import { safeQuery } from './api.js';
 import { escapeHTML } from './utils.js';
 import { setSafeHTML, generateSkeletonRows } from './dom.js';
-import { showToast } from './dashboard-ui.js';
+import { showToast, getSwitchId } from './dashboard-ui.js';
 
 export function setupTicketsPanel() {
   const select = document.getElementById('ticket-event-select');
@@ -17,9 +17,13 @@ export function setupTicketsPanel() {
       return;
     }
     setSafeHTML(tbody, generateSkeletonRows(['20px', '120px', '180px', '80px', '60px', '90px', '70px'], 5));
+
+    // ── H-1: capture switch-id so we can detect stale responses ──
+    const mySwitch = getSwitchId();
     
     try {
       const { data: tiers, error: tierErr } = await supabase.from('ticket_tiers').select('id, name, price').eq('event_id', eventId);
+      if (getSwitchId() !== mySwitch) return;  // stale — user switched tabs
       if (tierErr) { console.error('Tier query error:', tierErr); setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">Error loading tiers</td></tr>'); return; }
       if (!tiers?.length) { setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">No tiers found</td></tr>'); return; }
       const tierMap = {};
@@ -28,6 +32,7 @@ export function setupTicketsPanel() {
       const { data: tickets, error: tickErr } = await safeQuery(
         supabase.from('tickets').select('*').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
       );
+      if (getSwitchId() !== mySwitch) return;  // stale — user switched tabs
 
       if (tickErr) { console.error('Ticket query error:', tickErr); setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">Error loading tickets</td></tr>'); return; }
 
@@ -44,6 +49,7 @@ export function setupTicketsPanel() {
       if (orderIds.length) {
         try {
           const { data: orders } = await supabase.from('orders').select('id, guest_name, guest_email, user_id').in('id', orderIds);
+          if (getSwitchId() !== mySwitch) return;  // stale — user switched tabs
           if (orders) orders.forEach(o => { orderMap[o.id] = o; });
         } catch (e) { console.warn('Order lookup skipped:', e); }
       }

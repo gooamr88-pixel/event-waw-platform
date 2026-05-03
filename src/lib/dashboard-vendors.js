@@ -1,8 +1,9 @@
 import { supabase } from './supabase.js';
 import { escapeHTML } from './utils.js';
-import { setSafeHTML } from './dom.js';
+import { setSafeHTML, generateSkeletonRows } from './dom.js';
 
 let vendorTableExists = null; // null = unknown, true/false after first check
+let vendorCheckExpiry = 0; // Reset false cache after 60s
 let approvalTabFilter = 'pending';
 
 /* ==================================
@@ -21,6 +22,9 @@ export function setupApprovalPanel() {
 
   // Event filter
   document.getElementById('approval-event-select')?.addEventListener('change', () => loadApprovalData());
+
+  // Initial load
+  loadApprovalData();
 }
 
 async function loadApprovalData() {
@@ -28,13 +32,13 @@ async function loadApprovalData() {
   if (!tbody) return;
   const eventId = document.getElementById('approval-event-select')?.value;
 
-  // If we already know the table doesn't exist, show empty immediately
-  if (vendorTableExists === false) {
+  // If we know the table doesn't exist, show empty (but retry after 60s)
+  if (vendorTableExists === false && Date.now() < vendorCheckExpiry) {
     setSafeHTML(tbody, `<tr><td colspan="9" class="ev-table-empty">No ${escapeHTML(approvalTabFilter)} requests</td></tr>`);
     return;
   }
 
-  setSafeHTML(tbody, '<tr><td colspan="9" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div></div></td></tr>');
+  setSafeHTML(tbody, generateSkeletonRows(['20px', '140px', '160px', '100px', '120px', '100px', '80px', '100px', '80px'], 5));
 
   try {
     let query = supabase.from('vendor_requests').select('*').eq('status', approvalTabFilter).order('created_at', { ascending: false }).limit(20);
@@ -42,7 +46,7 @@ async function loadApprovalData() {
     const { data, error } = await query;
 
     if (error) {
-      vendorTableExists = false;
+      vendorTableExists = false; vendorCheckExpiry = Date.now() + 60000;
       setSafeHTML(tbody, `<tr><td colspan="9" class="ev-table-empty">No ${escapeHTML(approvalTabFilter)} requests</td></tr>`);
       return;
     }
@@ -65,7 +69,7 @@ async function loadApprovalData() {
       <td><span class="ev-badge ${r.status || approvalTabFilter}">${escapeHTML(r.status || approvalTabFilter)}</span></td>
     </tr>`).join(''));
   } catch (err) {
-    vendorTableExists = false;
+    vendorTableExists = false; vendorCheckExpiry = Date.now() + 60000;
     setSafeHTML(tbody, `<tr><td colspan="9" class="ev-table-empty">No ${escapeHTML(approvalTabFilter)} requests</td></tr>`);
   }
 }

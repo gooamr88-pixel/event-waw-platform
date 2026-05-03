@@ -24,6 +24,14 @@
 </head>
 <body class="ev-dash">
 
+  <!-- ══════ ANTI-FOUC GUARD OVERLAY ══════ -->
+  <div id="auth-guard-overlay">
+    <div class="guard-overlay">
+      <div class="guard-spinner"></div>
+      <p>Verifying access...</p>
+    </div>
+  </div>
+
   <!-- Toast Container -->
   <div class="ev-toast-container" id="toast-container"></div>
 
@@ -201,7 +209,11 @@
               </tr>
             </thead>
             <tbody id="events-tbody">
-              <tr><td colspan="8" class="ev-table-empty"><div class="ev-loading"><div class="ev-spinner"></div>Loading events…</div></td></tr>
+              <!-- Initial Skeleton State -->
+              <tr class="ev-skeleton-row"><td><div class="ev-skeleton" style="width:20px;height:20px"></div></td><td><div class="ev-skeleton" style="width:180px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:90px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:60px;height:20px"></div></td><td><div class="ev-skeleton" style="width:70px;height:20px;border-radius:50px"></div></td><td><div class="ev-skeleton" style="width:100px;height:20px"></div></td></tr>
+              <tr class="ev-skeleton-row"><td><div class="ev-skeleton" style="width:20px;height:20px"></div></td><td><div class="ev-skeleton" style="width:150px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:90px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:60px;height:20px"></div></td><td><div class="ev-skeleton" style="width:70px;height:20px;border-radius:50px"></div></td><td><div class="ev-skeleton" style="width:100px;height:20px"></div></td></tr>
+              <tr class="ev-skeleton-row"><td><div class="ev-skeleton" style="width:20px;height:20px"></div></td><td><div class="ev-skeleton" style="width:200px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:90px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:60px;height:20px"></div></td><td><div class="ev-skeleton" style="width:70px;height:20px;border-radius:50px"></div></td><td><div class="ev-skeleton" style="width:100px;height:20px"></div></td></tr>
+              <tr class="ev-skeleton-row"><td><div class="ev-skeleton" style="width:20px;height:20px"></div></td><td><div class="ev-skeleton" style="width:160px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:90px;height:20px"></div></td><td><div class="ev-skeleton" style="width:80px;height:20px"></div></td><td><div class="ev-skeleton" style="width:60px;height:20px"></div></td><td><div class="ev-skeleton" style="width:70px;height:20px;border-radius:50px"></div></td><td><div class="ev-skeleton" style="width:100px;height:20px"></div></td></tr>
             </tbody>
           </table>
         </div>

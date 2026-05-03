@@ -105,32 +105,3 @@ export function timeAgo(dateStr) {
   const days = Math.floor(hrs / 24);
   return `${days}d ago`;
 }
-
-/* ==================================
-    CALENDAR VIEW
-   ================================== */
-let calMonth = new Date().getMonth();
-let calYear = new Date().getFullYear();
-let calEvents = [];
-
-export function setupCalendar() {
-  document.getElementById('cal-prev')?.addEventListener('click', () => {
-    calMonth--;
-    if (calMonth < 0) { calMonth = 11; calYear--; }
-    renderCalendar();
-  });
-  document.getElementById('cal-next')?.addEventListener('click', () => {
-    calMonth++;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
-    renderCalendar();
-  });
-  document.getElementById('cal-today')?.addEventListener('click', () => {
-    calMonth = new Date().getMonth();
-    calYear = new Date().getFullYear();
-    renderCalendar();
-  });
-}
-
-function renderCalendar() {
-  // Calendar rendering delegated to dashboard-calendar module if available
-}
