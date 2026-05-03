@@ -669,6 +669,17 @@ body.ev-dash.dark-mode .ce-listing-banner{background:rgba(37,99,235,.08);border-
 .ce-map-open-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(37,99,235,.08);color:#2563EB;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;transition:all .2s;flex-shrink:0}
 .ce-map-open-btn:hover{background:rgba(37,99,235,.15);transform:translateY(-1px)}
 
+/* Google Places Autocomplete dropdown (pac-container is injected by Google at body-level) */
+.pac-container{z-index:10001!important;border-radius:10px!important;border:1px solid var(--ev-border)!important;box-shadow:var(--ev-shadow-lg)!important;margin-top:4px!important;font-family:var(--ev-font)!important;background:var(--ev-white)!important}
+.pac-item{padding:10px 14px!important;font-size:.84rem!important;cursor:pointer!important;border-bottom:1px solid var(--ev-border-lt)!important;transition:background .15s!important}
+.pac-item:hover{background:var(--ev-yellow-light)!important}
+.pac-item-query{font-weight:600!important;color:var(--ev-text)!important}
+.pac-icon{margin-right:8px!important}
+body.ev-dash.dark-mode .pac-container{background:var(--ev-white)!important;border-color:var(--ev-border)!important}
+body.ev-dash.dark-mode .pac-item{border-bottom-color:var(--ev-border-lt)!important;color:var(--ev-text-sec)!important}
+body.ev-dash.dark-mode .pac-item:hover{background:rgba(37,99,235,.06)!important}
+body.ev-dash.dark-mode .pac-item-query{color:var(--ev-text)!important}
+
 /* ── Form Validation Errors ── */
 .ce-error-border{
   border-color:#ef4444 !important;

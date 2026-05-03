@@ -853,12 +853,19 @@ export function resetCreateEventForm() {
 
 export async function initGooglePlacesAutocomplete() {
   if (googleAutocompleteInitialized) return;
-  
+
+  // Guard: wait for Google Maps API to load
+  if (typeof google === 'undefined' || !google.maps || !google.maps.importLibrary) {
+    // Retry after API has had more time to load
+    setTimeout(() => initGooglePlacesAutocomplete(), 500);
+    return;
+  }
+
   try {
     const { Autocomplete } = await google.maps.importLibrary('places');
     const { Map } = await google.maps.importLibrary('maps');
     const { AdvancedMarkerElement } = await google.maps.importLibrary('marker');
-    
+
     const searchInput = document.getElementById('ce-google-search');
     if (!searchInput) return;
 
@@ -966,13 +973,15 @@ export async function initGooglePlacesAutocomplete() {
         }
       });
 
-      showToast(`📍 Location filled: ${place.name || place.formatted_address}`, 'success');
+      showToast(`Location filled: ${place.name || place.formatted_address}`, 'success');
     });
 
     googleAutocompleteInitialized = true;
-    console.log('✅ Google Places Autocomplete initialized');
+    console.log('Google Places Autocomplete initialized');
   } catch (err) {
     console.warn('Google Places init failed:', err);
+    // Allow retry on next panel open
+    googleAutocompleteInitialized = false;
   }
 }
 
