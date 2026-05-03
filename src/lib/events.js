@@ -326,13 +326,13 @@ export async function deleteEvent(eventId) {
       await supabase.from('venue_maps').delete().eq('id', venueMap.id);
     }
 
-    // 4. Delete expired/active reservations
-    await supabase.from('reservations').delete().eq('event_id', eventId);
+    // 4. Delete expired/active reservations (column may not exist — resilient)
+    const { error: resErr } = await supabase.from('reservations').delete().eq('event_id', eventId);
+    if (resErr) console.warn('Reservations cleanup skipped:', resErr.message);
 
-    // 5. Delete event images (if table exists)
-    try {
-      await supabase.from('event_images').delete().eq('event_id', eventId);
-    } catch (_) { /* table may not exist */ }
+    // 5. Delete event images (table may not exist — skip silently)
+    const { error: imgErr } = await supabase.from('event_images').delete().eq('event_id', eventId);
+    if (imgErr) console.warn('Event images cleanup skipped:', imgErr.message);
 
     // 6. Delete ticket tiers
     await supabase.from('ticket_tiers').delete().eq('event_id', eventId);
