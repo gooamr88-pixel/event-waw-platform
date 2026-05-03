@@ -326,16 +326,35 @@ export async function deleteEvent(eventId) {
       await supabase.from('venue_maps').delete().eq('id', venueMap.id);
     }
 
-    // 4. Delete expired/active reservations (column may not exist — resilient)
-    const { error: resErr } = await supabase.from('reservations').delete().eq('event_id', eventId);
-    if (resErr) console.warn('Reservations cleanup skipped:', resErr.message);
+    // 4. Delete reservations via tier IDs (reservations FK to ticket_tiers, not events)
+    if (tierIds.length > 0) {
+      // Try multiple possible FK column names for resilience
+      const { error: resErr1 } = await supabase.from('reservations').delete().in('tier_id', tierIds);
+      if (resErr1) {
+        // Fallback: try ticket_tier_id column
+        const { error: resErr2 } = await supabase.from('reservations').delete().in('ticket_tier_id', tierIds);
+        if (resErr2) {
+          // Last fallback: try event_id directly
+          const { error: resErr3 } = await supabase.from('reservations').delete().eq('event_id', eventId);
+          if (resErr3) console.warn('Reservations cleanup skipped:', resErr3.message);
+        }
+      }
+    }
 
-    // 5. Delete event images (table may not exist — skip silently)
-    const { error: imgErr } = await supabase.from('event_images').delete().eq('event_id', eventId);
-    if (imgErr) console.warn('Event images cleanup skipped:', imgErr.message);
+    // 5. Delete ticket tiers
+    if (tierIds.length > 0) {
+      const { error: tierDelErr } = await supabase.from('ticket_tiers').delete().eq('event_id', eventId);
+      if (tierDelErr) console.warn('Ticket tiers cleanup warning:', tierDelErr.message);
+    }
 
-    // 6. Delete ticket tiers
-    await supabase.from('ticket_tiers').delete().eq('event_id', eventId);
+    // 6. Clean up storage files (non-blocking)
+    try {
+      const { data: files } = await supabase.storage.from('event-covers').list(`events/${eventId}`);
+      if (files && files.length > 0) {
+        const paths = files.map(f => `events/${eventId}/${f.name}`);
+        await supabase.storage.from('event-covers').remove(paths);
+      }
+    } catch (_) { /* storage cleanup is best-effort */ }
 
     // 7. Delete the event itself
     const { error: deleteErr } = await supabase
