@@ -1,9 +1,9 @@
 import { supabase, getCurrentUser } from './supabase.js';
 import { showToast } from './dashboard-ui.js';
 
-/* ══════════════════════════════════
+/* ==================================
    PAYOUT SETTINGS PANEL
-   ══════════════════════════════════ */
+   ================================== */
 
 export function setupPayoutPanel() {
   loadPayoutData();
@@ -12,7 +12,7 @@ export function setupPayoutPanel() {
     e.preventDefault();
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = 'Saving...';
 
     try {
       const user = await getCurrentUser();
@@ -42,7 +42,7 @@ export function setupPayoutPanel() {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = '💾 Save Payout Details';
+      btn.textContent = ' Save Payout Details';
     }
   });
 }
@@ -68,9 +68,9 @@ export async function loadPayoutData() {
   } catch (_) { /* No payout info yet */ }
 }
 
-/* ══════════════════════════════════
-   🌙 DARK MODE
-   ══════════════════════════════════ */
+/* ==================================
+    DARK MODE
+   ================================== */
 export function setupDarkMode() {
   const saved = localStorage.getItem('ev-dash-dark');
   if (saved === 'true') document.body.classList.add('dark-mode');

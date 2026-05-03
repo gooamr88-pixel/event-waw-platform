@@ -4,9 +4,9 @@ import { setSafeHTML } from './dom.js';
 
 let dashNotifications = [];
 
-/* ══════════════════════════════════
+/* ==================================
    NOTIFICATIONS
-   ══════════════════════════════════ */
+   ================================== */
 
 export async function loadNotifications() {
   try {
@@ -52,7 +52,7 @@ export async function loadNotifications() {
         const guestName = orderMap[t.order_id]?.guest_name || t.attendee_name || 'Someone';
         const tierName = tierNameMap[t.ticket_tier_id] || '';
         return {
-          icon: '🎫',
+          icon: '',
           text: `<strong>${escapeHTML(guestName)}</strong> purchased a <strong>${escapeHTML(tierName)}</strong> ticket for <strong>${escapeHTML(eventMap[tierEventMap[t.ticket_tier_id]] || '')}</strong>`,
           time: t.created_at,
           unread: true
@@ -72,7 +72,7 @@ export function renderNotifications() {
   bell?.querySelector('.ev-notif-badge')?.remove();
 
   if (!dashNotifications.length) {
-    setSafeHTML(list, '<div class="ev-notif-empty">🎉 No new notifications</div>');
+    setSafeHTML(list, '<div class="ev-notif-empty"> No new notifications</div>');
     bell?.classList.remove('has-notif');
     return;
   }
@@ -106,9 +106,9 @@ export function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
-/* ══════════════════════════════════
-   📅 CALENDAR VIEW
-   ══════════════════════════════════ */
+/* ==================================
+    CALENDAR VIEW
+   ================================== */
 let calMonth = new Date().getMonth();
 let calYear = new Date().getFullYear();
 let calEvents = [];

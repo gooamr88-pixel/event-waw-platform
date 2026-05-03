@@ -1,7 +1,7 @@
-/* ═══════════════════════════════════
-   EVENT WAW DASHBOARD — Controller
+/* ===================================
+   EVENT WAW DASHBOARD - Controller
    Single-file, modular, production-ready
-   ═══════════════════════════════════ */
+   =================================== */
 
 import { resetCreateEventForm, initGooglePlacesAutocomplete, renderGoogleKeywords, showGoogleMapPreview, setupCeUpload, handleCeFileUpload, renderCeTicketsTable, updateCePreview, showEditModal, uploadCoverImage, uploadEventFile } from '../src/lib/dashboard-modals.js';
 import { setupCreateModal, loadEventForEditing } from '../src/lib/dashboard-modals.js';
@@ -23,9 +23,9 @@ import { renderEventsTable, populateEventSelects } from '../src/lib/dashboard-ev
 import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 
-/* ══════════════════════════════════
+/* ==================================
    INIT
-   ══════════════════════════════════ */
+   ================================== */
 document.addEventListener('DOMContentLoaded', async () => {
   const auth = await protectPage({ requireRole: 'organizer' });
   if (!auth) return;
@@ -49,9 +49,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   await loadDashboard();
 });
 
-/* ══════════════════════════════════
+/* ==================================
    SIGN OUT
-   ══════════════════════════════════ */
+   ================================== */
 function setupSignOut() {
   document.getElementById('sign-out-btn')?.addEventListener('click', async () => {
     if (confirm('Are you sure you want to sign out?')) {
@@ -60,9 +60,9 @@ function setupSignOut() {
   });
 }
 
-/* ══════════════════════════════════
+/* ==================================
    LOAD DASHBOARD DATA
-   ══════════════════════════════════ */
+   ================================== */
 let calEvents = [];
 
 async function loadDashboard() {
@@ -100,7 +100,7 @@ async function loadDashboard() {
     const scanRate = totalTickets > 0 ? Math.round((totalScanned / totalTickets) * 100) : 0;
     document.getElementById('ana-tickets').textContent = totalTickets.toLocaleString();
     document.getElementById('ana-revenue').textContent = '$' + totalRevenue.toLocaleString();
-    document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '—';
+    document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '-';
 
     renderEventsTable(events);
     setupTicketsPanel(events);
@@ -121,9 +121,9 @@ async function loadDashboard() {
   }
 }
 
-/* ══════════════════════════════════
-   🔔 NOTIFICATIONS
-   ══════════════════════════════════ */
+/* ==================================
+    NOTIFICATIONS
+   ================================== */
 function setupNotifications() {
   const bell = document.getElementById('notif-bell');
   const dropdown = document.getElementById('notif-dropdown');
@@ -149,14 +149,14 @@ function setupNotifications() {
   loadNotifications();
 }
 
-/* ══════════════════════════════════
+/* ==================================
    GOOGLE PLACES AUTOCOMPLETE
-   ══════════════════════════════════ */
+   ================================== */
 let googleMapInstance = null;
 let googleMapMarker = null;
 let googleAutocompleteInitialized = false;
 
-/** Country code → timezone mapping for common countries */
+/** Country code -> timezone mapping for common countries */
 const COUNTRY_TIMEZONE_MAP = {
   EG: 'Africa/Cairo', SA: 'Asia/Riyadh', AE: 'Asia/Dubai', US: 'America/New_York',
   CA: 'America/Toronto', GB: 'Europe/London', DE: 'Europe/Berlin', FR: 'Europe/Paris',
@@ -165,13 +165,13 @@ const COUNTRY_TIMEZONE_MAP = {
   TN: 'Africa/Tunis', JP: 'Asia/Tokyo',
 };
 
-/** ISO country → select option mapping */
+/** ISO country -> select option mapping */
 const ISO_TO_SELECT = {
   EG: 'EG', SA: 'SA', AE: 'AE', US: 'US', CA: 'CA', GB: 'GB', DE: 'DE', FR: 'FR',
   TR: 'TR', JO: 'JO', LB: 'LB', KW: 'KW', QA: 'QA', BH: 'BH', OM: 'OM', MA: 'MA', TN: 'TN',
 };
 
-/** Country code → default currency */
+/** Country code -> default currency */
 const COUNTRY_CURRENCY_MAP = {
   EG: 'EGP', SA: 'SAR', AE: 'AED', US: 'USD', CA: 'CAD', GB: 'GBP', DE: 'EUR', FR: 'EUR',
 };

@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Tickets API
-   ═══════════════════════════════════ */
+/* ===================================
+   EVENT WAW - Tickets API
+   =================================== */
 
 import { supabase } from './supabase.js';
 
@@ -134,7 +134,7 @@ export async function getOrderBySessionPublic(sessionId) {
  * Get order details by Stripe session ID (used on success page).
  */
 export async function getOrderBySession(sessionId) {
-  // The webhook may not have arrived yet — poll for up to 20 seconds
+  // The webhook may not have arrived yet - poll for up to 20 seconds
   const maxAttempts = 10;
   const delayMs = 2000;
 
@@ -182,7 +182,7 @@ export async function getGuestTickets(guestToken) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // No Authorization header — guest access
+        // No Authorization header - guest access
       },
       body: JSON.stringify({ guest_token: guestToken }),
     }

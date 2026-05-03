@@ -1,7 +1,7 @@
 /**
- * ═══════════════════════════════════
- * EVENT WAW — Content Security Policy
- * ═══════════════════════════════════
+ * ===================================
+ * EVENT WAW - Content Security Policy
+ * ===================================
  * 
  * This script injects a CSP meta tag into all pages.
  * Import this FIRST in every page, before any other scripts.

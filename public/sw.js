@@ -1,7 +1,7 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Service Worker
+/* ===================================
+   EVENT WAW - Service Worker
    PWA offline support for Scanner
-   ═══════════════════════════════════ */
+   =================================== */
 
 const CACHE_NAME = 'event-waw-v1';
 const ASSETS_TO_CACHE = [
@@ -11,7 +11,7 @@ const ASSETS_TO_CACHE = [
   '/manifest.json',
 ];
 
-// Install — cache critical assets
+// Install - cache critical assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
@@ -22,7 +22,7 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate — clean old caches
+// Activate - clean old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -36,13 +36,13 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch — network first, fallback to cache
+// Fetch - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   // Skip non-GET and cross-origin requests
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith(self.location.origin)) return;
 
-  // Skip API/Supabase calls — always go to network
+  // Skip API/Supabase calls - always go to network
   if (event.request.url.includes('/functions/') || 
       event.request.url.includes('supabase.co')) {
     return;

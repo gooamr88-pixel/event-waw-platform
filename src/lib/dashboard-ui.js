@@ -5,7 +5,7 @@ export function showToast(message, type = 'info') {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `ev-toast ${type}`;
-  setSafeHTML(toast, `<span>${type === 'success' ? '✓' : type === 'error' ? '✗' : 'ℹ'}</span> ${escapeHTML(message)}`);
+  setSafeHTML(toast, `<span>${type === 'success' ? '[OK]' : type === 'error' ? '[X]' : '[i]'}</span> ${escapeHTML(message)}`);
   container.appendChild(toast);
   setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 300); }, 3500);
 }

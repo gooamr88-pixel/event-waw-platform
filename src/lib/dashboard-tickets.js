@@ -57,15 +57,15 @@ export function setupTicketsPanel() {
       const htmlString = tickets.map((t, i) => {
         const order = orderMap[t.order_id] || {};
         const name = t.attendee_name || order.guest_name || (t.user_id ? t.user_id.substring(0, 8) : 'Guest');
-        const email = t.attendee_email || order.guest_email || '—';
-        const tierName = tierMap[t.ticket_tier_id]?.name || '—';
+        const email = t.attendee_email || order.guest_email || '-';
+        const tierName = tierMap[t.ticket_tier_id]?.name || '-';
         return `<tr>
         <td>${i + 1}</td>
         <td style="font-weight:600">${escapeHTML(name)}</td>
         <td>${escapeHTML(email)}</td>
         <td>${escapeHTML(tierName)}</td>
-        <td>—</td>
-        <td><span class="ev-badge ${t.scanned_at ? 'accepted' : 'pending'}">${t.scanned_at ? '✓ Scanned' : 'Pending'}</span></td>
+        <td>-</td>
+        <td><span class="ev-badge ${t.scanned_at ? 'accepted' : 'pending'}">${t.scanned_at ? '[OK] Scanned' : 'Pending'}</span></td>
         <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(t.created_at).toLocaleDateString()}</td>
       </tr>`;
       }).join('');
@@ -91,7 +91,7 @@ export function setupTicketsPanel() {
       if (pdfBtn) pdfBtn.onclick = () => {
         const eventName = document.getElementById('ticket-event-select')?.selectedOptions[0]?.textContent || 'Event';
         const printWin = window.open('', '_blank', 'width=800,height=600');
-        printWin.document.write(`<!DOCTYPE html><html><head><title>Tickets — ${escapeHTML(eventName)}</title>
+        printWin.document.write(`<!DOCTYPE html><html><head><title>Tickets - ${escapeHTML(eventName)}</title>
           <style>
             body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #222; }
             h1 { font-size: 1.3rem; margin-bottom: 4px; }
@@ -105,17 +105,17 @@ export function setupTicketsPanel() {
             .badge-pending { background: #fef3c7; color: #d97706; }
             @media print { body { padding: 0; } }
           </style></head><body>
-          <h1>🎫 ${escapeHTML(eventName)} — Ticket Report</h1>
-          <p class="sub">Generated: ${new Date().toLocaleString()} • Total: ${tickets.length} tickets</p>
+          <h1> ${escapeHTML(eventName)} - Ticket Report</h1>
+          <p class="sub">Generated: ${new Date().toLocaleString()}  Total: ${tickets.length} tickets</p>
           <table>
             <thead><tr><th>#</th><th>Attendee</th><th>Email</th><th>Tier</th><th>Seat</th><th>Status</th><th>Purchase Date</th></tr></thead>
             <tbody>${tickets.map((t, i) => `<tr>
               <td>${i + 1}</td>
-              <td><strong>${escapeHTML(t.attendee_name || '—')}</strong></td>
-              <td>${escapeHTML(t.attendee_email || '—')}</td>
-              <td>${escapeHTML(t.tier_name || '—')}</td>
-              <td>${t.seat_section ? t.seat_section + ' R' + t.seat_row + ' S' + t.seat_number : '—'}</td>
-              <td><span class="badge ${t.scanned_at ? 'badge-scanned' : 'badge-pending'}">${t.scanned_at ? '✓ Scanned' : 'Pending'}</span></td>
+              <td><strong>${escapeHTML(t.attendee_name || '-')}</strong></td>
+              <td>${escapeHTML(t.attendee_email || '-')}</td>
+              <td>${escapeHTML(t.tier_name || '-')}</td>
+              <td>${t.seat_section ? t.seat_section + ' R' + t.seat_row + ' S' + t.seat_number : '-'}</td>
+              <td><span class="badge ${t.scanned_at ? 'badge-scanned' : 'badge-pending'}">${t.scanned_at ? '[OK] Scanned' : 'Pending'}</span></td>
               <td>${new Date(t.created_at).toLocaleDateString()}</td>
             </tr>`).join('')}</tbody>
           </table>

@@ -25,7 +25,7 @@ export function showGlobalToast(message, type = 'error') {
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `ev-toast ${type}`;
-  toast.textContent = ` ${type === 'error' ? '✗' : '✓'} ${message}`;
+  toast.textContent = ` ${type === 'error' ? '[X]' : '[OK]'} ${message}`;
   container.appendChild(toast);
   
   // Prevent memory leaks by cleaning up the element

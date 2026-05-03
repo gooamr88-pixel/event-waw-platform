@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Events API
-   ═══════════════════════════════════ */
+/* ===================================
+   EVENT WAW - Events API
+   =================================== */
 
 import { supabase } from './supabase.js';
 
@@ -111,7 +111,7 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // No Authorization header — guest checkout
+        // No Authorization header - guest checkout
       },
       body: JSON.stringify({
         tier_id: tierId,
@@ -273,13 +273,13 @@ export async function getVenueMap(eventId) {
 /**
  * Delete an event and all its dependent data.
  * SAFETY: Refuses to delete if ANY tickets exist (sold or valid).
- * Cascade order: seats → venue_maps → reservations → ticket_tiers → event.
+ * Cascade order: seats -> venue_maps -> reservations -> ticket_tiers -> event.
  *
  * @param {string} eventId - The event UUID to delete
  * @returns {{ success: boolean, error?: string }}
  */
 export async function deleteEvent(eventId) {
-  // 1. Check for existing tickets — BLOCK deletion if any exist
+  // 1. Check for existing tickets - BLOCK deletion if any exist
   const { count: ticketCount, error: countErr } = await supabase
     .from('tickets')
     .select('id', { count: 'exact', head: true })

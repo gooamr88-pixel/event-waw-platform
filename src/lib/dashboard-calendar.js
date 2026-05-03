@@ -50,6 +50,6 @@ export function renderCalendar() {
     html += `<div class="ev-calendar-cell other-month"><div class="ev-calendar-date">${i}</div></div>`;
   }
 
-  grid.innerHTML = html;
+  setSafeHTML(grid, html);
 }
 

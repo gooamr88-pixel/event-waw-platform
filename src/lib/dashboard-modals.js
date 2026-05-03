@@ -174,9 +174,9 @@ export function setupCreateModal() {
     }
   });
   function renderKeywords() {
-    keywordsWrap.innerHTML = ceKeywords.map((k, i) =>
-      `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
-    ).join('');
+    setSafeHTML(keywordsWrap, ceKeywords.map((k, i) =>
+      `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">x</button></span>`
+    ).join(''));
     keywordsWrap.querySelectorAll('button').forEach(btn => {
       btn.addEventListener('click', () => { ceKeywords.splice(Number(btn.dataset.idx), 1); renderKeywords(); });
     });
@@ -187,7 +187,7 @@ export function setupCreateModal() {
     const container = document.getElementById('ce-social-links');
     const row = document.createElement('div');
     row.className = 'ce-social-row';
-    row.innerHTML = `<select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">🗑️</button>`;
+    setSafeHTML(row, `<select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">🗑️</button>`);
     container.appendChild(row);
   });
   document.getElementById('ce-social-links')?.addEventListener('click', (e) => {
@@ -205,7 +205,7 @@ export function setupCreateModal() {
     const grid = document.getElementById('ce-gallery-grid');
     const item = document.createElement('div');
     item.className = 'ce-gallery-item';
-    item.innerHTML = `<label>Photo ${ceGalleryCount}</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div>`;
+    setSafeHTML(item, `<label>Photo ${ceGalleryCount}</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div>`);
     grid.appendChild(item);
     const fileInput = item.querySelector('input[type="file"]');
     const area = item.querySelector('.ce-upload-area');
@@ -218,7 +218,7 @@ export function setupCreateModal() {
     const count = grid.children.length + 1;
     const item = document.createElement('div');
     item.className = 'ce-gallery-item';
-    item.innerHTML = `<label>Sponsor ${count}</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Logo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div>`;
+    setSafeHTML(item, `<label>Sponsor ${count}</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Logo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div>`);
     grid.appendChild(item);
     const fileInput = item.querySelector('input[type="file"]');
     const area = item.querySelector('.ce-upload-area');
@@ -567,7 +567,7 @@ export function setupCreateModal() {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.innerHTML = ceEditingEventId ? '💾 Update Event' : '🚀 Publish Event';
+      setSafeHTML(btn, ceEditingEventId ? 'Update Event' : 'Publish Event');
     }
   });
 
@@ -594,7 +594,7 @@ export async function loadEventForEditing(eventId) {
     const breadcrumb = document.querySelector('#panel-create-event .ev-breadcrumb strong');
     if (breadcrumb) breadcrumb.textContent = 'Edit Event';
     const publishBtn = document.getElementById('ce-publish-btn');
-    if (publishBtn) publishBtn.innerHTML = '💾 Update Event';
+    if (publishBtn) setSafeHTML(publishBtn, 'Update Event');
 
     // ── Fill basic fields ──
     const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
@@ -621,7 +621,7 @@ export async function loadEventForEditing(eventId) {
 
     // Rich text editor
     const editor = document.getElementById('ce-overview');
-    if (editor && ev.description) editor.innerHTML = ev.description;
+    if (editor && ev.description) setSafeHTML(editor, ev.description);
 
     // Dates — convert ISO to datetime-local format
     const toLocalDatetime = (iso) => {
@@ -645,9 +645,9 @@ export async function loadEventForEditing(eventId) {
       ceKeywords = [...ev.keywords];
       const tagsWrap = document.getElementById('ce-keywords-tags');
       if (tagsWrap) {
-        tagsWrap.innerHTML = ceKeywords.map((k, i) =>
-          `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
-        ).join('');
+        setSafeHTML(tagsWrap, ceKeywords.map((k, i) =>
+          `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">x</button></span>`
+        ).join(''));
       }
     }
 
@@ -655,7 +655,7 @@ export async function loadEventForEditing(eventId) {
     if (ev.social_links && Array.isArray(ev.social_links) && ev.social_links.length) {
       const container = document.getElementById('ce-social-links');
       if (container) {
-        container.innerHTML = ev.social_links.map(link => `
+        setSafeHTML(container, ev.social_links.map(link => `
           <div class="ce-social-row">
             <select class="ev-form-input ce-social-select">
               <option value="">Select Platform</option>
@@ -667,9 +667,9 @@ export async function loadEventForEditing(eventId) {
               <option value="youtube" ${link.platform==='youtube'?'selected':''}>YouTube</option>
             </select>
             <input class="ev-form-input" type="url" placeholder="https://..." value="${escapeHTML(link.url || '')}" />
-            <button type="button" class="ce-social-del" title="Remove">🗑️</button>
+            <button type="button" class="ce-social-del" title="Remove">x</button>
           </div>
-        `).join('');
+        `).join(''));
       }
     }
 
@@ -768,7 +768,7 @@ export function resetCreateEventForm() {
   document.getElementById('ce-max-scans') && (document.getElementById('ce-max-scans').value = '1');
   // Reset rich text editor
   const editor = document.getElementById('ce-overview');
-  if (editor) editor.innerHTML = '';
+  if (editor) editor.textContent = '';
   // Reset image uploads
   ['ce-main-photo-area','ce-logo-area'].forEach(id => {
     const area = document.getElementById(id);
@@ -776,15 +776,15 @@ export function resetCreateEventForm() {
   });
   // Reset gallery & sponsors
   const galleryGrid = document.getElementById('ce-gallery-grid');
-  if (galleryGrid) galleryGrid.innerHTML = `<div class="ce-gallery-item"><label>Photo 1</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div></div>`;
+  if (galleryGrid) setSafeHTML(galleryGrid, `<div class="ce-gallery-item"><label>Photo 1</label><div class="ce-upload-area ce-gallery-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><span>Upload Photo</span><small>Size (100 * 100)</small><input type="file" accept="image/jpeg,image/png" /></div></div>`);
   const sponsorsGrid = document.getElementById('ce-sponsors-grid');
-  if (sponsorsGrid) sponsorsGrid.innerHTML = '';
+  if (sponsorsGrid) sponsorsGrid.textContent = '';
   // Reset social links to 1 empty row
   const socialLinks = document.getElementById('ce-social-links');
-  if (socialLinks) socialLinks.innerHTML = `<div class="ce-social-row"><select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">🗑️</button></div>`;
+  if (socialLinks) setSafeHTML(socialLinks, `<div class="ce-social-row"><select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">x</button></div>`);
   // Reset keywords tags
   const tagsWrap = document.getElementById('ce-keywords-tags');
-  if (tagsWrap) tagsWrap.innerHTML = '';
+  if (tagsWrap) tagsWrap.textContent = '';
   // Reset ticket categories & ticket list
   ceTicketCategories = [];
   ceTicketsList = [];
@@ -796,11 +796,11 @@ export function resetCreateEventForm() {
   const breadcrumb = document.querySelector('#panel-create-event .ev-breadcrumb strong');
   if (breadcrumb) breadcrumb.textContent = 'Create Event';
   const publishBtn = document.getElementById('ce-publish-btn');
-  if (publishBtn) publishBtn.innerHTML = '🚀 Publish Event';
+  if (publishBtn) setSafeHTML(publishBtn, 'Publish Event');
   const catSelect = document.getElementById('ce-ticket-category-select');
-  if (catSelect) catSelect.innerHTML = '<option value="">Select Category</option>';
+  if (catSelect) setSafeHTML(catSelect, '<option value="">Select Category</option>');
   const ticketTbody = document.getElementById('ce-tickets-tbody');
-  if (ticketTbody) ticketTbody.innerHTML = '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>';
+  if (ticketTbody) setSafeHTML(ticketTbody, '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>');
   // Reset ticket type to Normal
   document.querySelectorAll('.ce-ticket-card').forEach(c => c.classList.remove('selected'));
   const normalCard = document.querySelector('.ce-ticket-card:first-child');
@@ -913,9 +913,9 @@ export async function initGooglePlacesAutocomplete() {
         // Re-render keywords
         const tagsWrap = document.getElementById('ce-keywords-tags');
         if (tagsWrap) {
-          tagsWrap.innerHTML = ceKeywords.map((k, i) =>
-            `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
-          ).join('');
+          setSafeHTML(tagsWrap, ceKeywords.map((k, i) =>
+            `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">x</button></span>`
+          ).join(''));
           tagsWrap.querySelectorAll('button').forEach(btn => {
             btn.addEventListener('click', () => { ceKeywords.splice(Number(btn.dataset.idx), 1); renderGoogleKeywords(); });
           });
@@ -949,9 +949,9 @@ export async function initGooglePlacesAutocomplete() {
 export function renderGoogleKeywords() {
   const tagsWrap = document.getElementById('ce-keywords-tags');
   if (!tagsWrap) return;
-  tagsWrap.innerHTML = ceKeywords.map((k, i) =>
+  setSafeHTML(tagsWrap, ceKeywords.map((k, i) =>
     `<span class="ce-tag">${escapeHTML(k)} <button type="button" data-idx="${i}">✕</button></span>`
-  ).join('');
+  ).join(''));
   tagsWrap.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => { ceKeywords.splice(Number(btn.dataset.idx), 1); renderGoogleKeywords(); });
   });
@@ -967,7 +967,7 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
 
   // Update address bar
   if (addressBar) {
-    addressBar.innerHTML = `
+    setSafeHTML(addressBar, `
       <div class="ce-map-address-info">
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#4285F4" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <div>
@@ -976,9 +976,9 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
         </div>
       </div>
       <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" class="ce-map-open-btn" title="Open in Google Maps">
-        <svg viewBox="0 0 24 24\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6\"/><polyline points=\"15 3 21 3 21 9\"/><line x1=\"10\" y1=\"14\" x2=\"21\" y2=\"3\"/></svg>
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
         Open in Maps
-      </a>`;
+      </a>`);
   }
 
   const location = { lat, lng };
@@ -1008,7 +1008,7 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
     if (googleMapMarker) googleMapMarker.map = null;
     
     const markerContent = document.createElement('div');
-    markerContent.innerHTML = `
+    setSafeHTML(markerContent, `
       <div style="
         display: flex; align-items: center; gap: 6px;
         background: #1a1a2e; color: #fff; padding: 8px 14px;
@@ -1025,7 +1025,7 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
         background: #4285F4; border-radius: 50%;
         margin: -2px auto 0; position: relative;
         box-shadow: 0 0 0 4px rgba(66,133,244,.3);
-      "></div>`;
+      "></div>`);
 
     googleMapMarker = new AdvancedMarkerElement({
       map: googleMapInstance,
@@ -1036,10 +1036,10 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
   } catch (err) {
     // Fallback: use static map image
     console.warn('Interactive map failed, using static fallback:', err);
-    mapDiv.innerHTML = `<iframe 
+    setSafeHTML(mapDiv, `<iframe 
       width="100%" height="100%" frameborder="0" style="border:0;border-radius:12px" 
       src="https://www.google.com/maps/embed/v1/place?key=AIzaSyCqKRXXkjYNaGYjjPSm0OUxPAPxbfJnqEY&q=${lat},${lng}&zoom=16" 
-      allowfullscreen loading="lazy"></iframe>`;
+      allowfullscreen loading="lazy"></iframe>`);
   }
 }
 
@@ -1070,10 +1070,10 @@ export function handleCeFileUpload(e, area) {
 export function renderCeTicketsTable() {
   const tbody = document.getElementById('ce-tickets-tbody');
   if (!ceTicketsList.length) {
-    tbody.innerHTML = '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>';
+    setSafeHTML(tbody, '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>');
     return;
   }
-  tbody.innerHTML = ceTicketsList.map((t, i) => {
+  setSafeHTML(tbody, ceTicketsList.map((t, i) => {
     const sym = t.currency === 'CAD' ? 'CA$' : t.currency === 'EUR' ? '€' : t.currency === 'GBP' ? '£' : '$';
     return `<tr>
       <td style="font-weight:600">${escapeHTML(t.name)}</td>
@@ -1083,7 +1083,7 @@ export function renderCeTicketsTable() {
       <td>${t.earlyPrice ? sym + Number(t.earlyPrice).toFixed(2) : '—'}</td>
       <td><button class="ev-btn-icon" title="Remove" data-del-ticket="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
     </tr>`;
-  }).join('');
+  }).join(''));
   if (!ceTicketTableListenerAttached) {
     ceTicketTableListenerAttached = true;
     tbody.addEventListener('click', (e) => {
@@ -1120,7 +1120,7 @@ export function updateCePreview() {
   const previewImgDiv = document.getElementById('ce-preview-img');
   if (mainImg) {
     let pImg = previewImgDiv.querySelector('img');
-    if (!pImg) { pImg = document.createElement('img'); previewImgDiv.innerHTML = ''; previewImgDiv.appendChild(pImg); }
+    if (!pImg) { pImg = document.createElement('img'); previewImgDiv.textContent = ''; previewImgDiv.appendChild(pImg); }
     pImg.src = mainImg.src;
   }
 }
@@ -1138,8 +1138,8 @@ export async function showEditModal(eventId) {
 
   const modal = document.createElement('div');
   modal.className = 'ev-modal-overlay active ev-edit-modal';
-  modal.innerHTML = `<div class="ev-modal" style="max-width:520px">
-    <div class="ev-modal-header"><h2>✏️ Edit Event</h2><button class="ev-modal-close" id="edit-close">✕</button></div>
+  setSafeHTML(modal, `<div class="ev-modal" style="max-width:520px">
+    <div class="ev-modal-header"><h2>Edit Event</h2><button class="ev-modal-close" id="edit-close">x</button></div>
     <div class="ev-form-group">
       <label>Event Title</label>
       <input class="ev-form-input" type="text" id="edit-title" value="${escapeHTML(ev.title)}" />
@@ -1156,16 +1156,16 @@ export async function showEditModal(eventId) {
     <div class="ev-form-group">
       <label>Status</label>
       <div style="display:flex;gap:10px">
-        <button class="ev-btn ${isDraft ? 'ev-btn-outline' : 'ev-btn-pink'}" id="edit-status-pub" type="button" style="flex:1">🟢 Published</button>
-        <button class="ev-btn ${isDraft ? 'ev-btn-pink' : 'ev-btn-outline'}" id="edit-status-draft" type="button" style="flex:1">📝 Draft</button>
+        <button class="ev-btn ${isDraft ? 'ev-btn-outline' : 'ev-btn-pink'}" id="edit-status-pub" type="button" style="flex:1">Published</button>
+        <button class="ev-btn ${isDraft ? 'ev-btn-pink' : 'ev-btn-outline'}" id="edit-status-draft" type="button" style="flex:1">Draft</button>
       </div>
       <input type="hidden" id="edit-status" value="${ev.status}" />
     </div>
     <div style="display:flex;gap:10px;margin-top:18px">
       <button class="ev-btn ev-btn-outline" id="edit-cancel" style="flex:1">Cancel</button>
-      <button class="ev-btn ev-btn-pink" id="edit-save" style="flex:1">Save Changes</button>
+      <button class="ev-btn ev-btn-pink" id="edit-save" style="width:100%;margin-top:10px">Save Changes</button>
     </div>
-  </div>`;
+  </div>`);
   document.body.appendChild(modal);
 
   // Status toggle

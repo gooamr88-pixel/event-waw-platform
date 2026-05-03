@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Auth Helpers
-   ═══════════════════════════════════ */
+/* ===================================
+   EVENT WAW - Auth Helpers
+   =================================== */
 
 import { supabase, getCurrentUser } from './supabase.js';
 

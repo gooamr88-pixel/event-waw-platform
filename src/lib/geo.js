@@ -1,10 +1,10 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Geolocation & Proximity Module
-   ═══════════════════════════════════
+/* ===================================
+   EVENT WAW - Geolocation & Proximity Module
+   ===================================
    IP-based geolocation (no browser permission needed).
    Uses ipapi.co free API for real IP detection.
    Includes Haversine distance calculation for client-side sorting.
-   ═══════════════════════════════════ */
+   =================================== */
 
 const GEO_CACHE_KEY = 'ewaw_geo_v1';
 const GEO_CACHE_TTL = 30 * 60 * 1000; // 30 minutes
@@ -54,8 +54,8 @@ export async function detectUserLocation() {
     console.warn('[Geo] ipapi.co failed:', e.message);
   }
 
-  // 3. Fallback: Cloudflare trace → parse text for lat/lon
-  //    (Only gives country/colo, not lat/lon — use as last resort with country-level coords)
+  // 3. Fallback: Cloudflare trace -> parse text for lat/lon
+  //    (Only gives country/colo, not lat/lon - use as last resort with country-level coords)
   try {
     const resp = await fetch('https://www.cloudflare.com/cdn-cgi/trace', {
       signal: AbortSignal.timeout(4000),

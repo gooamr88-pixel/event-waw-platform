@@ -9,7 +9,7 @@ export function setupProfilePanel() {
     e.preventDefault();
     const btn = e.target.querySelector('[type="submit"]');
     btn.disabled = true;
-    btn.textContent = 'Saving…';
+    btn.textContent = 'Saving...';
 
     try {
       const user = await getCurrentUser();
@@ -32,7 +32,7 @@ export function setupProfilePanel() {
       if (!profileData.brand_name || !profileData.address || !profileData.bio) {
         showToast('Please fill all required fields', 'error');
         btn.disabled = false;
-        btn.textContent = '💾 Save Profile';
+        btn.textContent = ' Save Profile';
         return;
       }
 
@@ -47,7 +47,7 @@ export function setupProfilePanel() {
       showToast('Error: ' + err.message, 'error');
     } finally {
       btn.disabled = false;
-      btn.textContent = '💾 Save Profile';
+      btn.textContent = ' Save Profile';
     }
   });
 }

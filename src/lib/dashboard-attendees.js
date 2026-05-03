@@ -1,6 +1,7 @@
 import { supabase, getCurrentUser } from './supabase.js';
 import { showToast } from './dashboard-ui.js';
-import { safeQuery } from './api.js';
+import { escapeHTML } from './utils.js';
+import { setSafeHTML } from './dom.js';
 
 export function setupEmailAttendees() {
   document.getElementById('ticket-email-btn')?.addEventListener('click', async () => {
@@ -21,9 +22,7 @@ export function setupEmailAttendees() {
       // Get emails from orders table (where guest emails are stored)
       const orderIds = [...new Set((tickets || []).map(t => t.order_id).filter(Boolean))];
       let allEmails = [];
-      // First try attendee_email on tickets (if column exists)
       (tickets || []).forEach(t => { if (t.attendee_email) allEmails.push(t.attendee_email); });
-      // Also try orders table
       if (orderIds.length) {
         try {
           const { data: orders } = await supabase.from('orders').select('id, guest_email').in('id', orderIds);
@@ -36,10 +35,10 @@ export function setupEmailAttendees() {
       // Show compose modal
       const modal = document.createElement('div');
       modal.className = 'ev-modal-overlay active';
-      modal.innerHTML = `<div class="ev-modal" style="max-width:560px">
+      setSafeHTML(modal, `<div class="ev-modal" style="max-width:560px">
         <div class="ev-modal-header">
-          <h2>📧 Email Attendees</h2>
-          <button class="ev-modal-close" id="email-close">✕</button>
+          <h2>Email Attendees</h2>
+          <button class="ev-modal-close" id="email-close">x</button>
         </div>
         <div class="ev-email-compose">
           <div class="ev-email-to">
@@ -57,10 +56,10 @@ export function setupEmailAttendees() {
           </div>
           <div style="display:flex;gap:10px">
             <button class="ev-btn ev-btn-outline" id="email-cancel" style="flex:1">Cancel</button>
-            <button class="ev-btn ev-btn-pink" id="email-send" style="flex:1">📨 Open in Email Client</button>
+            <button class="ev-btn ev-btn-pink" id="email-send" style="flex:1">Open in Email Client</button>
           </div>
         </div>
-      </div>`;
+      </div>`);
       document.body.appendChild(modal);
 
       document.getElementById('email-close').onclick = () => modal.remove();
@@ -80,4 +79,3 @@ export function setupEmailAttendees() {
     }
   });
 }
-

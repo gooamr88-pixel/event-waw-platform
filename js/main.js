@@ -1,13 +1,13 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Main JavaScript (Landing Page)
-   ═══════════════════════════════════
+/* ===================================
+   EVENT WAW - Main JavaScript (Landing Page)
+   ===================================
    This file is loaded via <script src> on index.html
    (non-module). It handles landing-page-specific features
    like scroll reveal, stat counters, hero slideshow, and filters.
 
    Theme, nav, mobile menu, and particles are handled by
    src/lib/ui.js which is imported as a module on each page.
-   ═══════════════════════════════════ */
+   =================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
   initReveal();
@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initSlideshow();
 });
 
-/* ── Scroll Reveal ── */
+/* -- Scroll Reveal -- */
 function initReveal() {
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
@@ -48,7 +48,7 @@ function initReveal() {
   document.querySelectorAll('[data-stagger]').forEach(el => sio.observe(el));
 }
 
-/* ── Stat Counters ── */
+/* -- Stat Counters -- */
 function initCounters() {
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => {
@@ -78,7 +78,7 @@ function animCount(el) {
   })(start);
 }
 
-/* ── Filter Buttons ── */
+/* -- Filter Buttons -- */
 function initFilters() {
   document.addEventListener('click', e => {
     if (e.target.classList.contains('filter-btn')) {
@@ -90,7 +90,7 @@ function initFilters() {
   });
 }
 
-/* ── Hero Slideshow ── */
+/* -- Hero Slideshow -- */
 function initSlideshow() {
   const slides = document.querySelectorAll('.hero-slide');
   if (slides.length < 2) return;

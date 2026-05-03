@@ -1,11 +1,11 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Venue Designer Engine
+/* ===================================
+   EVENT WAW - Venue Designer Engine
    Generates layout_json + bulk-creates seats
-   ═══════════════════════════════════ */
+   =================================== */
 
 import { supabase } from './supabase.js';
 
-// ── Layout generation constants ──
+// -- Layout generation constants --
 const SEAT_RADIUS = 6;
 const SEAT_GAP = 16;        // center-to-center distance between seats
 const ROW_GAP = 18;         // vertical gap between rows

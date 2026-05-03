@@ -1,14 +1,14 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Centralized Auth Guard
-   ═══════════════════════════════════
+/* ===================================
+   EVENT WAW - Centralized Auth Guard
+   ===================================
    Single source of truth for page access
    control, OTP verification, and nav UI.
-   ═══════════════════════════════════ */
+   =================================== */
 
 import { supabase, getCurrentUser, getCurrentProfile } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 
-/* ── Loading Overlay ── */
+/* -- Loading Overlay -- */
 
 /**
  * Show a branded loading overlay to prevent flash of protected content.
@@ -23,7 +23,7 @@ function showLoadingOverlay() {
   setSafeHTML(overlay, `
     <div class="guard-overlay">
       <div class="guard-spinner"></div>
-      <p>Verifying access…</p>
+      <p>Verifying access...</p>
     </div>
   `);
   document.body.prepend(overlay);
@@ -37,7 +37,7 @@ function hideLoadingOverlay() {
   }
 }
 
-/* ── OTP Verification (DB-backed) ── */
+/* -- OTP Verification (DB-backed) -- */
 
 /**
  * Mark the current user's OTP as verified by setting
@@ -93,20 +93,20 @@ export async function isOTPVerified() {
     return hoursSinceVerified < 24;
   } catch (err) {
     console.warn('OTP check failed:', err);
-    return false; // FAIL CLOSED — deny access on errors
+    return false; // FAIL CLOSED - deny access on errors
   }
 }
 
-/* ── Page Guards ── */
+/* -- Page Guards -- */
 
 /**
- * Protect a page — requires authentication and OTP verification.
+ * Protect a page - requires authentication and OTP verification.
  *
  * @param {Object} options
- * @param {boolean} options.requireOTP — Require OTP verification (default: false)
- * @param {string|null} options.requireRole — Require specific role e.g. 'organizer'
- * @param {string} options.loginRedirect — Where to redirect if not logged in
- * @returns {Promise<{user, profile}|null>} — User + profile if authorized, null if redirecting
+ * @param {boolean} options.requireOTP - Require OTP verification (default: false)
+ * @param {string|null} options.requireRole - Require specific role e.g. 'organizer'
+ * @param {string} options.loginRedirect - Where to redirect if not logged in
+ * @returns {Promise<{user, profile}|null>} - User + profile if authorized, null if redirecting
  */
 export async function protectPage(options = {}) {
   const {
@@ -144,7 +144,7 @@ export async function protectPage(options = {}) {
       return null;
     }
 
-    // ✅ All checks passed
+    //  All checks passed
     hideLoadingOverlay();
     return { user, profile };
   } catch (err) {
@@ -159,8 +159,8 @@ export async function protectPage(options = {}) {
  * Redirects away if user is already fully authenticated + OTP verified.
  *
  * @param {Object} options
- * @param {string} options.redirectTo — Where to send authenticated users
- * @returns {Promise<boolean>} — true if user is a guest (page should show), false if redirecting
+ * @param {string} options.redirectTo - Where to send authenticated users
+ * @returns {Promise<boolean>} - true if user is a guest (page should show), false if redirecting
  */
 export async function guestOnlyPage(options = {}) {
   const { redirectTo = '/dashboard.html' } = options;
@@ -171,10 +171,10 @@ export async function guestOnlyPage(options = {}) {
     const user = await getCurrentUser();
     if (!user) {
       hideLoadingOverlay();
-      return true; // Guest — show the page
+      return true; // Guest - show the page
     }
 
-    // User is logged in → redirect away from guest page
+    // User is logged in -> redirect away from guest page
     window.location.href = redirectTo;
     return false;
   } catch (err) {
@@ -185,7 +185,7 @@ export async function guestOnlyPage(options = {}) {
 }
 
 /**
- * Semi-protect a page — page is viewable by anyone,
+ * Semi-protect a page - page is viewable by anyone,
  * but returns auth status for conditional UI (e.g. buy buttons).
  *
  * @returns {Promise<{user, profile, isFullyAuth}|{user: null, profile: null, isFullyAuth: false}>}
@@ -205,13 +205,13 @@ export async function semiProtectPage() {
   }
 }
 
-/* ── Dynamic Nav UI ── */
+/* -- Dynamic Nav UI -- */
 
 /**
  * Update navigation bar based on authentication state.
  * Call this on public and semi-protected pages.
  *
- * @param {Object} authState — { user, profile, isFullyAuth }
+ * @param {Object} authState - { user, profile, isFullyAuth }
  */
 export function updateNavForAuth(authState) {
   const { user, profile, isFullyAuth } = authState;
@@ -228,7 +228,7 @@ export function updateNavForAuth(authState) {
   const mobileSignup = document.getElementById('mobile-signup');
 
   if (user && isFullyAuth) {
-    // ── Authenticated + OTP verified ──
+    // -- Authenticated + OTP verified --
     if (signinBtn) signinBtn.style.display = 'none';
     if (signupBtn) signupBtn.style.display = 'none';
 
@@ -244,7 +244,7 @@ export function updateNavForAuth(authState) {
     if (mobileSignin) mobileSignin.style.display = 'none';
     if (mobileSignup) mobileSignup.style.display = 'none';
   } else {
-    // ── Guest or incomplete auth ──
+    // -- Guest or incomplete auth --
     if (signinBtn) signinBtn.style.display = '';
     if (signupBtn) signupBtn.style.display = '';
     if (userBtn) userBtn.style.display = 'none';
@@ -267,7 +267,7 @@ export async function performSignOut(redirectTo = '/index.html') {
   window.location.href = redirectTo;
 }
 
-/* ── Role Upgrade ── */
+/* -- Role Upgrade -- */
 
 /**
  * Upgrade current user's role to organizer.
@@ -283,7 +283,7 @@ export async function upgradeToOrganizer() {
   const profile = await getCurrentProfile();
   if (profile?.role === 'organizer' || profile?.role === 'admin') return true;
 
-  // Use the SECURITY DEFINER RPC — only allows attendee → organizer
+  // Use the SECURITY DEFINER RPC - only allows attendee -> organizer
   const { error } = await supabase.rpc('request_organizer_upgrade');
 
   if (error) {
@@ -369,14 +369,14 @@ function showUpgradeModal(requiredRole) {
       }
     </style>
     <div class="upgrade-box">
-      <div class="upgrade-icon">🎪</div>
+      <div class="upgrade-icon"></div>
       <h2>Become an <span class="text-gold">Organizer</span></h2>
       <p>Upgrade your account to create and manage events, sell tickets, and scan entries.</p>
       <div class="upgrade-features">
-        <div class="upgrade-feat"><span>✦</span> Create Events</div>
-        <div class="upgrade-feat"><span>✦</span> Sell Tickets</div>
-        <div class="upgrade-feat"><span>✦</span> Scan QR Codes</div>
-        <div class="upgrade-feat"><span>✦</span> View Analytics</div>
+        <div class="upgrade-feat"><span>*</span> Create Events</div>
+        <div class="upgrade-feat"><span>*</span> Sell Tickets</div>
+        <div class="upgrade-feat"><span>*</span> Scan QR Codes</div>
+        <div class="upgrade-feat"><span>*</span> View Analytics</div>
       </div>
       <div class="upgrade-btns">
         <button class="btn btn-primary btn-lg" id="upgrade-confirm-btn">
@@ -394,15 +394,15 @@ function showUpgradeModal(requiredRole) {
     const btn = document.getElementById('upgrade-confirm-btn');
     const status = document.getElementById('upgrade-status');
     btn.disabled = true;
-    setSafeHTML(btn, '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Upgrading…');
+    setSafeHTML(btn, '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Upgrading...');
 
     const success = await upgradeToOrganizer();
     if (success) {
-      status.textContent = '✓ Upgraded! Reloading…';
+      status.textContent = '[OK] Upgraded! Reloading...';
       status.style.display = 'block';
       setTimeout(() => window.location.reload(), 800);
     } else {
-      status.textContent = '✗ Upgrade failed. Please try again.';
+      status.textContent = '[X] Upgrade failed. Please try again.';
       status.style.color = '#ef4444';
       status.style.display = 'block';
       btn.disabled = false;

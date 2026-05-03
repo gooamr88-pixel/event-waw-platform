@@ -5,9 +5,9 @@ import { setSafeHTML } from './dom.js';
 let vendorTableExists = null; // null = unknown, true/false after first check
 let approvalTabFilter = 'pending';
 
-/* ══════════════════════════════════
+/* ==================================
    VENDOR APPROVAL PANEL
-   ══════════════════════════════════ */
+   ================================== */
 
 export function setupApprovalPanel() {
   document.querySelectorAll('[data-approval-tab]').forEach(tab => {
@@ -55,12 +55,12 @@ async function loadApprovalData() {
 
     setSafeHTML(tbody, data.map((r, i) => `<tr>
       <td>${i + 1}</td>
-      <td style="font-weight:600">${escapeHTML(r.vendor_name || r.business_name || '—')}</td>
-      <td>${escapeHTML(r.vendor_email || r.contact_email || '—')}</td>
-      <td>${escapeHTML(r.type || r.category || '—')}</td>
-      <td>${escapeHTML(r.name || r.business_name || '—')}</td>
-      <td>${escapeHTML(r.category || '—')}</td>
-      <td>${r.price ? '$' + Number(r.price).toLocaleString() : '—'}</td>
+      <td style="font-weight:600">${escapeHTML(r.vendor_name || r.business_name || '-')}</td>
+      <td>${escapeHTML(r.vendor_email || r.contact_email || '-')}</td>
+      <td>${escapeHTML(r.type || r.category || '-')}</td>
+      <td>${escapeHTML(r.name || r.business_name || '-')}</td>
+      <td>${escapeHTML(r.category || '-')}</td>
+      <td>${r.price ? '$' + Number(r.price).toLocaleString() : '-'}</td>
       <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(r.created_at).toLocaleDateString()}</td>
       <td><span class="ev-badge ${r.status || approvalTabFilter}">${escapeHTML(r.status || approvalTabFilter)}</span></td>
     </tr>`).join(''));
@@ -70,9 +70,9 @@ async function loadApprovalData() {
   }
 }
 
-/* ══════════════════════════════════
+/* ==================================
    PROMO CODE PANEL
-   ══════════════════════════════════ */
+   ================================== */
 export function setupPromoPanel() {
   const modal = document.getElementById('promo-modal');
   const openModal = () => modal?.classList.add('active');

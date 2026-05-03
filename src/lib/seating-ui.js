@@ -1,7 +1,7 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Seating Chart UI Integration
+/* ===================================
+   EVENT WAW - Seating Chart UI Integration
    Bridges SeatingChart engine with event-detail page
-   ═══════════════════════════════════ */
+   =================================== */
 
 import { SeatingChart } from './seating-chart.js';
 import { createSeatedCheckout, createGuestSeatedCheckout } from './events.js';
@@ -22,7 +22,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
   setSafeHTML(mountEl, `
     <div id="seating-panel" style="display:none;">
       <div class="seating-header">
-        <div class="seating-header-title">🗺️ Choose Your <span style="color:var(--accent-primary)">Seats</span></div>
+        <div class="seating-header-title"> Choose Your <span style="color:var(--accent-primary)">Seats</span></div>
         <div class="seating-header-badge"><span class="pulse-dot"></span> Live availability</div>
       </div>
 
@@ -84,7 +84,7 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
 
     const btn = document.getElementById('checkout-seats-btn');
     btn.disabled = true;
-    setSafeHTML(btn, '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving…');
+    setSafeHTML(btn, '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving...');
 
     try {
       const tierId = chart.getSelectedTierId();
@@ -183,7 +183,7 @@ function updateSelectionBar(seats, chart) {
   const total = seats.reduce((sum, s) => sum + Number(s.tier_price), 0);
   const tierName = seats[0]?.tier_name || 'Selected';
 
-  setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''} · ${escapeHTML(tierName)}`);
+  setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''}  ${escapeHTML(tierName)}`);
   totalText.textContent = `$${total.toLocaleString()}`;
 
   // Also update legend availability counts

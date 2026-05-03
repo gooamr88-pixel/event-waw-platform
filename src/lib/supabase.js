@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Supabase Client
-   ═══════════════════════════════════ */
+/* ===================================
+   EVENT WAW - Supabase Client
+   =================================== */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -56,11 +56,11 @@ export async function getCurrentProfile() {
     return null;
   }
 
-  // Profile exists — return it
+  // Profile exists - return it
   if (data) return data;
 
-  // ── Self-heal: profile missing, create from user metadata ──
-  console.warn('Profile missing for user', user.id, '— auto-creating...');
+  // -- Self-heal: profile missing, create from user metadata --
+  console.warn('Profile missing for user', user.id, '- auto-creating...');
   const meta = user.user_metadata || {};
   const newProfile = {
     id: user.id,

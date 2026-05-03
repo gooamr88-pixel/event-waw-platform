@@ -1,32 +1,32 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Venue Designer Engine V2
+/* ===================================
+   EVENT WAW - Venue Designer Engine V2
    Professional Drag & Drop Canvas Editor
-   ═══════════════════════════════════ */
+   =================================== */
 
 import { supabase } from './supabase.js';
 
-// ── Constants ──
+// -- Constants --
 const SEAT_R = 5;
 const SEAT_GAP = 14;
 const ROW_GAP = 16;
 
-// ── Element Types ──
+// -- Element Types --
 export const ELEMENT_TYPES = {
-  STAGE:     { id: 'stage',     label: 'Stage',       icon: '🎤', color: '#d4af37' },
-  SECTION:   { id: 'section',   label: 'Seat Section', icon: '💺', color: '#3b82f6' },
-  BAR:       { id: 'bar',       label: 'Bar / Drinks', icon: '🍸', color: '#8b5cf6' },
-  VIP:       { id: 'vip',       label: 'VIP Lounge',   icon: '👑', color: '#f59e0b' },
-  TABLE:     { id: 'table',     label: 'Table',       icon: '🪑', color: '#22c55e' },
-  BARRIER:   { id: 'barrier',   label: 'Barrier',     icon: '🚧', color: '#ef4444' },
-  RESTROOM:  { id: 'restroom',  label: 'Restroom',    icon: '🚻', color: '#6b7280' },
-  EXIT:      { id: 'exit',      label: 'Exit',        icon: '🚪', color: '#14b8a6' },
-  FOOD:      { id: 'food',      label: 'Food Court',  icon: '🍔', color: '#3B82F6' },
-  DJ:        { id: 'dj',        label: 'DJ Booth',    icon: '🎧', color: '#ec4899' },
-  MERCH:     { id: 'merch',     label: 'Merchandise', icon: '🛍️', color: '#a855f7' },
-  SCREEN:    { id: 'screen',    label: 'Screen',      icon: '📺', color: '#06b6d4' },
-  ENTRANCE:  { id: 'entrance',  label: 'Entrance',    icon: '🚶', color: '#10b981' },
-  PHOTO:     { id: 'photo',     label: 'Photo Booth', icon: '📸', color: '#e879f9' },
-  LABEL:     { id: 'label',     label: 'Text Label',  icon: '🏷️', color: '#94a3b8' },
+  STAGE:     { id: 'stage',     label: 'Stage',       icon: '', color: '#d4af37' },
+  SECTION:   { id: 'section',   label: 'Seat Section', icon: '', color: '#3b82f6' },
+  BAR:       { id: 'bar',       label: 'Bar / Drinks', icon: '', color: '#8b5cf6' },
+  VIP:       { id: 'vip',       label: 'VIP Lounge',   icon: '', color: '#f59e0b' },
+  TABLE:     { id: 'table',     label: 'Table',       icon: '', color: '#22c55e' },
+  BARRIER:   { id: 'barrier',   label: 'Barrier',     icon: '', color: '#ef4444' },
+  RESTROOM:  { id: 'restroom',  label: 'Restroom',    icon: '', color: '#6b7280' },
+  EXIT:      { id: 'exit',      label: 'Exit',        icon: '', color: '#14b8a6' },
+  FOOD:      { id: 'food',      label: 'Food Court',  icon: '', color: '#3B82F6' },
+  DJ:        { id: 'dj',        label: 'DJ Booth',    icon: '', color: '#ec4899' },
+  MERCH:     { id: 'merch',     label: 'Merchandise', icon: '', color: '#a855f7' },
+  SCREEN:    { id: 'screen',    label: 'Screen',      icon: '', color: '#06b6d4' },
+  ENTRANCE:  { id: 'entrance',  label: 'Entrance',    icon: '', color: '#10b981' },
+  PHOTO:     { id: 'photo',     label: 'Photo Booth', icon: '', color: '#e879f9' },
+  LABEL:     { id: 'label',     label: 'Text Label',  icon: '', color: '#94a3b8' },
 };
 
 let _idCounter = 0;
@@ -255,7 +255,7 @@ function renderGenericElement(g, el) {
   icon.setAttribute('x', w / 2); icon.setAttribute('y', h / 2 - (h > 40 ? 6 : 0));
   icon.setAttribute('text-anchor', 'middle'); icon.setAttribute('dominant-baseline', 'middle');
   icon.setAttribute('font-size', Math.min(h * .35, 24));
-  icon.textContent = (ELEMENT_TYPES[el.type.toUpperCase()] || {}).icon || '📦';
+  icon.textContent = (ELEMENT_TYPES[el.type.toUpperCase()] || {}).icon || '';
   g.appendChild(icon);
   // Label
   if (h > 30) {
@@ -420,9 +420,9 @@ function nsEl(tag) {
   return document.createElementNS('http://www.w3.org/2000/svg', tag);
 }
 
-// ═══════════════════════════════
+// ===============================
 // DRAG & DROP ENGINE
-// ═══════════════════════════════
+// ===============================
 
 export class VenueDesignerEngine {
   constructor(container, opts = {}) {
@@ -444,7 +444,7 @@ export class VenueDesignerEngine {
     this.render();
   }
 
-  // ── Public API ──
+  // -- Public API --
 
   addElement(typeId, x, y) {
     this._pushUndo();
@@ -536,7 +536,7 @@ export class VenueDesignerEngine {
 
   render() { renderCanvas(this.elements, this.container, this.state); }
 
-  // ── Export for saving ──
+  // -- Export for saving --
 
   toLayoutJSON() {
     return {
@@ -591,7 +591,7 @@ export class VenueDesignerEngine {
     this.render();
   }
 
-  // ── Private ──
+  // -- Private --
 
   _pushUndo() {
     this._undoStack.push(JSON.stringify(this.elements));
@@ -721,9 +721,9 @@ export class VenueDesignerEngine {
   }
 }
 
-// ═══════════════════════════════
+// ===============================
 // SAVE / LOAD (reuses existing DB)
-// ═══════════════════════════════
+// ===============================
 
 export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
   const layoutJson = engine.toLayoutJSON();

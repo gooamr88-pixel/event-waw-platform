@@ -11,7 +11,7 @@ export function renderEventsTable(events) {
   if (!tbody) return;
   
   if (!events.length) {
-    setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No events yet — create your first one!</td></tr>');
+    setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No events yet - create your first one!</td></tr>');
     return;
   }
 
@@ -58,7 +58,7 @@ export function renderEventsTable(events) {
 
 export function calcRevenue(ev) {
   const r = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0) || 0;
-  return r > 0 ? '$' + r.toLocaleString() : '—';
+  return r > 0 ? '$' + r.toLocaleString() : '-';
 }
 
 export async function handleTableAction(e) {

@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Events Page Logic
-   ═══════════════════════════════════ */
+/* ===================================
+   EVENT WAW - Events Page Logic
+   =================================== */
 import { getEvents } from '../src/lib/events.js';
 import { escapeHTML } from '../src/lib/utils.js';
 import { detectUserLocation, sortByProximity, formatDistance } from '../src/lib/geo.js';
@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSearch(); initFilters(); initViewToggle();
 });
 
-/* ── Auth ── */
+/* -- Auth -- */
 function handleAuth(s) {
   if (!s.user || !s.isFullyAuth) return;
   const si = document.getElementById('nav-signin');
@@ -31,7 +31,7 @@ function handleAuth(s) {
   if (su) { su.textContent = 'Sign Out'; su.href = '#'; su.classList.remove('btn-primary'); su.classList.add('btn-outline'); su.addEventListener('click', e => { e.preventDefault(); performSignOut('/index.html'); }); }
 }
 
-/* ── Theme & Nav ── */
+/* -- Theme & Nav -- */
 function initTheme() {
   const tt = document.getElementById('theme-toggle');
   if (tt) tt.addEventListener('click', () => { const d = document.documentElement, c = d.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; d.setAttribute('data-theme', c); localStorage.setItem('theme', c); });
@@ -47,7 +47,7 @@ function initMobileMenu() {
   if (mm) mm.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mm.classList.remove('active')));
 }
 
-/* ── Geo ── */
+/* -- Geo -- */
 async function detectGeo() {
   const el = document.getElementById('ep-geo-status'), txt = document.getElementById('ep-geo-text');
   try {
@@ -64,7 +64,7 @@ async function detectGeo() {
   } catch { txt.textContent = 'Location unavailable'; }
 }
 
-/* ── Load Events ── */
+/* -- Load Events -- */
 async function loadEvents() {
   try {
     allEvents = await getEvents({ limit: 100 });
@@ -94,7 +94,7 @@ function updateStats(events) {
   if (ca) { const c = new Set(events.map(e => e.category).filter(Boolean)).size; ca.textContent = `${c} Categor${c !== 1 ? 'ies' : 'y'}`; }
 }
 
-/* ── Filter & Render ── */
+/* -- Filter & Render -- */
 function applyAndRender() {
   filtered = [...allEvents];
   const now = new Date();
@@ -195,7 +195,7 @@ function renderPagination(totalPages) {
   // Pages
   for (let i = 1; i <= totalPages; i++) {
     if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 1) {
-      if (i === 4 || i === totalPages - 2) { const dots = document.createElement('span'); dots.className = 'ep-page-info'; dots.textContent = '…'; el.appendChild(dots); }
+      if (i === 4 || i === totalPages - 2) { const dots = document.createElement('span'); dots.className = 'ep-page-info'; dots.textContent = '...'; el.appendChild(dots); }
       continue;
     }
     const btn = document.createElement('button');
@@ -217,7 +217,7 @@ function showEmpty() {
   document.getElementById('ep-empty').style.display = '';
 }
 
-/* ── Search ── */
+/* -- Search -- */
 function initSearch() {
   const input = document.getElementById('ep-search-input');
   const clear = document.getElementById('ep-clear-btn');
@@ -232,7 +232,7 @@ function initSearch() {
   input.addEventListener('keydown', e => { if (e.key === 'Enter') { clearTimeout(debounceTimer); searchQuery = input.value; currentPage = 1; applyAndRender(); } });
 }
 
-/* ── Filters ── */
+/* -- Filters -- */
 function initFilters() {
   const bind = (id, setter) => { const el = document.getElementById(id); if (el) el.addEventListener('change', () => { setter(el.value); currentPage = 1; applyAndRender(); }); };
   bind('ep-filter-category', v => catFilter = v);
@@ -269,7 +269,7 @@ function updateResetBtn() {
   btn.style.display = (catFilter !== 'all' || cityFilter !== 'all' || countryFilter !== 'all' || venueFilter !== 'all' || dateFilter !== 'all' || timeFilter !== 'all' || searchQuery.trim()) ? '' : 'none';
 }
 
-/* ── View Toggle ── */
+/* -- View Toggle -- */
 function initViewToggle() {
   const grid = document.getElementById('ep-events-grid');
   const gridBtn = document.getElementById('ep-view-grid');

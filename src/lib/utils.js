@@ -1,6 +1,6 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Shared Utilities
-   ═══════════════════════════════════ */
+/* ===================================
+   EVENT WAW - Shared Utilities
+   =================================== */
 
 /**
  * Sanitize a string for safe HTML insertion.
@@ -40,5 +40,5 @@ export function formatDate(dateStr, options = {}) {
  */
 export function truncate(str, maxLen = 32) {
   if (!str) return '';
-  return str.length > maxLen ? str.substring(0, maxLen) + '…' : str;
+  return str.length > maxLen ? str.substring(0, maxLen) + '...' : str;
 }

@@ -1,13 +1,13 @@
-/* ═══════════════════════════════════
-   EVENT WAW — Interactive Seating Chart Engine
+/* ===================================
+   EVENT WAW - Interactive Seating Chart Engine
    SVG-based renderer with panzoom (3.4KB)
-   ═══════════════════════════════════ */
+   =================================== */
 
 import panzoom from 'https://esm.sh/panzoom@9';
 import { supabase } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 
-// ── Tier color palette (up to 8 tiers, cyclical) ──
+// -- Tier color palette (up to 8 tiers, cyclical) --
 const TIER_COLORS = [
   '#d4af37', // Gold
   '#8b5cf6', // Purple
@@ -28,12 +28,12 @@ const STATUS_STYLES = {
 };
 
 /**
- * SeatingChart — manages the full lifecycle of an interactive venue map.
+ * SeatingChart - manages the full lifecycle of an interactive venue map.
  *
  * Usage:
  *   const chart = new SeatingChart(containerEl, eventId, { onSelectionChange });
  *   await chart.init();
- *   chart.getSelectedSeats(); // → [{ seat_id, section, row, number, tier_id, price }]
+ *   chart.getSelectedSeats(); // -> [{ seat_id, section, row, number, tier_id, price }]
  *   chart.destroy();
  */
 export class SeatingChart {
@@ -45,9 +45,9 @@ export class SeatingChart {
 
     // State
     this.layout = null;          // layout_json from venue_maps
-    this.seatData = new Map();   // seat_id → { section_key, row_label, seat_number, status, tier_id, tier_name, tier_price }
+    this.seatData = new Map();   // seat_id -> { section_key, row_label, seat_number, status, tier_id, tier_name, tier_price }
     this.selectedSeats = new Set();
-    this.tierColorMap = new Map(); // tier_id → color
+    this.tierColorMap = new Map(); // tier_id -> color
     this.svgEl = null;
     this.panzoomInstance = null;
     this.pollInterval = null;
@@ -71,7 +71,7 @@ export class SeatingChart {
 
     if (mapErr || !mapData) {
       this._hideLoading();
-      console.log('No venue map found for event — using GA fallback');
+      console.log('No venue map found for event - using GA fallback');
       return false;
     }
 
@@ -101,7 +101,7 @@ export class SeatingChart {
     setSafeHTML(this.container, `
       <div class="seating-chart-loading">
         <div class="seat-loader"></div>
-        <span>Loading venue map…</span>
+        <span>Loading venue map...</span>
       </div>`);
   }
 
@@ -138,7 +138,7 @@ export class SeatingChart {
       if (s.tier_id) tierIds.add(s.tier_id);
     }
 
-    // Build tier → color map
+    // Build tier -> color map
     let i = 0;
     for (const tid of tierIds) {
       if (!this.tierColorMap.has(tid)) {
@@ -227,9 +227,9 @@ export class SeatingChart {
     }
   }
 
-  // ════════════════════════════════════
+  // ====================================
   // PRIVATE: SVG Rendering
-  // ════════════════════════════════════
+  // ====================================
 
   _renderSVG() {
     const layout = this.layout;
@@ -342,7 +342,7 @@ export class SeatingChart {
 
           // Accessible tooltip
           circle.setAttribute('aria-label',
-            `${section.label || section.key} Row ${row.label} Seat ${seat.number} — ${seatInfo.tier_name} $${seatInfo.tier_price} — ${seatInfo.status}`
+            `${section.label || section.key} Row ${row.label} Seat ${seat.number} - ${seatInfo.tier_name} $${seatInfo.tier_price} - ${seatInfo.status}`
           );
 
           this._applySeatStyle(circle, seatInfo.status, tierColor);
@@ -389,9 +389,9 @@ export class SeatingChart {
     circle.style.cursor = style.cursor;
   }
 
-  // ════════════════════════════════════
+  // ====================================
   // PRIVATE: Panzoom
-  // ════════════════════════════════════
+  // ====================================
 
   _initPanzoom() {
     if (!this.svgEl) return;
@@ -441,9 +441,9 @@ export class SeatingChart {
     this.container.appendChild(controls);
   }
 
-  // ════════════════════════════════════
+  // ====================================
   // PRIVATE: Event Handling
-  // ════════════════════════════════════
+  // ====================================
 
   _attachEvents() {
     if (!this.svgEl) return;
@@ -496,7 +496,7 @@ export class SeatingChart {
       handleSeatInteraction(circle);
     });
 
-    // Touch handler (mobile) — prevents double-fire with click
+    // Touch handler (mobile) - prevents double-fire with click
     let touchHandled = false;
     this.svgEl.addEventListener('touchend', (e) => {
       const touch = e.changedTouches[0];
@@ -565,9 +565,9 @@ export class SeatingChart {
     }
   }
 
-  // ════════════════════════════════════
+  // ====================================
   // PRIVATE: Tooltip
-  // ════════════════════════════════════
+  // ====================================
 
   _showTooltip(circle, data) {
     this._hideTooltip();
@@ -581,7 +581,7 @@ export class SeatingChart {
 
     setSafeHTML(tooltip, `
       <div class="seat-tooltip-title">${data.tier_name || 'General'}</div>
-      <div class="seat-tooltip-info">Row ${data.row_label} · Seat ${data.seat_number}</div>
+      <div class="seat-tooltip-info">Row ${data.row_label}  Seat ${data.seat_number}</div>
       <div class="seat-tooltip-price">$${Number(data.tier_price).toLocaleString()}</div>
       <div class="seat-tooltip-status seat-tooltip-${data.status}">${statusLabel}</div>
     `);
@@ -599,9 +599,9 @@ export class SeatingChart {
     document.getElementById('seat-tooltip')?.remove();
   }
 
-  // ════════════════════════════════════
+  // ====================================
   // PRIVATE: Live Polling
-  // ════════════════════════════════════
+  // ====================================
 
   async _pollUpdates() {
     const oldStatuses = new Map();
@@ -627,9 +627,9 @@ export class SeatingChart {
     this.onSelectionChange(this.getSelectedSeats());
   }
 
-  // ════════════════════════════════════
+  // ====================================
   // PUBLIC: Tier Legend Data
-  // ════════════════════════════════════
+  // ====================================
 
   getTierLegend() {
     const legend = [];
