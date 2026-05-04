@@ -351,7 +351,18 @@ export async function deleteEvent(eventId) {
       }
     } catch (_) { /* storage cleanup is best-effort */ }
 
-    // 4. Delete the event — ON DELETE CASCADE handles all child records
+    // 4. Set status to 'draft' so RLS delete policy accepts it
+    //    (events_delete_draft allows DELETE only for status='draft')
+    const { error: statusErr } = await supabase
+      .from('events')
+      .update({ status: 'draft' })
+      .eq('id', eventId);
+
+    if (statusErr) {
+      return { success: false, error: 'Failed to prepare event for deletion: ' + statusErr.message };
+    }
+
+    // 5. Delete the event — ON DELETE CASCADE handles all child records
     const { data: deleted, error: deleteErr } = await supabase
       .from('events')
       .delete()

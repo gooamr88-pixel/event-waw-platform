@@ -580,7 +580,7 @@
         const uniqueGallery = [...new Set(galleryArr)];
         const gallerySection = document.getElementById('ed-gallery-section');
         const galleryGrid = document.getElementById('ed-gallery-grid');
-        galleryGrid.innerHTML = '';
+        galleryGrid.textContent = '';
         gallerySection.style.display = 'block';
         for (const url of uniqueGallery) {
           const resolved = await resolveImageUrl(url);
@@ -605,7 +605,7 @@
         const uniqueSponsors = [...new Set(sponsorArr)];
         const sponsorsSection = document.getElementById('ed-sponsors-section');
         const sponsorsGrid = document.getElementById('ed-sponsors-grid');
-        sponsorsGrid.innerHTML = '';
+        sponsorsGrid.textContent = '';
         sponsorsSection.style.display = 'block';
         for (const url of uniqueSponsors) {
           const resolved = await resolveImageUrl(url);
@@ -872,7 +872,7 @@
 
         status.style.display = 'block';
         status.style.color = '#22c55e';
-        status.innerHTML = `✅ <strong>${data.code}</strong> applied — ${discLabel}`;
+        status.textContent = `✅ ${data.code} applied — ${discLabel}`;
         input.disabled = true;
         btn.textContent = '✓ Applied';
         btn.style.borderColor = '#22c55e';

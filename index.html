@@ -403,12 +403,14 @@
     let chatHistory = [];
     let isSending = false;
 
+    function sanitize(html){const t=document.createElement('template');t.innerHTML=html;const f=t.content;f.querySelectorAll('script,iframe,object,embed').forEach(e=>e.remove());f.querySelectorAll('*').forEach(el=>{for(let i=el.attributes.length-1;i>=0;i--){const a=el.attributes[i];if(a.name.toLowerCase().startsWith('on')||a.value.trim().toLowerCase().startsWith('javascript:'))el.removeAttribute(a.name);}});return f;}
+
     function addMessage(content, type, isHtml) {
       const wrap = document.createElement('div');
       wrap.className = 'ev-msg ev-msg-' + type;
       const bubble = document.createElement('div');
       bubble.className = 'ev-msg-bubble';
-      if (isHtml) { bubble.innerHTML = content; } else { bubble.textContent = content; }
+      if (isHtml) { bubble.appendChild(sanitize(content)); } else { bubble.textContent = content; }
       wrap.appendChild(bubble);
       msgArea.appendChild(wrap);
       msgArea.scrollTop = msgArea.scrollHeight;
@@ -418,7 +420,10 @@
     function showTyping() {
       const wrap = document.createElement('div');
       wrap.className = 'ev-msg ev-msg-bot ev-typing-indicator';
-      wrap.innerHTML = '<div class="ev-msg-bubble"><span class="ev-dot"></span><span class="ev-dot"></span><span class="ev-dot"></span></div>';
+      const bubble = document.createElement('div');
+      bubble.className = 'ev-msg-bubble';
+      for (let i = 0; i < 3; i++) { const dot = document.createElement('span'); dot.className = 'ev-dot'; bubble.appendChild(dot); }
+      wrap.appendChild(bubble);
       msgArea.appendChild(wrap);
       msgArea.scrollTop = msgArea.scrollHeight;
       return wrap;

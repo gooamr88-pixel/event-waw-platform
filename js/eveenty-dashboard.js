@@ -22,6 +22,7 @@ import { showToast, animateCounter, setupSidebar, setupUserInfo, setupGlobalKeyb
 import { renderEventsTable, populateEventSelects } from '../src/lib/dashboard-events.js';
 import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
+import { onDashboardAction } from '../src/lib/dashboard-bus.js';
 
 /* ==================================
    INIT
@@ -50,9 +51,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupUserDropdownToggle();   // H-3: click-toggle + aria-expanded
   setupGlobalKeyboardManager(); // H-3: Escape key handler
 
-  // Register globals for cross-module calls
-  window.loadDashboard = loadDashboard;
-  window.loadEventForEditing = loadEventForEditing;
+  // Register actions on the event bus (replaces window.* globals)
+  onDashboardAction('refreshDashboard', loadDashboard);
+  onDashboardAction('editEvent', loadEventForEditing);
 
   await loadDashboard();
 });

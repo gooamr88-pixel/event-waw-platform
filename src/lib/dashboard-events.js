@@ -3,6 +3,7 @@ import { supabase, getCurrentUser } from './supabase.js';
 import { escapeHTML } from './utils.js';
 import { setSafeHTML, safeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
+import { emitDashboardAction } from './dashboard-bus.js';
 
 let tableListenerAttached = false;
 
@@ -67,7 +68,7 @@ export function calcRevenue(ev) {
 export async function handleTableAction(e) {
   const editBtn = e.target.closest('[data-action="edit"]');
   if (editBtn) { 
-    if (window.loadEventForEditing) await window.loadEventForEditing(editBtn.dataset.id); 
+    if (editBtn.dataset.id) await emitDashboardAction('editEvent', editBtn.dataset.id); 
     return; 
   }
 
@@ -209,7 +210,7 @@ export function showDeleteConfirmModal(eventId, eventTitle, soldCount = 0) {
           willArchive ? 'Event archived successfully' : 'Event deleted successfully',
           'success'
         );
-        if (window.loadDashboard) await window.loadDashboard();
+        await emitDashboardAction('refreshDashboard');
       } else {
         btn.disabled = false;
         btn.textContent = `${actionLabel} Event`;
@@ -288,7 +289,7 @@ export function showArchiveConfirmModal(eventId, eventTitle) {
       if (result.success) {
         close();
         showToast('Event archived successfully', 'success');
-        if (window.loadDashboard) await window.loadDashboard();
+        await emitDashboardAction('refreshDashboard');
       } else {
         btn.disabled = false;
         btn.textContent = 'Archive Event';
@@ -395,7 +396,7 @@ export function renderArchivesTable(events) {
         }
         showToast(`"${btn.dataset.title}" restored as draft`, 'success');
         // Refresh both panels
-        if (window.loadDashboard) await window.loadDashboard();
+        await emitDashboardAction('refreshDashboard');
         const archived = await loadArchivedEvents();
         renderArchivesTable(archived);
       } catch (err) {

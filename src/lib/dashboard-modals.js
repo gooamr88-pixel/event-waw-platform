@@ -3,7 +3,20 @@ import { createEvent, updateEvent } from './events.js';
 import { escapeHTML } from './utils.js';
 import { showToast, switchToPanel } from './dashboard-ui.js';
 import { safeQuery } from './api.js';
-import { setSafeHTML } from './dom.js';
+import { setSafeHTML, safeHTML } from './dom.js';
+
+/**
+ * Sanitize rich text editor HTML before storing in DB.
+ * Strips scripts, event handlers, and javascript: URIs
+ * while preserving formatting tags (b, i, a, br, p, etc.).
+ */
+function sanitizeDescriptionHTML(html) {
+  if (!html || !html.trim()) return '';
+  const fragment = safeHTML(html);
+  const temp = document.createElement('div');
+  temp.appendChild(fragment);
+  return temp.innerHTML;
+}
 
 /* ── Module-level state (migrated from God File) ── */
 let pendingCoverFile = null;
@@ -271,7 +284,9 @@ export function setupCreateModal() {
       const cmd = btn.dataset.cmd;
       if (cmd === 'createLink') {
         const url = prompt('Enter URL:');
-        if (url) document.execCommand(cmd, false, url);
+        if (url && !/^\s*javascript:/i.test(url)) {
+          document.execCommand(cmd, false, url);
+        }
       } else {
         document.execCommand(cmd, false, null);
       }
@@ -538,7 +553,7 @@ export function setupCreateModal() {
       const eventData = {
         organizer_id: user.id,
         title: name,
-        description: document.getElementById('ce-overview')?.innerHTML || '',
+        description: sanitizeDescriptionHTML(document.getElementById('ce-overview')?.innerHTML || ''),
         venue: place,
         venue_address: document.getElementById('ce-address')?.value.trim() || null,
         city: city,

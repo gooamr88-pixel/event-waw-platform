@@ -116,11 +116,16 @@ export async function loadPromoCodes() {
 
         // Show inline confirm
         delBtn.dataset.confirming = 'true';
-        const origHTML = delBtn.innerHTML;
-        delBtn.innerHTML = '<span style="font-size:.65rem;font-weight:700;color:#ef4444">Sure?</span>';
+        const origChildren = Array.from(delBtn.childNodes).map(n => n.cloneNode(true));
+        delBtn.textContent = '';
+        const sureSpan = document.createElement('span');
+        sureSpan.style.cssText = 'font-size:.65rem;font-weight:700;color:#ef4444';
+        sureSpan.textContent = 'Sure?';
+        delBtn.appendChild(sureSpan);
 
         const resetTimer = setTimeout(() => {
-          delBtn.innerHTML = origHTML;
+          delBtn.textContent = '';
+          origChildren.forEach(n => delBtn.appendChild(n.cloneNode(true)));
           delete delBtn.dataset.confirming;
         }, 3000);
 
@@ -128,7 +133,7 @@ export async function loadPromoCodes() {
           ev.stopPropagation();
           clearTimeout(resetTimer);
           delBtn.removeEventListener('click', confirmHandler);
-          delBtn.innerHTML = '<span style="font-size:.65rem">...</span>';
+          delBtn.textContent = '...';
           const { error } = await supabase.from('promo_codes').delete().eq('id', promoId);
           if (error) showToast('Delete failed: ' + error.message, 'error');
           else { showToast('Promo deleted', 'success'); loadPromoCodes(); }

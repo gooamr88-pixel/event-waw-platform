@@ -69,24 +69,20 @@ export async function loadPayoutData() {
 }
 
 /* ==================================
-    DARK MODE
+    DARK MODE — Unified with ui.js theme engine
+    Uses 'theme' localStorage key + data-theme attribute
    ================================== */
 export function setupDarkMode() {
   const toggle = document.getElementById('dark-mode-toggle');
-  // Sync initial state (FOUC script in HTML already set data-theme on <html>)
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  if (isDark) document.body.classList.add('dark-mode');
+  // Sync initial state from unified theme key
+  const saved = localStorage.getItem('theme');
+  const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
   toggle?.addEventListener('click', () => {
     const nowDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (nowDark) {
-      document.documentElement.removeAttribute('data-theme');
-      document.body.classList.remove('dark-mode');
-      localStorage.setItem('ev-theme', 'light');
-    } else {
-      document.documentElement.setAttribute('data-theme', 'dark');
-      document.body.classList.add('dark-mode');
-      localStorage.setItem('ev-theme', 'dark');
-    }
+    const next = nowDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
   });
 }
