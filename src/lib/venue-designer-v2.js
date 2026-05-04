@@ -12,21 +12,21 @@ const ROW_GAP = 16;
 
 // -- Element Types --
 export const ELEMENT_TYPES = {
-  STAGE:     { id: 'stage',     label: 'Stage',       icon: '', color: '#d4af37' },
-  SECTION:   { id: 'section',   label: 'Seat Section', icon: '', color: '#3b82f6' },
-  BAR:       { id: 'bar',       label: 'Bar / Drinks', icon: '', color: '#8b5cf6' },
-  VIP:       { id: 'vip',       label: 'VIP Lounge',   icon: '', color: '#f59e0b' },
-  TABLE:     { id: 'table',     label: 'Table',       icon: '', color: '#22c55e' },
-  BARRIER:   { id: 'barrier',   label: 'Barrier',     icon: '', color: '#ef4444' },
-  RESTROOM:  { id: 'restroom',  label: 'Restroom',    icon: '', color: '#6b7280' },
-  EXIT:      { id: 'exit',      label: 'Exit',        icon: '', color: '#14b8a6' },
-  FOOD:      { id: 'food',      label: 'Food Court',  icon: '', color: '#3B82F6' },
-  DJ:        { id: 'dj',        label: 'DJ Booth',    icon: '', color: '#ec4899' },
-  MERCH:     { id: 'merch',     label: 'Merchandise', icon: '', color: '#a855f7' },
-  SCREEN:    { id: 'screen',    label: 'Screen',      icon: '', color: '#06b6d4' },
-  ENTRANCE:  { id: 'entrance',  label: 'Entrance',    icon: '', color: '#10b981' },
-  PHOTO:     { id: 'photo',     label: 'Photo Booth', icon: '', color: '#e879f9' },
-  LABEL:     { id: 'label',     label: 'Text Label',  icon: '', color: '#94a3b8' },
+  STAGE:     { id: 'stage',     label: 'Stage',        icon: '🎤', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>', color: '#d4af37' },
+  SECTION:   { id: 'section',   label: 'Seat Section', icon: '💺', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>', color: '#3b82f6' },
+  BAR:       { id: 'bar',       label: 'Bar / Drinks', icon: '🍸', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2l-4 9h16l-4-9"/><path d="M12 11v9"/><path d="M8 20h8"/><path d="M7 5h10"/></svg>', color: '#8b5cf6' },
+  VIP:       { id: 'vip',       label: 'VIP Lounge',   icon: '👑', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 18l3-8 5 4 2-10 2 10 5-4 3 8H2z"/><path d="M2 18h20v2H2z"/></svg>', color: '#f59e0b' },
+  TABLE:     { id: 'table',     label: 'Table',        icon: '🍽️', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>', color: '#22c55e' },
+  BARRIER:   { id: 'barrier',   label: 'Barrier',      icon: '🚧', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="8" rx="1"/><line x1="6" y1="8" x2="10" y2="16"/><line x1="14" y1="8" x2="18" y2="16"/></svg>', color: '#ef4444' },
+  RESTROOM:  { id: 'restroom',  label: 'Restroom',     icon: '🚻', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="4" r="2"/><path d="M8 8v4l-2 6"/><path d="M8 12l2 6"/><path d="M6 8h4"/><circle cx="17" cy="4" r="2"/><path d="M14 8h6l-2 6h-2l-2-6z"/><path d="M15 14v6"/><path d="M19 14v6"/></svg>', color: '#6b7280' },
+  EXIT:      { id: 'exit',      label: 'Exit',         icon: '🚪', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>', color: '#14b8a6' },
+  FOOD:      { id: 'food',      label: 'Food Court',   icon: '🍕', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>', color: '#3B82F6' },
+  DJ:        { id: 'dj',        label: 'DJ Booth',     icon: '🎧', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/></svg>', color: '#ec4899' },
+  MERCH:     { id: 'merch',     label: 'Merchandise',  icon: '🛍️', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>', color: '#a855f7' },
+  SCREEN:    { id: 'screen',    label: 'Screen',       icon: '📺', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>', color: '#06b6d4' },
+  ENTRANCE:  { id: 'entrance',  label: 'Entrance',     icon: '🚶', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>', color: '#10b981' },
+  PHOTO:     { id: 'photo',     label: 'Photo Booth',  icon: '📸', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>', color: '#e879f9' },
+  LABEL:     { id: 'label',     label: 'Text Label',   icon: '🏷️', svg: '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>', color: '#94a3b8' },
 };
 
 let _idCounter = 0;
@@ -208,12 +208,6 @@ function renderStage(g, el) {
   rc.setAttribute('rx', 2); rc.setAttribute('fill', 'url(#vd-curtain-l)');
   rc.setAttribute('opacity', .85);
   g.appendChild(rc);
-  // Spotlight glow
-  const sp = nsEl('ellipse');
-  sp.setAttribute('cx', w / 2); sp.setAttribute('cy', h / 2);
-  sp.setAttribute('rx', w * .25); sp.setAttribute('ry', h * .6);
-  sp.setAttribute('fill', 'rgba(212,175,55,.08)');
-  g.appendChild(sp);
   // Label
   const lbl = nsEl('text');
   lbl.setAttribute('x', w / 2); lbl.setAttribute('y', h / 2 + 1);

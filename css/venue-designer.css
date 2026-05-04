@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    VENUE DESIGNER V3 — ULTRA-PREMIUM PROFESSIONAL IDE
    Glassmorphic · Ambient · Cinematic · Photorealistic
    ═══════════════════════════════════════════════════════ */
@@ -209,6 +209,11 @@
   text-align: center; line-height: 1.2;
   font-weight: 500;
 }
+.vd-tb-color {
+  width: 14px; height: 3px; border-radius: 2px;
+  opacity: .6; transition: opacity .2s;
+}
+.vd-tb-item:hover .vd-tb-color { opacity: 1; }
 
 /* ══════ QUICK TEMPLATES ══════ */
 .vd-template-grid {
@@ -473,7 +478,9 @@ svg.vd-canvas {
   font-size: .65rem; color: #52525b;
   white-space: nowrap;
   font-family: 'JetBrains Mono', monospace;
+  display: flex; align-items: center; gap: 4px;
 }
+.vd-stat svg { color: #3f3f46; }
 .vd-stat b {
   color: #2563EB;
   font-weight: 700;
