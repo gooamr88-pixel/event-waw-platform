@@ -253,13 +253,13 @@
   box-shadow: 0 20px 50px rgba(0,0,0,0.12) !important;
 }
 .eveenty-landing .event-card::before { background: linear-gradient(135deg, #2563EB, #1D4ED8) !important; }
-.eveenty-landing .event-card-badge { color: #2563EB !important; border-color: rgba(37,99,235,0.2) !important; }
-.eveenty-landing .event-card-badge .dot { background: #2563EB !important; box-shadow: 0 0 6px #2563EB !important; }
+.eveenty-landing .event-card-badge { color: #fff !important; background: rgba(0,0,0,.6) !important; border-color: rgba(255,255,255,.15) !important; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.eveenty-landing .event-card-badge .dot { background: #60a5fa !important; box-shadow: 0 0 6px #60a5fa !important; }
 .eveenty-landing .event-card-date { color: #2563EB !important; }
 .eveenty-landing .event-card-avail strong { color: #2563EB !important; }
 .eveenty-landing .event-card-distance {
-  color: #2563EB !important; background: rgba(37,99,235,0.06) !important;
-  border-color: rgba(37,99,235,0.12) !important;
+  color: #fff !important; background: rgba(0,0,0,.55) !important;
+  border-color: rgba(255,255,255,.12) !important;
 }
 
 /* ── 8. HOW IT WORKS (uses base step-card) ── */

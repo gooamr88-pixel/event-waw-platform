@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    LIGHT THEME — Premium Professional Enhancement
    Loaded AFTER styles.css to override defaults
    ═══════════════════════════════════════════════ */
@@ -10,9 +10,9 @@
   --bg-card: #ffffff;
   --bg-glass: rgba(255,255,255,0.7);
   --bg-glass-border: rgba(0,0,0,0.05);
-  --text-primary: #141420;
-  --text-secondary: #3a3a4a;
-  --text-muted: #6e6e80;
+  --text-primary: #111118;
+  --text-secondary: #2d2d3a;
+  --text-muted: #555568;
   --border-color: rgba(0,0,0,0.07);
   --border-light: rgba(0,0,0,0.04);
   --accent-primary: #1D4ED8;

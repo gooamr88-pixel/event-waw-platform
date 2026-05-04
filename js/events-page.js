@@ -161,10 +161,12 @@ async function renderEvents(events) {
     const soldPct = totalCap > 0 ? ((totalCap - totalAvail) / totalCap) * 100 : 0;
     const prices = tiers.map(t => t.price).filter(p => p != null);
     const minPrice = prices.length ? Math.min(...prices) : 0;
-    let badge = ev.category || 'Event';
-    if (ev.listing_type === 'display_only') badge = 'Display Only';
-    else if (soldPct >= 90) badge = 'Selling Fast';
-    else if (totalCap > 0 && totalAvail <= 0) badge = 'Sold Out';
+    const categoryLabel = ev.category || 'Event';
+    const isDisplayOnly = ev.listing_type === 'display_only';
+    let statusTag = '';
+    if (isDisplayOnly) statusTag = '<span class="ep-card-tag ep-tag-display">Display Only</span>';
+    else if (totalCap > 0 && totalAvail <= 0) statusTag = '<span class="ep-card-tag ep-tag-soldout">Sold Out</span>';
+    else if (soldPct >= 90) statusTag = '<span class="ep-card-tag ep-tag-hot">Selling Fast 🔥</span>';
     const date = new Date(ev.date);
     const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     const distHtml = ev._distance && ev._distance < Infinity ? `<div class="ep-card-distance">${formatDistance(ev._distance)}</div>` : '';
@@ -175,7 +177,8 @@ async function renderEvents(events) {
     setSafeHTML(card, `
       <div class="ep-card-image">
         <img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(ev.title)}" loading="lazy" />
-        <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(badge)}</div>
+        <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(categoryLabel)}</div>
+        ${statusTag}
         ${distHtml}
       </div>
       <div class="ep-card-body">
@@ -183,7 +186,7 @@ async function renderEvents(events) {
         <h3>${escapeHTML(ev.title)}</h3>
         <div class="ep-card-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${escapeHTML(ev.venue || ev.city || 'TBA')}</div>
         <div class="ep-card-footer">
-          <div class="ep-card-price">${ev.listing_type === 'display_only' ? 'Display Only' : (minPrice > 0 ? '$' + minPrice.toLocaleString() : 'Free')}<small>${ev.listing_type !== 'display_only' && prices.length > 1 ? '+' : ''}</small></div>
+          <div class="ep-card-price">${isDisplayOnly ? 'Display Only' : (minPrice > 0 ? '$' + minPrice.toLocaleString() : 'Free')}<small>${!isDisplayOnly && prices.length > 1 ? '+' : ''}</small></div>
           <span class="ep-card-cta">View Details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></span>
         </div>
       </div>`);

@@ -37,9 +37,9 @@ export function renderEventsTable(events) {
           <button class="ev-btn-icon" title="Edit" data-action="edit" data-id="${ev.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           </button>
-          <button class="ev-btn-icon" title="Venue Map" data-action="map" data-id="${ev.id}">
+          ${ev.listing_type !== 'display_only' ? `<button class="ev-btn-icon" title="Venue Map" data-action="map" data-id="${ev.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
-          </button>
+          </button>` : ''}
           <button class="ev-btn-icon" title="Archive" data-action="archive" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
           </button>
