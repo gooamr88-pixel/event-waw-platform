@@ -150,7 +150,7 @@ async function renderEvents(events) {
 
   // Resolve all cover URLs in parallel before rendering
   const resolvedCovers = await Promise.all(events.map(ev => {
-    const raw = ev.cover_url || ev.cover_image || null;
+    const raw = ev.cover_image || ev.cover_url || null;
     return raw ? resolveImageUrl(raw) : Promise.resolve(null);
   }));
 

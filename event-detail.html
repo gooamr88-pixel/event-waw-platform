@@ -418,10 +418,10 @@
 
     async function renderEvent(event) {
       document.title = `${event.title} — Event Waw`;
-      document.getElementById('event-cover').src = event.cover_url || event.cover_image || 'images/event-concert.png';
-      document.getElementById('event-cover-main').src = event.cover_url || event.cover_image || 'images/event-concert.png';
+      document.getElementById('event-cover').src = event.cover_image || event.cover_url || 'images/event-concert.png';
+      document.getElementById('event-cover-main').src = event.cover_image || event.cover_url || 'images/event-concert.png';
       // Resolve Supabase storage URLs (handles private buckets)
-      const rawCover = event.cover_url || event.cover_image || null;
+      const rawCover = event.cover_image || event.cover_url || null;
       if (rawCover) {
         resolveImageUrl(rawCover).then(resolved => {
           if (resolved) {

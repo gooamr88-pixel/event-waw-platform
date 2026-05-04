@@ -18,7 +18,7 @@ export async function getMyTickets() {
       ticket_tiers (
         id, name, price,
         events (
-          id, title, cover_url, cover_image, venue, venue_address, date, status
+          id, title, cover_image, venue, venue_address, date, status
         )
       )
     `)
@@ -40,7 +40,7 @@ export async function getTicket(ticketId) {
       orders (id, amount, status, created_at),
       ticket_tiers (
         id, name, price,
-        events (id, title, cover_url, cover_image, venue, venue_address, date)
+        events (id, title, cover_image, venue, venue_address, date)
       )
     `)
     .eq('id', ticketId)
@@ -147,7 +147,7 @@ export async function getOrderBySession(sessionId) {
           id, qr_hash, status,
           ticket_tiers (
             name, price,
-            events (title, venue, date, cover_url, cover_image)
+            events (title, venue, date, cover_image)
           )
         )
       `)

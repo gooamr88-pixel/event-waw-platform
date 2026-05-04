@@ -578,7 +578,7 @@ export function setupCreateModal() {
       // Upload cover image
       if (pendingCoverFile) {
         const coverUrl = await uploadCoverImage(event.id);
-        if (coverUrl) imageUpdates.cover_url = coverUrl;
+        if (coverUrl) imageUpdates.cover_image = coverUrl;
       }
 
       // Upload logo image
@@ -829,10 +829,11 @@ export async function loadEventForEditing(eventId) {
     }
 
     // ── Populate cover image preview ──
-    if (ev.cover_url) {
+    const coverSrc = ev.cover_image || ev.cover_url;
+    if (coverSrc) {
       const mainArea = document.getElementById('ce-main-photo-area');
       if (mainArea) {
-        const resolvedCoverUrl = await resolveImageUrl(ev.cover_url);
+        const resolvedCoverUrl = await resolveImageUrl(coverSrc);
         let img = mainArea.querySelector('img');
         if (!img) { img = document.createElement('img'); mainArea.appendChild(img); }
         img.onerror = () => { console.warn('Cover preview failed to load:', resolvedCoverUrl); img.remove(); mainArea.classList.remove('has-image'); };
