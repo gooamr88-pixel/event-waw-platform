@@ -1042,9 +1042,11 @@ export async function initGooglePlacesAutocomplete() {
     autocompleteEl.setAttribute('placeholder', 'Search for a venue, address, or place...');
     searchWrap.appendChild(autocompleteEl);
 
-    // Listen for modern gmp-placeselect event
-    autocompleteEl.addEventListener('gmp-placeselect', async ({ place }) => {
+    // Listen for gmp-select event (modern PlaceAutocompleteElement API)
+    autocompleteEl.addEventListener('gmp-select', async ({ placePrediction }) => {
+      let place;
       try {
+        place = placePrediction.toPlace();
         await place.fetchFields({
           fields: ['displayName', 'formattedAddress', 'location', 'addressComponents', 'websiteURI', 'types'],
         });
@@ -1063,8 +1065,8 @@ export async function initGooglePlacesAutocomplete() {
         if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
       };
 
-      // Venue name (new API: displayName)
-      const venueName = place.displayName || '';
+      // Venue name (displayName is a LocalizedText object — access .text)
+      const venueName = (place.displayName && place.displayName.text) ? place.displayName.text : '';
       if (venueName) setField('ce-place', venueName);
 
       // Full address (new API: formattedAddress)
