@@ -525,27 +525,24 @@ export function setupCreateModal() {
       // Get listing type
       const listingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : 'display_and_sell';
 
-      // Core event data (columns that always exist)
-      const coreData = {
+      // All event data — columns are guaranteed to exist after migration-v11
+      const eventData = {
         organizer_id: user.id,
         title: name,
         description: document.getElementById('ce-overview')?.innerHTML || '',
         venue: place,
+        venue_address: document.getElementById('ce-address')?.value.trim() || null,
         city: city,
         date: new Date(startDate).toISOString(),
         category: category || 'general',
         status: 'published',
-      };
-
-      // Extra event data (new columns — may not exist yet)
-      const extraData = {
         listing_type: listingType,
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
         latitude: parseFloat(document.getElementById('ce-latitude')?.value) || null,
         country: country || null,
         keywords: ceKeywords.length ? ceKeywords : null,
         pixel_code: document.getElementById('ce-pixel')?.value.trim() || null,
-        currency: currency || 'USD',
+        currency: currency || 'EGP',
         timezone: timezone || null,
         doors_open: document.getElementById('ce-doors')?.value ? new Date(document.getElementById('ce-doors').value).toISOString() : null,
         end_date: endDate ? new Date(endDate).toISOString() : null,
@@ -557,19 +554,12 @@ export function setupCreateModal() {
       let event;
       if (ceEditingEventId) {
         // ── UPDATE existing event ──
-        const allUpdates = { ...coreData, ...extraData };
+        const allUpdates = { ...eventData };
         delete allUpdates.organizer_id;
         event = await updateEvent(ceEditingEventId, allUpdates);
       } else {
-        // ── CREATE new event (core first, then extras) ──
-        event = await createEvent(coreData);
-        // Try adding extra fields
-        try {
-          const { error: extraError } = await supabase.from('events').update(extraData).eq('id', event.id);
-          if (extraError) console.warn('Extra event fields skipped:', extraError.message);
-        } catch (extraErr) {
-          console.warn('Extra event fields skipped:', extraErr.message);
-        }
+        // ── CREATE new event (single insert with all fields) ──
+        event = await createEvent(eventData);
       }
 
       // ── Collect all image URLs, then update in ONE call ──
@@ -734,18 +724,19 @@ export async function loadEventForEditing(eventId) {
     if (publishBtn) setSafeHTML(publishBtn, 'Update Event');
 
     // ── Fill basic fields ──
-    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+    const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null && val !== '') el.value = val; };
     const setSelect = (id, val) => {
       const el = document.getElementById(id);
-      if (el && val) {
-        const opt = Array.from(el.options).find(o => o.value === val);
-        if (opt) el.value = val;
+      if (el && val != null && val !== '') {
+        const strVal = String(val);
+        const opt = Array.from(el.options).find(o => o.value === strVal);
+        if (opt) el.value = strVal;
       }
     };
 
     setVal('ce-name', ev.title);
     setVal('ce-place', ev.venue);
-    setVal('ce-address', ev.city); // legacy: city was used as address
+    setVal('ce-address', ev.venue_address || ev.city); // prefer full address, fallback to city
     setVal('ce-city', ev.city);
     setSelect('ce-country', ev.country);
     setVal('ce-longitude', ev.longitude);
@@ -1473,11 +1464,11 @@ export async function uploadCoverImage(eventId) {
     const path = `events/${eventId}/cover.${ext}`;
     const { error } = await supabase.storage.from('event-covers').upload(path, pendingCoverFile, { upsert: true });
     if (error) { console.warn('Cover upload failed:', error.message); return null; }
-    // Build the public URL and resolve it (falls back to signed URL if bucket is private)
+    // Store the STABLE public URL (not a resolved/signed URL) so it can be
+    // re-resolved correctly each time via resolveImageUrl()
     const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
-    const url = await resolveImageUrl(urlData?.publicUrl);
     pendingCoverFile = null;
-    return url;
+    return urlData?.publicUrl || null;
   } catch (err) {
     console.warn('Cover upload error:', err);
     return null;
@@ -1491,9 +1482,9 @@ export async function uploadEventFile(eventId, file, label) {
     const path = `events/${eventId}/${label}.${ext}`;
     const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
     if (error) { console.warn(`Upload ${label} failed:`, error.message); return null; }
+    // Store the STABLE public URL (not a resolved/signed URL)
     const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
-    const url = await resolveImageUrl(urlData?.publicUrl);
-    return url;
+    return urlData?.publicUrl || null;
   } catch (err) {
     console.warn(`Upload ${label} error:`, err);
     return null;
