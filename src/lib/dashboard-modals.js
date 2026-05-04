@@ -1,4 +1,4 @@
-import { supabase, getCurrentUser } from './supabase.js';
+import { supabase, getCurrentUser, resolveImageUrl } from './supabase.js';
 import { createEvent, updateEvent } from './events.js';
 import { escapeHTML } from './utils.js';
 import { showToast, switchToPanel } from './dashboard-ui.js';
@@ -832,9 +832,11 @@ export async function loadEventForEditing(eventId) {
     if (ev.cover_url) {
       const mainArea = document.getElementById('ce-main-photo-area');
       if (mainArea) {
+        const resolvedCoverUrl = await resolveImageUrl(ev.cover_url);
         let img = mainArea.querySelector('img');
         if (!img) { img = document.createElement('img'); mainArea.appendChild(img); }
-        img.src = ev.cover_url;
+        img.onerror = () => { console.warn('Cover preview failed to load:', resolvedCoverUrl); img.remove(); mainArea.classList.remove('has-image'); };
+        img.src = resolvedCoverUrl;
         mainArea.classList.add('has-image');
       }
     }
@@ -843,9 +845,11 @@ export async function loadEventForEditing(eventId) {
     if (ev.logo_url) {
       const logoArea = document.getElementById('ce-logo-area');
       if (logoArea) {
+        const resolvedLogoUrl = await resolveImageUrl(ev.logo_url);
         let img = logoArea.querySelector('img');
         if (!img) { img = document.createElement('img'); logoArea.appendChild(img); }
-        img.src = ev.logo_url;
+        img.onerror = () => { console.warn('Logo preview failed to load:', resolvedLogoUrl); img.remove(); logoArea.classList.remove('has-image'); };
+        img.src = resolvedLogoUrl;
         logoArea.classList.add('has-image');
       }
     }
@@ -860,11 +864,12 @@ export async function loadEventForEditing(eventId) {
       const galleryGrid = document.getElementById('ce-gallery-grid');
       if (galleryGrid) {
         galleryGrid.textContent = '';
-        galleryArr.forEach((url, i) => {
+        for (let i = 0; i < galleryArr.length; i++) {
+          const resolvedGalleryUrl = await resolveImageUrl(galleryArr[i]);
           const item = document.createElement('div');
           item.className = 'ce-gallery-item';
-          item.dataset.existingUrl = url;
-          setSafeHTML(item, `<label>Photo ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(url)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
+          item.dataset.existingUrl = resolvedGalleryUrl;
+          setSafeHTML(item, `<label>Photo ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(resolvedGalleryUrl)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
           galleryGrid.appendChild(item);
           const fileInput = item.querySelector('input[type="file"]');
           const area = item.querySelector('.ce-upload-area');
@@ -873,7 +878,7 @@ export async function loadEventForEditing(eventId) {
             // Clear existing URL since user chose new file
             delete item.dataset.existingUrl;
           });
-        });
+        }
         ceGalleryCount = galleryArr.length;
       }
     }
@@ -887,11 +892,12 @@ export async function loadEventForEditing(eventId) {
       const sponsorsGrid = document.getElementById('ce-sponsors-grid');
       if (sponsorsGrid) {
         sponsorsGrid.textContent = '';
-        sponsorArr.forEach((url, i) => {
+        for (let i = 0; i < sponsorArr.length; i++) {
+          const resolvedSponsorUrl = await resolveImageUrl(sponsorArr[i]);
           const item = document.createElement('div');
           item.className = 'ce-gallery-item';
-          item.dataset.existingUrl = url;
-          setSafeHTML(item, `<label>Sponsor ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(url)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
+          item.dataset.existingUrl = resolvedSponsorUrl;
+          setSafeHTML(item, `<label>Sponsor ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(resolvedSponsorUrl)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
           sponsorsGrid.appendChild(item);
           const fileInput = item.querySelector('input[type="file"]');
           const area = item.querySelector('.ce-upload-area');
@@ -899,7 +905,7 @@ export async function loadEventForEditing(eventId) {
             handleCeFileUpload(e, area);
             delete item.dataset.existingUrl;
           });
-        });
+        }
       }
     }
 
@@ -1464,9 +1470,11 @@ export async function uploadCoverImage(eventId) {
     const path = `events/${eventId}/cover.${ext}`;
     const { error } = await supabase.storage.from('event-covers').upload(path, pendingCoverFile, { upsert: true });
     if (error) { console.warn('Cover upload failed:', error.message); return null; }
+    // Build the public URL and resolve it (falls back to signed URL if bucket is private)
     const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+    const url = await resolveImageUrl(urlData?.publicUrl);
     pendingCoverFile = null;
-    return urlData?.publicUrl || null;
+    return url;
   } catch (err) {
     console.warn('Cover upload error:', err);
     return null;
@@ -1481,10 +1489,10 @@ export async function uploadEventFile(eventId, file, label) {
     const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
     if (error) { console.warn(`Upload ${label} failed:`, error.message); return null; }
     const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
-    return urlData?.publicUrl || null;
+    const url = await resolveImageUrl(urlData?.publicUrl);
+    return url;
   } catch (err) {
     console.warn(`Upload ${label} error:`, err);
     return null;
   }
 }
-

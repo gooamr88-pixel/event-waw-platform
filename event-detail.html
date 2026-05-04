@@ -377,7 +377,7 @@
   </style>
 
   <script type="module">
-    import { supabase, getCurrentUser } from './src/lib/supabase.js';
+    import { supabase, getCurrentUser, resolveImageUrl } from './src/lib/supabase.js';
     import { getEvent, createCheckout, createGuestCheckout, createSeatedCheckout, createGuestSeatedCheckout } from './src/lib/events.js';
     import { initSeatingUI } from './src/lib/seating-ui.js';
     import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
@@ -420,6 +420,19 @@
       document.title = `${event.title} — Event Waw`;
       document.getElementById('event-cover').src = event.cover_url || event.cover_image || 'images/event-concert.png';
       document.getElementById('event-cover-main').src = event.cover_url || event.cover_image || 'images/event-concert.png';
+      // Resolve Supabase storage URLs (handles private buckets)
+      const rawCover = event.cover_url || event.cover_image || null;
+      if (rawCover) {
+        resolveImageUrl(rawCover).then(resolved => {
+          if (resolved) {
+            document.getElementById('event-cover').src = resolved;
+            document.getElementById('event-cover-main').src = resolved;
+          }
+        }).catch(() => {});
+      }
+      // Fallback for broken images
+      document.getElementById('event-cover').onerror = function() { this.onerror = null; this.src = 'images/event-concert.png'; };
+      document.getElementById('event-cover-main').onerror = function() { this.onerror = null; this.src = 'images/event-concert.png'; };
       document.getElementById('event-title').textContent = event.title;
       document.getElementById('event-category').textContent = event.category || 'Event';
       document.getElementById('event-description').textContent = event.description || 'No description available.';

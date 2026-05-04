@@ -95,3 +95,55 @@ export function onAuthStateChange(callback) {
     callback(event, session);
   });
 }
+
+/**
+ * Get a working URL for a file in Supabase Storage.
+ * Tries public URL first; if the bucket is private (400/403),
+ * falls back to a signed URL with 1-year expiry.
+ */
+async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
+  // 1. Public URL
+  const { data: pubData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
+  const publicUrl = pubData?.publicUrl;
+  if (publicUrl) {
+    try {
+      const resp = await fetch(publicUrl, { method: 'HEAD', mode: 'cors' });
+      if (resp.ok) return publicUrl;
+    } catch (_) { /* fall through */ }
+  }
+
+  // 2. Signed URL (1-year expiry)
+  try {
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
+    if (!error && data?.signedUrl) return data.signedUrl;
+  } catch (_) { /* fall through */ }
+
+  return publicUrl || null;
+}
+
+/**
+ * Resolve an image URL stored in the database.
+ * If it is a Supabase storage URL, re-generate a working (public or signed)
+ * URL so the image loads correctly even when the bucket visibility changes.
+ * Non-Supabase URLs are returned as-is.
+ */
+export async function resolveImageUrl(url) {
+  if (!url) return null;
+  const RE = /\/storage\/v1\/object\/(?:public|sign)\/event-covers\/(.+?)(?:\?.*)?$/;
+  const m = url.match(RE);
+  if (m && m[1]) {
+    return await getWorkingStorageUrl(decodeURIComponent(m[1]));
+  }
+  return url;
+}
+
+/**
+ * Batch-resolve multiple image URLs in parallel.
+ * Returns an array of resolved URLs in the same order.
+ */
+export async function resolveImageUrls(urls) {
+  if (!urls || !urls.length) return [];
+  return Promise.all(urls.map(u => resolveImageUrl(u)));
+}

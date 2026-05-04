@@ -587,6 +587,7 @@
     import { initUI, initParticles } from './src/lib/ui.js';
     import { detectUserLocation, sortByProximity, formatDistance } from './src/lib/geo.js';
     import { setSafeHTML } from './src/lib/dom.js';
+    import { resolveImageUrl } from './src/lib/supabase.js';
 
     let allEvents = [];
     let userLocation = null;
@@ -725,12 +726,19 @@
       else if (emptyText) emptyText.textContent = 'Be the first to create an event on Event Waw!';
     }
 
-    function renderEvents(events) {
+    async function renderEvents(events) {
       const grid = document.getElementById('landing-events-grid');
       const emptyState = document.getElementById('events-empty');
       grid.querySelectorAll('.event-poster-card').forEach(c => c.remove());
       if (!events || events.length === 0) { grid.style.display = 'none'; emptyState.style.display = 'block'; return; }
       grid.style.display = ''; emptyState.style.display = 'none';
+
+      // Resolve all cover URLs in parallel before rendering
+      const resolvedCovers = await Promise.all(events.map(ev => {
+        const raw = ev.cover_url || ev.cover_image || null;
+        return raw ? resolveImageUrl(raw) : Promise.resolve(null);
+      }));
+
       events.forEach((event, idx) => {
         const tiers = event.ticket_tiers || [];
         const totalAvail = tiers.reduce((sum, t) => sum + (t.capacity - t.sold_count), 0);
@@ -744,8 +752,11 @@
         card.className = 'event-poster-card';
         card.style.animationDelay = `${idx * 0.06}s`;
         card.onclick = () => window.location.href = `event-detail.html?id=${event.id}`;
-        const coverSrc = event.cover_url || event.cover_image || 'images/event-concert.png';
+        const coverSrc = resolvedCovers[idx] || 'images/event-concert.png';
         setSafeHTML(card, `<img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="poster-badge">${escapeHTML(badgeText)}</div><div class="poster-overlay"><div class="poster-title">${escapeHTML(event.title)}</div><div class="poster-meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>${dateStr}${event.venue ? ' &middot; ' + escapeHTML(event.venue) : ''}</div></div>`);
+        // Add onerror fallback for broken images
+        const img = card.querySelector('img');
+        if (img) img.onerror = () => { img.onerror = null; img.src = 'images/event-concert.png'; };
         grid.appendChild(card);
       });
     }

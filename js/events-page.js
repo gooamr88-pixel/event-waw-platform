@@ -6,6 +6,7 @@ import { escapeHTML } from '../src/lib/utils.js';
 import { detectUserLocation, sortByProximity, formatDistance } from '../src/lib/geo.js';
 import { semiProtectPage, updateNavForAuth, performSignOut } from '../src/lib/guard.js';
 import { setSafeHTML } from '../src/lib/dom.js';
+import { resolveImageUrl } from '../src/lib/supabase.js';
 
 const PER_PAGE = 12;
 let allEvents = [], filtered = [], userLocation = null, currentPage = 1;
@@ -140,13 +141,20 @@ function updateResultsMeta(showing, total) {
   setSafeHTML(el, text);
 }
 
-function renderEvents(events) {
+async function renderEvents(events) {
   const grid = document.getElementById('ep-events-grid');
   const empty = document.getElementById('ep-empty');
   grid.querySelectorAll('.ep-event-card').forEach(c => c.remove());
   if (!events.length) { grid.style.display = 'none'; empty.style.display = ''; return; }
   grid.style.display = ''; empty.style.display = 'none';
-  events.forEach(ev => {
+
+  // Resolve all cover URLs in parallel before rendering
+  const resolvedCovers = await Promise.all(events.map(ev => {
+    const raw = ev.cover_url || ev.cover_image || null;
+    return raw ? resolveImageUrl(raw) : Promise.resolve(null);
+  }));
+
+  events.forEach((ev, idx) => {
     const tiers = ev.ticket_tiers || [];
     const totalAvail = tiers.reduce((s, t) => s + (t.capacity - t.sold_count), 0);
     const totalCap = tiers.reduce((s, t) => s + t.capacity, 0);
@@ -161,9 +169,10 @@ function renderEvents(events) {
     const card = document.createElement('div');
     card.className = 'ep-event-card';
     card.onclick = () => window.location.href = `event-detail.html?id=${ev.id}`;
+    const coverSrc = resolvedCovers[idx] || 'images/event-concert.png';
     setSafeHTML(card, `
       <div class="ep-card-image">
-        <img src="${escapeHTML(ev.cover_url || ev.cover_image || 'images/event-concert.png')}" alt="${escapeHTML(ev.title)}" loading="lazy" />
+        <img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(ev.title)}" loading="lazy" />
         <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(badge)}</div>
         ${distHtml}
       </div>
@@ -176,6 +185,9 @@ function renderEvents(events) {
           <span class="ep-card-cta">View Details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></span>
         </div>
       </div>`);
+    // Add onerror fallback for broken images
+    const img = card.querySelector('img');
+    if (img) img.onerror = () => { img.onerror = null; img.src = 'images/event-concert.png'; };
     grid.appendChild(card);
   });
 }
