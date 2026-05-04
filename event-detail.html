@@ -862,11 +862,12 @@
           id: data.id,
           code: data.code,
           discount_type: data.discount_type || 'percentage',
-          discount_value: data.discount_value || 0,
+          discount_value: data.discount_value || data.discount_percent || 0,
+          discount_currency: data.discount_currency || eventData?.currency || 'USD',
         };
 
         const discLabel = appliedPromo.discount_type === 'fixed'
-          ? `$${appliedPromo.discount_value} off`
+          ? `${appliedPromo.discount_value} ${appliedPromo.discount_currency} off`
           : `${appliedPromo.discount_value}% off`;
 
         status.style.display = 'block';
@@ -916,6 +917,7 @@
         }
       }
 
+      const cur = eventData?.currency || 'USD';
       let discount = 0;
       if (appliedPromo && subtotal > 0) {
         if (appliedPromo.discount_type === 'fixed') {
@@ -926,18 +928,18 @@
 
         // Show discount breakdown
         document.getElementById('subtotal-row').style.display = 'flex';
-        document.getElementById('subtotal-price').textContent = `$${subtotal.toLocaleString()}`;
+        document.getElementById('subtotal-price').textContent = `${subtotal.toLocaleString()} ${cur}`;
         document.getElementById('discount-row').style.display = 'block';
         document.getElementById('discount-label').textContent = appliedPromo.discount_type === 'fixed'
-          ? `$${appliedPromo.discount_value}` : `${appliedPromo.discount_value}%`;
-        document.getElementById('discount-amount').textContent = `-$${discount.toLocaleString()}`;
+          ? `${appliedPromo.discount_value} ${appliedPromo.discount_currency || cur}` : `${appliedPromo.discount_value}%`;
+        document.getElementById('discount-amount').textContent = `-${discount.toLocaleString()} ${cur}`;
       } else {
         document.getElementById('subtotal-row').style.display = 'none';
         document.getElementById('discount-row').style.display = 'none';
       }
 
       const total = Math.max(0, subtotal - discount);
-      document.getElementById('total-price').textContent = `$${total.toLocaleString()}`;
+      document.getElementById('total-price').textContent = `${total.toLocaleString()} ${cur}`;
       document.getElementById('checkout-btn').disabled = !hasSelection;
       document.getElementById('guest-checkout-btn').disabled = !hasSelection;
     }

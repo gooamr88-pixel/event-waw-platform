@@ -1399,10 +1399,50 @@
           <label for="promo-code">Code *</label>
           <input class="ev-form-input" type="text" id="promo-code" placeholder="e.g. SUMMER20" required style="text-transform:uppercase" />
         </div>
+        <div class="ev-form-group">
+          <label>Discount Type *</label>
+          <div style="display:flex;gap:6px;margin-bottom:12px" id="promo-type-wrap">
+            <button type="button" class="ev-btn ev-btn-outline promo-type-btn active" data-type="percentage" style="flex:1;padding:10px;font-size:.82rem;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+              Percentage %
+            </button>
+            <button type="button" class="ev-btn ev-btn-outline promo-type-btn" data-type="fixed" style="flex:1;padding:10px;font-size:.82rem;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              Fixed Amount
+            </button>
+          </div>
+          <input type="hidden" id="promo-discount-type" value="percentage" />
+        </div>
         <div class="ev-form-row">
-          <div class="ev-form-group">
-            <label for="promo-discount">Discount (%) *</label>
-            <input class="ev-form-input" type="number" id="promo-discount" placeholder="20" min="1" max="100" required />
+          <div class="ev-form-group" id="promo-value-group">
+            <label for="promo-discount" id="promo-discount-label">Discount (%) *</label>
+            <input class="ev-form-input" type="number" id="promo-discount" placeholder="20" min="1" max="100" step="any" required />
+          </div>
+          <div class="ev-form-group" id="promo-currency-group" style="display:none">
+            <label for="promo-currency">Currency *</label>
+            <select class="ev-form-input" id="promo-currency">
+              <option value="USD">$ USD</option>
+              <option value="EUR">€ EUR</option>
+              <option value="GBP">£ GBP</option>
+              <option value="EGP">E£ EGP</option>
+              <option value="SAR">﷼ SAR</option>
+              <option value="AED">د.إ AED</option>
+              <option value="KWD">د.ك KWD</option>
+              <option value="QAR">﷼ QAR</option>
+              <option value="BHD">BD BHD</option>
+              <option value="OMR">﷼ OMR</option>
+              <option value="JOD">JD JOD</option>
+              <option value="LBP">ل.ل LBP</option>
+              <option value="MAD">MAD</option>
+              <option value="TND">TND</option>
+              <option value="TRY">₺ TRY</option>
+              <option value="INR">₹ INR</option>
+              <option value="CAD">C$ CAD</option>
+              <option value="AUD">A$ AUD</option>
+              <option value="JPY">¥ JPY</option>
+              <option value="CNY">¥ CNY</option>
+              <option value="BRL">R$ BRL</option>
+            </select>
           </div>
           <div class="ev-form-group">
             <label for="promo-max-uses">Max Uses</label>

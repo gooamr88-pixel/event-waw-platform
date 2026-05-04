@@ -87,11 +87,16 @@ export async function loadPromoCodes() {
       const maxedOut = p.max_uses && p.used_count >= p.max_uses;
       const statusClass = !p.is_active ? 'rejected' : expired ? 'past' : maxedOut ? 'past' : 'published';
       const statusLabel = !p.is_active ? 'Inactive' : expired ? 'Expired' : maxedOut ? 'Maxed Out' : 'Active';
-      const discountDisplay = p.discount_type === 'fixed' ? '$' + p.discount_value : (p.discount_value || p.discount_percent || 0) + '%';
+      const discountDisplay = p.discount_type === 'fixed'
+        ? `${Number(p.discount_value).toLocaleString()} ${p.discount_currency || 'USD'}`
+        : (p.discount_value || p.discount_percent || 0) + '%';
+      const typeBadge = p.discount_type === 'fixed'
+        ? '<span style="display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:4px;background:rgba(34,197,94,.1);color:#22c55e;font-weight:600;margin-left:4px">FIXED</span>'
+        : '<span style="display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:4px;background:rgba(139,92,246,.1);color:#8b5cf6;font-weight:600;margin-left:4px">%</span>';
       return `<tr>
         <td>${i + 1}</td>
         <td style="font-weight:700;font-family:monospace;letter-spacing:1px">${escapeHTML(p.code)}</td>
-        <td style="font-weight:600;color:var(--ev-pink)">${discountDisplay}</td>
+        <td style="font-weight:600;color:var(--ev-pink)">${discountDisplay}${typeBadge}</td>
         <td>${p.used_count || 0}${p.max_uses ? '/' + p.max_uses : ''}</td>
         <td style="font-size:.8rem;color:var(--ev-text-sec)">${p.valid_until ? new Date(p.valid_until).toLocaleDateString() : '-'}</td>
         <td><span class="ev-badge ${statusClass}">${statusLabel}</span></td>
@@ -145,6 +150,53 @@ export function setupPromoForm() {
   const form = document.getElementById('promo-form');
   if (!form) return;
 
+  // ── Discount Type Toggle ──
+  const typeWrap = document.getElementById('promo-type-wrap');
+  const typeInput = document.getElementById('promo-discount-type');
+  const discountInput = document.getElementById('promo-discount');
+  const discountLabel = document.getElementById('promo-discount-label');
+  const currencyGroup = document.getElementById('promo-currency-group');
+
+  if (typeWrap) {
+    typeWrap.addEventListener('click', (e) => {
+      const btn = e.target.closest('.promo-type-btn');
+      if (!btn) return;
+      const type = btn.dataset.type;
+      typeInput.value = type;
+
+      // Toggle active state
+      typeWrap.querySelectorAll('.promo-type-btn').forEach(b => {
+        b.classList.toggle('active', b === btn);
+        b.style.background = b === btn ? 'rgba(37,99,235,.1)' : '';
+        b.style.borderColor = b === btn ? 'rgba(37,99,235,.4)' : '';
+        b.style.color = b === btn ? '#2563EB' : '';
+      });
+
+      if (type === 'percentage') {
+        discountLabel.textContent = 'Discount (%) *';
+        discountInput.placeholder = '20';
+        discountInput.min = '1';
+        discountInput.max = '100';
+        currencyGroup.style.display = 'none';
+      } else {
+        discountLabel.textContent = 'Discount Amount *';
+        discountInput.placeholder = '50';
+        discountInput.min = '0.01';
+        discountInput.removeAttribute('max');
+        currencyGroup.style.display = '';
+      }
+    });
+
+    // Initialize active button styling
+    const activeBtn = typeWrap.querySelector('.promo-type-btn.active');
+    if (activeBtn) {
+      activeBtn.style.background = 'rgba(37,99,235,.1)';
+      activeBtn.style.borderColor = 'rgba(37,99,235,.4)';
+      activeBtn.style.color = '#2563EB';
+    }
+  }
+
+  // ── Form Submit ──
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('[type="submit"]');
@@ -154,28 +206,66 @@ export function setupPromoForm() {
     try {
       const user = await getCurrentUser();
       const code = document.getElementById('promo-code')?.value.trim().toUpperCase();
-      const discount = parseFloat(document.getElementById('promo-discount')?.value);
+      const discountType = typeInput?.value || 'percentage';
+      const discountVal = parseFloat(discountInput?.value);
+      const currency = document.getElementById('promo-currency')?.value || 'USD';
       const maxUses = parseInt(document.getElementById('promo-max-uses')?.value) || null;
       const eventId = document.getElementById('promo-event')?.value || null;
       const expires = document.getElementById('promo-expires')?.value || null;
 
       if (!code || code.length < 2) { showToast('Code must be at least 2 characters', 'error'); return; }
-      if (!discount || discount < 1 || discount > 100) { showToast('Discount must be 1-100%', 'error'); return; }
 
-      const { error } = await supabase.from('promo_codes').insert({
+      if (discountType === 'percentage') {
+        if (!discountVal || discountVal < 1 || discountVal > 100) {
+          showToast('Percentage discount must be 1-100%', 'error'); return;
+        }
+      } else {
+        if (!discountVal || discountVal <= 0) {
+          showToast('Fixed discount must be greater than 0', 'error'); return;
+        }
+      }
+
+      const insertData = {
         organizer_id: user.id,
         code,
-        discount_percent: discount,
+        discount_type: discountType,
+        discount_value: discountVal,
         max_uses: maxUses,
         event_id: eventId,
         valid_until: expires ? new Date(expires).toISOString() : null,
         is_active: true,
         used_count: 0,
-      });
+      };
+
+      // Also set discount_percent for backward compat if percentage
+      if (discountType === 'percentage') {
+        insertData.discount_percent = discountVal;
+      }
+
+      // Store currency in discount_currency if the column exists
+      if (discountType === 'fixed') {
+        insertData.discount_currency = currency;
+      }
+
+      const { error } = await supabase.from('promo_codes').insert(insertData);
 
       if (error) throw error;
-      showToast(`Promo code "${code}" created!`, 'success');
+      const displayDiscount = discountType === 'percentage' ? `${discountVal}%` : `${discountVal} ${currency}`;
+      showToast(`Promo code "${code}" created! (${displayDiscount} off)`, 'success');
       form.reset();
+
+      // Reset toggle to percentage
+      if (typeInput) typeInput.value = 'percentage';
+      if (currencyGroup) currencyGroup.style.display = 'none';
+      if (discountLabel) discountLabel.textContent = 'Discount (%) *';
+      if (discountInput) { discountInput.placeholder = '20'; discountInput.min = '1'; discountInput.max = '100'; }
+      typeWrap?.querySelectorAll('.promo-type-btn').forEach((b, i) => {
+        b.classList.toggle('active', i === 0);
+        b.style.background = i === 0 ? 'rgba(37,99,235,.1)' : '';
+        b.style.borderColor = i === 0 ? 'rgba(37,99,235,.4)' : '';
+        b.style.color = i === 0 ? '#2563EB' : '';
+      });
+
       document.getElementById('promo-modal')?.classList.remove('active');
       loadPromoCodes();
     } catch (err) {
