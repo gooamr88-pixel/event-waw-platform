@@ -1,5 +1,5 @@
-import { supabase, getCurrentUser } from './supabase.js';
 import { createEvent, deleteEvent, archiveEvent } from './events.js';
+import { supabase, getCurrentUser } from './supabase.js';
 import { escapeHTML } from './utils.js';
 import { setSafeHTML, safeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
@@ -39,6 +39,9 @@ export function renderEventsTable(events) {
           </button>
           <button class="ev-btn-icon" title="Venue Map" data-action="map" data-id="${ev.id}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>
+          </button>
+          <button class="ev-btn-icon" title="Archive" data-action="archive" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
           </button>
           <button class="ev-btn-icon" title="Delete" data-action="delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-sold="${sold}" data-status="${ev.status}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
@@ -83,6 +86,14 @@ export async function handleTableAction(e) {
     } catch {
       prompt('Copy this link:', url);
     }
+    return;
+  }
+
+  const archiveBtn = e.target.closest('[data-action="archive"]');
+  if (archiveBtn) {
+    const id = archiveBtn.dataset.id;
+    const title = archiveBtn.dataset.title;
+    showArchiveConfirmModal(id, title);
     return;
   }
 
@@ -229,5 +240,175 @@ export function populateEventSelects(events) {
       el.selectedIndex = 1;
       el.dispatchEvent(new Event('change'));
     }
+  });
+}
+
+/**
+ * Archive confirmation modal — for the dedicated Archive button.
+ */
+export function showArchiveConfirmModal(eventId, eventTitle) {
+  document.getElementById('ev-delete-confirm-modal')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'ev-delete-confirm-modal';
+  overlay.className = 'ev-modal-overlay active';
+  overlay.style.cssText = 'z-index:10000';
+
+  setSafeHTML(overlay, `
+    <div class="ev-modal" style="max-width:420px;text-align:center;padding:32px 28px">
+      <div style="width:56px;height:56px;border-radius:50%;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#f59e0b" stroke-width="2">
+          <path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>
+        </svg>
+      </div>
+      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--ev-text)">Archive Event</h3>
+      <p style="font-size:.88rem;color:var(--ev-text-sec);margin-bottom:6px;line-height:1.5">
+        Archive <strong style="color:var(--ev-text)">${escapeHTML(eventTitle)}</strong>?
+      </p>
+      <p style="font-size:.78rem;color:#f59e0b;margin-bottom:24px">The event will be hidden from public pages but all data is preserved. You can restore it anytime from the Archives section.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="ev-btn ev-btn-outline" id="ev-del-cancel" style="flex:1;max-width:160px;padding:11px">Cancel</button>
+        <button class="ev-btn" id="ev-del-confirm" style="flex:1;max-width:160px;padding:11px;background:#f59e0b;color:#fff;border:none;font-weight:600">Archive Event</button>
+      </div>
+    </div>
+  `);
+
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.querySelector('#ev-del-cancel').addEventListener('click', close);
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+
+  overlay.querySelector('#ev-del-confirm').addEventListener('click', async () => {
+    const btn = overlay.querySelector('#ev-del-confirm');
+    btn.disabled = true;
+    btn.textContent = 'Archiving...';
+    try {
+      const result = await archiveEvent(eventId);
+      if (result.success) {
+        close();
+        showToast('Event archived successfully', 'success');
+        if (window.loadDashboard) await window.loadDashboard();
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Archive Event';
+        showToast(result.error || 'Archive failed', 'error');
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Archive Event';
+      showToast('Archive failed: ' + err.message, 'error');
+    }
+  });
+}
+
+/**
+ * Load archived events from Supabase.
+ */
+export async function loadArchivedEvents() {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`
+        *,
+        ticket_tiers (
+          id, name, price, capacity, sold_count, sort_order
+        )
+      `)
+      .eq('organizer_id', user.id)
+      .eq('status', 'archived')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('loadArchivedEvents error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error('loadArchivedEvents unexpected error:', err);
+    return [];
+  }
+}
+
+/**
+ * Render the archives table.
+ */
+export function renderArchivesTable(events) {
+  const tbody = document.getElementById('archives-tbody');
+  if (!tbody) return;
+
+  if (!events.length) {
+    setSafeHTML(tbody, '<tr><td colspan="6" class="ev-table-empty">No archived events</td></tr>');
+    return;
+  }
+
+  const htmlString = events.map((ev, i) => {
+    const date = new Date(ev.date);
+    const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
+    const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
+    const revenue = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0) || 0;
+
+    return `<tr style="opacity:.85">
+      <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
+      <td>
+        <div style="font-weight:600;font-size:.88rem">${escapeHTML(ev.title)}</div>
+        <div style="font-size:.72rem;color:var(--ev-text-muted)">${ev.category || 'No category'}</div>
+      </td>
+      <td><span style="font-weight:500">${sold}/${cap}</span> <span style="font-size:.75rem;color:var(--ev-text-muted)">sold</span></td>
+      <td style="font-size:.8rem">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+      <td style="font-weight:600">${revenue > 0 ? '$' + revenue.toLocaleString() : '-'}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="ev-btn ev-btn-outline ev-btn-sm" data-action="restore" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" style="font-size:.75rem;padding:6px 12px">
+            ↩️ Restore
+          </button>
+          <button class="ev-btn-icon" title="Permanently Delete" data-action="force-delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" style="color:#ef4444">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  setSafeHTML(tbody, htmlString);
+
+  // Attach event listeners
+  tbody.querySelectorAll('[data-action="restore"]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      btn.disabled = true;
+      btn.textContent = 'Restoring...';
+      try {
+        const { data, error } = await supabase
+          .from('events')
+          .update({ status: 'draft' })
+          .eq('id', btn.dataset.id)
+          .select('id');
+
+        if (error || !data?.length) {
+          showToast('Restore failed: ' + (error?.message || 'Permission denied'), 'error');
+          btn.disabled = false;
+          btn.textContent = '↩️ Restore';
+          return;
+        }
+        showToast(`"${btn.dataset.title}" restored as draft`, 'success');
+        // Refresh both panels
+        if (window.loadDashboard) await window.loadDashboard();
+        const archived = await loadArchivedEvents();
+        renderArchivesTable(archived);
+      } catch (err) {
+        showToast('Restore failed: ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = '↩️ Restore';
+      }
+    });
+  });
+
+  tbody.querySelectorAll('[data-action="force-delete"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      showDeleteConfirmModal(btn.dataset.id, btn.dataset.title, 0);
+    });
   });
 }

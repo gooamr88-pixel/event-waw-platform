@@ -52,6 +52,14 @@ export function switchToPanel(panelName) {
   if (navItem) navItem.classList.add('active');
   const panel = document.getElementById('panel-' + panelName);
   if (panel) panel.classList.add('active');
+
+  // ── Lazy-load archives when panel is opened ──
+  if (panelName === 'archives') {
+    import('./dashboard-events.js').then(async (mod) => {
+      const archived = await mod.loadArchivedEvents();
+      mod.renderArchivesTable(archived);
+    }).catch(err => console.warn('Failed to load archives:', err));
+  }
 }
 
 export function setupSidebar() {

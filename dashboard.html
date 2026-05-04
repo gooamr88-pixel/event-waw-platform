@@ -75,7 +75,10 @@
         Financial
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-
+      <button class="ev-nav-item" data-panel="archives">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
+        Archives
+      </button>
       <button class="ev-nav-item" data-panel="calendar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5"/></svg>
         Calendar
@@ -437,6 +440,31 @@
 
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: ARCHIVES ════ -->
+    <div class="ev-panel" id="panel-archives">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">📦 Archived Events</h2>
+      <p style="font-size:.85rem;color:var(--ev-text-sec);margin-bottom:20px;line-height:1.6">Events that were archived are listed here. Archived events are hidden from the public but all data (tickets, revenue, attendees) is preserved. You can restore them anytime.</p>
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table" id="archives-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Event</th>
+                <th>Tickets Sold</th>
+                <th>Event Date</th>
+                <th>Revenue</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="archives-tbody">
+              <tr><td colspan="6" class="ev-table-empty">Loading archived events…</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
