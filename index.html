@@ -745,7 +745,9 @@
         const totalCap = tiers.reduce((sum, t) => sum + t.capacity, 0);
         const soldPercent = totalCap > 0 ? ((totalCap - totalAvail) / totalCap) * 100 : 0;
         let badgeText = event.category || 'Event';
-        if (soldPercent >= 90) badgeText = 'Selling Fast'; else if (totalAvail <= 0) badgeText = 'Sold Out';
+        if (event.listing_type === 'display_only') badgeText = 'Display Only';
+        else if (soldPercent >= 90) badgeText = 'Selling Fast';
+        else if (totalCap > 0 && totalAvail <= 0) badgeText = 'Sold Out';
         const date = new Date(event.date);
         const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const card = document.createElement('div');

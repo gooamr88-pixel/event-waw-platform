@@ -611,7 +611,22 @@
         }
       }
 
-      renderTiers(event.ticket_tiers || []);
+      // ── Ticket Tiers or Display-Only Notice ──
+      if (event.listing_type === 'display_only') {
+        // Hide ticket selector entirely for display-only events
+        const ticketSelector = document.getElementById('ticket-selector');
+        if (ticketSelector) {
+          ticketSelector.innerHTML = `
+            <div style="text-align:center;padding:32px 20px;">
+              <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.15);display:flex;align-items:center;justify-content:center;font-size:1.8rem;">🎪</div>
+              <h3 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:8px;">Display Only Event</h3>
+              <p style="color:var(--text-muted);font-size:0.88rem;line-height:1.6;max-width:320px;margin:0 auto;">This event is for display purposes only. No tickets are available for purchase.</p>
+            </div>
+          `;
+        }
+      } else {
+        renderTiers(event.ticket_tiers || []);
+      }
 
       // ── Seating Chart: init if venue map exists ──
       const params2 = new URLSearchParams(window.location.search);
