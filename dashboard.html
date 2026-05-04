@@ -75,10 +75,7 @@
         Financial
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <button class="ev-nav-item" data-panel="payout">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
-        Payout Settings
-      </button>
+
       <button class="ev-nav-item" data-panel="calendar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5"/></svg>
         Calendar
@@ -350,54 +347,6 @@
       </div>
     </div>
 
-    <!-- ════ PANEL: PAYOUT SETTINGS ════ -->
-    <div class="ev-panel" id="panel-payout">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">🏦 Payout Settings</h2>
-      <div class="ev-card" style="max-width:640px">
-        <div class="ev-card-header"><span class="ev-card-title">Bank Account Details</span></div>
-        <form id="payout-form" style="padding:20px">
-          <div class="ev-form-group">
-            <label for="bank-name">Bank Name *</label>
-            <input class="ev-form-input" type="text" id="bank-name" placeholder="e.g. National Bank of Egypt" required />
-          </div>
-          <div class="ev-form-row">
-            <div class="ev-form-group">
-              <label for="account-holder">Account Holder Name *</label>
-              <input class="ev-form-input" type="text" id="account-holder" placeholder="Full name as on bank account" required />
-            </div>
-            <div class="ev-form-group">
-              <label for="account-number">Account / IBAN *</label>
-              <input class="ev-form-input" type="text" id="account-number" placeholder="e.g. EG380019000500000000263180002" required />
-            </div>
-          </div>
-          <div class="ev-form-row">
-            <div class="ev-form-group">
-              <label for="swift-code">SWIFT / BIC</label>
-              <input class="ev-form-input" type="text" id="swift-code" placeholder="e.g. NBEGEGCX" />
-            </div>
-            <div class="ev-form-group">
-              <label for="payout-currency">Currency</label>
-              <select class="ev-form-input" id="payout-currency">
-                <option value="EGP">EGP — Egyptian Pound</option>
-                <option value="USD">USD — US Dollar</option>
-                <option value="EUR">EUR — Euro</option>
-                <option value="GBP">GBP — British Pound</option>
-                <option value="SAR">SAR — Saudi Riyal</option>
-                <option value="AED">AED — UAE Dirham</option>
-              </select>
-            </div>
-          </div>
-          <div class="ev-form-group">
-            <label for="payout-email">PayPal / Payment Email (optional)</label>
-            <input class="ev-form-input" type="email" id="payout-email" placeholder="your@paypal.com" />
-          </div>
-          <div style="padding:12px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:10px;margin-bottom:18px;font-size:.8rem;color:var(--ev-text-sec)">
-            🔒 Your bank details are encrypted and stored securely. Payouts are processed within 3-5 business days after each event.
-          </div>
-          <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;padding:13px;justify-content:center">💾 Save Payout Details</button>
-        </form>
-      </div>
-    </div>
 
     <!-- ════ PANEL: ORGANIZER PROFILE ════ -->
     <div class="ev-panel" id="panel-profile">
@@ -485,9 +434,7 @@
                   <option value="instapay">InstaPay</option>
                 </select>
               </div>
-              <div style="padding:12px;background:rgba(37,99,235,.04);border:1px solid rgba(37,99,235,.1);border-radius:10px;font-size:.78rem;color:var(--ev-text-sec)">
-                ℹ️ Payment details are managed in <a href="#" class="ev-link" id="goto-payout-link">Payout Settings</a>.
-              </div>
+
             </div>
           </div>
         </div>
