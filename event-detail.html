@@ -8,7 +8,6 @@
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/light-theme.css" />
   <link rel="stylesheet" href="css/theme.css" />
-  <link rel="stylesheet" href="css/event-detail.css" />
   <link rel="stylesheet" href="css/seating-chart.css" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script>var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)</script>
@@ -23,7 +22,7 @@
         <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
         <span class="nav-logo-text shimmer">Event Waw</span>
       </a>
-      <div class="nav-links"><a href="index.html">Events</a><a href="index.html#events">Explore</a></div>
+      <div class="nav-links"><a href="dashboard.html">Events</a><a href="dashboard.html">My Tickets</a></div>
       <div class="nav-actions">
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -37,8 +36,8 @@
 
   <div class="mobile-menu" id="mobile-menu">
     <button class="close-btn" id="mobile-close">✕</button>
-    <a href="index.html">Events</a>
-    <a href="index.html#events">Explore</a>
+    <a href="dashboard.html">Events</a>
+    <a href="dashboard.html">My Tickets</a>
     <a href="login.html">Sign In</a>
     <button class="mobile-theme-toggle theme-toggle" aria-label="Toggle theme">
       <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -52,22 +51,22 @@
   <div style="padding-top: 100px; min-height: 100vh;">
 
     <!-- Hero Banner -->
-    <div id="event-hero" class="ed-hero">
-      <img id="event-cover" class="ed-hero-img" src="images/event-concert.png" alt="" />
-      <div class="ed-hero-overlay"></div>
-      <div class="container ed-hero-content">
-        <a href="index.html" class="ed-hero-back">
+    <div id="event-hero" class="event-detail-hero">
+      <img id="event-cover" src="images/event-concert.png" alt="" />
+      <div class="event-detail-hero-overlay"></div>
+      <div class="container" style="position:relative;z-index:2;">
+        <a href="index.html" class="btn btn-outline btn-sm" style="margin-bottom:24px;width:fit-content;">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"/></svg>
-          Back to Events
+          Back to Home
         </a>
-        <div class="ed-hero-badge" id="event-category">Event</div>
-        <h1 id="event-title" class="ed-hero-title">Loading…</h1>
-        <div class="ed-hero-meta">
-          <span id="event-date" class="ed-hero-meta-item">
+        <div class="event-detail-badge" id="event-category">Music</div>
+        <h1 id="event-title" style="font-family:var(--font-serif);font-size:clamp(2rem,5vw,3rem);font-weight:700;line-height:1.15;margin:12px 0 16px;max-width:700px;">Loading…</h1>
+        <div style="display:flex;flex-wrap:wrap;gap:24px;color:var(--text-secondary);font-size:0.95rem;">
+          <span id="event-date" style="display:flex;align-items:center;gap:8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             —
           </span>
-          <span id="event-venue" class="ed-hero-meta-item">
+          <span id="event-venue" style="display:flex;align-items:center;gap:8px;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>
             —
           </span>
@@ -76,197 +75,368 @@
     </div>
 
     <!-- Content -->
-    <div class="ed-grid">
-      
-      <!-- Left: Event Details -->
-      <div class="ed-main">
+    <div class="container" style="padding-top:48px;padding-bottom:80px;">
+      <div class="event-detail-grid">
+        
+        <!-- Left: Event Details (Eveenty-style) -->
+        <div class="event-detail-main">
 
-        <!-- Cover Image -->
-        <div class="ed-cover">
-          <img id="event-cover-main" src="images/event-concert.png" alt="Event Image" />
-        </div>
-
-        <!-- Info Cards Strip -->
-        <div class="ed-info-strip">
-          <div class="ed-info-card">
-            <div class="ed-info-icon">📅</div>
-            <div>
-              <div class="ed-info-label">Event Date</div>
-              <div class="ed-info-value" id="ed-date">—</div>
+          <!-- Cover + Info side by side -->
+          <div class="ed-hero-row">
+            <!-- Cover Image -->
+            <div class="ed-cover-wrap">
+              <img id="event-cover-main" src="images/event-concert.png" alt="Event Image" />
             </div>
-          </div>
-          <div class="ed-info-card" id="ed-doors-card" style="display:none;">
-            <div class="ed-info-icon">🚪</div>
-            <div>
-              <div class="ed-info-label">Doors Open At</div>
-              <div class="ed-info-value" id="ed-doors">—</div>
-            </div>
-          </div>
-          <div class="ed-info-card">
-            <div class="ed-info-icon">🕐</div>
-            <div>
-              <div class="ed-info-label">Event Time</div>
-              <div class="ed-info-value" id="ed-time">—</div>
-            </div>
-          </div>
-          <div class="ed-info-card">
-            <div class="ed-info-icon">🏛️</div>
-            <div>
-              <div class="ed-info-label">Venue</div>
-              <div class="ed-info-value" id="ed-venue-name">—</div>
-            </div>
-          </div>
-          <div class="ed-info-card">
-            <div class="ed-info-icon">📍</div>
-            <div>
-              <div class="ed-info-label">Location</div>
-              <div class="ed-info-value" id="ed-location">—</div>
-            </div>
-          </div>
-          <div class="ed-info-card">
-            <div class="ed-info-icon">👤</div>
-            <div>
-              <div class="ed-info-label">Organizer</div>
-              <div class="ed-info-value" id="ed-organizer">Event Waw</div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Description -->
-        <div class="ed-section">
-          <div id="event-description-wrap" class="ed-desc-wrap">
-            <p id="event-description" class="ed-desc-text">Loading event details…</p>
-          </div>
-          <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
-        </div>
-
-        <!-- Event Logo -->
-        <div class="ed-section" id="ed-logo-section" style="display:none;">
-          <div class="ed-logo-row">
-            <img id="ed-event-logo" src="" alt="Event Logo" />
-            <div>
-              <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;">Presented by</div>
-              <div id="ed-logo-title" style="font-size:0.9rem;font-weight:600;color:var(--text-primary);"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Gallery -->
-        <div class="ed-section" id="ed-gallery-section" style="display:none;">
-          <h2 class="ed-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            Gallery
-          </h2>
-          <div id="ed-gallery-grid" class="ed-gallery-grid"></div>
-        </div>
-
-        <!-- Sponsors -->
-        <div class="ed-section" id="ed-sponsors-section" style="display:none;">
-          <h2 class="ed-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Sponsors & Partners
-          </h2>
-          <div id="ed-sponsors-grid" class="ed-sponsors-grid"></div>
-        </div>
-
-        <!-- Map Location -->
-        <div class="ed-section ed-map-section" id="ed-map-section" style="display:none;">
-          <h2 class="ed-section-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            Event Location
-          </h2>
-          <div class="ed-map-container">
-            <div id="ed-map-render" class="ed-map-preview"></div>
-            <div class="ed-map-bar" id="ed-map-bar"></div>
-          </div>
-        </div>
-
-        <!-- Terms & Conditions -->
-        <div class="ed-section" id="ed-terms-section" style="display:none;">
-          <button class="ed-terms-toggle" id="terms-toggle">
-            <span>📋 Terms & Conditions / Refund Policy</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          <div id="terms-content" class="ed-terms-content" style="display:none;">
-            <p id="event-terms" style="color:var(--text-muted);font-size:0.86rem;line-height:1.7;white-space:pre-line;"></p>
-          </div>
-        </div>
-
-        <!-- Hidden fields for backward compat -->
-        <span id="event-venue-name" style="display:none;"></span>
-        <span id="event-venue-address" style="display:none;"></span>
-        <span id="organizer-name" style="display:none;"></span>
-        <span id="organizer-avatar" style="display:none;"></span>
-      </div>
-
-      <!-- Right: Tickets -->
-      <div class="ed-tickets-col">
-        <!-- Seating Chart -->
-        <div id="seating-chart-panel"></div>
-
-        <div class="ticket-selector" id="ticket-selector">
-          <h2>Get Your Tickets Now!</h2>
-          <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Secure your spot now. No account required for guests — quick and easy checkout.</p>
-
-          <div class="ed-instant-badge">⚡ INSTANT TICKETS AVAILABLE</div>
-
-          <!-- Search -->
-          <div style="position:relative;margin-bottom:20px;">
-            <input type="text" class="fi" id="tier-search" placeholder="Find your ticket…" style="padding-left:38px;" />
-            <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          </div>
-          
-          <div id="tiers-list"></div>
-
-          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light);">
-            <!-- Promo Code -->
-            <div id="promo-section" style="margin-bottom:16px;">
-              <div style="display:flex;gap:8px;align-items:stretch;">
-                <input type="text" class="fi" id="promo-input" placeholder="Promo code" style="flex:1;text-transform:uppercase;letter-spacing:1px;font-family:monospace;font-size:0.88rem;" />
-                <button type="button" class="btn btn-outline" id="apply-promo-btn" style="white-space:nowrap;padding:0 16px;font-size:0.82rem;">Apply</button>
+            <!-- Info Cards -->
+            <div class="ed-info-side">
+              <div class="ed-info-card">
+                <div class="ed-info-icon">📅</div>
+                <div>
+                  <div class="ed-info-label">Event Date</div>
+                  <div class="ed-info-value" id="ed-date">—</div>
+                </div>
               </div>
-              <div id="promo-status" style="margin-top:6px;font-size:0.8rem;display:none;"></div>
-            </div>
-
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;" id="subtotal-row" style="display:none;">
-              <span style="color:var(--text-muted);font-size:0.85rem;">Subtotal</span>
-              <span id="subtotal-price" style="font-size:1rem;color:var(--text-muted);"></span>
-            </div>
-            <div id="discount-row" style="display:none;margin-bottom:8px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;">
-                <span style="color:#22c55e;font-size:0.85rem;font-weight:600;">🏷️ Discount (<span id="discount-label"></span>)</span>
-                <span id="discount-amount" style="font-size:1rem;font-weight:600;color:#22c55e;">-$0</span>
+              <div class="ed-info-card" id="ed-doors-card" style="display:none;">
+                <div class="ed-info-icon">🚪</div>
+                <div>
+                  <div class="ed-info-label">Doors Open At</div>
+                  <div class="ed-info-value" id="ed-doors">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">🕐</div>
+                <div>
+                  <div class="ed-info-label">Event Time</div>
+                  <div class="ed-info-value" id="ed-time">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">🏛️</div>
+                <div>
+                  <div class="ed-info-label">Venue</div>
+                  <div class="ed-info-value" id="ed-venue-name">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">📍</div>
+                <div>
+                  <div class="ed-info-label">Location</div>
+                  <div class="ed-info-value" id="ed-location">—</div>
+                </div>
+              </div>
+              <div class="ed-info-card">
+                <div class="ed-info-icon">👤</div>
+                <div>
+                  <div class="ed-info-label">Organizer</div>
+                  <div class="ed-info-value" id="ed-organizer">Event Waw</div>
+                </div>
               </div>
             </div>
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-              <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
-              <span id="total-price" style="font-size:1.3rem;font-weight:700;">$0</span>
+          </div>
+
+          <!-- Description with See More -->
+          <div class="event-detail-section">
+            <div id="event-description-wrap" class="ed-desc-wrap">
+              <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
             </div>
-            <button class="btn btn-primary btn-full btn-lg" id="checkout-btn" disabled>
-              Reserve & Pay
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
+          </div>
+
+          <!-- Event Logo -->
+          <div class="event-detail-section" id="ed-logo-section" style="display:none;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <img id="ed-event-logo" src="" alt="Event Logo" style="width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--border-color);" />
+              <div>
+                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;">Event Logo</div>
+                <div id="ed-logo-title" style="font-size:0.9rem;font-weight:600;color:var(--text-primary);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gallery -->
+          <div class="event-detail-section" id="ed-gallery-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📸 Gallery</h2>
+            <div id="ed-gallery-grid" class="ed-gallery-grid"></div>
+          </div>
+
+          <!-- Sponsors -->
+          <div class="event-detail-section" id="ed-sponsors-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">🤝 Sponsors & Partners</h2>
+            <div id="ed-sponsors-grid" class="ed-sponsors-grid"></div>
+          </div>
+
+          <!-- Map Location -->
+          <div class="event-detail-section ed-map-section" id="ed-map-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📍 Event Location</h2>
+            <div class="ed-map-container">
+              <div id="ed-map-render" class="ed-map-preview"></div>
+              <div class="ed-map-bar" id="ed-map-bar"></div>
+            </div>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <div class="event-detail-section" id="ed-terms-section" style="display:none;">
+            <button class="ed-terms-toggle" id="terms-toggle">
+              <span>📋 Terms & Conditions / Refund Policy</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
             </button>
-            <button class="btn btn-outline btn-full" id="guest-checkout-btn" disabled style="margin-top:10px;font-size:0.88rem;">
-              🎫 Buy as Guest — No Account Needed
-            </button>
-            <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
-              🔒 Secure checkout powered by Stripe
-            </p>
+            <div id="terms-content" class="ed-terms-content" style="display:none;">
+              <p id="event-terms" style="color:var(--text-muted);font-size:0.88rem;line-height:1.7;white-space:pre-line;"></p>
+            </div>
+          </div>
+
+          <!-- Hidden fields for backward compat -->
+          <span id="event-venue-name" style="display:none;"></span>
+          <span id="event-venue-address" style="display:none;"></span>
+          <span id="organizer-name" style="display:none;"></span>
+          <span id="organizer-avatar" style="display:none;"></span>
+        </div>
+
+        <!-- Tickets Section -->
+        <div>
+          <!-- Seating Chart: shown only if event has a venue_map -->
+          <div id="seating-chart-panel"></div>
+
+          <div class="ticket-selector" id="ticket-selector">
+            <h2 style="font-family:var(--font-serif);font-size:1.15rem;font-weight:700;margin-bottom:6px;">Get Your Tickets Now!</h2>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:16px;line-height:1.5;">Purchase tickets directly and secure your spot. No account required for guests — quick and easy checkout.</p>
+
+            <div class="ed-instant-badge">⚡ INSTANT TICKETS AVAILABLE</div>
+
+            <!-- Search -->
+            <div style="position:relative;margin-bottom:20px;">
+              <input type="text" class="fi" id="tier-search" placeholder="Find your ticket…" style="padding-left:38px;" />
+              <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            
+            <div id="tiers-list">
+              <!-- Tiers loaded dynamically -->
+            </div>
+
+            <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border-light);">
+              <!-- Promo Code -->
+              <div id="promo-section" style="margin-bottom:16px;">
+                <div style="display:flex;gap:8px;align-items:stretch;">
+                  <input type="text" class="fi" id="promo-input" placeholder="Promo code" style="flex:1;text-transform:uppercase;letter-spacing:1px;font-family:monospace;font-size:0.88rem;" />
+                  <button type="button" class="btn btn-outline" id="apply-promo-btn" style="white-space:nowrap;padding:0 16px;font-size:0.82rem;">Apply</button>
+                </div>
+                <div id="promo-status" style="margin-top:6px;font-size:0.8rem;display:none;"></div>
+              </div>
+
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;" id="subtotal-row" style="display:none;">
+                <span style="color:var(--text-muted);font-size:0.85rem;">Subtotal</span>
+                <span id="subtotal-price" style="font-size:1rem;color:var(--text-muted);"></span>
+              </div>
+              <div id="discount-row" style="display:none;margin-bottom:8px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="color:#22c55e;font-size:0.85rem;font-weight:600;">🏷️ Discount (<span id="discount-label"></span>)</span>
+                  <span id="discount-amount" style="font-size:1rem;font-weight:600;color:#22c55e;">-$0</span>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
+                <span id="total-price" style="font-size:1.3rem;font-weight:700;">$0</span>
+              </div>
+              <button class="btn btn-primary btn-full btn-lg" id="checkout-btn" disabled>
+                Reserve & Pay
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+              </button>
+              <button class="btn btn-outline btn-full" id="guest-checkout-btn" disabled style="margin-top:10px;font-size:0.88rem;">
+                🎫 Buy as Guest — No Account Needed
+              </button>
+              <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
+                🔒 Secure checkout powered by Stripe
+              </p>
+            </div>
+          </div>
+
+          <!-- Reservation Timer (hidden until active) -->
+          <div id="reservation-timer" style="display:none;margin-top:16px;padding:16px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:var(--card-radius);text-align:center;">
+            <p style="font-size:0.82rem;color:var(--accent-primary);font-weight:600;margin-bottom:4px;">Reservation held for</p>
+            <p id="timer-display" style="font-size:1.8rem;font-weight:700;font-family:var(--font-sans);">10:00</p>
+            <p style="font-size:0.75rem;color:var(--text-muted);">Complete payment before time expires</p>
           </div>
         </div>
 
-        <!-- Reservation Timer -->
-        <div id="reservation-timer" style="display:none;margin-top:16px;padding:16px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.15);border-radius:var(--card-radius);text-align:center;">
-          <p style="font-size:0.82rem;color:var(--accent-primary);font-weight:600;margin-bottom:4px;">Reservation held for</p>
-          <p id="timer-display" style="font-size:1.8rem;font-weight:700;font-family:var(--font-sans);">10:00</p>
-          <p style="font-size:0.75rem;color:var(--text-muted);">Complete payment before time expires</p>
-        </div>
       </div>
-
     </div>
   </div>
 
-  <!-- Styles in css/event-detail.css -->
+  <style>
+    .event-detail-hero {
+      position: relative; width: 100%; height: 400px; overflow: hidden;
+      display: flex; align-items: flex-end; padding-bottom: 48px;
+    }
+    .event-detail-hero img {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.6s; 
+    }
+    .event-detail-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, var(--bg-primary) 0%, rgba(9,9,11,.7) 50%, rgba(9,9,11,.3) 100%);
+      z-index: 1;
+    }
+    .event-detail-badge {
+      display: inline-flex; padding: 6px 16px; border-radius: 50px;
+      background: rgba(212,175,55,.12); border: 1px solid rgba(212,175,55,.2);
+      color: var(--accent-primary); font-size: 0.75rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .event-detail-grid {
+      display: grid; grid-template-columns: 1fr; gap: 40px; max-width: 900px;
+    }
+    .event-detail-section { margin-bottom: 24px; }
+
+    /* Hero row — image + info side by side */
+    .ed-hero-row {
+      display: flex; gap: 28px; margin-bottom: 28px;
+    }
+
+    /* Cover image */
+    .ed-cover-wrap { flex: 1; min-width: 0; border-radius: 16px; overflow: hidden; border: 1px solid var(--border-color); }
+    .ed-cover-wrap img { width: 100%; height: 100%; min-height: 300px; object-fit: cover; display: block; transition: transform .4s; }
+    .ed-cover-wrap:hover img { transform: scale(1.02); }
+
+    /* Info side */
+    .ed-info-side { flex: 0 0 280px; display: flex; flex-direction: column; }
+    /* Description expand */
+    .ed-desc-wrap { max-height: 120px; overflow: hidden; position: relative; transition: max-height .4s ease; }
+    .ed-desc-wrap.expanded { max-height: 2000px; }
+    .ed-desc-wrap:not(.expanded)::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 50px;
+      background: linear-gradient(to bottom, transparent, var(--bg-primary));
+      pointer-events: none;
+    }
+    .ed-see-more {
+      background: none; border: none; color: var(--accent-primary); font-weight: 600;
+      font-size: 0.88rem; cursor: pointer; padding: 8px 0; transition: opacity .2s;
+    }
+    .ed-see-more:hover { opacity: .7; }
+
+    /* Info Cards */
+    .ed-info-card {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border-color);
+      transition: background .2s;
+    }
+    .ed-info-card:first-child { border-top: 1px solid var(--border-color); }
+    .ed-info-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(212,175,55,.06); display: flex;
+      align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+    .ed-info-label { font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; margin-bottom: 1px; }
+    .ed-info-value { font-size: 0.88rem; font-weight: 600; color: var(--text-primary); }
+
+    /* Terms accordion */
+    .ed-terms-toggle {
+      display: flex; justify-content: space-between; align-items: center; width: 100%;
+      padding: 16px 20px; background: rgba(255,255,255,.02); border: 1px solid var(--border-color);
+      border-radius: 12px; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+    }
+    .ed-terms-toggle:hover { border-color: rgba(212,175,55,.2); color: var(--accent-primary); }
+    .ed-terms-toggle svg { transition: transform .3s; }
+    .ed-terms-toggle.open svg { transform: rotate(180deg); }
+    .ed-terms-content { padding: 16px 20px; border: 1px solid var(--border-color); border-top: 0; border-radius: 0 0 12px 12px; }
+
+    /* Ticket selector — full width section */
+    .ticket-selector {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: var(--card-radius); padding: 28px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+    }
+
+    /* Tier Cards — Eveenty style */
+    .tier-card {
+      border: 1px solid var(--border-color); border-radius: 14px;
+      margin-bottom: 16px; overflow: hidden; transition: var(--transition);
+      background: rgba(255,255,255,.01);
+    }
+    .tier-card:hover { border-color: rgba(212,175,55,.2); box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+    .tier-card.tier-sold-out { opacity: 0.55; pointer-events: none; }
+    .tier-card-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 0; }
+    .tier-card-name { font-family: var(--font-serif); font-size: 1rem; font-weight: 700; margin: 0; }
+    .tier-sold-badge {
+      padding: 4px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 700;
+      background: rgba(239,68,68,.1); color: #ef4444; text-transform: uppercase; letter-spacing: .04em;
+    }
+    .tier-card-price {
+      padding: 4px 18px 12px; font-size: 1.2rem; font-weight: 800;
+      color: var(--accent-primary);
+    }
+    .tier-card-desc { padding: 0 18px 14px; }
+    .tier-card-desc-text { font-size: 0.82rem; color: var(--text-muted); line-height: 1.7; }
+    .tier-card-controls { padding: 0 18px 14px; }
+    .tier-card-qty-wrap { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    .tier-card-actions { display: flex; gap: 8px; }
+    .tier-avail-text { padding: 0 18px 14px; font-size: 0.72rem; color: var(--text-muted); }
+    .tier-qty { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+    .tier-qty button {
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color);
+      background: var(--bg-glass); color: var(--text-primary); font-size: 1rem;
+      display: flex; align-items: center; justify-content: center; transition: var(--transition);
+    }
+    .tier-qty button:hover { border-color: var(--accent-primary); color: var(--accent-primary); }
+    .tier-qty span { font-weight: 600; min-width: 24px; text-align: center; }
+
+    /* Instant ticket badge */
+    .ed-instant-badge {
+      display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+      background: rgba(34,197,94,.06); border: 1px solid rgba(34,197,94,.12);
+      border-radius: 10px; margin-bottom: 16px; font-size: 0.78rem; color: #22c55e; font-weight: 600;
+    }
+
+    @media (max-width: 900px) {
+      .event-detail-hero { height: 300px; }
+      .ed-hero-row { flex-direction: column; }
+      .ed-info-side { flex: none; }
+      .ed-cover-wrap img { min-height: 220px; }
+    }
+    @media (max-width: 768px) {
+      .event-detail-hero { height: 250px; padding-bottom: 32px; }
+      .ed-cover-wrap img { height: 220px; }
+    }
+
+    [data-theme="light"] .event-detail-hero-overlay {
+      background: linear-gradient(to top, var(--bg-primary) 0%, rgba(10,10,15,.5) 40%, rgba(10,10,15,.25) 100%);
+    }
+    [data-theme="light"] .ed-desc-wrap:not(.expanded)::after {
+      background: linear-gradient(to bottom, transparent, var(--bg-primary));
+    }
+
+    /* Gallery grid */
+    .ed-gallery-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .ed-gallery-grid img {
+      width: 100%; height: 200px; object-fit: cover; border-radius: 12px;
+      border: 1px solid var(--border-color); cursor: pointer;
+      transition: transform .3s, box-shadow .3s;
+    }
+    .ed-gallery-grid img:hover {
+      transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    }
+
+    /* Sponsors grid */
+    .ed-sponsors-grid {
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+    }
+    .ed-sponsors-grid img {
+      height: 56px; max-width: 140px; object-fit: contain; border-radius: 10px;
+      padding: 8px 12px; background: rgba(255,255,255,.04);
+      border: 1px solid var(--border-color); transition: transform .2s;
+    }
+    .ed-sponsors-grid img:hover { transform: scale(1.08); }
+
+    @media (max-width: 600px) {
+      .ed-gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .ed-gallery-grid img { height: 140px; }
+    }
+  </style>
 
   <script type="module">
     import { supabase, getCurrentUser, resolveImageUrl } from './src/lib/supabase.js';
