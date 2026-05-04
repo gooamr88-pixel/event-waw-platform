@@ -166,6 +166,15 @@
             <div id="ed-sponsors-grid" class="ed-sponsors-grid"></div>
           </div>
 
+          <!-- Map Location -->
+          <div class="event-detail-section ed-map-section" id="ed-map-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📍 Event Location</h2>
+            <div class="ed-map-container">
+              <div id="ed-map-render" class="ed-map-preview"></div>
+              <div class="ed-map-bar" id="ed-map-bar"></div>
+            </div>
+          </div>
+
           <!-- Terms & Conditions -->
           <div class="event-detail-section" id="ed-terms-section" style="display:none;">
             <button class="ed-terms-toggle" id="terms-toggle">
@@ -607,6 +616,52 @@
             img.loading = 'lazy';
             img.onerror = () => img.remove();
             sponsorsGrid.appendChild(img);
+          }
+        }
+      }
+
+      // ── Map Location ──
+      if (event.latitude && event.longitude) {
+        const mapSection = document.getElementById('ed-map-section');
+        const mapRender = document.getElementById('ed-map-render');
+        const mapBar = document.getElementById('ed-map-bar');
+        if (mapSection && mapRender) {
+          mapSection.style.display = 'block';
+
+          const lat = parseFloat(event.latitude);
+          const lng = parseFloat(event.longitude);
+          const venueName = event.venue || 'Event Location';
+          const venueAddr = event.venue_address
+            ? `${event.venue_address}${event.city ? ', ' + event.city : ''}`
+            : (event.city || `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+
+          // Render embedded Google Map
+          const iframe = document.createElement('iframe');
+          iframe.width = '100%';
+          iframe.height = '100%';
+          iframe.style.cssText = 'border:0;display:block;min-height:280px';
+          iframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4&q=${lat},${lng}&zoom=16`;
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.setAttribute('loading', 'lazy');
+          iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+          mapRender.textContent = '';
+          mapRender.appendChild(iframe);
+
+          // Render address bar
+          if (mapBar) {
+            mapBar.innerHTML = `
+              <div class="ed-map-bar-info">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4285F4" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <div>
+                  <strong>${escapeHTML(venueName)}</strong>
+                  <span>${escapeHTML(venueAddr)}</span>
+                </div>
+              </div>
+              <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="ed-map-directions-btn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+                Get Directions
+              </a>
+            `;
           }
         }
       }

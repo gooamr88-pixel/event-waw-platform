@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════
    VIA — PREMIUM DESIGN SYSTEM
    Adapted from Roya/Nabda Architecture
    Gold · Black · Blue Glow · Cinematic
@@ -2543,4 +2543,84 @@ button { cursor: pointer; }
 .seating-hint svg {
   flex-shrink: 0;
   color: #3b82f6;
+}
+
+/* ═══════════════════════════════════════
+   Event Detail — Map Location Section
+   ═══════════════════════════════════════ */
+.ed-map-section { margin-top: 24px; }
+.ed-map-container {
+  border: 2px solid var(--border-color, #e5e7eb);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,.06);
+  transition: box-shadow .3s;
+}
+.ed-map-container:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,.1);
+}
+.ed-map-preview {
+  height: 280px;
+  width: 100%;
+  background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 50%, #e0f2f1 100%);
+}
+.ed-map-bar {
+  padding: 14px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  background: var(--card-bg, #fff);
+  border-top: 1px solid var(--border-color, #e5e7eb);
+}
+.ed-map-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.ed-map-bar-info div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ed-map-bar-info strong {
+  font-size: .88rem;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a2e);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ed-map-bar-info span {
+  font-size: .76rem;
+  color: var(--text-muted, #6b7280);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ed-map-directions-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #4285F4, #34A853);
+  color: #fff;
+  border-radius: 50px;
+  font-size: .82rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .25s;
+  flex-shrink: 0;
+  box-shadow: 0 2px 12px rgba(66,133,244,.3);
+}
+.ed-map-directions-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(66,133,244,.4);
+}
+@media (max-width: 600px) {
+  .ed-map-preview { height: 220px; }
+  .ed-map-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .ed-map-directions-btn { width: 100%; justify-content: center; }
 }

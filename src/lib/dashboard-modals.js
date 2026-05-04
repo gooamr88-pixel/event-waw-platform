@@ -1248,15 +1248,15 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
   if (addressBar) {
     setSafeHTML(addressBar, `
       <div class="ce-map-address-info">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#4285F4" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4285F4" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <div>
           <strong>${escapeHTML(name || 'Selected Location')}</strong>
           <span>${escapeHTML(address || `${lat.toFixed(4)}, ${lng.toFixed(4)}`)}</span>
         </div>
       </div>
-      <a href="https://www.google.com/maps/search/?api=1&query=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="ce-map-open-btn" title="Open in Google Maps">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        Open in Maps
+      <a href="https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}" target="_blank" rel="noopener noreferrer" class="ce-map-open-btn" title="Get Directions">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
+        Get Directions
       </a>`);
   }
 
@@ -1289,22 +1289,41 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
     const markerContent = document.createElement('div');
     setSafeHTML(markerContent, `
       <div style="
-        display: flex; align-items: center; gap: 6px;
-        background: #1a1a2e; color: #fff; padding: 8px 14px;
-        border-radius: 20px; font-size: 13px; font-weight: 600;
-        box-shadow: 0 4px 20px rgba(0,0,0,.3);
-        border: 2px solid #4285F4;
+        display: flex; align-items: center; gap: 8px;
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        color: #fff; padding: 10px 16px;
+        border-radius: 24px; font-size: 13px; font-weight: 600;
+        box-shadow: 0 6px 24px rgba(0,0,0,.35), 0 0 0 2px rgba(66,133,244,.5);
         white-space: nowrap;
+        animation: markerBounce .5s ease;
       ">
-        <span style="font-size:16px">📍</span>
+        <span style="
+          width:28px;height:28px;border-radius:50%;
+          background:linear-gradient(135deg,#4285F4,#34A853);
+          display:flex;align-items:center;justify-content:center;
+          font-size:14px;flex-shrink:0;
+        ">📍</span>
         <span>${escapeHTML((name || 'Location').substring(0, 30))}</span>
       </div>
       <div style="
-        width: 12px; height: 12px;
-        background: #4285F4; border-radius: 50%;
-        margin: -2px auto 0; position: relative;
-        box-shadow: 0 0 0 4px rgba(66,133,244,.3);
-      "></div>`);
+        width:0;height:0;
+        border-left:8px solid transparent;
+        border-right:8px solid transparent;
+        border-top:10px solid #1a1a2e;
+        margin:-1px auto 0;
+        filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));
+      "></div>
+      <div style="
+        width:10px;height:10px;
+        background:#4285F4;border-radius:50%;
+        margin:4px auto 0;
+        box-shadow:0 0 0 4px rgba(66,133,244,.3), 0 0 0 8px rgba(66,133,244,.1);
+        animation: markerPulse 2s ease-in-out infinite;
+      "></div>
+      <style>
+        @keyframes markerBounce { 0%{transform:translateY(-20px);opacity:0} 100%{transform:translateY(0);opacity:1} }
+        @keyframes markerPulse { 0%,100%{box-shadow:0 0 0 4px rgba(66,133,244,.3),0 0 0 8px rgba(66,133,244,.1)} 50%{box-shadow:0 0 0 6px rgba(66,133,244,.4),0 0 0 12px rgba(66,133,244,.15)} }
+      </style>`);
 
     googleMapMarker = new AdvancedMarkerElement({
       map: googleMapInstance,
