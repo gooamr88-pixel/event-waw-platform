@@ -127,15 +127,19 @@ export function setupCreateModal() {
     const currencyGroup = document.getElementById('ce-currency-group');
 
     if (ceListingType === 'display_only') {
-      // Hide tickets tab, step, and currency
+      // Hide tickets tab, step, currency, and Stripe verification
       if (ticketsTab) ticketsTab.style.display = 'none';
       if (ticketsStep) ticketsStep.style.display = 'none';
       if (currencyGroup) currencyGroup.style.display = 'none';
+      const stripeSection = document.getElementById('ce-stripe-section');
+      if (stripeSection) stripeSection.style.display = 'none';
     } else {
-      // Show tickets tab, step, and currency
+      // Show tickets tab, step, currency, and Stripe verification
       if (ticketsTab) ticketsTab.style.display = '';
       if (ticketsStep) ticketsStep.style.display = '';
       if (currencyGroup) currencyGroup.style.display = '';
+      const stripeSection = document.getElementById('ce-stripe-section');
+      if (stripeSection) stripeSection.style.display = '';
     }
 
     // Reset tabs
@@ -966,6 +970,8 @@ export async function loadEventForEditing(eventId) {
       if (ticketsTab) ticketsTab.style.display = 'none';
       if (ticketsStep) ticketsStep.style.display = 'none';
       if (currencyGroup) currencyGroup.style.display = 'none';
+      const stripeSection = document.getElementById('ce-stripe-section');
+      if (stripeSection) stripeSection.style.display = 'none';
     } else {
       if (bannerIcon) bannerIcon.textContent = '🎫';
       if (bannerLabel) bannerLabel.textContent = 'Display & Sell Tickets';
@@ -973,6 +979,8 @@ export async function loadEventForEditing(eventId) {
       if (ticketsTab) ticketsTab.style.display = '';
       if (ticketsStep) ticketsStep.style.display = '';
       if (currencyGroup) currencyGroup.style.display = '';
+      const stripeSection = document.getElementById('ce-stripe-section');
+      if (stripeSection) stripeSection.style.display = '';
     }
 
     // Switch to the panel
