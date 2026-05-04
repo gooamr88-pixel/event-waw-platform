@@ -851,11 +851,16 @@ export async function loadEventForEditing(eventId) {
     }
 
     // ── Populate gallery images (Issue #5) ──
-    if (ev.gallery_urls && Array.isArray(ev.gallery_urls) && ev.gallery_urls.length) {
+    // Safely parse gallery_urls — may arrive as JSON string or native array
+    let galleryArr = ev.gallery_urls;
+    if (typeof galleryArr === 'string') {
+      try { galleryArr = JSON.parse(galleryArr); } catch (_) { galleryArr = null; }
+    }
+    if (Array.isArray(galleryArr) && galleryArr.length) {
       const galleryGrid = document.getElementById('ce-gallery-grid');
       if (galleryGrid) {
         galleryGrid.textContent = '';
-        ev.gallery_urls.forEach((url, i) => {
+        galleryArr.forEach((url, i) => {
           const item = document.createElement('div');
           item.className = 'ce-gallery-item';
           item.dataset.existingUrl = url;
@@ -869,7 +874,32 @@ export async function loadEventForEditing(eventId) {
             delete item.dataset.existingUrl;
           });
         });
-        ceGalleryCount = ev.gallery_urls.length;
+        ceGalleryCount = galleryArr.length;
+      }
+    }
+
+    // ── Populate sponsor logos ──
+    let sponsorArr = ev.sponsor_urls;
+    if (typeof sponsorArr === 'string') {
+      try { sponsorArr = JSON.parse(sponsorArr); } catch (_) { sponsorArr = null; }
+    }
+    if (Array.isArray(sponsorArr) && sponsorArr.length) {
+      const sponsorsGrid = document.getElementById('ce-sponsors-grid');
+      if (sponsorsGrid) {
+        sponsorsGrid.textContent = '';
+        sponsorArr.forEach((url, i) => {
+          const item = document.createElement('div');
+          item.className = 'ce-gallery-item';
+          item.dataset.existingUrl = url;
+          setSafeHTML(item, `<label>Sponsor ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(url)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
+          sponsorsGrid.appendChild(item);
+          const fileInput = item.querySelector('input[type="file"]');
+          const area = item.querySelector('.ce-upload-area');
+          fileInput.addEventListener('change', (e) => {
+            handleCeFileUpload(e, area);
+            delete item.dataset.existingUrl;
+          });
+        });
       }
     }
 
@@ -1238,11 +1268,18 @@ export async function showGoogleMapPreview(lat, lng, name, address) {
     });
   } catch (err) {
     // Fallback: use static map image
+    // NOTE: Cannot use setSafeHTML here because the sanitizer strips <iframe> tags.
+    // We construct the iframe safely with no user-controlled strings in dangerous positions.
     console.warn('Interactive map failed, using static fallback:', err);
-    setSafeHTML(mapDiv, `<iframe 
-      width="100%" height="100%" frameborder="0" style="border:0;border-radius:12px" 
-      src="https://www.google.com/maps/embed/v1/place?key=AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4&q=${lat},${lng}&zoom=16" 
-      allowfullscreen loading="lazy"></iframe>`);
+    mapDiv.textContent = '';
+    const iframe = document.createElement('iframe');
+    iframe.width = '100%';
+    iframe.height = '100%';
+    iframe.style.cssText = 'border:0;border-radius:12px';
+    iframe.src = `https://www.google.com/maps/embed/v1/place?key=AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4&q=${lat},${lng}&zoom=16`;
+    iframe.setAttribute('allowfullscreen', '');
+    iframe.setAttribute('loading', 'lazy');
+    mapDiv.appendChild(iframe);
   }
 }
 
