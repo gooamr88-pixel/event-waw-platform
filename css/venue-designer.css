@@ -63,7 +63,7 @@
   letter-spacing: -.02em;
 }
 .vd-title span {
-  background: linear-gradient(135deg, #2563EB, #93C5FD);
+  background: linear-gradient(135deg, #3b82f6, #818cf8, #a78bfa);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
@@ -111,7 +111,7 @@
 .vd-save-btn {
   height: 34px; padding: 0 18px; border-radius: 10px;
   background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-  border: none; color: #000; font-size: .78rem; font-weight: 700;
+  border: none; color: #fff; font-size: .78rem; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; gap: 6px;
   transition: all .3s cubic-bezier(.4,0,.2,1);
   box-shadow: 0 2px 12px rgba(37,99,235,.2), inset 0 1px 0 rgba(255,255,255,.2);
@@ -151,7 +151,7 @@
 
 /* ══════ LEFT TOOLBOX ══════ */
 .vd-toolbox {
-  width: 240px; min-width: 240px;
+  width: 200px; min-width: 200px;
   background: rgba(12,12,18,.7);
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-right: 1px solid rgba(255,255,255,.06);
@@ -170,15 +170,14 @@
   margin-bottom: 10px;
   display: flex; align-items: center; gap: 6px;
 }
+.vd-tb-label svg { color: #3f3f46; flex-shrink: 0; }
 .vd-tb-label::before {
-  content: ''; width: 12px; height: 2px;
-  background: linear-gradient(90deg, #2563EB, transparent);
-  border-radius: 1px;
+  content: none;
 }
 
 .vd-tb-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 5px;
 }
 
@@ -214,32 +213,27 @@
 /* ══════ QUICK TEMPLATES ══════ */
 .vd-template-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(5, 1fr);
   gap: 5px;
 }
 .vd-tpl-btn {
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  padding: 10px 4px 8px; border-radius: 10px;
-  background: linear-gradient(135deg, rgba(37,99,235,.04), rgba(37,99,235,.01));
-  border: 1px solid rgba(37,99,235,.08);
+  display: flex; align-items: center; justify-content: center;
+  aspect-ratio: 1; border-radius: 10px;
+  background: linear-gradient(135deg, rgba(37,99,235,.06), rgba(37,99,235,.02));
+  border: 1px solid rgba(37,99,235,.1);
   color: #e4e4e7; cursor: pointer;
-  font-size: 1.2rem; line-height: 1;
+  font-size: 1.3rem; line-height: 1;
   transition: all .25s cubic-bezier(.4,0,.2,1);
   user-select: none;
 }
 .vd-tpl-btn:hover {
-  background: linear-gradient(135deg, rgba(37,99,235,.12), rgba(37,99,235,.06));
-  border-color: rgba(37,99,235,.25);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(37,99,235,.12);
+  background: linear-gradient(135deg, rgba(37,99,235,.15), rgba(37,99,235,.08));
+  border-color: rgba(37,99,235,.3);
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 6px 18px rgba(37,99,235,.15);
 }
 .vd-tpl-btn:active {
-  transform: scale(.92);
-}
-.vd-tpl-btn span {
-  font-size: .5rem; color: #71717a;
-  font-weight: 600; text-transform: uppercase;
-  letter-spacing: .5px;
+  transform: scale(.88);
 }
 
 /* ══════ PROPERTIES PANEL ══════ */
@@ -256,15 +250,19 @@
 }
 
 .vd-props-empty {
-  text-align: center; padding: 30px 12px;
+  text-align: center; padding: 40px 12px;
   font-size: .75rem; color: #3f3f46; line-height: 1.8;
 }
 .vd-props-empty::before {
-  content: '🎯';
+  content: '';
   display: block;
-  font-size: 1.5rem;
-  margin-bottom: 8px;
-  opacity: .3;
+  width: 40px; height: 40px;
+  margin: 0 auto 12px;
+  background: rgba(37,99,235,.06);
+  border: 1px solid rgba(37,99,235,.1);
+  border-radius: 10px;
+  line-height: 40px;
+  font-size: 1.2rem;
 }
 
 .vd-ph {
@@ -562,16 +560,18 @@ svg.vd-canvas {
 /* ══════ KEYBOARD SHORTCUTS PILL ══════ */
 .vd-shortcuts {
   position: absolute; top: 10px; right: 12px;
-  display: flex; gap: 6px; z-index: 5;
+  display: flex; flex-wrap: wrap; gap: 4px; z-index: 5;
+  max-width: 360px; justify-content: flex-end;
 }
 .vd-shortcut {
   padding: 3px 8px;
-  background: rgba(0,0,0,.5);
+  background: rgba(0,0,0,.6);
   border: 1px solid rgba(255,255,255,.06);
   border-radius: 6px;
-  font-size: .55rem; color: #52525b;
+  font-size: .52rem; color: #52525b;
   font-family: 'JetBrains Mono', monospace;
   backdrop-filter: blur(8px);
+  white-space: nowrap;
 }
 .vd-shortcut kbd {
   color: #71717a; font-weight: 600;
