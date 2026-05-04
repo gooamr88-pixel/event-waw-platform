@@ -271,16 +271,17 @@ export async function getVenueMap(eventId) {
 }
 
 /**
- * Delete an event and all its dependent data.
- * SAFETY: Refuses to delete if ANY tickets exist (sold or valid).
- * Cascade order: seats -> venue_maps -> reservations -> ticket_tiers -> event.
+ * Delete an event.
+ * SAFETY: Refuses to delete if ANY tickets have been issued.
+ * RELIES ON: ON DELETE CASCADE for child tables (ticket_tiers, venue_maps,
+ *            seats, promo_codes, reservations) — set in the database schema.
  *
  * @param {string} eventId - The event UUID to delete
  * @returns {{ success: boolean, error?: string }}
  */
 export async function deleteEvent(eventId) {
   try {
-    // 1. Fetch tier IDs for this event
+    // 1. Fetch tier IDs for the ticket-existence safety check
     const { data: tiers, error: tiersErr } = await supabase
       .from('ticket_tiers')
       .select('id')
@@ -290,12 +291,11 @@ export async function deleteEvent(eventId) {
       return { success: false, error: 'Failed to look up ticket tiers: ' + tiersErr.message };
     }
 
-    // SAFETY: ensure tierIds is always a flat array of valid strings
     const tierIds = Array.isArray(tiers)
       ? tiers.map(t => t.id).filter(Boolean)
       : [];
 
-    // 2. Check for existing tickets — BLOCK deletion if any exist
+    // 2. Block deletion if any tickets have been issued
     if (tierIds.length > 0) {
       const { count, error: countErr } = await supabase
         .from('tickets')
@@ -314,40 +314,7 @@ export async function deleteEvent(eventId) {
       }
     }
 
-    // 3. Delete venue map + seats (seats FK-cascade from venue_maps)
-    const { data: venueMap } = await supabase
-      .from('venue_maps')
-      .select('id')
-      .eq('event_id', eventId)
-      .maybeSingle();
-
-    if (venueMap) {
-      await supabase.from('seats').delete().eq('venue_map_id', venueMap.id);
-      await supabase.from('venue_maps').delete().eq('id', venueMap.id);
-    }
-
-    // 4. Delete reservations via tier IDs (reservations FK to ticket_tiers, not events)
-    if (tierIds.length > 0) {
-      // Try multiple possible FK column names for resilience
-      const { error: resErr1 } = await supabase.from('reservations').delete().in('tier_id', tierIds);
-      if (resErr1) {
-        // Fallback: try ticket_tier_id column
-        const { error: resErr2 } = await supabase.from('reservations').delete().in('ticket_tier_id', tierIds);
-        if (resErr2) {
-          // Last fallback: try event_id directly
-          const { error: resErr3 } = await supabase.from('reservations').delete().eq('event_id', eventId);
-          if (resErr3) console.warn('Reservations cleanup skipped:', resErr3.message);
-        }
-      }
-    }
-
-    // 5. Delete ticket tiers
-    if (tierIds.length > 0) {
-      const { error: tierDelErr } = await supabase.from('ticket_tiers').delete().eq('event_id', eventId);
-      if (tierDelErr) console.warn('Ticket tiers cleanup warning:', tierDelErr.message);
-    }
-
-    // 6. Clean up storage files (non-blocking)
+    // 3. Clean up storage files (best-effort, not handled by DB cascades)
     try {
       const { data: files } = await supabase.storage.from('event-covers').list(`events/${eventId}`);
       if (files && files.length > 0) {
@@ -356,7 +323,7 @@ export async function deleteEvent(eventId) {
       }
     } catch (_) { /* storage cleanup is best-effort */ }
 
-    // 7. Delete the event itself — use .select() to verify rows were actually removed
+    // 4. Delete the event — ON DELETE CASCADE handles all child records
     const { data: deleted, error: deleteErr } = await supabase
       .from('events')
       .delete()
