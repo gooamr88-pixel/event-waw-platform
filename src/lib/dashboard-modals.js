@@ -866,10 +866,11 @@ export async function loadEventForEditing(eventId) {
       if (galleryGrid) {
         galleryGrid.textContent = '';
         for (let i = 0; i < galleryArr.length; i++) {
-          const resolvedGalleryUrl = await resolveImageUrl(galleryArr[i]);
+          const originalUrl = galleryArr[i];
+          const resolvedGalleryUrl = await resolveImageUrl(originalUrl);
           const item = document.createElement('div');
           item.className = 'ce-gallery-item';
-          item.dataset.existingUrl = resolvedGalleryUrl;
+          item.dataset.existingUrl = originalUrl; // Store original URL for DB
           setSafeHTML(item, `<label>Photo ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(resolvedGalleryUrl)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
           galleryGrid.appendChild(item);
           const fileInput = item.querySelector('input[type="file"]');
@@ -894,10 +895,11 @@ export async function loadEventForEditing(eventId) {
       if (sponsorsGrid) {
         sponsorsGrid.textContent = '';
         for (let i = 0; i < sponsorArr.length; i++) {
-          const resolvedSponsorUrl = await resolveImageUrl(sponsorArr[i]);
+          const originalUrl = sponsorArr[i];
+          const resolvedSponsorUrl = await resolveImageUrl(originalUrl);
           const item = document.createElement('div');
           item.className = 'ce-gallery-item';
-          item.dataset.existingUrl = resolvedSponsorUrl;
+          item.dataset.existingUrl = originalUrl; // Store original URL for DB
           setSafeHTML(item, `<label>Sponsor ${i + 1}</label><div class="ce-upload-area ce-gallery-upload has-image"><img src="${escapeHTML(resolvedSponsorUrl)}" /><input type="file" accept="image/jpeg,image/png" /></div>`);
           sponsorsGrid.appendChild(item);
           const fileInput = item.querySelector('input[type="file"]');

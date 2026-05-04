@@ -143,6 +143,29 @@
             <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
           </div>
 
+          <!-- Event Logo -->
+          <div class="event-detail-section" id="ed-logo-section" style="display:none;">
+            <div style="display:flex;align-items:center;gap:14px;">
+              <img id="ed-event-logo" src="" alt="Event Logo" style="width:64px;height:64px;border-radius:12px;object-fit:cover;border:1px solid var(--border-color);" />
+              <div>
+                <div style="font-size:0.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;">Event Logo</div>
+                <div id="ed-logo-title" style="font-size:0.9rem;font-weight:600;color:var(--text-primary);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gallery -->
+          <div class="event-detail-section" id="ed-gallery-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📸 Gallery</h2>
+            <div id="ed-gallery-grid" class="ed-gallery-grid"></div>
+          </div>
+
+          <!-- Sponsors -->
+          <div class="event-detail-section" id="ed-sponsors-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">🤝 Sponsors & Partners</h2>
+            <div id="ed-sponsors-grid" class="ed-sponsors-grid"></div>
+          </div>
+
           <!-- Terms & Conditions -->
           <div class="event-detail-section" id="ed-terms-section" style="display:none;">
             <button class="ed-terms-toggle" id="terms-toggle">
@@ -374,6 +397,36 @@
     [data-theme="light"] .ed-desc-wrap:not(.expanded)::after {
       background: linear-gradient(to bottom, transparent, var(--bg-primary));
     }
+
+    /* Gallery grid */
+    .ed-gallery-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    .ed-gallery-grid img {
+      width: 100%; height: 200px; object-fit: cover; border-radius: 12px;
+      border: 1px solid var(--border-color); cursor: pointer;
+      transition: transform .3s, box-shadow .3s;
+    }
+    .ed-gallery-grid img:hover {
+      transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    }
+
+    /* Sponsors grid */
+    .ed-sponsors-grid {
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: center;
+    }
+    .ed-sponsors-grid img {
+      height: 56px; max-width: 140px; object-fit: contain; border-radius: 10px;
+      padding: 8px 12px; background: rgba(255,255,255,.04);
+      border: 1px solid var(--border-color); transition: transform .2s;
+    }
+    .ed-sponsors-grid img:hover { transform: scale(1.08); }
+
+    @media (max-width: 600px) {
+      .ed-gallery-grid { grid-template-columns: repeat(2, 1fr); }
+      .ed-gallery-grid img { height: 140px; }
+    }
   </style>
 
   <script type="module">
@@ -493,6 +546,69 @@
           if (!open) this.style.borderRadius = '12px 12px 0 0';
           else this.style.borderRadius = '12px';
         });
+      }
+
+      // ── Event Logo ──
+      if (event.logo_url) {
+        const logoSection = document.getElementById('ed-logo-section');
+        const logoImg = document.getElementById('ed-event-logo');
+        const logoTitle = document.getElementById('ed-logo-title');
+        logoTitle.textContent = event.title;
+        resolveImageUrl(event.logo_url).then(resolved => {
+          logoImg.src = resolved || event.logo_url;
+          logoImg.onerror = () => { logoSection.style.display = 'none'; };
+          logoSection.style.display = 'block';
+        }).catch(() => {});
+      }
+
+      // ── Gallery Images ──
+      let galleryArr = event.gallery_urls;
+      if (typeof galleryArr === 'string') {
+        try { galleryArr = JSON.parse(galleryArr); } catch (_) { galleryArr = null; }
+      }
+      if (Array.isArray(galleryArr) && galleryArr.length) {
+        // Deduplicate URLs
+        const uniqueGallery = [...new Set(galleryArr)];
+        const gallerySection = document.getElementById('ed-gallery-section');
+        const galleryGrid = document.getElementById('ed-gallery-grid');
+        galleryGrid.innerHTML = '';
+        gallerySection.style.display = 'block';
+        for (const url of uniqueGallery) {
+          const resolved = await resolveImageUrl(url);
+          if (resolved) {
+            const img = document.createElement('img');
+            img.src = resolved;
+            img.alt = 'Gallery image';
+            img.loading = 'lazy';
+            img.onerror = () => img.remove();
+            galleryGrid.appendChild(img);
+          }
+        }
+      }
+
+      // ── Sponsor Logos ──
+      let sponsorArr = event.sponsor_urls;
+      if (typeof sponsorArr === 'string') {
+        try { sponsorArr = JSON.parse(sponsorArr); } catch (_) { sponsorArr = null; }
+      }
+      if (Array.isArray(sponsorArr) && sponsorArr.length) {
+        // Deduplicate URLs
+        const uniqueSponsors = [...new Set(sponsorArr)];
+        const sponsorsSection = document.getElementById('ed-sponsors-section');
+        const sponsorsGrid = document.getElementById('ed-sponsors-grid');
+        sponsorsGrid.innerHTML = '';
+        sponsorsSection.style.display = 'block';
+        for (const url of uniqueSponsors) {
+          const resolved = await resolveImageUrl(url);
+          if (resolved) {
+            const img = document.createElement('img');
+            img.src = resolved;
+            img.alt = 'Sponsor';
+            img.loading = 'lazy';
+            img.onerror = () => img.remove();
+            sponsorsGrid.appendChild(img);
+          }
+        }
       }
 
       renderTiers(event.ticket_tiers || []);
