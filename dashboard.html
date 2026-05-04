@@ -801,6 +801,49 @@
               </div>
               <button type="button" class="ce-add-link" id="ce-add-social">+ Add Link</button>
             </div>
+
+            <!-- ── Organizer Information ── -->
+            <div class="ce-organizer-section">
+              <div class="ce-section-divider">
+                <div class="ce-section-divider-line"></div>
+                <span class="ce-section-divider-label">👤 Organizer Information</span>
+                <div class="ce-section-divider-line"></div>
+              </div>
+              <p class="ce-section-hint">Tell attendees who is organizing this event. This info will appear on your event's public page.</p>
+
+              <div class="ev-form-group">
+                <label>Organizer Name <span class="ce-req">*</span></label>
+                <input class="ev-form-input" type="text" id="ce-organizer-name" placeholder="e.g. Event Waw Productions" />
+              </div>
+              <div class="ev-form-row">
+                <div class="ev-form-group">
+                  <label>Organizer Email</label>
+                  <input class="ev-form-input" type="email" id="ce-organizer-email" placeholder="e.g. info@eventwaw.com" />
+                </div>
+                <div class="ev-form-group">
+                  <label>Organizer Phone</label>
+                  <input class="ev-form-input" type="tel" id="ce-organizer-phone" placeholder="e.g. +20 100 123 4567" />
+                </div>
+              </div>
+              <div class="ev-form-group">
+                <label>Organizer Website</label>
+                <input class="ev-form-input" type="url" id="ce-organizer-website" placeholder="https://..." />
+              </div>
+              <div class="ev-form-group">
+                <label>About the Organizer</label>
+                <textarea class="ev-form-input" id="ce-organizer-bio" rows="3" placeholder="A brief introduction about the organizer..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Organizer Logo</label>
+                <div class="ce-upload-area" id="ce-organizer-logo-area">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span>Upload Logo</span>
+                  <small>Size (100 * 100)</small>
+                  <small>accepted formats: jpg, jpeg, png</small>
+                  <input type="file" accept="image/jpeg,image/png" id="ce-organizer-logo" />
+                </div>
+              </div>
+            </div>
           </div>
           <!-- RIGHT COLUMN -->
           <div class="ce-col-right">

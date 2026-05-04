@@ -689,6 +689,15 @@ body.ev-dash.dark-mode .pac-item-query{color:var(--ev-text)!important}
 .ce-map-open-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:rgba(37,99,235,.08);color:#2563EB;border-radius:8px;font-size:.75rem;font-weight:600;text-decoration:none;transition:all .2s;flex-shrink:0}
 .ce-map-open-btn:hover{background:rgba(37,99,235,.15);transform:translateY(-1px)}
 
+/* ═══ Organizer Information Section ═══ */
+.ce-organizer-section{margin-top:28px;padding-top:0}
+.ce-section-divider{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.ce-section-divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--ev-border),transparent)}
+.ce-section-divider-label{font-size:.82rem;font-weight:700;color:var(--ev-text);white-space:nowrap;padding:4px 14px;border-radius:50px;background:var(--ev-yellow-light);border:1px solid rgba(37,99,235,.12);letter-spacing:.02em}
+.ce-section-hint{font-size:.78rem;color:var(--ev-text-muted);margin-bottom:18px;line-height:1.5;padding:8px 14px;background:rgba(37,99,235,.03);border-radius:8px;border-left:3px solid rgba(37,99,235,.25)}
+body.ev-dash.dark-mode .ce-section-divider-label{background:rgba(37,99,235,.08);border-color:rgba(37,99,235,.2)}
+body.ev-dash.dark-mode .ce-section-hint{background:rgba(37,99,235,.04);border-left-color:rgba(37,99,235,.3)}
+
 /* ── Form Validation Errors ── */
 .ce-error-border{
   border-color:#ef4444 !important;

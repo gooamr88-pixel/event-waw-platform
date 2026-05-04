@@ -313,6 +313,7 @@ export function setupCreateModal() {
   // ── Image Uploads ──
   setupCeUpload('ce-main-photo', 'ce-main-photo-area');
   setupCeUpload('ce-logo', 'ce-logo-area');
+  setupCeUpload('ce-organizer-logo', 'ce-organizer-logo-area');
 
   // ── Gallery ──
   document.getElementById('ce-add-gallery')?.addEventListener('click', () => {
@@ -463,6 +464,10 @@ export function setupCreateModal() {
     const timezone = document.getElementById('ce-timezone')?.value;
     if (!timezone) markError('ce-timezone', 'Time zone is required');
 
+    // Organizer Information
+    const organizerName = document.getElementById('ce-organizer-name')?.value.trim();
+    if (!organizerName) markError('ce-organizer-name', 'Organizer name is required');
+
     const startDate = document.getElementById('ce-start-date')?.value;
     if (!startDate) markError('ce-start-date', 'Start date is required');
 
@@ -525,7 +530,7 @@ export function setupCreateModal() {
       // Get listing type
       const listingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : 'display_and_sell';
 
-      // All event data — columns are guaranteed to exist after migration-v11
+      // All event data — columns are guaranteed to exist after migration-v11/v12
       const eventData = {
         organizer_id: user.id,
         title: name,
@@ -549,6 +554,12 @@ export function setupCreateModal() {
         show_end_time: showEndTime,
         website: document.getElementById('ce-website')?.value.trim() || null,
         social_links: socialLinks.length ? socialLinks : null,
+        // Organizer information
+        organizer_name: organizerName || null,
+        organizer_email: document.getElementById('ce-organizer-email')?.value.trim() || null,
+        organizer_phone: document.getElementById('ce-organizer-phone')?.value.trim() || null,
+        organizer_website: document.getElementById('ce-organizer-website')?.value.trim() || null,
+        organizer_bio: document.getElementById('ce-organizer-bio')?.value.trim() || null,
       };
 
       let event;
@@ -606,6 +617,13 @@ export function setupCreateModal() {
         }
       }
       if (sponsorUrls.length) imageUpdates.sponsor_urls = sponsorUrls;
+
+      // Upload organizer logo
+      const orgLogoInput = document.getElementById('ce-organizer-logo');
+      if (orgLogoInput?.files?.[0]) {
+        const orgLogoUrl = await uploadEventFile(event.id, orgLogoInput.files[0], 'organizer_logo');
+        if (orgLogoUrl) imageUpdates.organizer_logo_url = orgLogoUrl;
+      }
 
       // Apply all image updates in a single call (resilient)
       if (Object.keys(imageUpdates).length > 0) {
@@ -746,6 +764,13 @@ export async function loadEventForEditing(eventId) {
     setSelect('ce-currency', ev.currency);
     setSelect('ce-timezone', ev.timezone);
     setVal('ce-website', ev.website);
+
+    // Organizer information
+    setVal('ce-organizer-name', ev.organizer_name);
+    setVal('ce-organizer-email', ev.organizer_email);
+    setVal('ce-organizer-phone', ev.organizer_phone);
+    setVal('ce-organizer-website', ev.organizer_website);
+    setVal('ce-organizer-bio', ev.organizer_bio);
 
     // Rich text editor
     const editor = document.getElementById('ce-overview');
@@ -903,6 +928,19 @@ export async function loadEventForEditing(eventId) {
       }
     }
 
+    // ── Populate organizer logo image preview ──
+    if (ev.organizer_logo_url) {
+      const orgLogoArea = document.getElementById('ce-organizer-logo-area');
+      if (orgLogoArea) {
+        const resolvedOrgLogoUrl = await resolveImageUrl(ev.organizer_logo_url);
+        let img = orgLogoArea.querySelector('img');
+        if (!img) { img = document.createElement('img'); orgLogoArea.appendChild(img); }
+        img.onerror = () => { console.warn('Organizer logo preview failed to load:', resolvedOrgLogoUrl); img.remove(); orgLogoArea.classList.remove('has-image'); };
+        img.src = resolvedOrgLogoUrl;
+        orgLogoArea.classList.add('has-image');
+      }
+    }
+
     // Skip chooser — go directly to form for editing
     const listingChooser = document.getElementById('ce-listing-chooser');
     const wizardContent = document.getElementById('ce-wizard-content');
@@ -971,7 +1009,7 @@ export function resetCreateEventForm() {
   if (currencyGroup) currencyGroup.style.display = '';
 
   // Reset text/select inputs
-  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search'].forEach(id => {
+  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -985,7 +1023,7 @@ export function resetCreateEventForm() {
   const editor = document.getElementById('ce-overview');
   if (editor) editor.textContent = '';
   // Reset image uploads
-  ['ce-main-photo-area','ce-logo-area'].forEach(id => {
+  ['ce-main-photo-area','ce-logo-area','ce-organizer-logo-area'].forEach(id => {
     const area = document.getElementById(id);
     if (area) { area.classList.remove('has-image'); area.querySelector('img')?.remove(); }
   });
