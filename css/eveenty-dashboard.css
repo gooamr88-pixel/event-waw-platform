@@ -156,6 +156,7 @@ body.ev-dash.dark-mode .ev-social-prefix{background:var(--ev-border-lt);border-c
 .ev-badge.rejected{background:#FFEBEE;color:#C62828}
 .ev-badge.review,.ev-badge.in_review{background:#E3F2FD;color:#1565C0}
 .ev-badge.cancelled{background:#ECEFF1;color:#546E7F;text-decoration:line-through}
+.ev-badge.archived{background:#FFF3E0;color:#E65100;font-style:italic}
 
 /* ══════ TABS ══════ */
 .ev-tabs{display:flex;gap:0;border-bottom:2px solid var(--ev-border);margin-bottom:22px}
@@ -357,6 +358,7 @@ body.ev-dash.dark-mode .ev-badge.pending{background:rgba(245,158,11,.1);color:#f
 body.ev-dash.dark-mode .ev-badge.past{background:rgba(168,85,247,.1);color:#c084fc}
 body.ev-dash.dark-mode .ev-badge.rejected{background:rgba(239,68,68,.1);color:#f87171}
 body.ev-dash.dark-mode .ev-badge.review,.ev-dash.dark-mode .ev-badge.in_review{background:rgba(59,130,246,.1);color:#60a5fa}
+body.ev-dash.dark-mode .ev-badge.archived{background:rgba(230,81,0,.1);color:#fb923c}
 body.ev-dash.dark-mode .ev-mobile-toggle{background:#1a1510;box-shadow:0 2px 12px rgba(0,0,0,.4)}
 body.ev-dash.dark-mode .ev-payout-btn{box-shadow:0 2px 10px rgba(37,99,235,.15)}
 body.ev-dash.dark-mode::-webkit-scrollbar-track{background:var(--ev-bg)}

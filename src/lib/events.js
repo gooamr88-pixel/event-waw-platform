@@ -271,8 +271,36 @@ export async function getVenueMap(eventId) {
 }
 
 /**
+ * Archive an event (sets status to 'archived').
+ * Use this for events that have sold tickets — preserves all financial data.
+ *
+ * @param {string} eventId - The event UUID to archive
+ * @returns {{ success: boolean, error?: string }}
+ */
+export async function archiveEvent(eventId) {
+  try {
+    const { data, error } = await supabase
+      .from('events')
+      .update({ status: 'archived' })
+      .eq('id', eventId)
+      .select('id');
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    if (!data || data.length === 0) {
+      return { success: false, error: 'Archive was blocked — you may not have permission.' };
+    }
+    return { success: true };
+  } catch (err) {
+    console.error('archiveEvent error:', err);
+    return { success: false, error: err.message || 'Unexpected error' };
+  }
+}
+
+/**
  * Delete an event.
- * SAFETY: Refuses to delete if ANY tickets have been issued.
+ * SAFETY: Refuses to delete if ANY tickets have been issued — use archiveEvent instead.
  * RELIES ON: ON DELETE CASCADE for child tables (ticket_tiers, venue_maps,
  *            seats, promo_codes, reservations) — set in the database schema.
  *

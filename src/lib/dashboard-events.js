@@ -1,5 +1,5 @@
 import { supabase, getCurrentUser } from './supabase.js';
-import { createEvent, deleteEvent } from './events.js';
+import { createEvent, deleteEvent, archiveEvent } from './events.js';
 import { escapeHTML } from './utils.js';
 import { setSafeHTML, safeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
@@ -21,8 +21,8 @@ export function renderEventsTable(events) {
     const isPast = date < new Date();
     const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
     const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
-    let statusClass = isPast ? 'past' : ev.status;
-    let statusLabel = isPast ? 'Past' : (ev.status ? ev.status.charAt(0).toUpperCase() + ev.status.slice(1) : 'Draft');
+    let statusClass = ev.status === 'archived' ? 'archived' : (isPast ? 'past' : ev.status);
+    let statusLabel = ev.status === 'archived' ? 'Archived' : (isPast ? 'Past' : (ev.status ? ev.status.charAt(0).toUpperCase() + ev.status.slice(1) : 'Draft'));
 
     return `<tr>
       <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
@@ -91,8 +91,7 @@ export async function handleTableAction(e) {
     const id = delBtn.dataset.id;
     const title = delBtn.dataset.title;
     const sold = Number(delBtn.dataset.sold || 0);
-    if (sold > 0) { showToast(`Cannot delete "${title}": ${sold} ticket(s) already sold`, 'error'); return; }
-    showDeleteConfirmModal(id, title);
+    showDeleteConfirmModal(id, title, sold);
   }
 }
 
@@ -129,11 +128,29 @@ export async function duplicateEvent(eventId) {
 }
 
 /**
- * Professional delete confirmation modal - replaces native confirm().
+ * Smart delete/archive confirmation modal.
+ * - Events with sold tickets → Archive (preserves financial data)
+ * - Events without tickets → Permanent delete
  */
-export function showDeleteConfirmModal(eventId, eventTitle) {
+export function showDeleteConfirmModal(eventId, eventTitle, soldCount = 0) {
   // Remove any previous instance
   document.getElementById('ev-delete-confirm-modal')?.remove();
+
+  const willArchive = soldCount > 0;
+  const actionLabel = willArchive ? 'Archive' : 'Delete';
+  const actionColor = willArchive ? '#f59e0b' : '#ef4444';
+  const actionBg = willArchive ? 'rgba(245,158,11,.1)' : 'rgba(239,68,68,.1)';
+  const icon = willArchive
+    ? '<path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/>'
+    : '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>';
+
+  const description = willArchive
+    ? `This event has <strong style="color:${actionColor}">${soldCount} sold ticket(s)</strong>. It will be <strong>archived</strong> instead of deleted to preserve ticket and financial records.`
+    : `Are you sure you want to delete <strong style="color:var(--ev-text)">${escapeHTML(eventTitle)}</strong>?`;
+
+  const warning = willArchive
+    ? 'The event will be hidden from your dashboard and public pages, but all data is preserved.'
+    : 'This action is permanent and cannot be undone.';
 
   const overlay = document.createElement('div');
   overlay.id = 'ev-delete-confirm-modal';
@@ -142,20 +159,19 @@ export function showDeleteConfirmModal(eventId, eventTitle) {
 
   setSafeHTML(overlay, `
     <div class="ev-modal" style="max-width:420px;text-align:center;padding:32px 28px">
-      <div style="width:56px;height:56px;border-radius:50%;background:rgba(239,68,68,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
-        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#ef4444" stroke-width="2">
-          <path d="M3 6h18"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-          <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+      <div style="width:56px;height:56px;border-radius:50%;background:${actionBg};display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="${actionColor}" stroke-width="2">
+          ${icon}
         </svg>
       </div>
-      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--ev-text)">Delete Event</h3>
+      <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--ev-text)">${actionLabel} Event</h3>
       <p style="font-size:.88rem;color:var(--ev-text-sec);margin-bottom:6px;line-height:1.5">
-        Are you sure you want to delete <strong style="color:var(--ev-text)">${escapeHTML(eventTitle)}</strong>?
+        ${description}
       </p>
-      <p style="font-size:.78rem;color:#ef4444;margin-bottom:24px">This action is permanent and cannot be undone.</p>
+      <p style="font-size:.78rem;color:${actionColor};margin-bottom:24px">${warning}</p>
       <div style="display:flex;gap:10px;justify-content:center">
         <button class="ev-btn ev-btn-outline" id="ev-del-cancel" style="flex:1;max-width:160px;padding:11px">Cancel</button>
-        <button class="ev-btn" id="ev-del-confirm" style="flex:1;max-width:160px;padding:11px;background:#ef4444;color:#fff;border:none;font-weight:600">Delete Event</button>
+        <button class="ev-btn" id="ev-del-confirm" style="flex:1;max-width:160px;padding:11px;background:${actionColor};color:#fff;border:none;font-weight:600">${actionLabel} Event</button>
       </div>
     </div>
   `);
@@ -171,23 +187,27 @@ export function showDeleteConfirmModal(eventId, eventTitle) {
   overlay.querySelector('#ev-del-confirm').addEventListener('click', async () => {
     const btn = overlay.querySelector('#ev-del-confirm');
     btn.disabled = true;
-    btn.textContent = 'Deleting...';
+    btn.textContent = willArchive ? 'Archiving...' : 'Deleting...';
     try {
-      const result = await deleteEvent(eventId);
+      const result = willArchive
+        ? await archiveEvent(eventId)
+        : await deleteEvent(eventId);
       if (result.success) {
         close();
-        showToast('Event deleted successfully', 'success');
+        showToast(
+          willArchive ? 'Event archived successfully' : 'Event deleted successfully',
+          'success'
+        );
         if (window.loadDashboard) await window.loadDashboard();
       } else {
-        // Keep modal open so user sees the problem
         btn.disabled = false;
-        btn.textContent = 'Delete Event';
-        showToast(result.error || 'Delete failed — please try again', 'error');
+        btn.textContent = `${actionLabel} Event`;
+        showToast(result.error || `${actionLabel} failed — please try again`, 'error');
       }
     } catch (err) {
       btn.disabled = false;
-      btn.textContent = 'Delete Event';
-      showToast('Delete failed: ' + err.message, 'error');
+      btn.textContent = `${actionLabel} Event`;
+      showToast(`${actionLabel} failed: ` + err.message, 'error');
     }
   });
 }
