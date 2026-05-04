@@ -10,9 +10,8 @@
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script>var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)</script>
   <script src="js/csp.js"></script>
-  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#09090b" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 </head>
 <body>
@@ -421,18 +420,14 @@
     window.addEventListener('beforeunload', () => {
       if (scanner) scanner.stop().catch(() => {});
     });
-    document.querySelector('.scanner-back')?.addEventListener('click', async (e) => {
+  </script>
+
+  <!-- Back button handler — separate from module to ensure it ALWAYS works -->
+  <script>
+    document.querySelector('.scanner-back').addEventListener('click', function(e) {
       e.preventDefault();
-      if (scanner) await scanner.stop().catch(() => {});
       window.location.href = 'dashboard.html';
     });
-
-    // Register Service Worker for PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('[SW] Registered:', reg.scope))
-        .catch(err => console.warn('[SW] Registration failed:', err));
-    }
   </script>
 </body>
 </html>

@@ -44,7 +44,7 @@
     "media-src 'self' blob:",
     
     // Workers for Google Maps
-    "worker-src blob:",
+    "worker-src 'self' blob:",
     
     // Base URI restriction
     "base-uri 'self'",
