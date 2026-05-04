@@ -150,51 +150,87 @@ export function setupPromoForm() {
   const form = document.getElementById('promo-form');
   if (!form) return;
 
-  // ── Discount Type Toggle ──
+  // ── Discount Type Toggle (Card-based) ──
   const typeWrap = document.getElementById('promo-type-wrap');
   const typeInput = document.getElementById('promo-discount-type');
   const discountInput = document.getElementById('promo-discount');
   const discountLabel = document.getElementById('promo-discount-label');
   const currencyGroup = document.getElementById('promo-currency-group');
+  const inputSuffix = document.getElementById('promo-input-suffix');
+  const previewText = document.getElementById('promo-preview-text');
+  const previewWrap = document.getElementById('promo-live-preview');
+
+  function updatePreview() {
+    const type = typeInput?.value || 'percentage';
+    const val = discountInput?.value || '';
+    const cur = document.getElementById('promo-currency')?.value || 'USD';
+    if (!val) {
+      previewText.textContent = type === 'percentage' ? '—% OFF' : `— ${cur} OFF`;
+    } else if (type === 'percentage') {
+      previewText.textContent = `${val}% OFF`;
+    } else {
+      previewText.textContent = `${val} ${cur} OFF`;
+    }
+  }
+
+  function setActiveType(type) {
+    typeInput.value = type;
+    const cards = typeWrap.querySelectorAll('.promo-type-card');
+    cards.forEach(card => {
+      const isActive = card.dataset.type === type;
+      const check = card.querySelector('.promo-type-check');
+      if (type === 'percentage') {
+        card.style.border = isActive ? '2px solid rgba(139,92,246,.4)' : '2px solid rgba(255,255,255,.08)';
+        card.style.background = isActive ? 'rgba(139,92,246,.06)' : 'rgba(255,255,255,.02)';
+      } else {
+        card.style.border = isActive ? '2px solid rgba(34,197,94,.4)' : '2px solid rgba(255,255,255,.08)';
+        card.style.background = isActive ? 'rgba(34,197,94,.06)' : 'rgba(255,255,255,.02)';
+      }
+      if (check) check.style.display = isActive ? 'flex' : 'none';
+    });
+
+    if (type === 'percentage') {
+      discountLabel.textContent = 'Discount Percentage *';
+      discountInput.placeholder = '20';
+      discountInput.min = '1';
+      discountInput.max = '100';
+      if (inputSuffix) inputSuffix.textContent = '%';
+      currencyGroup.style.display = 'none';
+      if (previewWrap) {
+        previewWrap.style.background = 'linear-gradient(135deg,rgba(139,92,246,.06),rgba(139,92,246,.02))';
+        previewWrap.style.borderColor = 'rgba(139,92,246,.15)';
+      }
+    } else {
+      discountLabel.textContent = 'Discount Amount *';
+      discountInput.placeholder = '50';
+      discountInput.min = '0.01';
+      discountInput.removeAttribute('max');
+      const cur = document.getElementById('promo-currency')?.value || 'USD';
+      if (inputSuffix) inputSuffix.textContent = cur;
+      currencyGroup.style.display = '';
+      if (previewWrap) {
+        previewWrap.style.background = 'linear-gradient(135deg,rgba(34,197,94,.06),rgba(34,197,94,.02))';
+        previewWrap.style.borderColor = 'rgba(34,197,94,.15)';
+      }
+    }
+    updatePreview();
+  }
 
   if (typeWrap) {
     typeWrap.addEventListener('click', (e) => {
-      const btn = e.target.closest('.promo-type-btn');
-      if (!btn) return;
-      const type = btn.dataset.type;
-      typeInput.value = type;
-
-      // Toggle active state
-      typeWrap.querySelectorAll('.promo-type-btn').forEach(b => {
-        b.classList.toggle('active', b === btn);
-        b.style.background = b === btn ? 'rgba(37,99,235,.1)' : '';
-        b.style.borderColor = b === btn ? 'rgba(37,99,235,.4)' : '';
-        b.style.color = b === btn ? '#2563EB' : '';
-      });
-
-      if (type === 'percentage') {
-        discountLabel.textContent = 'Discount (%) *';
-        discountInput.placeholder = '20';
-        discountInput.min = '1';
-        discountInput.max = '100';
-        currencyGroup.style.display = 'none';
-      } else {
-        discountLabel.textContent = 'Discount Amount *';
-        discountInput.placeholder = '50';
-        discountInput.min = '0.01';
-        discountInput.removeAttribute('max');
-        currencyGroup.style.display = '';
-      }
+      const card = e.target.closest('.promo-type-card');
+      if (!card) return;
+      setActiveType(card.dataset.type);
     });
-
-    // Initialize active button styling
-    const activeBtn = typeWrap.querySelector('.promo-type-btn.active');
-    if (activeBtn) {
-      activeBtn.style.background = 'rgba(37,99,235,.1)';
-      activeBtn.style.borderColor = 'rgba(37,99,235,.4)';
-      activeBtn.style.color = '#2563EB';
-    }
   }
+
+  // Live preview updates
+  discountInput?.addEventListener('input', updatePreview);
+  document.getElementById('promo-currency')?.addEventListener('change', () => {
+    const cur = document.getElementById('promo-currency')?.value || 'USD';
+    if (inputSuffix && typeInput?.value === 'fixed') inputSuffix.textContent = cur;
+    updatePreview();
+  });
 
   // ── Form Submit ──
   form.addEventListener('submit', async (e) => {
@@ -255,16 +291,7 @@ export function setupPromoForm() {
       form.reset();
 
       // Reset toggle to percentage
-      if (typeInput) typeInput.value = 'percentage';
-      if (currencyGroup) currencyGroup.style.display = 'none';
-      if (discountLabel) discountLabel.textContent = 'Discount (%) *';
-      if (discountInput) { discountInput.placeholder = '20'; discountInput.min = '1'; discountInput.max = '100'; }
-      typeWrap?.querySelectorAll('.promo-type-btn').forEach((b, i) => {
-        b.classList.toggle('active', i === 0);
-        b.style.background = i === 0 ? 'rgba(37,99,235,.1)' : '';
-        b.style.borderColor = i === 0 ? 'rgba(37,99,235,.4)' : '';
-        b.style.color = i === 0 ? '#2563EB' : '';
-      });
+      setActiveType('percentage');
 
       document.getElementById('promo-modal')?.classList.remove('active');
       loadPromoCodes();

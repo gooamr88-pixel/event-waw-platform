@@ -1389,36 +1389,60 @@
 
   <!-- ══════ PROMO CODE MODAL ══════ -->
   <div class="ev-modal-overlay" id="promo-modal">
-    <div class="ev-modal" style="max-width:480px">
+    <div class="ev-modal" style="max-width:520px">
       <div class="ev-modal-header">
         <h2>🏷️ New Promo Code</h2>
         <button class="ev-modal-close" id="promo-modal-close">✕</button>
       </div>
       <form id="promo-form">
+        <!-- Code -->
         <div class="ev-form-group">
-          <label for="promo-code">Code *</label>
-          <input class="ev-form-input" type="text" id="promo-code" placeholder="e.g. SUMMER20" required style="text-transform:uppercase" />
+          <label for="promo-code">Promo Code *</label>
+          <input class="ev-form-input" type="text" id="promo-code" placeholder="e.g. SUMMER20" required style="text-transform:uppercase;font-family:monospace;font-size:1rem;letter-spacing:2px;font-weight:700" />
         </div>
+
+        <!-- Discount Type — Visual Card Selector -->
         <div class="ev-form-group">
           <label>Discount Type *</label>
-          <div style="display:flex;gap:6px;margin-bottom:12px" id="promo-type-wrap">
-            <button type="button" class="ev-btn ev-btn-outline promo-type-btn active" data-type="percentage" style="flex:1;padding:10px;font-size:.82rem;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
-              Percentage %
-            </button>
-            <button type="button" class="ev-btn ev-btn-outline promo-type-btn" data-type="fixed" style="flex:1;padding:10px;font-size:.82rem;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
-              Fixed Amount
-            </button>
+          <div id="promo-type-wrap" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <!-- Percentage Card -->
+            <div class="promo-type-card" data-type="percentage" style="border:2px solid rgba(139,92,246,.4);background:rgba(139,92,246,.06);border-radius:14px;padding:16px 12px;cursor:pointer;transition:all .3s;text-align:center;position:relative">
+              <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#a78bfa);margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="22" height="22"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>
+              </div>
+              <div style="font-weight:700;font-size:.88rem;margin-bottom:4px">Percentage</div>
+              <div style="font-size:.72rem;color:var(--ev-text-sec);line-height:1.4">Discount by a<br>percentage off total</div>
+              <div style="margin-top:10px;font-size:.75rem;font-weight:700;color:#8b5cf6;background:rgba(139,92,246,.1);padding:4px 10px;border-radius:20px;display:inline-block">e.g. 20% OFF</div>
+              <div class="promo-type-check" style="position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:#8b5cf6;display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
+            <!-- Fixed Amount Card -->
+            <div class="promo-type-card" data-type="fixed" style="border:2px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02);border-radius:14px;padding:16px 12px;cursor:pointer;transition:all .3s;text-align:center;position:relative">
+              <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#22c55e,#4ade80);margin:0 auto 10px;display:flex;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" width="22" height="22"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+              </div>
+              <div style="font-weight:700;font-size:.88rem;margin-bottom:4px">Fixed Amount</div>
+              <div style="font-size:.72rem;color:var(--ev-text-sec);line-height:1.4">Discount a specific<br>amount in a currency</div>
+              <div style="margin-top:10px;font-size:.75rem;font-weight:700;color:#22c55e;background:rgba(34,197,94,.1);padding:4px 10px;border-radius:20px;display:inline-block">e.g. 50 EGP OFF</div>
+              <div class="promo-type-check" style="position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:#22c55e;display:none;align-items:center;justify-content:center">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </div>
           </div>
           <input type="hidden" id="promo-discount-type" value="percentage" />
         </div>
+
+        <!-- Value + Currency Row -->
         <div class="ev-form-row">
-          <div class="ev-form-group" id="promo-value-group">
-            <label for="promo-discount" id="promo-discount-label">Discount (%) *</label>
-            <input class="ev-form-input" type="number" id="promo-discount" placeholder="20" min="1" max="100" step="any" required />
+          <div class="ev-form-group" id="promo-value-group" style="flex:1">
+            <label for="promo-discount" id="promo-discount-label">Discount Percentage *</label>
+            <div style="position:relative">
+              <input class="ev-form-input" type="number" id="promo-discount" placeholder="20" min="1" max="100" step="any" required style="padding-right:40px" />
+              <span id="promo-input-suffix" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-weight:700;font-size:1rem;color:var(--ev-text-sec);pointer-events:none">%</span>
+            </div>
           </div>
-          <div class="ev-form-group" id="promo-currency-group" style="display:none">
+          <div class="ev-form-group" id="promo-currency-group" style="display:none;flex:1">
             <label for="promo-currency">Currency *</label>
             <select class="ev-form-input" id="promo-currency">
               <option value="USD">$ USD</option>
@@ -1444,22 +1468,35 @@
               <option value="BRL">R$ BRL</option>
             </select>
           </div>
-          <div class="ev-form-group">
-            <label for="promo-max-uses">Max Uses</label>
-            <input class="ev-form-input" type="number" id="promo-max-uses" placeholder="100" min="1" />
+        </div>
+
+        <!-- Live Preview -->
+        <div id="promo-live-preview" style="background:linear-gradient(135deg,rgba(139,92,246,.06),rgba(139,92,246,.02));border:1px solid rgba(139,92,246,.15);border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">🎟️</span>
+          <div>
+            <div style="font-size:.68rem;color:var(--ev-text-sec);font-weight:600;text-transform:uppercase;letter-spacing:.5px">Customer will see</div>
+            <div id="promo-preview-text" style="font-weight:700;font-size:.92rem;color:var(--ev-pink)">20% OFF</div>
           </div>
         </div>
+
+        <!-- Max Uses + Expiry -->
         <div class="ev-form-row">
           <div class="ev-form-group">
-            <label for="promo-event">Event (optional)</label>
-            <select class="ev-form-input" id="promo-event"><option value="">All Events</option></select>
+            <label for="promo-max-uses">Max Uses</label>
+            <input class="ev-form-input" type="number" id="promo-max-uses" placeholder="Unlimited" min="1" />
           </div>
           <div class="ev-form-group">
-            <label for="promo-expires">Expires</label>
+            <label for="promo-expires">Expiry Date</label>
             <input class="ev-form-input" type="date" id="promo-expires" />
           </div>
         </div>
-        <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:16px;padding:13px;justify-content:center">Create Promo Code</button>
+        <!-- Event -->
+        <div class="ev-form-group">
+          <label for="promo-event">Applies to Event (optional)</label>
+          <select class="ev-form-input" id="promo-event"><option value="">All Events</option></select>
+        </div>
+
+        <button type="submit" class="ev-btn ev-btn-pink" style="width:100%;margin-top:8px;padding:13px;justify-content:center;font-size:.9rem">Create Promo Code</button>
       </form>
     </div>
   </div>
