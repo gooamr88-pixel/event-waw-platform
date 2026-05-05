@@ -1135,7 +1135,7 @@ export async function initGooglePlacesAutocomplete() {
       try {
         place = placePrediction.toPlace();
         await place.fetchFields({
-          fields: ['displayName', 'name', 'formattedAddress', 'location', 'addressComponents', 'websiteURI', 'types'],
+          fields: ['displayName', 'formattedAddress', 'location', 'addressComponents', 'websiteURI', 'types'],
         });
       } catch (fetchErr) {
         console.warn('fetchFields failed:', fetchErr);
@@ -1152,8 +1152,14 @@ export async function initGooglePlacesAutocomplete() {
         if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
       };
 
-      // Venue name (displayName can be a string or a LocalizedText object)
-      const venueName = place.displayName ? (place.displayName.text || place.displayName) : (place.name || place.formattedAddress || '');
+      // Venue name (displayName can be a string or an object)
+      let venueName = '';
+      if (place.displayName) {
+        venueName = typeof place.displayName === 'string' ? place.displayName : (place.displayName.text || String(place.displayName));
+      }
+      if (!venueName) {
+        venueName = place.formattedAddress || '';
+      }
       setField('ce-place', venueName);
 
       // Full address (new API: formattedAddress)
