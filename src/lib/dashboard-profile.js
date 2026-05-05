@@ -106,7 +106,7 @@ export function setupUserDropdown() {
         <button class="ev-btn ev-btn-outline" id="signout-cancel" style="flex:1;max-width:140px;padding:10px">Cancel</button>
         <button class="ev-btn" id="signout-confirm" style="flex:1;max-width:140px;padding:10px;background:#2563eb;color:#fff;border:none;font-weight:600">Sign Out</button>
       </div>
-    </div>`;
+    </div>`);
     document.body.appendChild(overlay);
     overlay.querySelector('#signout-cancel').addEventListener('click', () => overlay.remove());
     overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
