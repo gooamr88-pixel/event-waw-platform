@@ -761,8 +761,12 @@
     async function renderEvents(events) {
       const grid = document.getElementById('landing-events-grid');
       const emptyState = document.getElementById('events-empty');
-      grid.querySelectorAll('.event-poster-card').forEach(c => c.remove());
-      if (!events || events.length === 0) { grid.style.display = 'none'; emptyState.style.display = 'block'; return; }
+      if (!events || events.length === 0) { 
+        grid.querySelectorAll('.event-poster-card').forEach(c => c.remove());
+        grid.style.display = 'none'; 
+        emptyState.style.display = 'block'; 
+        return; 
+      }
       grid.style.display = ''; emptyState.style.display = 'none';
 
       // Resolve all cover URLs in parallel before rendering
@@ -771,15 +775,19 @@
         return raw ? resolveImageUrl(raw) : Promise.resolve(null);
       }));
 
+      // Clear previous cards right before appending to prevent race conditions
+      grid.querySelectorAll('.event-poster-card').forEach(c => c.remove());
+      grid.querySelectorAll('.skeleton-card').forEach(c => c.remove());
+
       events.forEach((event, idx) => {
         const tiers = event.ticket_tiers || [];
         const totalAvail = tiers.reduce((sum, t) => sum + (t.capacity - t.sold_count), 0);
         const totalCap = tiers.reduce((sum, t) => sum + t.capacity, 0);
         const soldPercent = totalCap > 0 ? ((totalCap - totalAvail) / totalCap) * 100 : 0;
         let badgeText = event.category || 'Event';
-        if (event.listing_type === 'display_only') badgeText = 'Display Only';
-        else if (soldPercent >= 90) badgeText = 'Selling Fast';
-        else if (totalCap > 0 && totalAvail <= 0) badgeText = 'Sold Out';
+        if (event.listing_type === 'display_only') badgeText += ' • Display Only';
+        else if (soldPercent >= 90) badgeText += ' • Selling Fast';
+        else if (totalCap > 0 && totalAvail <= 0) badgeText += ' • Sold Out';
         const date = new Date(event.date);
         const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const card = document.createElement('div');

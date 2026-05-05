@@ -144,8 +144,12 @@ function updateResultsMeta(showing, total) {
 async function renderEvents(events) {
   const grid = document.getElementById('ep-events-grid');
   const empty = document.getElementById('ep-empty');
-  grid.querySelectorAll('.ep-event-card').forEach(c => c.remove());
-  if (!events.length) { grid.style.display = 'none'; empty.style.display = ''; return; }
+  if (!events.length) { 
+    grid.querySelectorAll('.ep-event-card').forEach(c => c.remove());
+    grid.style.display = 'none'; 
+    empty.style.display = ''; 
+    return; 
+  }
   grid.style.display = ''; empty.style.display = 'none';
 
   // Resolve all cover URLs in parallel before rendering
@@ -153,6 +157,9 @@ async function renderEvents(events) {
     const raw = ev.cover_image || ev.cover_url || null;
     return raw ? resolveImageUrl(raw) : Promise.resolve(null);
   }));
+
+  // Clear previous cards right before appending to prevent race conditions
+  grid.querySelectorAll('.ep-event-card').forEach(c => c.remove());
 
   events.forEach((ev, idx) => {
     const tiers = ev.ticket_tiers || [];
