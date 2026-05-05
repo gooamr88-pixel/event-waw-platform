@@ -463,27 +463,13 @@ export function setupCreateModal() {
     if (!name || name.length < 3) markError('ce-name', 'Event name is required (min 3 characters)');
 
     const place = document.getElementById('ce-place')?.value.trim();
-    const city = document.getElementById('ce-city')?.value.trim();
-    const country = document.getElementById('ce-country')?.value;
+    if (!place) markError('ce-place', 'Venue / Place name is required');
 
-    if (!place || !city || !country) {
-      const searchWrap = document.querySelector('.ce-google-search-wrap');
-      if (searchWrap && !searchWrap.classList.contains('ce-error-border')) {
-        searchWrap.classList.add('ce-error-border');
-        const errEl = document.createElement('div');
-        errEl.className = 'ce-field-error';
-        errEl.textContent = 'Please search and select a valid venue/location from Google Maps';
-        searchWrap.parentElement.appendChild(errEl);
-        errors.push({ fieldId: 'ce-google-search-wrap', message: 'Valid location is required' });
-        
-        const clearFn = () => {
-          searchWrap.classList.remove('ce-error-border');
-          errEl.remove();
-          searchWrap.removeEventListener('click', clearFn);
-        };
-        searchWrap.addEventListener('click', clearFn);
-      }
-    }
+    const city = document.getElementById('ce-city')?.value.trim();
+    if (!city) markError('ce-city', 'City is required');
+
+    const country = document.getElementById('ce-country')?.value;
+    if (!country) markError('ce-country', 'Country is required');
 
     const category = document.getElementById('ce-category')?.value;
     if (!category) markError('ce-category', 'Category is required');
@@ -1167,14 +1153,11 @@ export async function initGooglePlacesAutocomplete() {
       };
 
       // Venue name (displayName is a LocalizedText object — access .text)
-      let venueName = (place.displayName && place.displayName.text) ? place.displayName.text : '';
-      const fullAddress = place.formattedAddress || '';
-      
-      // Fallback for venue name if empty
-      if (!venueName && fullAddress) venueName = fullAddress;
+      const venueName = (place.displayName && place.displayName.text) ? place.displayName.text : '';
       if (venueName) setField('ce-place', venueName);
 
       // Full address (new API: formattedAddress)
+      const fullAddress = place.formattedAddress || '';
       if (fullAddress) setField('ce-address', fullAddress);
 
       // Parse address components (new API: longText / shortText)
