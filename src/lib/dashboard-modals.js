@@ -1135,7 +1135,7 @@ export async function initGooglePlacesAutocomplete() {
       try {
         place = placePrediction.toPlace();
         await place.fetchFields({
-          fields: ['displayName', 'formattedAddress', 'location', 'addressComponents', 'websiteURI', 'types'],
+          fields: ['displayName', 'name', 'formattedAddress', 'location', 'addressComponents', 'websiteURI', 'types'],
         });
       } catch (fetchErr) {
         console.warn('fetchFields failed:', fetchErr);
@@ -1144,7 +1144,7 @@ export async function initGooglePlacesAutocomplete() {
       }
 
       // ── Fill fields ──
-      const setField = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+      const setField = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
       const setSelect = (id, val) => {
         const el = document.getElementById(id);
         if (!el || !val) return;
@@ -1153,8 +1153,8 @@ export async function initGooglePlacesAutocomplete() {
       };
 
       // Venue name (displayName can be a string or a LocalizedText object)
-      const venueName = place.displayName ? (place.displayName.text || place.displayName) : (place.name || '');
-      if (venueName) setField('ce-place', venueName);
+      const venueName = place.displayName ? (place.displayName.text || place.displayName) : (place.name || place.formattedAddress || '');
+      setField('ce-place', venueName);
 
       // Full address (new API: formattedAddress)
       const fullAddress = place.formattedAddress || '';
