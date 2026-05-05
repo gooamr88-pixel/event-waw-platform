@@ -63,7 +63,7 @@ export function setupCreateModal() {
     'Family & Kids', 'Fashion & Beauty', 'Film & Media',
     'Hobbies & Special Interest', 'Travel & Outdoor', 'Charity & Causes',
     'Spirituality & Religion', 'Science & Tech', 'Auto, Boat & Air',
-    'Government & Politics', 'Other'
+    'Government & Politics', 'Festival', 'Other'
   ];
   const categorySelect = document.getElementById('ce-category');
   if (categorySelect) {
