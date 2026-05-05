@@ -1152,8 +1152,8 @@ export async function initGooglePlacesAutocomplete() {
         if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
       };
 
-      // Venue name (displayName is a LocalizedText object — access .text)
-      const venueName = (place.displayName && place.displayName.text) ? place.displayName.text : '';
+      // Venue name (displayName can be a string or a LocalizedText object)
+      const venueName = place.displayName ? (place.displayName.text || place.displayName) : (place.name || '');
       if (venueName) setField('ce-place', venueName);
 
       // Full address (new API: formattedAddress)
