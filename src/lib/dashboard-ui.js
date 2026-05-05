@@ -31,15 +31,31 @@ const _intervals = {};
 export function animateCounter(id, target) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (_intervals[id]) clearInterval(_intervals[id]);
-  if (target === 0) { el.textContent = '0'; return; }
+
+  // ── H-2: Clear any in-flight animation on this element ──
+  const prevId = el.dataset.intervalId;
+  if (prevId) { clearInterval(Number(prevId)); delete el.dataset.intervalId; }
+  if (_intervals[id]) { clearInterval(_intervals[id]); delete _intervals[id]; }
+
+  const numTarget = Math.round(Number(target) || 0);
+  if (numTarget === 0) { el.textContent = '0'; return; }
+
   let current = 0;
-  const step = Math.max(1, Math.ceil(target / 20));
-  _intervals[id] = setInterval(() => {
+  const step = Math.max(1, Math.ceil(numTarget / 20));
+  const intervalId = setInterval(() => {
     current += step;
-    if (current >= target) { current = target; clearInterval(_intervals[id]); delete _intervals[id]; }
-    el.textContent = current;
+    if (current >= numTarget) {
+      current = numTarget;
+      clearInterval(intervalId);
+      delete _intervals[id];
+      delete el.dataset.intervalId;
+    }
+    el.textContent = current.toLocaleString();
   }, 40);
+
+  // Store on BOTH the map and the DOM element for double-safety
+  _intervals[id] = intervalId;
+  el.dataset.intervalId = String(intervalId);
 }
 
 export function switchToPanel(panelName) {

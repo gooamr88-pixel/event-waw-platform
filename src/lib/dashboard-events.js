@@ -7,6 +7,28 @@ import { emitDashboardAction } from './dashboard-bus.js';
 
 let tableListenerAttached = false;
 
+/**
+ * Inject shimmer skeleton rows into a table body while data loads.
+ * Call this BEFORE the async fetch begins; renderEventsTable clears them.
+ */
+export function showTableSkeleton(tbodyId = 'events-tbody', rows = 5, cols = 8) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  const skeletonHTML = Array.from({ length: rows }, () => {
+    const cells = Array.from({ length: cols }, (_, c) => {
+      let cls = 'w-40';
+      if (c === 0) cls = 'w-20';
+      if (c === 1) cls = 'w-60';
+      if (c === 5) cls = 'w-70';
+      if (c === 6) cls = 'w-badge';
+      if (c === 7) cls = 'w-actions';
+      return `<td><div class="ev-skeleton-bar ${cls}"></div></td>`;
+    }).join('');
+    return `<tr class="ev-skeleton-row">${cells}</tr>`;
+  }).join('');
+  setSafeHTML(tbody, skeletonHTML);
+}
+
 export function renderEventsTable(events) {
   const tbody = document.getElementById('events-tbody');
   if (!tbody) return;
@@ -24,6 +46,16 @@ export function renderEventsTable(events) {
     const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
     let statusClass = ev.status === 'archived' ? 'archived' : (isPast ? 'past' : ev.status);
     let statusLabel = ev.status === 'archived' ? 'Archived' : (isPast ? 'Past' : (ev.status ? ev.status.charAt(0).toUpperCase() + ev.status.slice(1) : 'Draft'));
+
+    // ── Approval pipeline: override badge for pending/rejected events ──
+    if (ev.status === 'published' && ev.admin_approved === false) {
+      statusClass = 'pending';
+      statusLabel = 'Pending Review';
+    }
+    if (ev.status === 'draft' && ev.admin_rejected_reason) {
+      statusClass = 'rejected';
+      statusLabel = 'Rejected';
+    }
 
     return `<tr>
       <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>

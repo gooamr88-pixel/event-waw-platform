@@ -19,7 +19,7 @@ import { getOrganizerEvents, createEvent, deleteEvent, updateEvent } from '../sr
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { escapeHTML } from '../src/lib/utils.js';
 import { showToast, animateCounter, setupSidebar, setupUserInfo, setupGlobalKeyboardManager, getSwitchId } from '../src/lib/dashboard-ui.js';
-import { renderEventsTable, populateEventSelects } from '../src/lib/dashboard-events.js';
+import { renderEventsTable, populateEventSelects, showTableSkeleton } from '../src/lib/dashboard-events.js';
 import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { onDashboardAction } from '../src/lib/dashboard-bus.js';
@@ -77,6 +77,9 @@ export async function loadDashboard() {
   const mySwitch = getSwitchId();
 
   try {
+    // ── Show skeleton while loading ──
+    showTableSkeleton('events-tbody', 5, 8);
+
     const user = await getCurrentUser();
     if (getSwitchId() !== mySwitch) return; // stale
     const events = await getOrganizerEvents();

@@ -15,12 +15,20 @@ export function escapeHTML(str) {
 
 /**
  * Format a number as currency using the browser's Intl.NumberFormat.
+ * Arabic-region currencies (EGP, SAR, AED) render in their native locale.
  * Falls back to naive formatting if Intl is unavailable.
  */
+const CURRENCY_LOCALE_MAP = {
+  EGP: 'ar-EG', SAR: 'ar-SA', AED: 'ar-AE',
+  KWD: 'ar-KW', QAR: 'ar-QA', BHD: 'ar-BH',
+  OMR: 'ar-OM', MAD: 'ar-MA', TND: 'ar-TN',
+};
+
 export function formatCurrency(amount, currency = 'USD') {
   const num = Number(amount) || 0;
+  const locale = CURRENCY_LOCALE_MAP[currency] || 'en-US';
   try {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: num % 1 === 0 ? 0 : 2,

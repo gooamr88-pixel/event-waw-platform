@@ -43,8 +43,14 @@ export function safeHTML(htmlString) {
       const name = attr.name.toLowerCase();
       const value = attr.value.trim().toLowerCase();
 
-      // Remove event handlers and javascript URIs
-      if (name.startsWith('on') || value.startsWith('javascript:')) {
+      // Remove event handlers (onclick, onerror, onload, etc.)
+      if (name.startsWith('on')) {
+        el.removeAttribute(attr.name);
+        continue;
+      }
+
+      // Remove dangerous URI schemes from any attribute value
+      if (/^(javascript|data|vbscript|blob):/i.test(value)) {
         el.removeAttribute(attr.name);
       }
     }
