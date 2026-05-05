@@ -49,6 +49,28 @@ async function loadFinancialData() {
       <td><span class="ev-badge ${net > 0 ? 'published' : 'pending'}">${net > 0 ? 'Earned' : 'Pending'}</span></td>
     </tr>`;
     }).join(''));
+
+    // Financial CSV export
+    const csvBtn = document.getElementById('fin-csv-btn');
+    if (csvBtn) csvBtn.onclick = () => {
+      const rows = [['Event','Tickets Sold','Gross Revenue','Platform Fee (5%)','Net Payout','Status']];
+      filtered.forEach(r => {
+        const gross = Number(r.gross_revenue || 0);
+        const fee = Math.round(gross * 0.05 * 100) / 100;
+        const net = gross - fee;
+        rows.push([
+          r.event_title || '', r.total_tickets_sold || 0,
+          gross, fee, net, net > 0 ? 'Earned' : 'Pending'
+        ]);
+      });
+      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = `financial_${Date.now()}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast('Financial CSV exported', 'success');
+    };
   } catch (err) {
     setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">No financial data yet</td></tr>');
   }

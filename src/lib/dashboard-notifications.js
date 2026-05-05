@@ -16,18 +16,14 @@ export async function loadNotifications() {
     const { data: events } = await supabase.from('events').select('id, title').eq('organizer_id', user.id);
     if (!events?.length) return;
 
-    const { data: tiers } = await supabase.from('ticket_tiers').select('id, event_id').in('event_id', events.map(e => e.id));
+    const { data: tiers } = await supabase.from('ticket_tiers').select('id, name, event_id').in('event_id', events.map(e => e.id));
     if (!tiers?.length) return;
 
     const eventMap = {};
     events.forEach(e => { eventMap[e.id] = e.title; });
     const tierEventMap = {};
-    tiers.forEach(t => { tierEventMap[t.id] = t.event_id; });
-
-    // Also get tier names for display
-    const { data: tiersWithNames } = await supabase.from('ticket_tiers').select('id, name, event_id').in('event_id', events.map(e => e.id));
     const tierNameMap = {};
-    (tiersWithNames || []).forEach(t => { tierNameMap[t.id] = t.name; tierEventMap[t.id] = t.event_id; });
+    tiers.forEach(t => { tierEventMap[t.id] = t.event_id; tierNameMap[t.id] = t.name; });
 
     const { data: tickets } = await supabase
       .from('tickets')

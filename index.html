@@ -5,6 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Event Waw &mdash; Discover & Create Events Effortlessly</title>
   <meta name="description" content="Event Waw &mdash; Book tickets for concerts, festivals, exhibitions, sports, and conferences in just a few clicks. All-in-one platform for managing ticketing, sponsors, vendors, and marketing." />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Event Waw — Discover & Create Events Effortlessly" />
+  <meta property="og:description" content="Book tickets for concerts, festivals, exhibitions, sports, and conferences. All-in-one event platform." />
+  <meta property="og:image" content="images/logo.png" />
+  <meta property="og:site_name" content="Event Waw" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Event Waw — Discover & Create Events" />
+  <meta name="twitter:description" content="Book tickets for concerts, festivals, exhibitions, sports, and conferences." />
+  <meta name="twitter:image" content="images/logo.png" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2563EB" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Event Waw" />
+
+  <!-- Preconnect: resolve DNS early for critical external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
   <script>(function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})()</script>
   <link rel="stylesheet" href="css/styles.css" />
   <link rel="stylesheet" href="css/theme.css" />
@@ -14,8 +39,10 @@
   <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-landing">
+  <!-- Skip link for keyboard accessibility -->
+  <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:12px 24px;background:#2563EB;color:#fff;font-weight:700;border-radius:0 0 8px 0;text-decoration:none;font-size:.95rem" onfocus="this.style.left='0';this.style.width='auto';this.style.height='auto'" onblur="this.style.left='-9999px';this.style.width='1px';this.style.height='1px'">Skip to main content</a>
 
-  <!-- â•â•â•â•â•â• NAVBAR â•â•â•â•â•â• -->
+  <!-- â• â• â• â• â• â•  NAVBAR â• â• â• â• â• â•  -->
   <nav class="navbar" id="main-nav">
     <div class="container">
       <a href="index.html" class="nav-logo" id="nav-logo">
@@ -81,7 +108,7 @@
   </div>
 
   <!-- â•â•â•â•â•â• HERO â€" Split Layout â•â•â•â•â•â• -->
-  <div class="hero-wrapper" id="home">
+  <main class="hero-wrapper" id="main-content">
     <div class="ev-hero-split">
       <div class="ev-hero-text">
         <h1>
@@ -104,7 +131,7 @@
         <img src="images/hero-event-poster.png" alt="Featured Event" loading="eager" />
       </div>
     </div>
-  </div>
+  </main>
 
   <!-- â•â•â•â•â•â• SMART SEARCH & EVENTS â•â•â•â•â•â• -->
   <section class="section" id="events">
@@ -854,6 +881,14 @@
   })();
   </script>
 
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
 

@@ -41,9 +41,9 @@ export function initCharts(revenueData, events) {
         datasets: [{
           label: 'Revenue ($)',
           data: revenueData.map(d => Number(d.revenue || d.net_revenue || 0)),
-          borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,.08)',
+          borderColor: '#2563EB', backgroundColor: 'rgba(37,99,235,.08)',
           fill: true, tension: 0.4, pointRadius: 4,
-          pointBackgroundColor: '#F5C518', pointBorderWidth: 0,
+          pointBackgroundColor: '#2563EB', pointBorderWidth: 0,
           borderWidth: 2.5,
         }]
       },
@@ -74,7 +74,7 @@ export function initCharts(revenueData, events) {
         data: {
           labels, datasets: [{
             data: values,
-            backgroundColor: ['#F5C518','#E91E63','#2196F3','#4CAF50','#FF9800','#9C27B0','#00BCD4','#FF5722'],
+            backgroundColor: ['#2563EB','#E91E63','#3b82f6','#4CAF50','#FF9800','#9C27B0','#00BCD4','#FF5722'],
             borderWidth: 0, hoverOffset: 8,
           }]
         },

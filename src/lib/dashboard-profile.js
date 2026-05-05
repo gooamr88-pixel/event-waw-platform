@@ -93,6 +93,8 @@ export function setupUserDropdown() {
     // Professional sign-out confirmation
     const overlay = document.createElement('div');
     overlay.className = 'ev-modal-overlay active';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
     overlay.style.cssText = 'z-index:10000';
     setSafeHTML(overlay, `<div class="ev-modal" style="max-width:380px;text-align:center;padding:32px 28px">
       <div style="width:48px;height:48px;border-radius:50%;background:rgba(37,99,235,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">

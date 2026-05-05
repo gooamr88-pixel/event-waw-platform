@@ -6,6 +6,10 @@
   <title>Dashboard — Event Waw</title>
   <meta name="description" content="Manage your events, tickets, analytics, and finances — Event Waw Organizer Dashboard." />
   <link rel="stylesheet" href="css/eveenty-dashboard.css?v=20260502b" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2563EB" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <!-- Google Maps Places API (New) -->
@@ -15,7 +19,9 @@
   <script>
     (function() {
       try {
-        if (localStorage.getItem('ev-theme') === 'dark') {
+        var saved = localStorage.getItem('theme');
+        var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) {
           document.documentElement.setAttribute('data-theme', 'dark');
         }
       } catch (e) {}
@@ -33,16 +39,16 @@
   </div>
 
   <!-- Toast Container -->
-  <div class="ev-toast-container" id="toast-container"></div>
+  <div class="ev-toast-container" id="toast-container" aria-live="polite" role="status"></div>
 
   <!-- Mobile Toggle -->
-  <button class="ev-mobile-toggle" id="sidebar-toggle">
+  <button class="ev-mobile-toggle" id="sidebar-toggle" aria-label="Toggle navigation menu">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
   </button>
   <div class="ev-sidebar-overlay" id="sidebar-overlay"></div>
 
   <!-- ══════ SIDEBAR ══════ -->
-  <aside class="ev-sidebar" id="sidebar">
+  <aside class="ev-sidebar" id="sidebar" role="navigation" aria-label="Dashboard navigation">
     <div class="ev-sidebar-brand">
       <h1>Event <span>Waw</span></h1>
       <p>Organizer Hub</p>

@@ -35,6 +35,8 @@ export function setupEmailAttendees() {
       // Show compose modal
       const modal = document.createElement('div');
       modal.className = 'ev-modal-overlay active';
+      modal.setAttribute('role', 'dialog');
+      modal.setAttribute('aria-modal', 'true');
       setSafeHTML(modal, `<div class="ev-modal" style="max-width:560px">
         <div class="ev-modal-header">
           <h2>Email Attendees</h2>

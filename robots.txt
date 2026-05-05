@@ -1,0 +1,10 @@
+# Event Waw - Robots.txt
+User-agent: *
+Allow: /
+Disallow: /dashboard.html
+Disallow: /scanner.html
+Disallow: /venue-designer.html
+Disallow: /checkout-success.html
+
+# Sitemaps
+# Sitemap: https://eventwaw.com/sitemap.xml

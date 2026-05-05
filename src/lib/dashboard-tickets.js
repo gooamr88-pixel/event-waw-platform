@@ -80,16 +80,23 @@ export function setupTicketsPanel() {
       const csvBtn = document.getElementById('ticket-csv-btn');
       if (csvBtn) csvBtn.onclick = () => {
         const rows = [['Name','Email','Tier','Seat','Status','Date']];
-        tickets.forEach(t => rows.push([
-          t.attendee_name||'', t.attendee_email||'', t.tier_name||'',
-          t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '',
-          t.scanned_at ? 'Scanned' : 'Pending', t.created_at||''
-        ]));
+        tickets.forEach(t => {
+          const order = orderMap[t.order_id] || {};
+          const name = t.attendee_name || order.guest_name || '';
+          const email = t.attendee_email || order.guest_email || '';
+          const tierName = tierMap[t.ticket_tier_id]?.name || '';
+          rows.push([
+            name, email, tierName,
+            t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '',
+            t.scanned_at ? 'Scanned' : 'Pending', t.created_at || ''
+          ]);
+        });
         const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
         a.download = `tickets_${Date.now()}.csv`;
         a.click();
+        URL.revokeObjectURL(a.href);
         showToast('CSV exported', 'success');
       };
 
@@ -115,15 +122,21 @@ export function setupTicketsPanel() {
           <p class="sub">Generated: ${new Date().toLocaleString()}  Total: ${tickets.length} tickets</p>
           <table>
             <thead><tr><th>#</th><th>Attendee</th><th>Email</th><th>Tier</th><th>Seat</th><th>Status</th><th>Purchase Date</th></tr></thead>
-            <tbody>${tickets.map((t, i) => `<tr>
+            <tbody>${tickets.map((t, i) => {
+              const order = orderMap[t.order_id] || {};
+              const name = t.attendee_name || order.guest_name || '-';
+              const email = t.attendee_email || order.guest_email || '-';
+              const tierName = tierMap[t.ticket_tier_id]?.name || '-';
+              return `<tr>
               <td>${i + 1}</td>
-              <td><strong>${escapeHTML(t.attendee_name || '-')}</strong></td>
-              <td>${escapeHTML(t.attendee_email || '-')}</td>
-              <td>${escapeHTML(t.tier_name || '-')}</td>
+              <td><strong>${escapeHTML(name)}</strong></td>
+              <td>${escapeHTML(email)}</td>
+              <td>${escapeHTML(tierName)}</td>
               <td>${t.seat_section ? t.seat_section + ' R' + t.seat_row + ' S' + t.seat_number : '-'}</td>
               <td><span class="badge ${t.scanned_at ? 'badge-scanned' : 'badge-pending'}">${t.scanned_at ? '[OK] Scanned' : 'Pending'}</span></td>
               <td>${new Date(t.created_at).toLocaleDateString()}</td>
-            </tr>`).join('')}</tbody>
+            </tr>`;
+            }).join('')}</tbody>
           </table>
           <script>setTimeout(() => { window.print(); }, 300);<\/script>
         </body></html>`);

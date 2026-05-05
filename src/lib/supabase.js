@@ -100,15 +100,26 @@ export function onAuthStateChange(callback) {
  * Get a working URL for a file in Supabase Storage.
  * Tries public URL first; if the bucket is private (400/403),
  * falls back to a signed URL with 1-year expiry.
+ * CACHED: Results are cached in-memory for 30 minutes to avoid redundant HEAD requests.
  */
+const _storageUrlCache = new Map();
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+
 async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
+  const cacheKey = `${bucket}/${storagePath}`;
+  const cached = _storageUrlCache.get(cacheKey);
+  if (cached && Date.now() - cached.ts < CACHE_TTL) return cached.url;
+
   // 1. Public URL
   const { data: pubData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
   const publicUrl = pubData?.publicUrl;
   if (publicUrl) {
     try {
       const resp = await fetch(publicUrl, { method: 'HEAD', mode: 'cors' });
-      if (resp.ok) return publicUrl;
+      if (resp.ok) {
+        _storageUrlCache.set(cacheKey, { url: publicUrl, ts: Date.now() });
+        return publicUrl;
+      }
     } catch (_) { /* fall through */ }
   }
 
@@ -117,7 +128,10 @@ async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
     const { data, error } = await supabase.storage
       .from(bucket)
       .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
-    if (!error && data?.signedUrl) return data.signedUrl;
+    if (!error && data?.signedUrl) {
+      _storageUrlCache.set(cacheKey, { url: data.signedUrl, ts: Date.now() });
+      return data.signedUrl;
+    }
   } catch (_) { /* fall through */ }
 
   return publicUrl || null;

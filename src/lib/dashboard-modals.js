@@ -1,9 +1,10 @@
 import { supabase, getCurrentUser, resolveImageUrl } from './supabase.js';
 import { createEvent, updateEvent } from './events.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 import { showToast, switchToPanel } from './dashboard-ui.js';
 import { safeQuery } from './api.js';
 import { setSafeHTML, safeHTML } from './dom.js';
+import { emitDashboardAction } from './dashboard-bus.js';
 
 /**
  * Sanitize rich text editor HTML before storing in DB.
@@ -29,6 +30,7 @@ let ceTicketTableListenerAttached = false;
 let googleAutocompleteInitialized = false;
 let googleMapInstance = null;
 let googleMapMarker = null;
+let ceListingTypeGetter = null;
 
 /** Country code -> timezone mapping for common countries */
 const COUNTRY_TIMEZONE_MAP = {
@@ -176,17 +178,15 @@ export function setupCreateModal() {
     if (wizardContent) wizardContent.style.display = 'none';
   });
 
-  // Make listing type accessible to publish handler
-  window.__ceListingType = () => ceListingType;
+  // Make listing type accessible across the module
+  ceListingTypeGetter = () => ceListingType;
 
   // ── Tab switching ──
   const tabs = document.querySelectorAll('[data-ce-tab]');
   const steps = { basic: 'ce-step-basic', tickets: 'ce-step-tickets', publishing: 'ce-step-publishing' };
 
   function getListingType() {
-    return typeof window.__ceListingType === 'function'
-      ? window.__ceListingType()
-      : ceListingType;
+    return ceListingTypeGetter ? ceListingTypeGetter() : ceListingType;
   }
 
   function getTabOrder() {
@@ -224,11 +224,9 @@ export function setupCreateModal() {
     const name = document.getElementById('ce-name')?.value.trim();
     if (!name || name.length < 3) { showToast('Event name must be at least 3 characters', 'error'); return; }
 
-    // Resolve listing type: window.__ceListingType() works in EDIT mode,
+    // Resolve listing type: ceListingTypeGetter works in EDIT mode,
     // ceListingType closure var works in CREATE mode
-    const listingType = typeof window.__ceListingType === 'function'
-      ? window.__ceListingType()
-      : ceListingType;
+    const listingType = ceListingTypeGetter ? ceListingTypeGetter() : ceListingType;
     const targetTab = listingType === 'display_only' ? 'publishing' : 'tickets';
 
     // 1. Deactivate all steps and tabs
@@ -477,7 +475,7 @@ export function setupCreateModal() {
     if (!category) markError('ce-category', 'Category is required');
 
     const currency = document.getElementById('ce-currency')?.value;
-    const resolvedListingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : ceListingType;
+    const resolvedListingType = ceListingTypeGetter ? ceListingTypeGetter() : ceListingType;
     if (resolvedListingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
 
     const timezone = document.getElementById('ce-timezone')?.value;
@@ -547,7 +545,7 @@ export function setupCreateModal() {
       const showEndTime = document.querySelector('input[name="ce-show-end"]:checked')?.value !== 'no';
 
       // Get listing type
-      const listingType = typeof window.__ceListingType === 'function' ? window.__ceListingType() : 'display_and_sell';
+      const listingType = ceListingTypeGetter ? ceListingTypeGetter() : 'display_and_sell';
 
       // All event data — columns are guaranteed to exist after migration-v11/v12
       const eventData = {
@@ -721,7 +719,7 @@ export function setupCreateModal() {
       showToast(wasEditing ? 'Event updated successfully!' : 'Event published successfully!', 'success');
       ceEditingEventId = null;
       switchToPanel('events');
-      if (window.loadDashboard) await window.loadDashboard();
+      await emitDashboardAction('refreshDashboard');
 
       // Show services modal only on new events
       if (!wasEditing) {
@@ -968,7 +966,7 @@ export async function loadEventForEditing(eventId) {
 
     // Determine listing type from DB data
     const editListingType = ev.listing_type || (ev.ticket_tiers?.length ? 'display_and_sell' : 'display_only');
-    window.__ceListingType = () => editListingType;
+    ceListingTypeGetter = () => editListingType;
 
     // Configure form based on listing type
     const bannerIcon = document.getElementById('ce-banner-icon');
@@ -1394,13 +1392,12 @@ export function renderCeTicketsTable() {
     return;
   }
   setSafeHTML(tbody, ceTicketsList.map((t, i) => {
-    const sym = t.currency === 'CAD' ? 'CA$' : t.currency === 'EUR' ? '€' : t.currency === 'GBP' ? '£' : '$';
     return `<tr>
       <td style="font-weight:600">${escapeHTML(t.name)}</td>
-      <td>${sym}${Number(t.price).toFixed(2)}</td>
+      <td>${formatCurrency(t.price, t.currency || 'USD')}</td>
       <td style="color:var(--ev-yellow);font-weight:600">${t.qty}</td>
       <td>${t.earlyEnd ? new Date(t.earlyEnd).toLocaleDateString() : 'Not Set'}</td>
-      <td>${t.earlyPrice ? sym + Number(t.earlyPrice).toFixed(2) : '—'}</td>
+      <td>${t.earlyPrice ? formatCurrency(t.earlyPrice, t.currency || 'USD') : '—'}</td>
       <td><button class="ev-btn-icon" title="Remove" data-del-ticket="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
     </tr>`;
   }).join(''));
@@ -1458,6 +1455,8 @@ export async function showEditModal(eventId) {
 
   const modal = document.createElement('div');
   modal.className = 'ev-modal-overlay active ev-edit-modal';
+  modal.setAttribute('role', 'dialog');
+  modal.setAttribute('aria-modal', 'true');
   setSafeHTML(modal, `<div class="ev-modal" style="max-width:520px">
     <div class="ev-modal-header"><h2>Edit Event</h2><button class="ev-modal-close" id="edit-close">x</button></div>
     <div class="ev-form-group">
@@ -1529,7 +1528,7 @@ export async function showEditModal(eventId) {
       await updateEvent(eventId, updates);
       showToast('Event updated!', 'success');
       closeModal();
-      if (window.loadDashboard) await window.loadDashboard();
+      await emitDashboardAction('refreshDashboard');
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
       btn.disabled = false; btn.textContent = 'Save Changes';

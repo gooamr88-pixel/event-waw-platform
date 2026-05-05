@@ -1,0 +1,27 @@
+{
+  "name": "Event Waw",
+  "short_name": "EventWaw",
+  "description": "Discover & Create Events Effortlessly — Book tickets for concerts, festivals, exhibitions, sports, and conferences.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "images/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["events", "entertainment", "lifestyle"],
+  "lang": "en",
+  "dir": "ltr"
+}

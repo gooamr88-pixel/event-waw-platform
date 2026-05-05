@@ -14,11 +14,22 @@ export function escapeHTML(str) {
 }
 
 /**
- * Format a number as currency (USD by default).
+ * Format a number as currency using the browser's Intl.NumberFormat.
+ * Falls back to naive formatting if Intl is unavailable.
  */
 export function formatCurrency(amount, currency = 'USD') {
-  const num = Number(amount).toLocaleString();
-  return currency === 'USD' ? `$${num}` : `${num} ${currency}`;
+  const num = Number(amount) || 0;
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+  } catch (_) {
+    // Fallback for unknown currency codes
+    return `${num.toLocaleString()} ${currency}`;
+  }
 }
 
 /**

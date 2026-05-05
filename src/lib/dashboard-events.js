@@ -133,7 +133,7 @@ export async function duplicateEvent(eventId) {
       }
     }
     showToast(`Event duplicated as draft: "${copy.title}"`, 'success');
-    if (window.loadDashboard) await window.loadDashboard();
+    await emitDashboardAction('refreshDashboard');
   } catch (err) {
     showToast('Duplicate failed: ' + err.message, 'error');
   }
@@ -167,6 +167,8 @@ export function showDeleteConfirmModal(eventId, eventTitle, soldCount = 0) {
   const overlay = document.createElement('div');
   overlay.id = 'ev-delete-confirm-modal';
   overlay.className = 'ev-modal-overlay active';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
   overlay.style.cssText = 'z-index:10000';
 
   setSafeHTML(overlay, `
@@ -253,6 +255,8 @@ export function showArchiveConfirmModal(eventId, eventTitle) {
   const overlay = document.createElement('div');
   overlay.id = 'ev-delete-confirm-modal';
   overlay.className = 'ev-modal-overlay active';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
   overlay.style.cssText = 'z-index:10000';
 
   setSafeHTML(overlay, `
