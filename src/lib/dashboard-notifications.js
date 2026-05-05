@@ -1,6 +1,7 @@
 import { supabase, getCurrentUser } from './supabase.js';
 import { escapeHTML } from './utils.js';
 import { setSafeHTML } from './dom.js';
+import { getSwitchId } from './dashboard-ui.js';
 
 let dashNotifications = [];
 
@@ -9,14 +10,18 @@ let dashNotifications = [];
    ================================== */
 
 export async function loadNotifications() {
+  const mySwitch = getSwitchId();
   try {
     const user = await getCurrentUser();
+    if (getSwitchId() !== mySwitch) return;
     const lastSeen = localStorage.getItem('ev-last-notif') || new Date(Date.now() - 86400000).toISOString();
 
     const { data: events } = await supabase.from('events').select('id, title').eq('organizer_id', user.id);
+    if (getSwitchId() !== mySwitch) return;
     if (!events?.length) return;
 
     const { data: tiers } = await supabase.from('ticket_tiers').select('id, name, event_id').in('event_id', events.map(e => e.id));
+    if (getSwitchId() !== mySwitch) return;
     if (!tiers?.length) return;
 
     const eventMap = {};
@@ -32,6 +37,7 @@ export async function loadNotifications() {
       .gt('created_at', lastSeen)
       .order('created_at', { ascending: false })
       .limit(20);
+    if (getSwitchId() !== mySwitch) return;
 
     if (tickets?.length) {
       // Try to get attendee names from orders
@@ -56,7 +62,11 @@ export async function loadNotifications() {
       });
     }
     renderNotifications();
-  } catch (_) { /* Notifications are optional */ }
+  } catch (_) { 
+    if (getSwitchId() !== mySwitch) return;
+    const list = document.getElementById('notif-list');
+    if (list) setSafeHTML(list, '<div class="ev-notif-empty"> Failed to load notifications</div>');
+  }
 }
 
 export function renderNotifications() {

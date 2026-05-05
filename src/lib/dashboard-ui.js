@@ -26,15 +26,18 @@ export function showToast(message, type = 'info') {
   setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
+const _intervals = {};
+
 export function animateCounter(id, target) {
   const el = document.getElementById(id);
   if (!el) return;
+  if (_intervals[id]) clearInterval(_intervals[id]);
   if (target === 0) { el.textContent = '0'; return; }
   let current = 0;
   const step = Math.max(1, Math.ceil(target / 20));
-  const interval = setInterval(() => {
+  _intervals[id] = setInterval(() => {
     current += step;
-    if (current >= target) { current = target; clearInterval(interval); }
+    if (current >= target) { current = target; clearInterval(_intervals[id]); delete _intervals[id]; }
     el.textContent = current;
   }, 40);
 }

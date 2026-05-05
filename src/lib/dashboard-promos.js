@@ -1,7 +1,7 @@
 import { supabase, getCurrentUser } from './supabase.js';
 import { escapeHTML } from './utils.js';
 import { setSafeHTML, generateSkeletonRows } from './dom.js';
-import { showToast } from './dashboard-ui.js';
+import { showToast, getSwitchId } from './dashboard-ui.js';
 
 /* ==================================
    PROMO CODES PANEL
@@ -13,6 +13,7 @@ export function setupFinancialPanel() {
 }
 
 async function loadFinancialData() {
+  const mySwitch = getSwitchId();
   const tbody = document.getElementById('financial-tbody');
   if (!tbody) return;
   const eventId = document.getElementById('fin-event-select')?.value;
@@ -20,7 +21,9 @@ async function loadFinancialData() {
 
   try {
     const user = await getCurrentUser();
+    if (getSwitchId() !== mySwitch) return;
     const { data, error } = await supabase.rpc('get_organizer_revenue', { p_organizer_id: user.id });
+    if (getSwitchId() !== mySwitch) return;
 
     if (error) throw error;
     if (!data?.length) {
@@ -83,17 +86,20 @@ async function loadFinancialData() {
 let promoDeleteListenerAttached = false;
 
 export async function loadPromoCodes() {
+  const mySwitch = getSwitchId();
   const tbody = document.getElementById('promo-tbody');
   if (!tbody) return;
   setSafeHTML(tbody, generateSkeletonRows(['20px', '140px', '100px', '80px', '100px', '80px', '60px'], 5));
 
   try {
     const user = await getCurrentUser();
+    if (getSwitchId() !== mySwitch) return;
     const { data, error } = await supabase
       .from('promo_codes')
       .select('*')
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false });
+    if (getSwitchId() !== mySwitch) return;
 
     if (error) throw error;
     if (!data?.length) {
@@ -110,7 +116,7 @@ export async function loadPromoCodes() {
       const statusClass = !p.is_active ? 'rejected' : expired ? 'past' : maxedOut ? 'past' : 'published';
       const statusLabel = !p.is_active ? 'Inactive' : expired ? 'Expired' : maxedOut ? 'Maxed Out' : 'Active';
       const discountDisplay = p.discount_type === 'fixed'
-        ? `${Number(p.discount_value).toLocaleString()} ${p.discount_currency || 'USD'}`
+        ? `${Number(p.discount_value).toLocaleString()} ${escapeHTML(p.discount_currency || 'USD')}`
         : (p.discount_value || p.discount_percent || 0) + '%';
       const typeBadge = p.discount_type === 'fixed'
         ? '<span style="display:inline-block;font-size:.6rem;padding:1px 5px;border-radius:4px;background:rgba(34,197,94,.1);color:#22c55e;font-weight:600;margin-left:4px">FIXED</span>'
@@ -263,8 +269,7 @@ export function setupPromoForm() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = form.querySelector('[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = 'Creating...';
+    if (btn) { btn.disabled = true; btn.textContent = 'Creating...'; }
 
     try {
       const user = await getCurrentUser();
@@ -325,8 +330,7 @@ export function setupPromoForm() {
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
-      btn.disabled = false;
-      btn.textContent = 'Create Promo Code';
+      if (btn) { btn.disabled = false; btn.textContent = 'Create Promo Code'; }
     }
   });
 }

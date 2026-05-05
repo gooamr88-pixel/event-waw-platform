@@ -75,5 +75,16 @@ export function renderCalendar() {
     html += `<div class="ev-calendar-cell other-month"><div class="ev-calendar-date">${i}</div></div>`;
   }
 
+  // Check if calendar has events this month
+  const monthHasEvents = calEvents.some(ev => {
+    const evDate = new Date(ev.date);
+    return evDate.getMonth() === calMonth && evDate.getFullYear() === calYear;
+  });
+
+  if (!monthHasEvents) {
+    const msg = calEvents.length === 0 ? 'No events scheduled yet. Create your first event!' : 'No events scheduled for this month.';
+    html += `<div style="grid-column: 1 / -1; padding: 16px; text-align: center; color: var(--ev-text-sec); font-size: 0.9rem; background: rgba(255,255,255,0.02); border-top: 1px solid var(--ev-border); border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">${msg}</div>`;
+  }
+
   setSafeHTML(grid, html);
 }

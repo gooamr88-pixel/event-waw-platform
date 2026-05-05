@@ -76,7 +76,14 @@ export async function handleTableAction(e) {
   if (mapBtn) { window.location.href = `venue-designer.html?event_id=${mapBtn.dataset.id}`; return; }
 
   const dupBtn = e.target.closest('[data-action="duplicate"]');
-  if (dupBtn) { await duplicateEvent(dupBtn.dataset.id); return; }
+  if (dupBtn) {
+    dupBtn.disabled = true;
+    dupBtn.style.opacity = '0.5';
+    await duplicateEvent(dupBtn.dataset.id); 
+    dupBtn.disabled = false;
+    dupBtn.style.opacity = '1';
+    return; 
+  }
 
   const shareBtn = e.target.closest('[data-action="share"]');
   if (shareBtn) {

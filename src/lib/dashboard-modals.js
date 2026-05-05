@@ -527,8 +527,7 @@ export function setupCreateModal() {
       return; // STOP — don't create/update event
     }
 
-    btn.disabled = true;
-    btn.textContent = ceEditingEventId ? 'Updating…' : 'Publishing…';
+    if (btn) { btn.disabled = true; btn.textContent = ceEditingEventId ? 'Updating…' : 'Publishing…'; }
     try {
       const user = await getCurrentUser();
       if (!user) return;
@@ -728,8 +727,7 @@ export function setupCreateModal() {
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
-      btn.disabled = false;
-      setSafeHTML(btn, ceEditingEventId ? 'Update Event' : 'Publish Event');
+      if (btn) { btn.disabled = false; setSafeHTML(btn, ceEditingEventId ? 'Update Event' : 'Publish Event'); }
     }
   });
 

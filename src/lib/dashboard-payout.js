@@ -1,5 +1,5 @@
 import { supabase, getCurrentUser } from './supabase.js';
-import { showToast } from './dashboard-ui.js';
+import { showToast, getSwitchId } from './dashboard-ui.js';
 
 /* ==================================
    PAYOUT SETTINGS PANEL
@@ -11,8 +11,7 @@ export function setupPayoutPanel() {
   document.getElementById('payout-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('[type="submit"]');
-    btn.disabled = true;
-    btn.textContent = 'Saving...';
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
 
     try {
       const user = await getCurrentUser();
@@ -41,20 +40,22 @@ export function setupPayoutPanel() {
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
-      btn.disabled = false;
-      btn.textContent = 'Save Payout Details';
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Payout Details'; }
     }
   });
 }
 
 export async function loadPayoutData() {
+  const mySwitch = getSwitchId();
   try {
     const user = await getCurrentUser();
+    if (getSwitchId() !== mySwitch) return;
     const { data } = await supabase
       .from('profiles')
       .select('payout_info')
       .eq('id', user.id)
       .single();
+    if (getSwitchId() !== mySwitch) return;
 
     if (data?.payout_info) {
       const p = data.payout_info;
