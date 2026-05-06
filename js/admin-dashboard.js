@@ -729,7 +729,7 @@ async function loadAllEvents() {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, date, end_date, category, venue, venue_address, city, country, lat, lng, organizer_id, created_at, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
+      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, date, end_date, category, venue, venue_address, city, organizer_id, created_at, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -875,7 +875,7 @@ function showEventDetailModal(ev) {
          </table>
        </div>` : '<p style="color:var(--ev-text-muted);font-size:.85rem;margin-top:12px">No ticket tiers configured.</p>';
 
-  const locationParts = [ev.venue, ev.venue_address, ev.city, ev.country].filter(Boolean);
+  const locationParts = [ev.venue, ev.venue_address, ev.city].filter(Boolean);
   const locationHTML = locationParts.length > 0
     ? `<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:8px">
          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-top:2px;flex-shrink:0;color:var(--ev-text-muted)"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
