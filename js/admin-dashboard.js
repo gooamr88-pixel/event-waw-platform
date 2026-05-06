@@ -481,7 +481,7 @@ async function loadAllUsers() {
   try {
     const { data, error } = await supabase
       .from('profiles')
-      .select('id, full_name, email, role, created_at')
+      .select('id, full_name, email, role, is_blocked, blocked_reason, created_at')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -495,12 +495,13 @@ async function loadAllUsers() {
     const exportBtn = document.getElementById('export-users-btn');
     if (exportBtn) {
       exportBtn.onclick = () => {
-        const rows = [['ID', 'Name', 'Email', 'Role', 'Joined Date']];
+        const rows = [['ID', 'Name', 'Email', 'Role', 'Blocked', 'Joined Date']];
         data.forEach(u => rows.push([
           u.id, 
           u.full_name || '', 
           u.email || '', 
-          u.role || 'attendee', 
+          u.role || 'attendee',
+          u.is_blocked ? 'Yes' : 'No',
           new Date(u.created_at).toLocaleDateString()
         ]));
         downloadCSV(rows, `users_${Date.now()}.csv`);
@@ -511,14 +512,22 @@ async function loadAllUsers() {
       const joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const roleBadge = u.role === 'admin' ? 'admin-role' : u.role === 'organizer' ? 'organizer-role' : 'attendee-role';
       const roleLabel = u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Attendee';
-      return `<tr>
+      const isBlocked = u.is_blocked === true;
+      const blockedBadge = isBlocked ? ' <span class="ev-badge" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:.65rem;margin-left:4px">BLOCKED</span>' : '';
+      return `<tr${isBlocked ? ' style="opacity:.6"' : ''}>
         <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
-        <td style="font-weight:600;color:var(--ev-text)">${escapeHTML(u.full_name || '—')}</td>
+        <td style="font-weight:600;color:var(--ev-text)">${escapeHTML(u.full_name || '—')}${blockedBadge}</td>
         <td>${escapeHTML(u.email || '—')}</td>
         <td><span class="ev-badge ${roleBadge}">${roleLabel}</span></td>
         <td>${joined}</td>
         <td>
-          ${u.role !== 'admin' ? `<button class="ev-btn ev-btn-outline ev-btn-sm" data-set-role="${u.id}" data-current="${u.role}" data-name="${escapeHTML(u.full_name || u.email || '')}">Change Role</button>` : '<span style="color:var(--ev-text-muted);font-size:.75rem">Protected</span>'}
+          ${u.role !== 'admin' ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="ev-btn ev-btn-outline ev-btn-sm" data-set-role="${u.id}" data-current="${u.role}" data-name="${escapeHTML(u.full_name || u.email || '')}">Change Role</button>
+            ${isBlocked 
+              ? `<button class="ev-btn ev-btn-sm" style="background:#10b981;color:#fff;border:none" data-unblock="${u.id}" data-name="${escapeHTML(u.full_name || u.email || '')}">Unblock</button>` 
+              : `<button class="ev-btn ev-btn-sm" style="background:#dc2626;color:#fff;border:none" data-block="${u.id}" data-name="${escapeHTML(u.full_name || u.email || '')}">Block</button>`
+            }
+          </div>` : '<span style="color:var(--ev-text-muted);font-size:.75rem">Protected</span>'}
         </td>
       </tr>`;
     }).join(''));
@@ -526,6 +535,16 @@ async function loadAllUsers() {
     // Wire role change buttons
     tbody.querySelectorAll('[data-set-role]').forEach(btn => {
       btn.addEventListener('click', () => handleRoleChange(btn.dataset.setRole, btn.dataset.current, btn.dataset.name));
+    });
+
+    // Wire block buttons
+    tbody.querySelectorAll('[data-block]').forEach(btn => {
+      btn.addEventListener('click', () => handleBlockUser(btn.dataset.block, btn.dataset.name));
+    });
+
+    // Wire unblock buttons
+    tbody.querySelectorAll('[data-unblock]').forEach(btn => {
+      btn.addEventListener('click', () => handleUnblockUser(btn.dataset.unblock, btn.dataset.name));
     });
   } catch (err) {
     console.error('loadAllUsers error:', err);
@@ -800,6 +819,53 @@ async function handleAdminSuspendEvent(eventId, title) {
     await loadDashboardData();
   } catch (err) {
     showToast('Failed to suspend event: ' + err.message, 'error');
+  }
+}
+
+/* ── Block / Unblock User ── */
+
+async function handleBlockUser(userId, name) {
+  const reason = await showPromptModal({
+    title: '🚫 Block User',
+    message: `Block <strong>${escapeHTML(name)}</strong> from the entire platform? They will be immediately signed out and unable to log in.\n\nProvide a reason:`,
+    placeholder: 'Reason for blocking (e.g. Terms of Service violation)...',
+    confirmText: 'Block User',
+    confirmColor: '#dc2626'
+  });
+  if (!reason || !reason.trim()) return;
+
+  try {
+    const { error } = await supabase.rpc('admin_block_user', { p_target_user_id: userId, p_reason: reason.trim() });
+    if (error) throw error;
+    showToast(`${name} has been blocked from the platform.`, 'success');
+    loadedPanels.delete('users');
+    loadedPanels.delete('dashboard');
+    await loadAllUsers();
+    await loadDashboardData();
+  } catch (err) {
+    showToast('Block failed: ' + err.message, 'error');
+  }
+}
+
+async function handleUnblockUser(userId, name) {
+  const confirmed = await showConfirmModal({
+    title: '✅ Unblock User',
+    message: `Unblock <strong>${escapeHTML(name)}</strong>? They will be able to log in and use the platform again.`,
+    confirmText: 'Unblock User',
+    confirmColor: '#10b981'
+  });
+  if (!confirmed) return;
+
+  try {
+    const { error } = await supabase.rpc('admin_unblock_user', { p_target_user_id: userId });
+    if (error) throw error;
+    showToast(`${name} has been unblocked.`, 'success');
+    loadedPanels.delete('users');
+    loadedPanels.delete('dashboard');
+    await loadAllUsers();
+    await loadDashboardData();
+  } catch (err) {
+    showToast('Unblock failed: ' + err.message, 'error');
   }
 }
 

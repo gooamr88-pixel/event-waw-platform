@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Account Suspended — Event Waw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
+  <script>
+    (function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})();
+  </script>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      padding: 20px;
+    }
+    .blocked-card {
+      background: var(--bg-secondary);
+      border: 1px solid rgba(220, 38, 38, 0.2);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 520px;
+      width: 100%;
+      box-shadow: 0 8px 40px rgba(220, 38, 38, 0.08);
+    }
+    .blocked-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: rgba(220, 38, 38, 0.08);
+      border: 2px solid rgba(220, 38, 38, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+    .blocked-icon svg {
+      width: 32px;
+      height: 32px;
+      color: #dc2626;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.15); }
+      50% { box-shadow: 0 0 0 12px rgba(220,38,38,0); }
+    }
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+      color: #dc2626;
+    }
+    .blocked-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin: 0 auto 12px;
+      line-height: 1.7;
+    }
+    .blocked-reason {
+      background: rgba(220, 38, 38, 0.06);
+      border: 1px solid rgba(220, 38, 38, 0.12);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 20px 0 28px;
+      font-size: .9rem;
+      color: var(--text-primary);
+      text-align: left;
+    }
+    .blocked-reason strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: .8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #dc2626;
+    }
+    .blocked-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      font-size: .95rem;
+    }
+    .btn-danger {
+      background: #dc2626;
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+    }
+    .btn-danger:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(220, 38, 38, 0.35); }
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+    .btn-outline:hover { background: var(--bg-secondary); transform: translateY(-1px); }
+    .m-brand {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+      text-decoration: none;
+      position: absolute;
+      top: 30px;
+      left: 30px;
+    }
+    .m-brand svg { width: 32px; height: 32px; color: var(--accent-primary); }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="m-brand">
+    <svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg>
+    Event Waw
+  </a>
+
+  <div class="blocked-card">
+    <div class="blocked-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+      </svg>
+    </div>
+    <h1>Account Suspended</h1>
+    <p class="blocked-desc">Your account has been suspended by a platform administrator. You are unable to access Event Waw services at this time.</p>
+    <div class="blocked-reason" id="block-reason-box" style="display:none;">
+      <strong>Reason</strong>
+      <span id="block-reason-text"></span>
+    </div>
+    <div class="blocked-actions">
+      <a href="mailto:support@eventwaw.com?subject=Account%20Suspension%20Appeal" class="btn btn-danger">Contact Support</a>
+      <a href="index.html" class="btn btn-outline" id="signout-btn">Sign Out</a>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase, getCurrentUser } from './src/lib/supabase.js';
+
+    (async () => {
+      try {
+        const user = await getCurrentUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_blocked, blocked_reason')
+          .eq('id', user.id)
+          .single();
+
+        if (profile && profile.blocked_reason) {
+          document.getElementById('block-reason-text').textContent = profile.blocked_reason;
+          document.getElementById('block-reason-box').style.display = '';
+        }
+
+        // If user is NOT blocked, redirect them back
+        if (profile && !profile.is_blocked) {
+          window.location.href = '/index.html';
+          return;
+        }
+      } catch (e) {
+        console.warn('Blocked page error:', e);
+      }
+
+      document.getElementById('signout-btn').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await supabase.auth.signOut();
+        window.location.href = '/index.html';
+      });
+    })();
+  </script>
+</body>
+</html>

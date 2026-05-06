@@ -140,6 +140,12 @@ export async function protectPage(options = {}) {
     const profile = await getCurrentProfile();
     const userRole = profile?.role;
     
+    // Check if user is blocked
+    if (profile?.is_blocked && userRole !== 'admin') {
+      window.location.href = '/blocked.html';
+      return null;
+    }
+    
     // Check maintenance mode (only admins bypass)
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
@@ -202,6 +208,12 @@ export async function guestOnlyPage(options = {}) {
       }
     } catch (e) { /* ignore */ }
 
+    // Check if user is blocked
+    if (profile?.is_blocked && userRole !== 'admin') {
+      window.location.href = '/blocked.html';
+      return false;
+    }
+
     if (!user) {
       hideLoadingOverlay();
       return true; // Guest - show the page
@@ -238,6 +250,12 @@ export async function semiProtectPage() {
 
     const profile = await getCurrentProfile();
     const userRole = profile?.role;
+
+    // Check if user is blocked
+    if (profile?.is_blocked && userRole !== 'admin') {
+      window.location.href = '/blocked.html';
+      return { user: null, profile: null, isFullyAuth: false };
+    }
 
     // Check maintenance mode
     try {
