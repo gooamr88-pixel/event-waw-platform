@@ -20,26 +20,31 @@ let currentPanel = 'dashboard';
    ══════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // ── Strict admin gate ──
-  const auth = await protectPage({ requireRole: 'admin' });
-  if (!auth) return;
+  try {
+    // ── Strict admin gate ──
+    const auth = await protectPage({ requireRole: 'admin' });
+    if (!auth) return;
 
-  // ── Apply saved theme ──
-  applyTheme();
+    // ── Apply saved theme ──
+    applyTheme();
 
-  // ── Setup UI ──
-  setupUserInfo(auth);
-  setupNavigation();
-  setupMobileToggle();
-  setupSignOut();
-  setupClock();
-  setupDarkMode();
-  setupCMSEvents();
-  setupHeaderShortcuts();
-  setupUserDropdown();
+    // ── Setup UI ──
+    setupUserInfo(auth);
+    setupNavigation();
+    setupMobileToggle();
+    setupSignOut();
+    setupClock();
+    setupDarkMode();
+    setupCMSEvents();
+    setupHeaderShortcuts();
+    setupUserDropdown();
 
-  // ── Load initial data ──
-  await loadDashboardData();
+    // ── Load initial data ──
+    await loadDashboardData();
+  } catch (err) {
+    console.error("FATAL ADMIN INIT ERROR:", err);
+    alert("Dashboard Initialization Error: " + err.message + "\nLine: " + err.stack);
+  }
 });
 
 /* ══════════════════════════════════════
@@ -72,9 +77,9 @@ function setupDarkMode() {
    ══════════════════════════════════════ */
 
 function setupUserInfo(auth) {
-  const { profile } = auth;
-  const name = profile?.full_name || (profile?.email ? profile.email.split('@')[0] : null) || 'Admin';
-  const email = profile?.email || 'admin@eventwaw.com';
+  const { user, profile } = auth;
+  const name = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : null) || 'Admin';
+  const email = profile?.email || user?.email || 'admin@eventwaw.com';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const nameEl = document.getElementById('user-name');
