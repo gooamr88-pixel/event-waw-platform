@@ -244,7 +244,7 @@ export function updateNavForAuth(authState) {
 
     if (userBtn) {
       userBtn.style.display = 'inline-flex';
-      const name = profile?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+      const name = profile?.full_name || user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : null) || 'Account';
       if (navUserName) navUserName.textContent = name;
     }
 

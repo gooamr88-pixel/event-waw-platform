@@ -113,7 +113,7 @@ export function setupSidebar() {
 // NOTE: setupDarkMode is in dashboard-payout.js (uses #dark-mode-toggle)
 
 export function setupUserInfo({ user, profile }) {
-  const name = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const name = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : null) || 'User';
   const email = user?.email || '';
   const userNameEl = document.getElementById('user-name');
   if (userNameEl) userNameEl.textContent = name;

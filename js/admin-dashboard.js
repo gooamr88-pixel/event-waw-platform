@@ -73,7 +73,7 @@ function setupDarkMode() {
 
 function setupUserInfo(auth) {
   const { profile } = auth;
-  const name = profile?.full_name || profile?.email?.split('@')[0] || 'Admin';
+  const name = profile?.full_name || (profile?.email ? profile.email.split('@')[0] : null) || 'Admin';
   const email = profile?.email || 'admin@eventwaw.com';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
