@@ -462,8 +462,21 @@ async function loadAllUsers() {
 }
 
 async function handleRoleChange(userId, currentRole, name) {
-  const newRole = currentRole === 'attendee' ? 'organizer' : 'attendee';
-  if (!confirm(`Change ${name}'s role from "${currentRole}" to "${newRole}"?`)) return;
+  const newRoleInput = prompt(`Current role for ${name} is "${currentRole}".\nEnter new role (attendee, organizer, admin):`, currentRole);
+  if (!newRoleInput) return; // User cancelled
+  
+  const newRole = newRoleInput.trim().toLowerCase();
+  const validRoles = ['attendee', 'organizer', 'admin'];
+  
+  if (!validRoles.includes(newRole)) {
+    showToast('Invalid role. Must be attendee, organizer, or admin', 'error');
+    return;
+  }
+  
+  if (newRole === currentRole) return;
+  
+  if (!confirm(`Are you sure you want to change ${name}'s role to "${newRole}"?`)) return;
+
   try {
     const { error } = await supabase.rpc('admin_set_user_role', { p_target_user_id: userId, p_new_role: newRole });
     if (error) throw error;
