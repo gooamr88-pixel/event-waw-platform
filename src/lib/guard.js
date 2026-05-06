@@ -139,6 +139,16 @@ export async function protectPage(options = {}) {
     // 3. Check role (admin is a superclass — passes all role checks)
     const profile = await getCurrentProfile();
     const userRole = profile?.role;
+    
+    // Check maintenance mode (only admins bypass)
+    try {
+      const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
+      if (mmData && mmData.value === 'true' && userRole !== 'admin') {
+        window.location.href = '/maintenance.html';
+        return null;
+      }
+    } catch (e) { /* ignore */ }
+
     const roleOk = !requireRole
       || userRole === requireRole
       || userRole === 'admin';  // admins pass ALL role gates
@@ -173,6 +183,25 @@ export async function guestOnlyPage(options = {}) {
 
   try {
     const user = await getCurrentUser();
+    let userRole = null;
+    let profile = null;
+
+    if (user) {
+      try {
+        profile = await getCurrentProfile();
+        userRole = profile?.role;
+      } catch (_) {}
+    }
+
+    // Check maintenance mode
+    try {
+      const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
+      if (mmData && mmData.value === 'true' && userRole !== 'admin') {
+        window.location.href = '/maintenance.html';
+        return true;
+      }
+    } catch (e) { /* ignore */ }
+
     if (!user) {
       hideLoadingOverlay();
       return true; // Guest - show the page
@@ -208,6 +237,16 @@ export async function semiProtectPage() {
     }
 
     const profile = await getCurrentProfile();
+    const userRole = profile?.role;
+
+    // Check maintenance mode
+    try {
+      const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
+      if (mmData && mmData.value === 'true' && userRole !== 'admin') {
+        window.location.href = '/maintenance.html';
+        return { user: null, profile: null, isFullyAuth: false };
+      }
+    } catch (e) { /* ignore */ }
 
     return { user, profile, isFullyAuth: true };
   } catch (err) {

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Maintenance — Event Waw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/theme.css" />
+  <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="js/csp.js"></script>
+  <script>
+    (function(){var t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t)})();
+  </script>
+  <style>
+    body { display: flex; flex-direction: column; min-height: 100vh; justify-content: center; align-items: center; text-align: center; background: var(--bg-primary); color: var(--text-primary); padding: 20px; }
+    .m-icon { width: 80px; height: 80px; margin-bottom: 24px; color: #f59e0b; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+    h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
+    p { font-size: 1.1rem; color: var(--text-muted); max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
+    .m-brand { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 1.2rem; color: var(--text-primary); text-decoration: none; position: absolute; top: 30px; left: 30px; }
+    .m-brand svg { width: 32px; height: 32px; color: var(--accent-primary); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 28px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s; background: var(--accent-primary); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,0.3); border: none; cursor: pointer; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(37,99,235,0.4); }
+  </style>
+</head>
+<body>
+  <a href="login.html" class="m-brand">
+    <svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg>
+    Event Waw
+  </a>
+  <svg class="m-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+  <h1>We'll Be Right Back</h1>
+  <p>Event Waw is currently undergoing scheduled maintenance to bring you a better, faster, and more robust experience. Thank you for your patience!</p>
+  <a href="index.html" class="btn">Check Status</a>
+</body>
+</html>

@@ -12,6 +12,7 @@
   <link rel="stylesheet" href="css/eveenty-dashboard.css?v=20260506" />
   <link rel="stylesheet" href="css/admin.css?v=20260506" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="js/csp.js"></script>
   <script>
     // Anti-FOUC: apply saved theme as early as possible
@@ -177,19 +178,24 @@
         <div class="ev-stat-card"><div class="ev-stat-icon blue">🎫</div><div><div class="ev-stat-value" id="stat-tickets">—</div><div class="ev-stat-label">Tickets Issued</div></div></div>
       </div>
 
-      <!-- Recent Activity -->
+      <!-- Recent Activity / Charts -->
       <div class="ev-card">
-        <div class="ev-card-header"><span class="ev-card-title">📊 Recent Activity</span></div>
-        <div id="admin-activity" style="padding:20px">
-          <div class="ev-loading"><div class="ev-spinner"></div>Loading activity…</div>
+        <div class="ev-card-header"><span class="ev-card-title">📈 Platform Growth & Revenue</span></div>
+        <div style="padding:20px; height: 350px;">
+          <canvas id="admin-revenue-chart"></canvas>
         </div>
       </div>
     </div>
 
     <!-- ════ PANEL: APPROVALS ════ -->
     <div class="ev-panel" id="panel-approvals">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✅ Event Approval Queue</h2>
-      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">Review, approve, or reject events submitted by organizers.</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✅ Event Approval Queue</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Review, approve, or reject events submitted by organizers.</p>
+        </div>
+        <input type="text" id="search-approvals" class="ev-form-input" placeholder="Search approvals..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+      </div>
       <div class="ev-card">
         <div class="ev-table-wrap">
           <table class="ev-table" id="approvals-table">
@@ -209,8 +215,13 @@
 
     <!-- ════ PANEL: USERS ════ -->
     <div class="ev-panel" id="panel-users">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">👥 User Management</h2>
-      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">View all registered users, manage roles, and monitor account status.</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">👥 User Management</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">View all registered users, manage roles, and monitor account status.</p>
+        </div>
+        <input type="text" id="search-users" class="ev-form-input" placeholder="Search by name or email..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+      </div>
       <div class="ev-card">
         <div class="ev-table-wrap">
           <table class="ev-table" id="users-table">
@@ -227,13 +238,18 @@
 
     <!-- ════ PANEL: ALL EVENTS ════ -->
     <div class="ev-panel" id="panel-events-all">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">📋 Global Event Registry</h2>
-      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">Complete inventory of every event across the platform.</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">📋 Global Event Registry</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Complete inventory of every event across the platform.</p>
+        </div>
+        <input type="text" id="search-all-events" class="ev-form-input" placeholder="Search events..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+      </div>
       <div class="ev-card">
         <div class="ev-table-wrap">
           <table class="ev-table" id="all-events-table">
             <thead>
-              <tr><th>#</th><th>Title</th><th>Organizer</th><th>Date</th><th>Status</th><th>Approved</th><th>Tickets</th><th>Revenue</th></tr>
+              <tr><th>#</th><th>Title</th><th>Organizer</th><th>Date</th><th>Status</th><th>Approved</th><th>Tickets</th><th>Revenue</th><th>Actions</th></tr>
             </thead>
             <tbody id="all-events-tbody">
               <tr><td colspan="8" class="ev-table-empty">Loading events...</td></tr>
@@ -245,8 +261,19 @@
 
     <!-- ════ PANEL: CMS ════ -->
     <div class="ev-panel" id="panel-cms">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✏️ Landing Page CMS</h2>
-      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">Edit hero content, featured events, and homepage blocks.</p>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✏️ Settings & CMS</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Edit platform settings, maintenance mode, and homepage content.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:.85rem;font-weight:600;color:var(--ev-danger)">Maintenance Mode</span>
+          <label class="ev-toggle">
+            <input type="checkbox" id="admin-maintenance-toggle">
+            <span class="ev-slider"></span>
+          </label>
+        </div>
+      </div>
       <div class="ev-card">
         <div id="cms-body" style="padding:20px">
           <div class="ev-loading"><div class="ev-spinner"></div>Loading CMS…</div>
@@ -256,6 +283,6 @@
 
   </main>
 
-  <script type="module" src="js/admin-dashboard.js?v=20260506_6"></script>
+  <script type="module" src="js/admin-dashboard.js?v=20260506_8"></script>
 </body>
 </html>

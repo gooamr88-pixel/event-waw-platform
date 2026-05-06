@@ -297,15 +297,47 @@ async function loadDashboardData() {
     }
 
     // Activity placeholder
-    const actEl = document.getElementById('admin-activity');
-    if (actEl) {
-      setSafeHTML(actEl, `
-        <div style="text-align:center;padding:40px 20px;color:var(--ev-text-muted)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;margin:0 auto 12px;display:block;opacity:.4"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          <h3 style="font-size:.95rem;font-weight:700;color:var(--ev-text);margin-bottom:6px">Dashboard Ready</h3>
-          <p style="font-size:.82rem">Platform statistics loaded. Select a panel from the sidebar to manage events, users, or CMS content.</p>
-        </div>
-      `);
+    const ctx = document.getElementById('admin-revenue-chart');
+    if (ctx && !window.adminChartInstance) {
+      window.adminChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [
+            {
+              label: 'Ticket Sales',
+              data: [120, 190, 300, 250, 400, 450, 500],
+              borderColor: '#2563eb',
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Platform Revenue ($)',
+              data: [300, 450, 700, 600, 1000, 1200, 1500],
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    } else if (window.adminChartInstance) {
+      // If we re-fetch, we could theoretically update chart data here.
+      window.adminChartInstance.update();
     }
   } catch (err) {
     console.error('Dashboard load error:', err);
@@ -616,8 +648,16 @@ async function loadAllEvents() {
         <td>${ev.admin_approved ? '<span style="color:var(--ev-success)">✓</span>' : '<span style="color:var(--ev-text-muted)">—</span>'}</td>
         <td>${sold}/${cap}</td>
         <td style="font-weight:600">${rev > 0 ? '$' + rev.toLocaleString() : '—'}</td>
+        <td>
+          <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:var(--ev-danger);border-color:var(--ev-danger)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" ${statusBadge === 'draft' ? 'disabled' : ''}>Suspend</button>
+        </td>
       </tr>`;
     }).join(''));
+
+    // Wire up suspend buttons
+    tbody.querySelectorAll('.ev-admin-suspend-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleAdminSuspendEvent(btn.dataset.id, btn.dataset.title));
+    });
   } catch (err) {
     console.error('loadAllEvents error:', err);
     setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty" style="color:var(--ev-danger)">Error: ${escapeHTML(err.message)}</td></tr>`);
@@ -628,6 +668,28 @@ async function loadAllEvents() {
 
 async function loadCMSPanel() {
   const body = document.getElementById('cms-body');
+  const mmToggle = document.getElementById('admin-maintenance-toggle');
+  
+  if (mmToggle && !mmToggle.dataset.initialized) {
+    mmToggle.dataset.initialized = 'true';
+    try {
+      const { data } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
+      if (data) mmToggle.checked = (data.value === 'true');
+    } catch (e) { console.warn('Could not load maintenance mode state'); }
+
+    mmToggle.addEventListener('change', async (e) => {
+      const isEnabled = e.target.checked;
+      try {
+        const { error } = await supabase.from('platform_settings').upsert({ key: 'maintenance_mode', value: isEnabled ? 'true' : 'false' });
+        if (error) throw error;
+        showToast(isEnabled ? 'Maintenance Mode ENABLED. Platform is offline.' : 'Maintenance Mode DISABLED. Platform is live.', isEnabled ? 'error' : 'success');
+      } catch (err) {
+        e.target.checked = !isEnabled; // revert
+        showToast('Failed to update maintenance mode: ' + err.message, 'error');
+      }
+    });
+  }
+
   if (!body) return;
   await renderCMSEditor(body);
 }
@@ -646,8 +708,52 @@ function setupCMSEvents() {
 }
 
 /* ══════════════════════════════════════
-   UTILITIES
+   UTILITIES & ACTIONS
    ══════════════════════════════════════ */
+
+function setupTableSearch(inputId, tbodyId) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  input.addEventListener('input', (e) => {
+    const term = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll(`#${tbodyId} tr`);
+    rows.forEach(row => {
+      if (row.querySelector('.ev-table-empty')) return;
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(term) ? '' : 'none';
+    });
+  });
+}
+
+// Call these once after DOM load
+setTimeout(() => {
+  setupTableSearch('search-approvals', 'approvals-tbody');
+  setupTableSearch('search-users', 'users-tbody');
+  setupTableSearch('search-all-events', 'all-events-tbody');
+}, 500);
+
+async function handleAdminSuspendEvent(eventId, title) {
+  const reason = await showPromptModal({
+    title: 'Suspend Event',
+    message: `Suspend "${title}"? This will hide it from the public. Provide a reason:`,
+    placeholder: 'Reason for suspension...',
+    confirmText: 'Suspend Event',
+    confirmColor: '#dc2626'
+  });
+  if (!reason || !reason.trim()) return;
+  try {
+    const { error } = await supabase.rpc('admin_reject_event', { p_event_id: eventId, p_reason: reason.trim() });
+    if (error) throw error;
+    showToast(`Event "${title}" has been suspended.`, 'success');
+    loadedPanels.delete('events-all');
+    loadedPanels.delete('dashboard');
+    loadedPanels.delete('approvals');
+    await loadAllEvents();
+    await loadDashboardData();
+  } catch (err) {
+    showToast('Failed to suspend event: ' + err.message, 'error');
+  }
+}
 
 // escapeHTML is now imported from ../src/lib/utils.js (shared utility)
 // Removed duplicate local definition to prevent shadowing and drift.
