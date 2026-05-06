@@ -104,6 +104,26 @@ export function onAuthStateChange(callback) {
  */
 const _storageUrlCache = new Map();
 const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const CACHE_MAX_SIZE = 100;
+
+/**
+ * Evict expired entries from the storage URL cache.
+ * If still over CACHE_MAX_SIZE, drop the oldest half.
+ */
+function _evictStorageCache() {
+  if (_storageUrlCache.size <= CACHE_MAX_SIZE) return;
+  const now = Date.now();
+  // Pass 1: remove expired
+  for (const [key, entry] of _storageUrlCache) {
+    if (now - entry.ts >= CACHE_TTL) _storageUrlCache.delete(key);
+  }
+  // Pass 2: if still too large, remove oldest entries
+  if (_storageUrlCache.size > CACHE_MAX_SIZE) {
+    const sorted = [..._storageUrlCache.entries()].sort((a, b) => a[1].ts - b[1].ts);
+    const toRemove = Math.floor(sorted.length / 2);
+    for (let i = 0; i < toRemove; i++) _storageUrlCache.delete(sorted[i][0]);
+  }
+}
 
 async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
   const cacheKey = `${bucket}/${storagePath}`;
@@ -117,6 +137,7 @@ async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
     try {
       const resp = await fetch(publicUrl, { method: 'HEAD', mode: 'cors' });
       if (resp.ok) {
+        _evictStorageCache();
         _storageUrlCache.set(cacheKey, { url: publicUrl, ts: Date.now() });
         return publicUrl;
       }
@@ -129,6 +150,7 @@ async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
       .from(bucket)
       .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
     if (!error && data?.signedUrl) {
+      _evictStorageCache();
       _storageUrlCache.set(cacheKey, { url: data.signedUrl, ts: Date.now() });
       return data.signedUrl;
     }

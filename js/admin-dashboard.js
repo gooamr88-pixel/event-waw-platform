@@ -10,6 +10,8 @@
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
 import { renderCMSEditor } from '../src/lib/admin-cms.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
+import { setSafeHTML } from '../src/lib/dom.js';
+import { escapeHTML } from '../src/lib/utils.js';
 
 /* ══════════════════════════════════════
    CONSTANTS & STATE
@@ -57,8 +59,10 @@ function setupUserInfo(auth) {
 
   const nameEl = document.getElementById('aw-user-name');
   const avatarEl = document.getElementById('aw-user-avatar');
+  const welcomeEl = document.getElementById('aw-welcome-name');
   if (nameEl) nameEl.textContent = name;
   if (avatarEl) avatarEl.textContent = initials;
+  if (welcomeEl) welcomeEl.textContent = name.split(' ')[0];
 }
 
 /* ══════════════════════════════════════
@@ -209,7 +213,7 @@ async function loadDashboardData() {
     // Activity placeholder
     const actEl = document.getElementById('aw-activity');
     if (actEl) {
-      actEl.innerHTML = `
+      setSafeHTML(actEl, `
         <div class="aw-empty">
           <div class="aw-empty-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -217,7 +221,7 @@ async function loadDashboardData() {
           <h3>Dashboard Ready</h3>
           <p>Platform statistics loaded. Select a panel from the sidebar to manage events, users, or CMS content.</p>
         </div>
-      `;
+      `);
     }
   } catch (err) {
     console.error('Dashboard load error:', err);
@@ -269,11 +273,11 @@ async function loadApprovalQueue() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="aw-table-empty">No events pending approval — all clear ✓</td></tr>';
+      setSafeHTML(tbody, '<tr><td colspan="8" class="aw-table-empty">No events pending approval — all clear ✓</td></tr>');
       return;
     }
 
-    tbody.innerHTML = data.map((ev, i) => {
+    setSafeHTML(tbody, data.map((ev, i) => {
       const org = ev.profiles || {};
       const date = new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const submitted = new Date(ev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -292,7 +296,7 @@ async function loadApprovalQueue() {
           </div>
         </td>
       </tr>`;
-    }).join('');
+    }).join(''));
 
     // Wire approval buttons
     tbody.querySelectorAll('[data-approve]').forEach(btn => {
@@ -303,7 +307,7 @@ async function loadApprovalQueue() {
     });
   } catch (err) {
     console.error('loadApprovalQueue error:', err);
-    tbody.innerHTML = `<tr><td colspan="8" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`;
+    setSafeHTML(tbody, `<tr><td colspan="8" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`);
   }
 }
 
@@ -356,11 +360,11 @@ async function loadAllUsers() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="aw-table-empty">No users found</td></tr>';
+      setSafeHTML(tbody, '<tr><td colspan="6" class="aw-table-empty">No users found</td></tr>');
       return;
     }
 
-    tbody.innerHTML = data.map((u, i) => {
+    setSafeHTML(tbody, data.map((u, i) => {
       const joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const roleBadge = u.role === 'admin' ? 'aw-badge-admin' : u.role === 'organizer' ? 'aw-badge-organizer' : 'aw-badge-attendee';
       const roleLabel = u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Attendee';
@@ -374,7 +378,7 @@ async function loadAllUsers() {
           ${u.role !== 'admin' ? `<button class="aw-btn" style="padding:5px 12px;font-size:.72rem" data-set-role="${u.id}" data-current="${u.role}" data-name="${escapeHTML(u.full_name || u.email || '')}">Change Role</button>` : '<span style="color:var(--aw-text-muted);font-size:.75rem">Protected</span>'}
         </td>
       </tr>`;
-    }).join('');
+    }).join(''));
 
     // Wire role change buttons
     tbody.querySelectorAll('[data-set-role]').forEach(btn => {
@@ -382,7 +386,7 @@ async function loadAllUsers() {
     });
   } catch (err) {
     console.error('loadAllUsers error:', err);
-    tbody.innerHTML = `<tr><td colspan="6" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`;
+    setSafeHTML(tbody, `<tr><td colspan="6" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`);
   }
 }
 
@@ -418,11 +422,11 @@ async function loadAllEvents() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" class="aw-table-empty">No events in the system</td></tr>';
+      setSafeHTML(tbody, '<tr><td colspan="8" class="aw-table-empty">No events in the system</td></tr>');
       return;
     }
 
-    tbody.innerHTML = data.map((ev, i) => {
+    setSafeHTML(tbody, data.map((ev, i) => {
       const org = ev.profiles || {};
       const date = new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const tiers = ev.ticket_tiers || [];
@@ -452,10 +456,10 @@ async function loadAllEvents() {
         <td>${sold}/${cap}</td>
         <td style="font-weight:600">${rev > 0 ? '$' + rev.toLocaleString() : '—'}</td>
       </tr>`;
-    }).join('');
+    }).join(''));
   } catch (err) {
     console.error('loadAllEvents error:', err);
-    tbody.innerHTML = `<tr><td colspan="8" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`;
+    setSafeHTML(tbody, `<tr><td colspan="8" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`);
   }
 }
 
@@ -484,12 +488,8 @@ function setupCMSEvents() {
    UTILITIES
    ══════════════════════════════════════ */
 
-function escapeHTML(str) {
-  if (!str) return '';
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
+// escapeHTML is now imported from ../src/lib/utils.js (shared utility)
+// Removed duplicate local definition to prevent shadowing and drift.
 
 function animateStat(id, value, prefix = '') {
   const el = document.getElementById(id);
@@ -521,7 +521,7 @@ function showToast(message, type = 'success') {
     ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#34d399" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
     : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f87171" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
 
-  toast.innerHTML = icon + `<span>${escapeHTML(message)}</span>`;
+  setSafeHTML(toast, icon + `<span>${escapeHTML(message)}</span>`);
   document.body.appendChild(toast);
 
   setTimeout(() => {
@@ -533,4 +533,4 @@ function showToast(message, type = 'success') {
 }
 
 /* Export for future sub-module use */
-export { showToast, loadDashboardData, escapeHTML };
+export { showToast, loadDashboardData };

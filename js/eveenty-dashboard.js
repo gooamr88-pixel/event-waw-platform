@@ -17,12 +17,15 @@ import { loadNotifications, renderNotifications, timeAgo } from '../src/lib/dash
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
 import { getOrganizerEvents, createEvent, deleteEvent, updateEvent } from '../src/lib/events.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
-import { escapeHTML } from '../src/lib/utils.js';
+import { escapeHTML, formatCurrency } from '../src/lib/utils.js';
 import { showToast, animateCounter, setupSidebar, setupUserInfo, setupGlobalKeyboardManager, getSwitchId } from '../src/lib/dashboard-ui.js';
 import { renderEventsTable, populateEventSelects, showTableSkeleton } from '../src/lib/dashboard-events.js';
 import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { onDashboardAction } from '../src/lib/dashboard-bus.js';
+
+// H-5: Guard to prevent duplicate listener attachment on setupTicketsPanel
+let _ticketsPanelInitialized = false;
 
 /* ==================================
    INIT
@@ -33,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   setupUserInfo(auth);
   setupSidebar();
+  injectAdminBridge(auth);
   setupCreateModal();
   setupSearch();
   setupSignOut();
@@ -117,11 +121,15 @@ export async function loadDashboard() {
 
     const scanRate = totalTickets > 0 ? Math.round((totalScanned / totalTickets) * 100) : 0;
     document.getElementById('ana-tickets').textContent = totalTickets.toLocaleString();
-    document.getElementById('ana-revenue').textContent = '$' + totalRevenue.toLocaleString();
+    document.getElementById('ana-revenue').textContent = formatCurrency(totalRevenue);
     document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '-';
 
     renderEventsTable(events);
-    setupTicketsPanel(events);
+    // H-5: Only attach ticket panel listeners once
+    if (!_ticketsPanelInitialized) {
+      _ticketsPanelInitialized = true;
+      setupTicketsPanel(events);
+    }
     populateEventSelects(events);
     initCharts(revenueData, events);
     if (revenueData?.length) renderRevenueBreakdown(revenueData);
@@ -201,6 +209,33 @@ function setupUserDropdownToggle() {
       userInfo.setAttribute('aria-expanded', 'false');
     }
   });
+}
+
+/* ==================================
+   ADMIN BRIDGE — Inject Motherboard Link
+   Only visible to users with role=admin
+   ================================== */
+function injectAdminBridge(auth) {
+  if (auth.profile?.role !== 'admin') return;
+  const nav = document.querySelector('.ev-sidebar-nav');
+  if (!nav || document.getElementById('admin-bridge-link')) return;
+
+  const divider = document.createElement('div');
+  divider.style.cssText = 'height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.25),transparent);margin:10px 14px';
+  nav.appendChild(divider);
+
+  const link = document.createElement('a');
+  link.id = 'admin-bridge-link';
+  link.href = 'admin.html';
+  link.className = 'ev-nav-item';
+  link.style.cssText = 'color:#d4af37;border:1px solid rgba(212,175,55,.15);background:rgba(212,175,55,.04);font-weight:600;margin-top:2px;';
+  link.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#d4af37">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+    </svg>
+    👑 Admin Motherboard
+  `;
+  nav.appendChild(link);
 }
 
 /* Google Maps variables and constants moved to src/lib/dashboard-modals.js */

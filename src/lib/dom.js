@@ -50,7 +50,9 @@ export function safeHTML(htmlString) {
       }
 
       // Remove dangerous URI schemes from any attribute value
-      if (/^(javascript|data|vbscript|blob):/i.test(value)) {
+      // NOTE: 'data:' is intentionally ALLOWED for base64 QR codes and inline images.
+      // CSP policy (csp.js) already whitelists data: for img-src.
+      if (/^(javascript|vbscript|blob):/i.test(value)) {
         el.removeAttribute(attr.name);
       }
     }

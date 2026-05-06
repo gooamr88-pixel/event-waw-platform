@@ -5,8 +5,10 @@
 import { supabase } from './supabase.js';
 
 /**
- * Fetch all published events with their ticket tiers.
+ * Fetch all published AND admin-approved events with their ticket tiers.
  * Works for both authenticated and anonymous users.
+ * SECURITY: Both status='published' AND admin_approved=true are required
+ * to prevent unapproved events from appearing on public pages.
  */
 export async function getEvents({ limit = 20, offset = 0 } = {}) {
   // Show events from 24 hours ago onward (so today's events still appear)
@@ -21,6 +23,7 @@ export async function getEvents({ limit = 20, offset = 0 } = {}) {
       )
     `)
     .eq('status', 'published')
+    .eq('admin_approved', true)
     .gte('date', yesterday)
     .order('date', { ascending: true })
     .range(offset, offset + limit - 1);
@@ -137,6 +140,7 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
 /**
  * Get events created by the current organizer.
  * SECURITY: Explicitly filters by organizer_id (belt-and-suspenders with RLS).
+ * NOTE: Excludes archived events — those live in the Archives panel only.
  */
 export async function getOrganizerEvents() {
   // Get current user for explicit filtering
@@ -152,6 +156,7 @@ export async function getOrganizerEvents() {
       )
     `)
     .eq('organizer_id', user.id)  // Explicit filter + RLS
+    .neq('status', 'archived')   // M-10: Exclude archived events
     .order('created_at', { ascending: false });
 
   if (error) throw error;
@@ -299,8 +304,9 @@ export async function archiveEvent(eventId) {
 }
 
 /**
- * Delete an event.
+ * Delete an event (atomic).
  * SAFETY: Refuses to delete if ANY tickets have been issued — use archiveEvent instead.
+ * ATOMIC: Saves original status, sets to 'draft' for RLS, deletes, rolls back on failure.
  * RELIES ON: ON DELETE CASCADE for child tables (ticket_tiers, venue_maps,
  *            seats, promo_codes, reservations) — set in the database schema.
  *
@@ -309,7 +315,19 @@ export async function archiveEvent(eventId) {
  */
 export async function deleteEvent(eventId) {
   try {
-    // 1. Fetch tier IDs for the ticket-existence safety check
+    // 1. Fetch event status + tier IDs for safety checks
+    const { data: eventData, error: eventErr } = await supabase
+      .from('events')
+      .select('id, status')
+      .eq('id', eventId)
+      .single();
+
+    if (eventErr || !eventData) {
+      return { success: false, error: 'Event not found or access denied.' };
+    }
+
+    const originalStatus = eventData.status;
+
     const { data: tiers, error: tiersErr } = await supabase
       .from('ticket_tiers')
       .select('id')
@@ -351,15 +369,17 @@ export async function deleteEvent(eventId) {
       }
     } catch (_) { /* storage cleanup is best-effort */ }
 
-    // 4. Set status to 'draft' so RLS delete policy accepts it
+    // 4. ATOMIC: Set status to 'draft' so RLS delete policy accepts it
     //    (events_delete_draft allows DELETE only for status='draft')
-    const { error: statusErr } = await supabase
-      .from('events')
-      .update({ status: 'draft' })
-      .eq('id', eventId);
+    if (originalStatus !== 'draft') {
+      const { error: statusErr } = await supabase
+        .from('events')
+        .update({ status: 'draft' })
+        .eq('id', eventId);
 
-    if (statusErr) {
-      return { success: false, error: 'Failed to prepare event for deletion: ' + statusErr.message };
+      if (statusErr) {
+        return { success: false, error: 'Failed to prepare event for deletion: ' + statusErr.message };
+      }
     }
 
     // 5. Delete the event — ON DELETE CASCADE handles all child records
@@ -369,15 +389,17 @@ export async function deleteEvent(eventId) {
       .eq('id', eventId)
       .select('id');
 
-    if (deleteErr) {
-      return { success: false, error: deleteErr.message };
-    }
-
-    // RLS can silently block the delete: 0 rows removed, no error
-    if (!deleted || deleted.length === 0) {
+    if (deleteErr || !deleted || deleted.length === 0) {
+      // ROLLBACK: Restore original status if delete failed
+      if (originalStatus !== 'draft') {
+        await supabase
+          .from('events')
+          .update({ status: originalStatus })
+          .eq('id', eventId);
+      }
       return {
         success: false,
-        error: 'Deletion was blocked — you may not have permission to delete this event, or its status prevents deletion.',
+        error: deleteErr?.message || 'Deletion was blocked — you may not have permission to delete this event.',
       };
     }
 

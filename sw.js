@@ -1,9 +1,12 @@
 /* ===================================
    EVENT WAW - Service Worker
-   Network-first for API calls, cache-first for static assets
+   Network-first for API calls and JS modules,
+   cache-first for CSS/images/fonts.
    =================================== */
 
-const CACHE_NAME = 'event-waw-v1';
+// M-7: Bump version on every deploy to purge stale caches.
+// The activate handler below auto-deletes any cache !== CACHE_NAME.
+const CACHE_NAME = 'event-waw-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -34,14 +37,17 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// ── Activate: clean old caches ──
+// ── Activate: clean ALL old caches (any key !== current CACHE_NAME) ──
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys
           .filter((k) => k !== CACHE_NAME)
-          .map((k) => caches.delete(k))
+          .map((k) => {
+            console.log('[SW] Purging old cache:', k);
+            return caches.delete(k);
+          })
       )
     )
   );
@@ -65,7 +71,23 @@ self.addEventListener('fetch', (event) => {
   // Skip Chrome extensions
   if (url.protocol === 'chrome-extension:') return;
 
-  // Static assets: cache-first with network fallback
+  // JS modules: network-first (prevents stale code after deploys)
+  if (isJsModule(url)) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(request))
+    );
+    return;
+  }
+
+  // Other static assets (CSS, images, fonts): cache-first with network fallback
   if (isStaticAsset(url)) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -102,7 +124,11 @@ self.addEventListener('fetch', (event) => {
   }
 });
 
+function isJsModule(url) {
+  return url.pathname.endsWith('.js');
+}
+
 function isStaticAsset(url) {
   const ext = url.pathname.split('.').pop()?.toLowerCase();
-  return ['css', 'js', 'svg', 'png', 'jpg', 'jpeg', 'webp', 'woff', 'woff2', 'ico'].includes(ext);
+  return ['css', 'svg', 'png', 'jpg', 'jpeg', 'webp', 'woff', 'woff2', 'ico'].includes(ext);
 }

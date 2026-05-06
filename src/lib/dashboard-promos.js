@@ -1,5 +1,5 @@
 import { supabase, getCurrentUser } from './supabase.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML, generateSkeletonRows } from './dom.js';
 import { showToast, getSwitchId } from './dashboard-ui.js';
 
@@ -46,9 +46,9 @@ async function loadFinancialData() {
       <td>${i + 1}</td>
       <td style="font-weight:600">${escapeHTML(r.event_title || '-')}</td>
       <td>${r.total_tickets_sold || 0} tickets</td>
-      <td style="font-weight:600">$${gross.toLocaleString()}</td>
-      <td style="color:var(--ev-danger);font-size:.8rem">-$${fee.toLocaleString()}</td>
-      <td style="color:var(--ev-success);font-weight:700">$${net.toLocaleString()}</td>
+      <td style="font-weight:600">${formatCurrency(gross)}</td>
+      <td style="color:var(--ev-danger);font-size:.8rem">-${formatCurrency(fee)}</td>
+      <td style="color:var(--ev-success);font-weight:700">${formatCurrency(net)}</td>
       <td><span class="ev-badge ${net > 0 ? 'published' : 'pending'}">${net > 0 ? 'Earned' : 'Pending'}</span></td>
     </tr>`;
     }).join(''));

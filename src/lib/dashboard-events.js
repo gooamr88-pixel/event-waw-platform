@@ -1,6 +1,6 @@
 import { createEvent, deleteEvent, archiveEvent } from './events.js';
 import { supabase, getCurrentUser } from './supabase.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML, safeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
 import { emitDashboardAction } from './dashboard-bus.js';
@@ -94,7 +94,10 @@ export function renderEventsTable(events) {
 
 export function calcRevenue(ev) {
   const r = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0) || 0;
-  return r > 0 ? '$' + r.toLocaleString() : '-';
+  if (r <= 0) return '-';
+  // Use the currency from the first tier, fallback to USD
+  const currency = ev.ticket_tiers?.[0]?.currency || ev.currency || 'USD';
+  return formatCurrency(r, currency);
 }
 
 export async function handleTableAction(e) {
@@ -403,7 +406,7 @@ export function renderArchivesTable(events) {
       </td>
       <td><span style="font-weight:500">${sold}/${cap}</span> <span style="font-size:.75rem;color:var(--ev-text-muted)">sold</span></td>
       <td style="font-size:.8rem">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-      <td style="font-weight:600">${revenue > 0 ? '$' + revenue.toLocaleString() : '-'}</td>
+      <td style="font-weight:600">${revenue > 0 ? formatCurrency(revenue, ev.ticket_tiers?.[0]?.currency || ev.currency || 'USD') : '-'}</td>
       <td>
         <div style="display:flex;gap:6px">
           <button class="ev-btn ev-btn-outline ev-btn-sm" data-action="restore" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" style="font-size:.75rem;padding:6px 12px">

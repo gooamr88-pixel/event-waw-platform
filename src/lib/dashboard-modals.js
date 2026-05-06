@@ -475,6 +475,9 @@ export function setupCreateModal() {
     }
 
     if (btn) { btn.disabled = true; btn.textContent = ceEditingEventId ? 'Updating…' : 'Publishing…'; }
+    // M-9: Capture editing state BEFORE the try block so finally can use it
+    //       even after ceEditingEventId is nulled on success.
+    const wasEditingForReset = !!ceEditingEventId;
     try {
       const user = await getCurrentUser();
       if (!user) return;
@@ -635,33 +638,29 @@ export function setupCreateModal() {
             }
           }
         } else {
-          // ── CREATE MODE: insert all tiers ──
+          // ── CREATE MODE: insert all tiers with full payload (M-11: single round-trip) ──
           for (const t of getTicketsList()) {
-            const { data: newTier, error: tierErr } = await supabase.from('ticket_tiers').insert({
-              event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
-            }).select('id').single();
+            const { error: tierErr } = await supabase.from('ticket_tiers').insert({
+              event_id: event.id,
+              name: t.name,
+              price: t.price,
+              capacity: t.qty,
+              ticket_type: ticketType,
+              category: t.category || null,
+              early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+              early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+              max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+              currency: t.currency || 'USD',
+            });
 
             if (tierErr) {
               console.warn('Tier insert failed:', tierErr.message);
-              continue;
-            }
-
-            try {
-              await supabase.from('ticket_tiers').update({
-                ticket_type: ticketType, category: t.category || null,
-                early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-                early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
-                max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-                currency: t.currency || 'USD',
-              }).eq('id', newTier.id);
-            } catch (extraErr) {
-              console.warn('Extra tier fields skipped:', extraErr.message);
             }
           }
         }
       }
 
-      const wasEditing = !!ceEditingEventId;
+      const wasEditing = wasEditingForReset;
       showToast(wasEditing ? 'Event updated successfully!' : '🎉 Event submitted! It will appear publicly once approved by admin.', 'success');
       ceEditingEventId = null;
       switchToPanel('events');
@@ -674,7 +673,7 @@ export function setupCreateModal() {
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
-      if (btn) { btn.disabled = false; setSafeHTML(btn, ceEditingEventId ? 'Update Event' : 'Publish Event'); }
+      if (btn) { btn.disabled = false; setSafeHTML(btn, wasEditingForReset ? 'Update Event' : 'Publish Event'); }
     }
   });
 
@@ -1057,30 +1056,39 @@ export function renderGoogleKeywords() {
 
 export function updateCePreview() {
   const title = document.getElementById('ce-name')?.value.trim() || 'Event Name';
-  document.getElementById('ce-preview-title').textContent = title;
+  const previewTitle = document.getElementById('ce-preview-title');
+  if (previewTitle) previewTitle.textContent = title;
+
   const venue = document.getElementById('ce-place')?.value.trim() || 'Venue';
   const addr = document.getElementById('ce-address')?.value.trim() || '';
-  document.getElementById('ce-preview-venue').textContent = venue;
-  document.getElementById('ce-preview-addr').textContent = addr;
+  const previewVenue = document.getElementById('ce-preview-venue');
+  if (previewVenue) previewVenue.textContent = venue;
+  const previewAddr = document.getElementById('ce-preview-addr');
+  if (previewAddr) previewAddr.textContent = addr;
+
   const startDate = document.getElementById('ce-start-date')?.value;
   const endDate = document.getElementById('ce-end-date')?.value;
   if (startDate) {
     const d = new Date(startDate);
     const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-    document.getElementById('ce-preview-month').textContent = months[d.getMonth()];
-    document.getElementById('ce-preview-day').textContent = String(d.getDate()).padStart(2, '0');
-    document.getElementById('ce-preview-datestr').textContent = d.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+    const previewMonth = document.getElementById('ce-preview-month');
+    if (previewMonth) previewMonth.textContent = months[d.getMonth()];
+    const previewDay = document.getElementById('ce-preview-day');
+    if (previewDay) previewDay.textContent = String(d.getDate()).padStart(2, '0');
+    const previewDateStr = document.getElementById('ce-preview-datestr');
+    if (previewDateStr) previewDateStr.textContent = d.toLocaleDateString('en-US', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
     let timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     if (endDate) {
       const ed = new Date(endDate);
       timeStr += ` - ${ed.toLocaleDateString('en-US', { month: 'short', day: '2-digit' })}, ${ed.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
     }
-    document.getElementById('ce-preview-timestr').textContent = timeStr;
+    const previewTimeStr = document.getElementById('ce-preview-timestr');
+    if (previewTimeStr) previewTimeStr.textContent = timeStr;
   }
   // Preview image
   const mainImg = document.getElementById('ce-main-photo-area')?.querySelector('img');
   const previewImgDiv = document.getElementById('ce-preview-img');
-  if (mainImg) {
+  if (mainImg && previewImgDiv) {
     let pImg = previewImgDiv.querySelector('img');
     if (!pImg) { pImg = document.createElement('img'); previewImgDiv.textContent = ''; previewImgDiv.appendChild(pImg); }
     pImg.src = mainImg.src;

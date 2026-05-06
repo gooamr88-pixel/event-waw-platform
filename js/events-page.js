@@ -2,11 +2,12 @@
    EVENT WAW - Events Page Logic
    =================================== */
 import { getEvents } from '../src/lib/events.js';
-import { escapeHTML } from '../src/lib/utils.js';
+import { escapeHTML, formatCurrency } from '../src/lib/utils.js';
 import { detectUserLocation, sortByProximity, formatDistance } from '../src/lib/geo.js';
 import { semiProtectPage, updateNavForAuth, performSignOut } from '../src/lib/guard.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { resolveImageUrl } from '../src/lib/supabase.js';
+import { initUI } from '../src/lib/ui.js';
 
 const PER_PAGE = 12;
 let allEvents = [], filtered = [], userLocation = null, currentPage = 1;
@@ -15,7 +16,7 @@ let venueFilter = 'all', dateFilter = 'all', timeFilter = 'all';
 let debounceTimer = null, viewMode = 'grid';
 
 document.addEventListener('DOMContentLoaded', async () => {
-  initTheme(); initNav(); initMobileMenu();
+  initUI(); // M-4: Use shared UI module (theme + nav + mobile menu)
   const authState = await semiProtectPage();
   updateNavForAuth(authState);
   handleAuth(authState);
@@ -34,21 +35,7 @@ function handleAuth(s) {
   if (su) { su.textContent = 'Sign Out'; su.href = '#'; su.classList.remove('btn-primary'); su.classList.add('btn-outline'); su.addEventListener('click', e => { e.preventDefault(); performSignOut('/index.html'); }); }
 }
 
-/* -- Theme & Nav -- */
-function initTheme() {
-  const tt = document.getElementById('theme-toggle');
-  if (tt) tt.addEventListener('click', () => { const d = document.documentElement, c = d.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'; d.setAttribute('data-theme', c); localStorage.setItem('theme', c); });
-}
-function initNav() {
-  const nav = document.getElementById('main-nav');
-  if (nav) window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 60), { passive: true });
-}
-function initMobileMenu() {
-  const mt = document.getElementById('nav-toggle'), mm = document.getElementById('mobile-menu'), mc = document.getElementById('mobile-close');
-  if (mt && mm) mt.addEventListener('click', () => mm.classList.add('active'));
-  if (mc && mm) mc.addEventListener('click', () => mm.classList.remove('active'));
-  if (mm) mm.querySelectorAll('a').forEach(a => a.addEventListener('click', () => mm.classList.remove('active')));
-}
+/* -- Theme & Nav: now handled by initUI() from src/lib/ui.js (M-4) -- */
 
 /* -- Geo -- */
 async function detectGeo() {
@@ -195,7 +182,7 @@ async function renderEvents(events) {
         <h3>${escapeHTML(ev.title)}</h3>
         <div class="ep-card-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${escapeHTML(ev.venue || ev.city || 'TBA')}</div>
         <div class="ep-card-footer">
-          <div class="ep-card-price">${isDisplayOnly ? 'Display Only' : (minPrice > 0 ? '$' + minPrice.toLocaleString() : 'Free')}<small>${!isDisplayOnly && prices.length > 1 ? '+' : ''}</small></div>
+          <div class="ep-card-price">${isDisplayOnly ? 'Display Only' : (minPrice > 0 ? formatCurrency(minPrice, ev.currency || tiers[0]?.currency || 'USD') : 'Free')}<small>${!isDisplayOnly && prices.length > 1 ? '+' : ''}</small></div>
           <span class="ep-card-cta">View Details <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></span>
         </div>
       </div>`);

@@ -266,14 +266,25 @@ export function updateNavForAuth(authState) {
 
 /**
  * Full sign-out: clear OTP, sign out of Supabase, redirect.
+ * L-6: Ensures signOut completes before redirect. OTP clear failure
+ *      does NOT prevent signOut from executing.
  */
 export async function performSignOut(redirectTo = '/index.html') {
+  // Step 1: Clear OTP (best-effort — failure must not block sign-out)
   try {
     await clearOTPVerification();
-    await supabase.auth.signOut();
-  } catch (e) {
-    console.error('Sign out error:', e);
+  } catch (otpErr) {
+    console.warn('OTP clear failed (non-blocking):', otpErr);
   }
+
+  // Step 2: Sign out of Supabase (must complete before redirect)
+  try {
+    await supabase.auth.signOut();
+  } catch (signOutErr) {
+    console.error('Supabase sign out error:', signOutErr);
+  }
+
+  // Step 3: Redirect only after sign-out chain completes
   window.location.href = redirectTo;
 }
 
