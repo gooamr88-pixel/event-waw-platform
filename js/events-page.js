@@ -26,9 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 /* -- Auth -- */
 function handleAuth(s) {
   if (!s.user || !s.isFullyAuth) return;
+  const dashHref = s.profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+  const dashLabel = s.profile?.role === 'admin' ? 'Admin Panel' : 'Dashboard';
   const si = document.getElementById('nav-signin');
   const su = document.getElementById('nav-signup');
-  if (si) { si.textContent = 'Dashboard'; si.href = 'dashboard.html'; si.classList.remove('btn-outline'); si.classList.add('btn-primary'); const rd = document.querySelector('.nav-role-dropdown'); if (rd) rd.remove(); }
+  if (si) { si.textContent = dashLabel; si.href = dashHref; si.classList.remove('btn-outline'); si.classList.add('btn-primary'); const rd = document.querySelector('.nav-role-dropdown'); if (rd) rd.remove(); }
   if (su) { su.textContent = 'Sign Out'; su.href = '#'; su.classList.remove('btn-primary'); su.classList.add('btn-outline'); su.addEventListener('click', e => { e.preventDefault(); performSignOut('/index.html'); }); }
 }
 

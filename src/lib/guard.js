@@ -136,9 +136,13 @@ export async function protectPage(options = {}) {
       }
     }
 
-    // 3. Check role
+    // 3. Check role (admin is a superclass — passes all role checks)
     const profile = await getCurrentProfile();
-    if (requireRole && profile?.role !== requireRole) {
+    const userRole = profile?.role;
+    const roleOk = !requireRole
+      || userRole === requireRole
+      || userRole === 'admin';  // admins pass ALL role gates
+    if (!roleOk) {
       hideLoadingOverlay();
       showUpgradeModal(requireRole);
       return null;
@@ -174,8 +178,14 @@ export async function guestOnlyPage(options = {}) {
       return true; // Guest - show the page
     }
 
-    // User is logged in -> redirect away from guest page
-    window.location.href = redirectTo;
+    // User is logged in → route by role
+    let dest = redirectTo;
+    try {
+      const profile = await getCurrentProfile();
+      if (profile?.role === 'admin') dest = '/admin.html';
+    } catch (_) { /* fallback to provided redirectTo */ }
+
+    window.location.href = dest;
     return false;
   } catch (err) {
     console.error('Guest guard error:', err);

@@ -169,8 +169,20 @@
 
   <script type="module">
     import { signIn } from './src/lib/auth.js';
-    import { supabase } from './src/lib/supabase.js';
+    import { supabase, getCurrentProfile } from './src/lib/supabase.js';
     import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
+
+    /**
+     * Determine the correct redirect destination based on user role.
+     * Admins → /admin.html (Motherboard), everyone else → /dashboard.html
+     */
+    async function getRedirectForUser() {
+      try {
+        const profile = await getCurrentProfile();
+        if (profile?.role === 'admin') return '/admin.html';
+      } catch (_) { /* fallback to dashboard */ }
+      return '/dashboard.html';
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       initToggles();
@@ -182,8 +194,13 @@
         return;
       }
 
-      const isGuest = await guestOnlyPage({ redirectTo: '/dashboard.html' });
-      if (!isGuest) return;
+      // ── Guest-only guard: redirect logged-in users by role ──
+      const { data: { user: existingUser } } = await supabase.auth.getUser();
+      if (existingUser) {
+        const dest = await getRedirectForUser();
+        window.location.href = dest;
+        return;
+      }
 
       const redirect = new URLSearchParams(window.location.search).get('redirect');
 
@@ -204,12 +221,15 @@
           await signIn({ email, password });
           await markOTPVerified();
 
+          // Determine destination: admin → Motherboard, others → Dashboard
+          const destination = redirect || await getRedirectForUser();
+
           msg.className = 'ev-auth-msg success';
           msg.textContent = '✓ Welcome back! Redirecting…';
           msg.style.display = 'block';
 
           setTimeout(() => {
-            window.location.href = redirect || '/dashboard.html';
+            window.location.href = destination;
           }, 600);
 
         } catch (err) {
@@ -249,7 +269,8 @@
       await ensureProfile(session.user);
       await markOTPVerified();
       const redirect = new URLSearchParams(window.location.search).get('redirect');
-      setTimeout(() => { window.location.href = redirect || '/dashboard.html'; }, 600);
+      const destination = redirect || await getRedirectForUser();
+      setTimeout(() => { window.location.href = destination; }, 600);
     }
 
     // ══════ Ensure profile exists for OAuth users ══════

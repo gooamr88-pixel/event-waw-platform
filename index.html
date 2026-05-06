@@ -707,16 +707,19 @@
       updateNavForAuth(authState);
 
       if (authState.user && authState.isFullyAuth) {
+        // Route admin → Motherboard, everyone else → Organizer Dashboard
+        const dashHref = authState.profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        const dashLabel = authState.profile?.role === 'admin' ? 'Admin Panel' : 'Dashboard';
         const signinBtn = document.getElementById('nav-signin');
         const signupBtn = document.getElementById('nav-signup');
-        if (signinBtn) { signinBtn.textContent = 'Dashboard'; signinBtn.href = 'dashboard.html'; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; const roleDropdown = document.querySelector('.nav-role-dropdown'); if (roleDropdown) roleDropdown.remove(); }
+        if (signinBtn) { signinBtn.textContent = dashLabel; signinBtn.href = dashHref; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); signinBtn.style.display = ''; const roleDropdown = document.querySelector('.nav-role-dropdown'); if (roleDropdown) roleDropdown.remove(); }
         if (signupBtn) { signupBtn.textContent = 'Sign Out'; signupBtn.href = '#'; signupBtn.classList.remove('btn-primary'); signupBtn.classList.add('btn-outline'); signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
         const navLinks = document.getElementById('nav-links');
-        if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = 'Dashboard'; el.href = 'dashboard.html'; } }
+        if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = dashLabel; el.href = dashHref; } }
         const mm = document.getElementById('mobile-menu');
-        if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = 'Dashboard'; a.href = 'dashboard.html'; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
+        if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = dashLabel; a.href = dashHref; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
         const heroCta = document.getElementById('hero-cta');
-        if (heroCta) heroCta.href = 'dashboard.html';
+        if (heroCta) heroCta.href = dashHref;
       }
 
       const [eventsResult, geoResult] = await Promise.allSettled([loadLandingEvents(), detectAndUpdateGeo()]);

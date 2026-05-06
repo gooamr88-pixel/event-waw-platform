@@ -182,10 +182,19 @@
 
   <script type="module">
     import { signUp } from './src/lib/auth.js';
-    import { supabase } from './src/lib/supabase.js';
+    import { supabase, getCurrentProfile } from './src/lib/supabase.js';
     import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
     const SUPABASE_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co';
     let registeredEmail = '';
+
+    /** Route by role: admin → Motherboard, others → Dashboard */
+    async function getPostAuthRedirect() {
+      try {
+        const profile = await getCurrentProfile();
+        if (profile?.role === 'admin') return '/admin.html';
+      } catch (_) {}
+      return '/dashboard.html';
+    }
 
     document.addEventListener('DOMContentLoaded', async () => {
       initToggles(); initOTPInputs(); initPasswordStrength();
@@ -243,7 +252,8 @@
           } catch (otpErr) {
             await markOTPVerified();
             showMsg('success','✓ Account created! Redirecting…');
-            setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+            const dest = await getPostAuthRedirect();
+            setTimeout(() => { window.location.href = dest; }, 1000);
           }
         } catch (err) {
           let errMsg = err.message || 'Registration failed.';
@@ -266,8 +276,9 @@
           if (error) throw new Error(error.message);
           if (!data[0].is_verified) throw new Error(data[0].error_message);
           await markOTPVerified();
+          const otpDest = await getPostAuthRedirect();
           showMsg('success','✓ Email verified! Welcome to Event Waw!');
-          setTimeout(() => { window.location.href = '/dashboard.html'; }, 1000);
+          setTimeout(() => { window.location.href = otpDest; }, 1000);
         } catch (err) {
           showMsg('error', err.message || 'Invalid code.');
           document.querySelectorAll('.ev-otp-digit').forEach(d => { d.classList.add('error'); d.value = ''; setTimeout(() => d.classList.remove('error'), 500); });
@@ -304,7 +315,9 @@
         const { data: ep } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
         if (!ep) { await supabase.from('profiles').insert({ id: user.id, email: user.email, full_name: meta.full_name || meta.name || '', avatar_url: meta.avatar_url || null, role: 'attendee' }); }
         const { markOTPVerified } = await import('./src/lib/guard.js');
-        await markOTPVerified(); window.location.href = '/dashboard.html';
+        await markOTPVerified();
+        const oauthDest = await getPostAuthRedirect();
+        window.location.href = oauthDest;
       }
     })();
 
