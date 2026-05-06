@@ -221,19 +221,19 @@ function injectAdminBridge(auth) {
   if (!nav || document.getElementById('admin-bridge-link')) return;
 
   const divider = document.createElement('div');
-  divider.style.cssText = 'height:1px;background:linear-gradient(90deg,transparent,rgba(212,175,55,.25),transparent);margin:10px 14px';
+  divider.style.cssText = 'height:1px;background:rgba(255,255,255,.15);margin:10px 14px';
   nav.appendChild(divider);
 
   const link = document.createElement('a');
   link.id = 'admin-bridge-link';
   link.href = 'admin.html';
   link.className = 'ev-nav-item';
-  link.style.cssText = 'color:#d4af37;border:1px solid rgba(212,175,55,.15);background:rgba(212,175,55,.04);font-weight:600;margin-top:2px;';
+  link.style.cssText = 'color:#fff;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);font-weight:600;margin-top:2px;text-decoration:none';
   link.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#d4af37">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:#fff">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
     </svg>
-    👑 Admin Motherboard
+    👑 Admin Panel
   `;
   nav.appendChild(link);
 }
