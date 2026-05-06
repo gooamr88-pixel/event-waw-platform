@@ -60,11 +60,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function applyTheme() {
   const saved = localStorage.getItem('theme');
-  if (saved) {
-    document.body.setAttribute('data-theme', saved);
-  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    document.body.setAttribute('data-theme', 'dark');
-  }
+  const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = isDark ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.body.setAttribute('data-theme', theme);
 }
 
 function setupDarkMode() {
@@ -74,6 +73,7 @@ function setupDarkMode() {
   toggle.addEventListener('click', () => {
     const isDark = document.body.getAttribute('data-theme') === 'dark';
     const next = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
     document.body.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
   });
