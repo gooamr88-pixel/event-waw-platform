@@ -8,6 +8,10 @@
 import { supabase, getCurrentUser, getCurrentProfile } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 
+/* -- Admin Role Hierarchy -- */
+const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
+export function isAdminLevel(role) { return ADMIN_ROLES.includes(role); }
+
 /* -- Loading Overlay -- */
 
 /**
@@ -141,15 +145,15 @@ export async function protectPage(options = {}) {
     const userRole = profile?.role;
     
     // Check if user is blocked
-    if (profile?.is_blocked && userRole !== 'admin') {
+    if (profile?.is_blocked && !isAdminLevel(userRole)) {
       window.location.href = '/blocked.html';
       return null;
     }
     
-    // Check maintenance mode (only admins bypass)
+    // Check maintenance mode (only admin-level bypasses)
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (mmData && (mmData.value === true || mmData.value === 'true') && userRole !== 'admin') {
+      if (mmData && (mmData.value === true || mmData.value === 'true') && !isAdminLevel(userRole)) {
         window.location.href = '/maintenance.html';
         return null;
       }
@@ -157,7 +161,7 @@ export async function protectPage(options = {}) {
 
     const roleOk = !requireRole
       || userRole === requireRole
-      || userRole === 'admin';  // admins pass ALL role gates
+      || isAdminLevel(userRole);  // admin-level roles pass ALL role gates
     if (!roleOk) {
       hideLoadingOverlay();
       showUpgradeModal(requireRole);
@@ -202,14 +206,14 @@ export async function guestOnlyPage(options = {}) {
     // Check maintenance mode
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (mmData && (mmData.value === true || mmData.value === 'true') && userRole !== 'admin') {
+      if (mmData && (mmData.value === true || mmData.value === 'true') && !isAdminLevel(userRole)) {
         window.location.href = '/maintenance.html';
         return true;
       }
     } catch (e) { /* ignore */ }
 
     // Check if user is blocked
-    if (profile?.is_blocked && userRole !== 'admin') {
+    if (profile?.is_blocked && !isAdminLevel(userRole)) {
       window.location.href = '/blocked.html';
       return false;
     }
@@ -223,7 +227,7 @@ export async function guestOnlyPage(options = {}) {
     let dest = redirectTo;
     try {
       const profile = await getCurrentProfile();
-      if (profile?.role === 'admin') dest = '/admin.html';
+      if (isAdminLevel(profile?.role)) dest = '/admin.html';
     } catch (_) { /* fallback to provided redirectTo */ }
 
     window.location.href = dest;
@@ -252,7 +256,7 @@ export async function semiProtectPage() {
     const userRole = profile?.role;
 
     // Check if user is blocked
-    if (profile?.is_blocked && userRole !== 'admin') {
+    if (profile?.is_blocked && !isAdminLevel(userRole)) {
       window.location.href = '/blocked.html';
       return { user: null, profile: null, isFullyAuth: false };
     }
@@ -260,7 +264,7 @@ export async function semiProtectPage() {
     // Check maintenance mode
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (mmData && (mmData.value === true || mmData.value === 'true') && userRole !== 'admin') {
+      if (mmData && (mmData.value === true || mmData.value === 'true') && !isAdminLevel(userRole)) {
         window.location.href = '/maintenance.html';
         return { user: null, profile: null, isFullyAuth: false };
       }
