@@ -143,7 +143,7 @@ export async function protectPage(options = {}) {
     // Check maintenance mode (only admins bypass)
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (mmData && mmData.value === 'true' && userRole !== 'admin') {
+      if (mmData && (mmData.value === true || mmData.value === 'true') && userRole !== 'admin') {
         window.location.href = '/maintenance.html';
         return null;
       }
@@ -196,7 +196,7 @@ export async function guestOnlyPage(options = {}) {
     // Check maintenance mode
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (mmData && mmData.value === 'true' && userRole !== 'admin') {
+      if (mmData && (mmData.value === true || mmData.value === 'true') && userRole !== 'admin') {
         window.location.href = '/maintenance.html';
         return true;
       }
@@ -242,7 +242,7 @@ export async function semiProtectPage() {
     // Check maintenance mode
     try {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (mmData && mmData.value === 'true' && userRole !== 'admin') {
+      if (mmData && (mmData.value === true || mmData.value === 'true') && userRole !== 'admin') {
         window.location.href = '/maintenance.html';
         return { user: null, profile: null, isFullyAuth: false };
       }

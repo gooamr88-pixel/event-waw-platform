@@ -674,13 +674,13 @@ async function loadCMSPanel() {
     mmToggle.dataset.initialized = 'true';
     try {
       const { data } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
-      if (data) mmToggle.checked = (data.value === 'true');
+      if (data) mmToggle.checked = (data.value === true || data.value === 'true');
     } catch (e) { console.warn('Could not load maintenance mode state'); }
 
     mmToggle.addEventListener('change', async (e) => {
       const isEnabled = e.target.checked;
       try {
-        const { error } = await supabase.from('platform_settings').upsert({ key: 'maintenance_mode', value: isEnabled ? 'true' : 'false' });
+        const { error } = await supabase.from('platform_settings').upsert({ key: 'maintenance_mode', value: isEnabled });
         if (error) throw error;
         showToast(isEnabled ? 'Maintenance Mode ENABLED. Platform is offline.' : 'Maintenance Mode DISABLED. Platform is live.', isEnabled ? 'error' : 'success');
       } catch (err) {
