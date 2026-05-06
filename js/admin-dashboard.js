@@ -7,23 +7,11 @@
    and delegates to sub-modules in Phase 3.
    =================================== */
 
-import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
+import { supabase } from '../src/lib/supabase.js';
 import { renderCMSEditor } from '../src/lib/admin-cms.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { escapeHTML } from '../src/lib/utils.js';
-
-/* ══════════════════════════════════════
-   CONSTANTS & STATE
-   ══════════════════════════════════════ */
-
-const PANEL_TITLES = {
-  dashboard:    '⬡ Platform Stats',
-  approvals:    '✅ Event Approvals',
-  users:        '👥 User Management',
-  'events-all': '📋 Global Event Registry',
-  cms:          '✏️ Landing Page CMS',
-};
 
 let currentPanel = 'dashboard';
 
@@ -589,12 +577,13 @@ function animateStat(id, value, prefix = '') {
 }
 
 function showToast(message, type = 'success') {
-  // Use the shared toast container if available
   const container = document.getElementById('toast-container');
-
   const toast = document.createElement('div');
   toast.className = `ev-toast ${type}`;
-  setSafeHTML(toast, `<span>${escapeHTML(message)}</span>`);
+
+  const span = document.createElement('span');
+  span.textContent = message;
+  toast.appendChild(span);
 
   if (container) {
     container.appendChild(toast);

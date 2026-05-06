@@ -19,9 +19,9 @@
   white-space: nowrap;
 }
 body.ev-dash[data-theme="dark"] .admin-env-badge {
-  background: rgba(37,99,235,.12);
+  background: rgba(96,165,250,.1);
   color: #60a5fa;
-  border-color: rgba(37,99,235,.25);
+  border-color: rgba(96,165,250,.2);
 }
 
 /* ── Admin Clock (header) ── */
@@ -73,6 +73,110 @@ body.ev-dash[data-theme="dark"] .admin-clock {
   50%      { box-shadow: 0 0 0 5px rgba(239,68,68,0); }
 }
 
+/* ── Loading Spinner ── */
+.ev-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 48px 20px;
+  color: var(--ev-text-muted);
+  font-size: .88rem;
+}
+.ev-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--ev-border);
+  border-top-color: #2563EB;
+  border-radius: 50%;
+  animation: evSpin .7s linear infinite;
+}
+@keyframes evSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Toast Notifications ── */
+.ev-toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.ev-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-size: .84rem;
+  font-weight: 600;
+  font-family: var(--ev-font);
+  background: var(--ev-white);
+  color: var(--ev-text);
+  border: 1px solid var(--ev-border);
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
+  pointer-events: auto;
+  animation: toastIn .35s cubic-bezier(.21,1.02,.73,1) forwards;
+  max-width: 400px;
+}
+.ev-toast.success {
+  border-left: 4px solid #16a34a;
+}
+.ev-toast.success::before {
+  content: '✓';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(22,163,74,.1);
+  color: #16a34a;
+  font-size: .75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.ev-toast.error {
+  border-left: 4px solid #dc2626;
+}
+.ev-toast.error::before {
+  content: '✕';
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(220,38,38,.1);
+  color: #dc2626;
+  font-size: .75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.ev-toast.out {
+  animation: toastOut .3s ease forwards;
+}
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px) scale(.95); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translateX(40px) scale(.95); }
+}
+
+/* Dark toast */
+body.ev-dash[data-theme="dark"] .ev-toast {
+  background: #1a1a22;
+  border-color: #2a2a35;
+  color: #e4e4e7;
+  box-shadow: 0 8px 30px rgba(0,0,0,.4);
+}
+
 /* ── Admin-specific Table Badges ── */
 .ev-badge.admin-role   { background: rgba(37,99,235,.08); color: #2563EB; }
 .ev-badge.organizer-role { background: rgba(22,163,74,.06); color: #16a34a; }
@@ -84,7 +188,7 @@ body.ev-dash[data-theme="dark"] .ev-badge.admin-role   { background: rgba(96,165
 body.ev-dash[data-theme="dark"] .ev-badge.organizer-role { background: rgba(52,211,153,.1); color: #34d399; }
 body.ev-dash[data-theme="dark"] .ev-badge.attendee-role  { background: rgba(255,255,255,.04); color: var(--ev-text-sec); }
 
-/* ── Header link panel shortcuts for admin ── */
+/* ── Header link panel shortcuts ── */
 .ev-header-link[data-panel] {
   cursor: pointer;
 }

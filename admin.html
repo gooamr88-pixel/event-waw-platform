@@ -14,12 +14,23 @@
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="js/csp.js"></script>
   <script>
-    // Anti-FOUC: apply saved theme before first paint
+    // Anti-FOUC: apply saved theme as early as possible
     (function() {
       try {
         var saved = localStorage.getItem('theme');
         var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-        if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+        if (isDark) {
+          // Set on <html> immediately (prevents white flash)
+          document.documentElement.setAttribute('data-theme', 'dark');
+          // Also set on <body> as soon as it exists (CSS targets body.ev-dash[data-theme])
+          var observer = new MutationObserver(function() {
+            if (document.body) {
+              document.body.setAttribute('data-theme', 'dark');
+              observer.disconnect();
+            }
+          });
+          observer.observe(document.documentElement, { childList: true });
+        }
       } catch (e) {}
     })();
   </script>
