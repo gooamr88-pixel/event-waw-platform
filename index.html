@@ -38,7 +38,23 @@
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="js/csp.js"></script>
 </head>
-<body class="eveenty-landing">
+<body class="eveenty-landing cms-loading">
+  <style>
+    /* Prevent FOUC for CMS content */
+    body.cms-loading .ev-hero-text h1,
+    body.cms-loading .ev-hero-text p,
+    body.cms-loading .ev-partners-track,
+    body.cms-loading .ev-stats-grid {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    .ev-hero-text h1,
+    .ev-hero-text p,
+    .ev-partners-track,
+    .ev-stats-grid {
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+  </style>
   <!-- Skip link for keyboard accessibility -->
   <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:12px 24px;background:#2563EB;color:#fff;font-weight:700;border-radius:0 0 8px 0;text-decoration:none;font-size:.95rem" onfocus="this.style.left='0';this.style.width='auto';this.style.height='auto'" onblur="this.style.left='-9999px';this.style.width='1px';this.style.height='1px'">Skip to main content</a>
 
@@ -623,6 +639,11 @@
 
     /* ── CMS: Load dynamic landing page content from platform_settings ── */
     async function loadCMSContent() {
+      // Failsafe: reveal content after 1s max
+      const failsafeTimer = setTimeout(() => {
+        document.body.classList.remove('cms-loading');
+      }, 1000);
+
       try {
         const { data, error } = await supabase
           .from('platform_settings')
@@ -683,7 +704,10 @@
         }
       } catch (err) {
         console.warn('CMS load skipped:', err.message);
-        // Silent fallback — hardcoded HTML remains
+      } finally {
+        clearTimeout(failsafeTimer);
+        // Always reveal content, whether DB loaded or fallback used
+        document.body.classList.remove('cms-loading');
       }
     }
 
