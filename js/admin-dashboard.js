@@ -12,6 +12,7 @@ import { renderCMSEditor } from '../src/lib/admin-cms.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { escapeHTML } from '../src/lib/utils.js';
+import { showConfirmModal, showPromptModal } from '../src/lib/ui-modals.js';
 
 let currentPanel = 'dashboard';
 
@@ -212,13 +213,25 @@ function setupMobileToggle() {
 function setupSignOut() {
   // Sidebar sign-out button
   document.getElementById('signout-btn')?.addEventListener('click', async () => {
-    if (confirm('Sign out of the Admin Console?')) {
+    const confirmed = await showConfirmModal({
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out of the Admin Console?',
+      confirmText: 'Sign Out',
+      confirmColor: '#dc2626'
+    });
+    if (confirmed) {
       await performSignOut('/login.html');
     }
   });
   // Dropdown sign-out button
   document.getElementById('dropdown-signout')?.addEventListener('click', async () => {
-    if (confirm('Sign out of the Admin Console?')) {
+    const confirmed = await showConfirmModal({
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out of the Admin Console?',
+      confirmText: 'Sign Out',
+      confirmColor: '#dc2626'
+    });
+    if (confirmed) {
       await performSignOut('/login.html');
     }
   });
@@ -383,7 +396,13 @@ async function loadApprovalQueue() {
 }
 
 async function handleApprove(eventId) {
-  if (!confirm('Approve this event for public listing?')) return;
+  const confirmed = await showConfirmModal({
+    title: 'Approve Event',
+    message: 'Approve this event for public listing?',
+    confirmText: 'Approve Event',
+    confirmColor: '#16a34a'
+  });
+  if (!confirmed) return;
   try {
     const { error } = await supabase.rpc('admin_approve_event', { p_event_id: eventId });
     if (error) throw error;
@@ -399,7 +418,13 @@ async function handleApprove(eventId) {
 }
 
 async function handleReject(eventId, title) {
-  const reason = prompt(`Reject "${title}"?\n\nEnter rejection reason (required):`);
+  const reason = await showPromptModal({
+    title: 'Reject Event',
+    message: `Reject "${title}"? Please provide a reason:`,
+    placeholder: 'Reason for rejection...',
+    confirmText: 'Reject Event',
+    confirmColor: '#dc2626'
+  });
   if (!reason || !reason.trim()) return;
   try {
     const { error } = await supabase.rpc('admin_reject_event', { p_event_id: eventId, p_reason: reason.trim() });

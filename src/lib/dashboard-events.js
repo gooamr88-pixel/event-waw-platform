@@ -4,6 +4,7 @@ import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML, safeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
 import { emitDashboardAction } from './dashboard-bus.js';
+import { showPromptModal } from './ui-modals.js';
 
 let tableListenerAttached = false;
 
@@ -127,7 +128,12 @@ export async function handleTableAction(e) {
       await navigator.clipboard.writeText(url);
       showToast('Event link copied to clipboard!', 'success');
     } catch {
-      prompt('Copy this link:', url);
+      await showPromptModal({
+        title: 'Share Event',
+        message: 'Copy this link manually:',
+        defaultValue: url,
+        confirmText: 'Done'
+      });
     }
     return;
   }

@@ -17,6 +17,7 @@ import { loadNotifications, renderNotifications, timeAgo } from '../src/lib/dash
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
 import { getOrganizerEvents, createEvent, deleteEvent, updateEvent } from '../src/lib/events.js';
 import { protectPage, performSignOut } from '../src/lib/guard.js';
+import { showConfirmModal } from '../src/lib/ui-modals.js';
 import { escapeHTML, formatCurrency } from '../src/lib/utils.js';
 import { showToast, animateCounter, setupSidebar, setupUserInfo, setupGlobalKeyboardManager, getSwitchId } from '../src/lib/dashboard-ui.js';
 import { renderEventsTable, populateEventSelects, showTableSkeleton } from '../src/lib/dashboard-events.js';
@@ -67,7 +68,13 @@ document.addEventListener('DOMContentLoaded', async () => {
    ================================== */
 function setupSignOut() {
   document.getElementById('signout-btn')?.addEventListener('click', async () => {
-    if (confirm('Are you sure you want to sign out?')) {
+    const confirmed = await showConfirmModal({
+      title: 'Sign Out',
+      message: 'Are you sure you want to sign out?',
+      confirmText: 'Sign Out',
+      confirmColor: '#dc2626'
+    });
+    if (confirmed) {
       await performSignOut('/login.html');
     }
   });

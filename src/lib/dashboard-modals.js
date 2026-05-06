@@ -5,6 +5,7 @@ import { showToast, switchToPanel } from './dashboard-ui.js';
 import { safeQuery } from './api.js';
 import { setSafeHTML, safeHTML } from './dom.js';
 import { emitDashboardAction } from './dashboard-bus.js';
+import { showPromptModal, showConfirmModal } from './ui-modals.js';
 
 // ── Extracted domain modules (Operation Defuse) ──
 import { initGooglePlacesAutocomplete as _initMaps, showGoogleMapPreview, isAutocompleteInitialized, resetMapState } from './wizard-maps.js';
@@ -265,22 +266,27 @@ export function setupCreateModal() {
 
   // ── Rich Text Editor ──
   document.querySelectorAll('.ce-editor-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
       const cmd = btn.dataset.cmd;
       if (cmd === 'createLink') {
-        const url = prompt('Enter URL:');
+        const url = await showPromptModal({
+          title: 'Insert Link',
+          message: 'Enter URL:',
+          placeholder: 'https://...',
+          confirmText: 'Insert Link'
+        });
         if (url) {
           const trimmed = url.trim();
           // Block all dangerous URI schemes
           if (/^\s*(javascript|data|vbscript|blob):/i.test(trimmed)) {
-            alert('Blocked: unsafe URL protocol.');
+            showToast('Blocked: unsafe URL protocol.', 'error');
             return;
           }
           // Only allow http(s), mailto, tel, or relative paths
           if (/^(https?:|mailto:|tel:|\/|#)/i.test(trimmed) || !/^[a-z]+:/i.test(trimmed)) {
             document.execCommand(cmd, false, trimmed);
           } else {
-            alert('Only http/https URLs are allowed.');
+            showToast('Only http/https URLs are allowed.', 'error');
           }
         }
       } else {
