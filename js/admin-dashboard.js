@@ -461,33 +461,85 @@ async function loadAllUsers() {
   }
 }
 
-async function handleRoleChange(userId, currentRole, name) {
-  const newRoleInput = prompt(`Current role for ${name} is "${currentRole}".\nEnter new role (attendee, organizer, admin):`, currentRole);
-  if (!newRoleInput) return; // User cancelled
-  
-  const newRole = newRoleInput.trim().toLowerCase();
-  const validRoles = ['attendee', 'organizer', 'admin'];
-  
-  if (!validRoles.includes(newRole)) {
-    showToast('Invalid role. Must be attendee, organizer, or admin', 'error');
-    return;
-  }
-  
-  if (newRole === currentRole) return;
-  
-  if (!confirm(`Are you sure you want to change ${name}'s role to "${newRole}"?`)) return;
+function handleRoleChange(userId, currentRole, name) {
+  // Remove existing modal if any
+  const existing = document.getElementById('admin-role-modal');
+  if (existing) existing.remove();
 
-  try {
-    const { error } = await supabase.rpc('admin_set_user_role', { p_target_user_id: userId, p_new_role: newRole });
-    if (error) throw error;
-    showToast(`${name} is now ${newRole}`, 'success');
-    loadedPanels.delete('users');
-    loadedPanels.delete('dashboard');
-    await loadAllUsers();
-    await loadDashboardData();
-  } catch (err) {
-    showToast('Role change failed: ' + err.message, 'error');
-  }
+  // Create modal overlay
+  const overlay = document.createElement('div');
+  overlay.className = 'ev-modal-overlay active';
+  overlay.id = 'admin-role-modal';
+  overlay.style.zIndex = '999999'; // ensure it's on top
+
+  const modalHTML = `
+    <div class="ev-modal" style="max-width: 400px;">
+      <div class="ev-modal-header">
+        <h2>Change Role</h2>
+        <button class="ev-modal-close" id="role-modal-close">✕</button>
+      </div>
+      <p style="font-size: .9rem; color: var(--ev-text-muted); margin-bottom: 20px;">
+        Select a new role for <strong>${escapeHTML(name)}</strong>.
+      </p>
+      <div class="ev-form-group">
+        <label class="ev-form-label">User Role</label>
+        <select id="role-modal-select" class="ev-form-input">
+          <option value="attendee" ${currentRole === 'attendee' ? 'selected' : ''}>Attendee</option>
+          <option value="organizer" ${currentRole === 'organizer' ? 'selected' : ''}>Organizer</option>
+          <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>Admin</option>
+        </select>
+      </div>
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:24px;">
+        <button class="ev-btn ev-btn-outline" id="role-modal-cancel">Cancel</button>
+        <button class="ev-btn" id="role-modal-save">Save Changes</button>
+      </div>
+    </div>
+  `;
+  
+  setSafeHTML(overlay, modalHTML);
+  document.body.appendChild(overlay);
+
+  const closeBtn = document.getElementById('role-modal-close');
+  const cancelBtn = document.getElementById('role-modal-cancel');
+  const saveBtn = document.getElementById('role-modal-save');
+  const selectEl = document.getElementById('role-modal-select');
+
+  const closeModal = () => {
+    overlay.classList.remove('active');
+    setTimeout(() => overlay.remove(), 300);
+  };
+
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeModal();
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    const newRole = selectEl.value;
+    if (newRole === currentRole) {
+      closeModal();
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="ev-spinner" style="width:16px;height:16px;border-width:2px;display:inline-block"></span>';
+
+    try {
+      const { error } = await supabase.rpc('admin_set_user_role', { p_target_user_id: userId, p_new_role: newRole });
+      if (error) throw error;
+      showToast(`${name} is now ${newRole}`, 'success');
+      loadedPanels.delete('users');
+      loadedPanels.delete('dashboard');
+      closeModal();
+      await loadAllUsers();
+      await loadDashboardData();
+    } catch (err) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save Changes';
+      showToast('Role change failed: ' + err.message, 'error');
+    }
+  });
 }
 
 /* ── All Events (Phase 3 stub with real query) ── */
