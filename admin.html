@@ -220,7 +220,13 @@
           <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">👥 User Management</h2>
           <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">View all registered users, manage roles, and monitor account status.</p>
         </div>
-        <input type="text" id="search-users" class="ev-form-input" placeholder="Search by name or email..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="search-users" class="ev-form-input" placeholder="Search by name or email..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+          <button class="ev-btn ev-btn-outline" id="export-users-btn" style="padding:8px 12px;font-size:.85rem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
       </div>
       <div class="ev-card">
         <div class="ev-table-wrap">
@@ -243,7 +249,13 @@
           <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">📋 Global Event Registry</h2>
           <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Complete inventory of every event across the platform.</p>
         </div>
-        <input type="text" id="search-all-events" class="ev-form-input" placeholder="Search events..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="search-all-events" class="ev-form-input" placeholder="Search events..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+          <button class="ev-btn ev-btn-outline" id="export-events-btn" style="padding:8px 12px;font-size:.85rem">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
       </div>
       <div class="ev-card">
         <div class="ev-table-wrap">

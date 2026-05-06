@@ -492,6 +492,21 @@ async function loadAllUsers() {
       return;
     }
 
+    const exportBtn = document.getElementById('export-users-btn');
+    if (exportBtn) {
+      exportBtn.onclick = () => {
+        const rows = [['ID', 'Name', 'Email', 'Role', 'Joined Date']];
+        data.forEach(u => rows.push([
+          u.id, 
+          u.full_name || '', 
+          u.email || '', 
+          u.role || 'attendee', 
+          new Date(u.created_at).toLocaleDateString()
+        ]));
+        downloadCSV(rows, `users_${Date.now()}.csv`);
+      };
+    }
+
     setSafeHTML(tbody, data.map((u, i) => {
       const joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const roleBadge = u.role === 'admin' ? 'admin-role' : u.role === 'organizer' ? 'organizer-role' : 'attendee-role';
@@ -619,6 +634,29 @@ async function loadAllEvents() {
       return;
     }
 
+    const exportBtn = document.getElementById('export-events-btn');
+    if (exportBtn) {
+      exportBtn.onclick = () => {
+        const rows = [['Title', 'Organizer Email', 'Date', 'Status', 'Approved', 'Tickets Sold', 'Capacity', 'Revenue']];
+        data.forEach(ev => {
+          const org = ev.profiles || {};
+          const tiers = ev.ticket_tiers || [];
+          const sold = tiers.reduce((s, t) => s + (t.sold_count || 0), 0);
+          const cap = tiers.reduce((s, t) => s + (t.capacity || 0), 0);
+          const rev = tiers.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0);
+          rows.push([
+            ev.title || '',
+            org.email || '',
+            ev.date ? new Date(ev.date).toLocaleDateString() : '',
+            ev.status || '',
+            ev.admin_approved ? 'Yes' : 'No',
+            sold, cap, rev
+          ]);
+        });
+        downloadCSV(rows, `events_${Date.now()}.csv`);
+      };
+    }
+
     setSafeHTML(tbody, data.map((ev, i) => {
       const org = ev.profiles || {};
       const date = new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
@@ -723,6 +761,16 @@ function setupTableSearch(inputId, tbodyId) {
       row.style.display = text.includes(term) ? '' : 'none';
     });
   });
+}
+
+function downloadCSV(rowsArray, filename) {
+  const csv = rowsArray.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('CSV downloaded successfully!', 'success');
 }
 
 // Call these once after DOM load
