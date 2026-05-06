@@ -24,7 +24,7 @@ export async function renderCMSEditor(container) {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--aw-text-muted)">No CMS data found. Run migration v15 to seed initial data.</div>';
+      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ev-text-muted)">No CMS data found. Run migration v15 to seed initial data.</div>';
       return;
     }
 
@@ -32,20 +32,20 @@ export async function renderCMSEditor(container) {
     const timestamps = Object.fromEntries(data.map(r => [r.key, r.updated_at]));
 
     container.innerHTML = `
-      <p style="font-size:.85rem;color:var(--aw-text-sec);margin-bottom:24px">
-        Edit the public landing page content. Changes are saved directly to the database and reflected on <a href="index.html" target="_blank" style="color:var(--aw-accent)">the landing page</a> on next reload.
+      <p style="font-size:.85rem;color:var(--ev-text-sec);margin-bottom:24px">
+        Edit the public landing page content. Changes are saved directly to the database and reflected on <a href="index.html" target="_blank" style="color:var(--ev-info)">the landing page</a> on next reload.
       </p>
 
       <!-- ═══ HERO EDITOR ═══ -->
-      <div class="aw-card" style="margin-bottom:16px">
-        <div class="aw-card-header">
-          <div class="aw-card-title">
+      <div class="ev-card" style="margin-bottom:16px">
+        <div class="ev-card-header">
+          <span class="ev-card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             Hero Section
-          </div>
-          <span class="cms-ts" style="font-size:.7rem;color:var(--aw-text-muted)">${fmtTime(timestamps.hero)}</span>
+          </span>
+          <span class="cms-ts" style="font-size:.7rem;color:var(--ev-text-muted)">${fmtTime(timestamps.hero)}</span>
         </div>
-        <div class="aw-card-body">
+        <div style="padding:20px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
             <div>
               <label class="cms-label">Heading Line 1</label>
@@ -67,7 +67,7 @@ export async function renderCMSEditor(container) {
             </div>
             <div>
               <label class="cms-label">Preview</label>
-              <img id="cms-hero-preview" src="${escAttr(settings.hero?.image_url || '')}" style="height:60px;border-radius:8px;border:1px solid var(--aw-border);object-fit:cover" onerror="this.style.display='none'" />
+              <img id="cms-hero-preview" src="${escAttr(settings.hero?.image_url || '')}" style="height:60px;border-radius:8px;border:1px solid var(--ev-border);object-fit:cover" onerror="this.style.display='none'" />
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px">
@@ -88,42 +88,42 @@ export async function renderCMSEditor(container) {
               <input class="cms-input" id="cms-hero-cta2-url" value="${escAttr(settings.hero?.cta_secondary_url || '')}" />
             </div>
           </div>
-          <button class="aw-btn aw-btn-primary" id="cms-save-hero">Save Hero Section</button>
+          <button class="ev-btn ev-btn-pink" id="cms-save-hero">Save Hero Section</button>
         </div>
       </div>
 
       <!-- ═══ SPONSORS EDITOR ═══ -->
-      <div class="aw-card" style="margin-bottom:16px">
-        <div class="aw-card-header">
-          <div class="aw-card-title">
+      <div class="ev-card" style="margin-bottom:16px">
+        <div class="ev-card-header">
+          <span class="ev-card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="7" width="20" height="15" rx="2"/><path d="M16 7V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v3"/></svg>
             Sponsors
-          </div>
-          <span class="cms-ts" style="font-size:.7rem;color:var(--aw-text-muted)">${fmtTime(timestamps.sponsors)}</span>
+          </span>
+          <span class="cms-ts" style="font-size:.7rem;color:var(--ev-text-muted)">${fmtTime(timestamps.sponsors)}</span>
         </div>
-        <div class="aw-card-body">
+        <div style="padding:20px">
           <div id="cms-sponsors-list"></div>
-          <button class="aw-btn" id="cms-add-sponsor" style="margin-top:10px">+ Add Sponsor</button>
+          <button class="ev-btn ev-btn-outline" id="cms-add-sponsor" style="margin-top:10px">+ Add Sponsor</button>
           <div style="margin-top:14px">
-            <button class="aw-btn aw-btn-primary" id="cms-save-sponsors">Save Sponsors</button>
+            <button class="ev-btn ev-btn-pink" id="cms-save-sponsors">Save Sponsors</button>
           </div>
         </div>
       </div>
 
       <!-- ═══ STATS BAR EDITOR ═══ -->
-      <div class="aw-card" style="margin-bottom:16px">
-        <div class="aw-card-header">
-          <div class="aw-card-title">
+      <div class="ev-card" style="margin-bottom:16px">
+        <div class="ev-card-header">
+          <span class="ev-card-title">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
             Stats Bar
-          </div>
-          <span class="cms-ts" style="font-size:.7rem;color:var(--aw-text-muted)">${fmtTime(timestamps.stats_bar)}</span>
+          </span>
+          <span class="cms-ts" style="font-size:.7rem;color:var(--ev-text-muted)">${fmtTime(timestamps.stats_bar)}</span>
         </div>
-        <div class="aw-card-body">
+        <div style="padding:20px">
           <div id="cms-stats-list"></div>
-          <button class="aw-btn" id="cms-add-stat" style="margin-top:10px">+ Add Stat</button>
+          <button class="ev-btn ev-btn-outline" id="cms-add-stat" style="margin-top:10px">+ Add Stat</button>
           <div style="margin-top:14px">
-            <button class="aw-btn aw-btn-primary" id="cms-save-stats">Save Stats Bar</button>
+            <button class="ev-btn ev-btn-pink" id="cms-save-stats">Save Stats Bar</button>
           </div>
         </div>
       </div>
@@ -134,14 +134,14 @@ export async function renderCMSEditor(container) {
       const style = document.createElement('style');
       style.id = 'cms-editor-styles';
       style.textContent = `
-        .cms-label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--aw-text-muted);margin-bottom:5px}
-        .cms-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--aw-border);background:var(--aw-bg-input);color:var(--aw-text);font-family:var(--aw-font);font-size:.82rem;transition:border-color .2s}
-        .cms-input:focus{outline:none;border-color:var(--aw-accent)}
-        .cms-sponsor-row,.cms-stat-row{display:grid;gap:10px;align-items:end;padding:10px;border-radius:8px;border:1px solid var(--aw-border);margin-bottom:8px;background:var(--aw-bg-input)}
+        .cms-label{display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--ev-text-muted);margin-bottom:5px}
+        .cms-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--ev-border);background:var(--ev-bg);color:var(--ev-text);font-family:var(--ev-font);font-size:.82rem;transition:border-color .2s}
+        .cms-input:focus{outline:none;border-color:var(--ev-yellow)}
+        .cms-sponsor-row,.cms-stat-row{display:grid;gap:10px;align-items:end;padding:10px;border-radius:8px;border:1px solid var(--ev-border);margin-bottom:8px;background:var(--ev-bg)}
         .cms-sponsor-row{grid-template-columns:1fr 2fr auto}
         .cms-stat-row{grid-template-columns:1fr 2fr 1fr auto}
-        .cms-remove{background:none;border:none;color:var(--aw-red);cursor:pointer;font-size:1.1rem;padding:4px 8px;border-radius:6px;transition:background .2s}
-        .cms-remove:hover{background:var(--aw-red-bg)}
+        .cms-remove{background:none;border:none;color:var(--ev-danger);cursor:pointer;font-size:1.1rem;padding:4px 8px;border-radius:6px;transition:background .2s}
+        .cms-remove:hover{background:rgba(220,38,38,.06)}
       `;
       document.head.appendChild(style);
     }
@@ -213,7 +213,7 @@ export async function renderCMSEditor(container) {
     });
 
   } catch (err) {
-    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--aw-red)">Failed to load CMS data: ${esc(err.message)}</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--ev-danger)">Failed to load CMS data: ${esc(err.message)}</div>`;
   }
 }
 

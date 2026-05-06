@@ -9,13 +9,23 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="stylesheet" href="css/admin.css" />
+  <link rel="stylesheet" href="css/eveenty-dashboard.css?v=20260506" />
+  <link rel="stylesheet" href="css/admin.css?v=20260506" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
   <script src="js/csp.js"></script>
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme');
+        var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) {}
+    })();
+  </script>
 </head>
-<body class="admin-body">
+<body class="ev-dash" data-admin="true">
 
-  <!-- ═══════ AUTH GUARD ═══════ -->
+  <!-- ══════ AUTH GUARD ══════ -->
   <div id="auth-guard-overlay">
     <div class="guard-overlay">
       <div class="guard-spinner"></div>
@@ -23,270 +33,216 @@
     </div>
   </div>
 
-  <!-- ═══════ SHELL ═══════ -->
-  <div class="aw-shell" id="aw-shell">
+  <!-- Toast Container -->
+  <div class="ev-toast-container" id="toast-container" aria-live="polite" role="status"></div>
 
-    <!-- ═══════ SIDEBAR ═══════ -->
-    <aside class="aw-sidebar" id="aw-sidebar">
-      <div class="aw-sidebar-brand">
-        <div class="aw-sidebar-logo">
-          <svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg>
+  <!-- Mobile Toggle -->
+  <button class="ev-mobile-toggle" id="sidebar-toggle" aria-label="Toggle navigation menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="ev-sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="ev-sidebar" id="sidebar" role="navigation" aria-label="Admin navigation">
+    <div class="ev-sidebar-brand">
+      <h1>Event <span>Waw</span></h1>
+      <p>Admin Console</p>
+    </div>
+    <nav class="ev-sidebar-nav">
+      <button class="ev-nav-item active" data-panel="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Platform Stats
+      </button>
+      <button class="ev-nav-item" data-panel="approvals">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        Pending Approvals
+        <span class="ev-nav-badge" id="pending-count" style="display:none">0</span>
+      </button>
+      <button class="ev-nav-item" data-panel="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        User Management
+      </button>
+      <button class="ev-nav-item" data-panel="events-all">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        All Events
+      </button>
+      <button class="ev-nav-item" data-panel="cms">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+        Landing Page CMS
+      </button>
+      <div style="height:1px;background:rgba(255,255,255,.12);margin:10px 14px"></div>
+      <a class="ev-nav-item" href="dashboard.html" style="text-decoration:none">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+        Organizer Dashboard
+      </a>
+    </nav>
+    <div class="ev-sidebar-footer">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Back to Home
+      </a>
+      <button id="signout-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════ TOP HEADER ══════ -->
+  <header class="ev-header">
+    <div class="ev-header-left">
+      <span class="admin-env-badge">ADMIN</span>
+      <button class="ev-header-link" data-panel="dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span>Stats</span>
+      </button>
+      <button class="ev-header-link" data-panel="approvals">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        <span>Approvals</span>
+      </button>
+      <button class="ev-header-link" data-panel="users">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        <span>Users</span>
+      </button>
+    </div>
+    <div class="ev-header-right">
+      <span class="admin-clock" id="admin-clock"></span>
+      <button class="ev-dark-toggle" id="dark-mode-toggle" title="Toggle Dark Mode">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="ev-user-wrap" id="user-wrap">
+        <div class="ev-user-info" id="user-info">
+          <div class="ev-user-avatar" id="user-avatar">SA</div>
+          <div class="ev-user-meta">
+            <div class="ev-user-name" id="user-name">Admin</div>
+            <div class="ev-user-email" id="user-email">admin@eventwaw.com</div>
+          </div>
+          <svg class="ev-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </div>
-        <div class="aw-sidebar-brand-text">
-          <strong>Event Waw</strong>
-          <small>Command Center</small>
+        <div class="ev-user-dropdown" id="user-dropdown">
+          <a href="dashboard.html" class="ev-user-drop-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            Organizer Dashboard
+          </a>
+          <a href="index.html" class="ev-user-drop-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Exit to Homepage
+          </a>
+          <div class="ev-user-drop-divider"></div>
+          <button class="ev-user-drop-item danger" id="dropdown-signout">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="ev-main">
+
+    <!-- ════ PANEL: DASHBOARD ════ -->
+    <div class="ev-panel active" id="panel-dashboard">
+      <!-- Welcome Banner -->
+      <div class="ev-welcome">
+        <div>
+          <h2>Welcome back, <span id="welcome-name">Admin</span> 👑</h2>
+          <p>Here's a live snapshot of your platform.</p>
+        </div>
+        <div class="ev-welcome-actions">
+          <span class="admin-clock-hero" id="admin-clock-hero"></span>
         </div>
       </div>
 
-      <nav class="aw-sidebar-nav" id="aw-nav" role="navigation" aria-label="Admin navigation">
-        <div class="aw-nav-label">Overview</div>
+      <!-- Stats -->
+      <div class="ev-stat-grid" id="admin-stat-grid">
+        <div class="ev-stat-card"><div class="ev-stat-icon blue">👥</div><div><div class="ev-stat-value" id="stat-users">—</div><div class="ev-stat-label">Total Users</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon orange">🏢</div><div><div class="ev-stat-value" id="stat-organizers">—</div><div class="ev-stat-label">Organizers</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon green">📅</div><div><div class="ev-stat-value" id="stat-events">—</div><div class="ev-stat-label">Total Events</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon pink">⏳</div><div><div class="ev-stat-value" id="stat-pending">—</div><div class="ev-stat-label">Pending Approval</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon green">💰</div><div><div class="ev-stat-value" id="stat-revenue">—</div><div class="ev-stat-label">Total Revenue</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon blue">🎫</div><div><div class="ev-stat-value" id="stat-tickets">—</div><div class="ev-stat-label">Tickets Issued</div></div></div>
+      </div>
 
-        <button class="aw-nav-item active" data-panel="dashboard" id="nav-dashboard">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-          Platform Stats
-        </button>
-
-        <div class="aw-nav-label">Management</div>
-
-        <button class="aw-nav-item" data-panel="approvals" id="nav-approvals">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          Pending Approvals
-          <span class="aw-nav-badge" id="pending-count" style="display:none">0</span>
-        </button>
-
-        <button class="aw-nav-item" data-panel="users" id="nav-users">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          User Management
-        </button>
-
-        <button class="aw-nav-item" data-panel="events-all" id="nav-events-all">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          All Events
-        </button>
-
-        <div class="aw-nav-label">Configuration</div>
-
-        <button class="aw-nav-item" data-panel="cms" id="nav-cms">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-          Landing Page CMS
-        </button>
-
-        <div class="aw-nav-divider"></div>
-
-        <a class="aw-nav-item aw-nav-link" href="dashboard.html">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-          Organizer Dashboard
-        </a>
-      </nav>
-
-      <div class="aw-sidebar-footer">
-        <div class="aw-sidebar-user">
-          <div class="aw-sidebar-user-avatar" id="aw-user-avatar">SA</div>
-          <div class="aw-sidebar-user-info">
-            <div class="aw-sidebar-user-name" id="aw-user-name">Super Admin</div>
-            <div class="aw-sidebar-user-role">Administrator</div>
-          </div>
-          <div class="aw-user-status-dot"></div>
+      <!-- Recent Activity -->
+      <div class="ev-card">
+        <div class="ev-card-header"><span class="ev-card-title">📊 Recent Activity</span></div>
+        <div id="admin-activity" style="padding:20px">
+          <div class="ev-loading"><div class="ev-spinner"></div>Loading activity…</div>
         </div>
       </div>
-    </aside>
+    </div>
 
-    <!-- ═══════ TOPBAR ═══════ -->
-    <header class="aw-topbar">
-      <div class="aw-topbar-left">
-        <button class="aw-mobile-toggle" id="aw-mobile-toggle" aria-label="Toggle sidebar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-        <div class="aw-topbar-breadcrumb">
-          <span class="aw-topbar-env">ADMIN</span>
-          <h1 class="aw-topbar-title" id="aw-page-title"><span>⬡</span> Motherboard</h1>
+    <!-- ════ PANEL: APPROVALS ════ -->
+    <div class="ev-panel" id="panel-approvals">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✅ Event Approval Queue</h2>
+      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">Review, approve, or reject events submitted by organizers.</p>
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table" id="approvals-table">
+            <thead>
+              <tr>
+                <th>#</th><th>Event Title</th><th>Organizer</th><th>Date</th>
+                <th>Category</th><th>Submitted</th><th>Status</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="approvals-tbody">
+              <tr><td colspan="8" class="ev-table-empty">Loading approval queue...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
-      <div class="aw-topbar-right">
-        <span class="aw-topbar-time" id="aw-clock"></span>
-        <a href="index.html" class="aw-btn aw-btn-ghost" title="View public site">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          Site
-        </a>
-        <button class="aw-btn aw-btn-danger" id="aw-signout">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-          Sign Out
-        </button>
+    </div>
+
+    <!-- ════ PANEL: USERS ════ -->
+    <div class="ev-panel" id="panel-users">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">👥 User Management</h2>
+      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">View all registered users, manage roles, and monitor account status.</p>
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table" id="users-table">
+            <thead>
+              <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="users-tbody">
+              <tr><td colspan="6" class="ev-table-empty">Loading users...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-    </header>
+    </div>
 
-    <!-- ═══════ MAIN CONTENT ═══════ -->
-    <main class="aw-main" id="aw-main">
+    <!-- ════ PANEL: ALL EVENTS ════ -->
+    <div class="ev-panel" id="panel-events-all">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">📋 Global Event Registry</h2>
+      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">Complete inventory of every event across the platform.</p>
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table" id="all-events-table">
+            <thead>
+              <tr><th>#</th><th>Title</th><th>Organizer</th><th>Date</th><th>Status</th><th>Approved</th><th>Tickets</th><th>Revenue</th></tr>
+            </thead>
+            <tbody id="all-events-tbody">
+              <tr><td colspan="8" class="ev-table-empty">Loading events...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-      <!-- ─── Dashboard Panel ─── -->
-      <section class="aw-panel active" id="panel-dashboard">
-        <!-- Welcome banner -->
-        <div class="aw-welcome-banner">
-          <div class="aw-welcome-text">
-            <h2>Welcome back, <span id="aw-welcome-name">Admin</span> 👑</h2>
-            <p>Here's a live snapshot of your platform's vital signs.</p>
-          </div>
-          <div class="aw-welcome-pulse">
-            <span class="aw-pulse-dot"></span>
-            <span>Systems Online</span>
-          </div>
+    <!-- ════ PANEL: CMS ════ -->
+    <div class="ev-panel" id="panel-cms">
+      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✏️ Landing Page CMS</h2>
+      <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:20px">Edit hero content, featured events, and homepage blocks.</p>
+      <div class="ev-card">
+        <div id="cms-body" style="padding:20px">
+          <div class="ev-loading"><div class="ev-spinner"></div>Loading CMS…</div>
         </div>
+      </div>
+    </div>
 
-        <div class="aw-stats-grid" id="aw-stats-grid">
-          <div class="aw-stat-card">
-            <div class="aw-stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
-            <div class="aw-stat-content"><div class="aw-stat-value" id="stat-users">—</div><div class="aw-stat-label">Total Users</div></div>
-          </div>
-          <div class="aw-stat-card">
-            <div class="aw-stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-            <div class="aw-stat-content"><div class="aw-stat-value" id="stat-organizers">—</div><div class="aw-stat-label">Organizers</div></div>
-          </div>
-          <div class="aw-stat-card">
-            <div class="aw-stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-            <div class="aw-stat-content"><div class="aw-stat-value" id="stat-events">—</div><div class="aw-stat-label">Total Events</div></div>
-          </div>
-          <div class="aw-stat-card aw-stat-highlight">
-            <div class="aw-stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
-            <div class="aw-stat-content"><div class="aw-stat-value" id="stat-pending">—</div><div class="aw-stat-label">Pending Approval</div></div>
-          </div>
-          <div class="aw-stat-card">
-            <div class="aw-stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-            <div class="aw-stat-content"><div class="aw-stat-value" id="stat-revenue">—</div><div class="aw-stat-label">Total Revenue</div></div>
-          </div>
-          <div class="aw-stat-card">
-            <div class="aw-stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
-            <div class="aw-stat-content"><div class="aw-stat-value" id="stat-tickets">—</div><div class="aw-stat-label">Tickets Issued</div></div>
-          </div>
-        </div>
-
-        <!-- Recent activity -->
-        <div class="aw-card">
-          <div class="aw-card-header">
-            <div class="aw-card-title">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              Recent Activity
-            </div>
-          </div>
-          <div class="aw-card-body" id="aw-activity">
-            <div class="aw-spinner"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── Approvals Panel ─── -->
-      <section class="aw-panel" id="panel-approvals">
-        <div class="aw-panel-header">
-          <div>
-            <h2 class="aw-panel-title">Event Approval Queue</h2>
-            <p class="aw-panel-subtitle">Review, approve, or reject events submitted by organizers.</p>
-          </div>
-        </div>
-        <div class="aw-card">
-          <div class="aw-card-body">
-            <div class="aw-table-wrap">
-              <table class="aw-table" id="approvals-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Event Title</th>
-                    <th>Organizer</th>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Submitted</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="approvals-tbody">
-                  <tr><td colspan="8" class="aw-table-empty">Loading approval queue...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── Users Panel ─── -->
-      <section class="aw-panel" id="panel-users">
-        <div class="aw-panel-header">
-          <div>
-            <h2 class="aw-panel-title">User Management</h2>
-            <p class="aw-panel-subtitle">View all registered users, manage roles, and monitor account status.</p>
-          </div>
-        </div>
-        <div class="aw-card">
-          <div class="aw-card-body">
-            <div class="aw-table-wrap">
-              <table class="aw-table" id="users-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Joined</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="users-tbody">
-                  <tr><td colspan="6" class="aw-table-empty">Loading users...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── All Events Panel ─── -->
-      <section class="aw-panel" id="panel-events-all">
-        <div class="aw-panel-header">
-          <div>
-            <h2 class="aw-panel-title">Global Event Registry</h2>
-            <p class="aw-panel-subtitle">Complete inventory of every event across the platform — all statuses, all organizers.</p>
-          </div>
-        </div>
-        <div class="aw-card">
-          <div class="aw-card-body">
-            <div class="aw-table-wrap">
-              <table class="aw-table" id="all-events-table">
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Title</th>
-                    <th>Organizer</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Approved</th>
-                    <th>Tickets</th>
-                    <th>Revenue</th>
-                  </tr>
-                </thead>
-                <tbody id="all-events-tbody">
-                  <tr><td colspan="8" class="aw-table-empty">Loading events...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ─── CMS Panel ─── -->
-      <section class="aw-panel" id="panel-cms">
-        <div class="aw-panel-header">
-          <div>
-            <h2 class="aw-panel-title">Landing Page CMS</h2>
-            <p class="aw-panel-subtitle">Edit hero content, featured events, and homepage blocks without code changes.</p>
-          </div>
-        </div>
-        <div class="aw-card">
-          <div class="aw-card-body" id="cms-body">
-            <div class="aw-spinner"></div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
+  </main>
 
   <script type="module" src="js/admin-dashboard.js"></script>
 </body>

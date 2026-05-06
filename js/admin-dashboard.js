@@ -18,11 +18,11 @@ import { escapeHTML } from '../src/lib/utils.js';
    ══════════════════════════════════════ */
 
 const PANEL_TITLES = {
-  dashboard:    '⬡ Motherboard',
-  approvals:    '✓ Event Approvals',
-  users:        '⚐ User Management',
-  'events-all': '▦ Global Event Registry',
-  cms:          '✎ Landing Page CMS',
+  dashboard:    '⬡ Platform Stats',
+  approvals:    '✅ Event Approvals',
+  users:        '👥 User Management',
+  'events-all': '📋 Global Event Registry',
+  cms:          '✏️ Landing Page CMS',
 };
 
 let currentPanel = 'dashboard';
@@ -36,17 +36,48 @@ document.addEventListener('DOMContentLoaded', async () => {
   const auth = await protectPage({ requireRole: 'admin' });
   if (!auth) return;
 
+  // ── Apply saved theme ──
+  applyTheme();
+
   // ── Setup UI ──
   setupUserInfo(auth);
   setupNavigation();
   setupMobileToggle();
   setupSignOut();
   setupClock();
+  setupDarkMode();
   setupCMSEvents();
+  setupHeaderShortcuts();
+  setupUserDropdown();
 
   // ── Load initial data ──
   await loadDashboardData();
 });
+
+/* ══════════════════════════════════════
+   THEME
+   ══════════════════════════════════════ */
+
+function applyTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved) {
+    document.body.setAttribute('data-theme', saved);
+  } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.body.setAttribute('data-theme', 'dark');
+  }
+}
+
+function setupDarkMode() {
+  const toggle = document.getElementById('dark-mode-toggle');
+  if (!toggle) return;
+
+  toggle.addEventListener('click', () => {
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
+    document.body.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+}
 
 /* ══════════════════════════════════════
    USER INFO
@@ -55,12 +86,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 function setupUserInfo(auth) {
   const { profile } = auth;
   const name = profile?.full_name || profile?.email?.split('@')[0] || 'Admin';
+  const email = profile?.email || 'admin@eventwaw.com';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
-  const nameEl = document.getElementById('aw-user-name');
-  const avatarEl = document.getElementById('aw-user-avatar');
-  const welcomeEl = document.getElementById('aw-welcome-name');
+  const nameEl = document.getElementById('user-name');
+  const emailEl = document.getElementById('user-email');
+  const avatarEl = document.getElementById('user-avatar');
+  const welcomeEl = document.getElementById('welcome-name');
   if (nameEl) nameEl.textContent = name;
+  if (emailEl) emailEl.textContent = email;
   if (avatarEl) avatarEl.textContent = initials;
   if (welcomeEl) welcomeEl.textContent = name.split(' ')[0];
 }
@@ -70,11 +104,11 @@ function setupUserInfo(auth) {
    ══════════════════════════════════════ */
 
 function setupNavigation() {
-  const nav = document.getElementById('aw-nav');
-  if (!nav) return;
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar) return;
 
-  nav.addEventListener('click', (e) => {
-    const item = e.target.closest('.aw-nav-item[data-panel]');
+  sidebar.addEventListener('click', (e) => {
+    const item = e.target.closest('.ev-nav-item[data-panel]');
     if (!item) return;
 
     const panelId = item.dataset.panel;
@@ -86,30 +120,58 @@ function setupNavigation() {
 
 function switchPanel(panelId) {
   // Deactivate current nav + panel
-  document.querySelector('.aw-nav-item.active')?.classList.remove('active');
-  document.querySelector('.aw-panel.active')?.classList.remove('active');
+  document.querySelector('.ev-nav-item.active')?.classList.remove('active');
+  document.querySelector('.ev-panel.active')?.classList.remove('active');
 
   // Activate new nav + panel
-  const navItem = document.querySelector(`.aw-nav-item[data-panel="${panelId}"]`);
+  const navItem = document.querySelector(`.ev-nav-item[data-panel="${panelId}"]`);
   const panel = document.getElementById(`panel-${panelId}`);
   if (navItem) navItem.classList.add('active');
   if (panel) panel.classList.add('active');
 
-  // Update topbar title
-  const titleEl = document.getElementById('aw-page-title');
-  if (titleEl) {
-    const icon = (PANEL_TITLES[panelId] || '').split(' ')[0];
-    const text = (PANEL_TITLES[panelId] || panelId).replace(/^[^\s]+\s/, '');
-    titleEl.innerHTML = `<span>${icon}</span> ${text}`;
-  }
-
   currentPanel = panelId;
 
   // Close mobile sidebar on panel switch
-  document.getElementById('aw-sidebar')?.classList.remove('open');
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay')?.classList.remove('active');
 
   // Trigger lazy data loading for the activated panel
   loadPanelData(panelId);
+}
+
+/* ══════════════════════════════════════
+   HEADER SHORTCUTS — Quick panel links
+   ══════════════════════════════════════ */
+
+function setupHeaderShortcuts() {
+  document.querySelectorAll('.ev-header-link[data-panel]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const panelId = btn.dataset.panel;
+      if (panelId !== currentPanel) switchPanel(panelId);
+    });
+  });
+}
+
+/* ══════════════════════════════════════
+   USER DROPDOWN
+   ══════════════════════════════════════ */
+
+function setupUserDropdown() {
+  const userWrap = document.getElementById('user-wrap');
+  const userInfo = document.getElementById('user-info');
+  if (!userWrap || !userInfo) return;
+
+  userInfo.addEventListener('click', () => {
+    userWrap.classList.toggle('open');
+    userInfo.setAttribute('aria-expanded', userWrap.classList.contains('open'));
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!userWrap.contains(e.target)) {
+      userWrap.classList.remove('open');
+      userInfo.setAttribute('aria-expanded', 'false');
+    }
+  });
 }
 
 /* ══════════════════════════════════════
@@ -117,19 +179,27 @@ function switchPanel(panelId) {
    ══════════════════════════════════════ */
 
 function setupMobileToggle() {
-  const toggle = document.getElementById('aw-mobile-toggle');
-  const sidebar = document.getElementById('aw-sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
   if (!toggle || !sidebar) return;
 
   toggle.addEventListener('click', () => {
     sidebar.classList.toggle('open');
+    overlay?.classList.toggle('active');
+  });
+
+  overlay?.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
   });
 
   // Close sidebar on outside click (mobile)
   document.addEventListener('click', (e) => {
-    if (window.innerWidth > 900) return;
+    if (window.innerWidth > 768) return;
     if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
       sidebar.classList.remove('open');
+      overlay?.classList.remove('active');
     }
   });
 
@@ -137,6 +207,7 @@ function setupMobileToggle() {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sidebar.classList.contains('open')) {
       sidebar.classList.remove('open');
+      overlay?.classList.remove('active');
     }
   });
 }
@@ -146,7 +217,14 @@ function setupMobileToggle() {
    ══════════════════════════════════════ */
 
 function setupSignOut() {
-  document.getElementById('aw-signout')?.addEventListener('click', async () => {
+  // Sidebar sign-out button
+  document.getElementById('signout-btn')?.addEventListener('click', async () => {
+    if (confirm('Sign out of the Admin Console?')) {
+      await performSignOut('/login.html');
+    }
+  });
+  // Dropdown sign-out button
+  document.getElementById('dropdown-signout')?.addEventListener('click', async () => {
     if (confirm('Sign out of the Admin Console?')) {
       await performSignOut('/login.html');
     }
@@ -158,12 +236,12 @@ function setupSignOut() {
    ══════════════════════════════════════ */
 
 function setupClock() {
-  const el = document.getElementById('aw-clock');
-  if (!el) return;
+  const el = document.getElementById('admin-clock');
+  const heroEl = document.getElementById('admin-clock-hero');
 
   const tick = () => {
     const now = new Date();
-    el.textContent = now.toLocaleTimeString('en-US', {
+    const timeStr = now.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -173,6 +251,8 @@ function setupClock() {
       month: 'short',
       day: 'numeric',
     });
+    if (el) el.textContent = timeStr;
+    if (heroEl) heroEl.textContent = timeStr;
   };
 
   tick();
@@ -211,15 +291,13 @@ async function loadDashboardData() {
     }
 
     // Activity placeholder
-    const actEl = document.getElementById('aw-activity');
+    const actEl = document.getElementById('admin-activity');
     if (actEl) {
       setSafeHTML(actEl, `
-        <div class="aw-empty">
-          <div class="aw-empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-          <h3>Dashboard Ready</h3>
-          <p>Platform statistics loaded. Select a panel from the sidebar to manage events, users, or CMS content.</p>
+        <div style="text-align:center;padding:40px 20px;color:var(--ev-text-muted)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:32px;height:32px;margin:0 auto 12px;display:block;opacity:.4"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <h3 style="font-size:.95rem;font-weight:700;color:var(--ev-text);margin-bottom:6px">Dashboard Ready</h3>
+          <p style="font-size:.82rem">Platform statistics loaded. Select a panel from the sidebar to manage events, users, or CMS content.</p>
         </div>
       `);
     }
@@ -273,7 +351,7 @@ async function loadApprovalQueue() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      setSafeHTML(tbody, '<tr><td colspan="8" class="aw-table-empty">No events pending approval — all clear ✓</td></tr>');
+      setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No events pending approval — all clear ✓</td></tr>');
       return;
     }
 
@@ -282,17 +360,17 @@ async function loadApprovalQueue() {
       const date = new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
       const submitted = new Date(ev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       return `<tr>
-        <td style="font-weight:600;color:var(--aw-text-muted)">${i + 1}</td>
-        <td style="font-weight:600;color:var(--aw-text)">${escapeHTML(ev.title)}</td>
+        <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
+        <td style="font-weight:600;color:var(--ev-text)">${escapeHTML(ev.title)}</td>
         <td>${escapeHTML(org.full_name || org.email || '—')}</td>
         <td>${date}</td>
         <td>${escapeHTML(ev.category || '—')}</td>
         <td>${submitted}</td>
-        <td><span class="aw-badge aw-badge-pending">Pending</span></td>
+        <td><span class="ev-badge pending">Pending</span></td>
         <td>
           <div style="display:flex;gap:6px">
-            <button class="aw-btn aw-btn-primary" style="padding:5px 12px;font-size:.75rem" data-approve="${ev.id}">Approve</button>
-            <button class="aw-btn aw-btn-danger" style="padding:5px 12px;font-size:.75rem" data-reject="${ev.id}" data-title="${escapeHTML(ev.title)}">Reject</button>
+            <button class="ev-btn ev-btn-pink" style="padding:5px 12px;font-size:.75rem" data-approve="${ev.id}">Approve</button>
+            <button class="ev-btn ev-btn-danger" style="padding:5px 12px;font-size:.75rem" data-reject="${ev.id}" data-title="${escapeHTML(ev.title)}">Reject</button>
           </div>
         </td>
       </tr>`;
@@ -307,7 +385,7 @@ async function loadApprovalQueue() {
     });
   } catch (err) {
     console.error('loadApprovalQueue error:', err);
-    setSafeHTML(tbody, `<tr><td colspan="8" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`);
+    setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty" style="color:var(--ev-danger)">Error: ${escapeHTML(err.message)}</td></tr>`);
   }
 }
 
@@ -360,22 +438,22 @@ async function loadAllUsers() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      setSafeHTML(tbody, '<tr><td colspan="6" class="aw-table-empty">No users found</td></tr>');
+      setSafeHTML(tbody, '<tr><td colspan="6" class="ev-table-empty">No users found</td></tr>');
       return;
     }
 
     setSafeHTML(tbody, data.map((u, i) => {
       const joined = new Date(u.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-      const roleBadge = u.role === 'admin' ? 'aw-badge-admin' : u.role === 'organizer' ? 'aw-badge-organizer' : 'aw-badge-attendee';
+      const roleBadge = u.role === 'admin' ? 'admin-role' : u.role === 'organizer' ? 'organizer-role' : 'attendee-role';
       const roleLabel = u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : 'Attendee';
       return `<tr>
-        <td style="font-weight:600;color:var(--aw-text-muted)">${i + 1}</td>
-        <td style="font-weight:600;color:var(--aw-text)">${escapeHTML(u.full_name || '—')}</td>
+        <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
+        <td style="font-weight:600;color:var(--ev-text)">${escapeHTML(u.full_name || '—')}</td>
         <td>${escapeHTML(u.email || '—')}</td>
-        <td><span class="aw-badge ${roleBadge}">${roleLabel}</span></td>
+        <td><span class="ev-badge ${roleBadge}">${roleLabel}</span></td>
         <td>${joined}</td>
         <td>
-          ${u.role !== 'admin' ? `<button class="aw-btn" style="padding:5px 12px;font-size:.72rem" data-set-role="${u.id}" data-current="${u.role}" data-name="${escapeHTML(u.full_name || u.email || '')}">Change Role</button>` : '<span style="color:var(--aw-text-muted);font-size:.75rem">Protected</span>'}
+          ${u.role !== 'admin' ? `<button class="ev-btn ev-btn-outline ev-btn-sm" data-set-role="${u.id}" data-current="${u.role}" data-name="${escapeHTML(u.full_name || u.email || '')}">Change Role</button>` : '<span style="color:var(--ev-text-muted);font-size:.75rem">Protected</span>'}
         </td>
       </tr>`;
     }).join(''));
@@ -386,7 +464,7 @@ async function loadAllUsers() {
     });
   } catch (err) {
     console.error('loadAllUsers error:', err);
-    setSafeHTML(tbody, `<tr><td colspan="6" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`);
+    setSafeHTML(tbody, `<tr><td colspan="6" class="ev-table-empty" style="color:var(--ev-danger)">Error: ${escapeHTML(err.message)}</td></tr>`);
   }
 }
 
@@ -422,7 +500,7 @@ async function loadAllEvents() {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      setSafeHTML(tbody, '<tr><td colspan="8" class="aw-table-empty">No events in the system</td></tr>');
+      setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No events in the system</td></tr>');
       return;
     }
 
@@ -436,30 +514,30 @@ async function loadAllEvents() {
 
       let statusBadge, statusLabel;
       if (ev.status === 'published' && ev.admin_approved) {
-        statusBadge = 'aw-badge-approved'; statusLabel = 'Live';
+        statusBadge = 'published'; statusLabel = 'Live';
       } else if (ev.status === 'published' && !ev.admin_approved) {
-        statusBadge = 'aw-badge-pending'; statusLabel = 'Pending';
+        statusBadge = 'pending'; statusLabel = 'Pending';
       } else if (ev.status === 'draft') {
-        statusBadge = 'aw-badge-draft'; statusLabel = 'Draft';
+        statusBadge = 'draft'; statusLabel = 'Draft';
       } else {
-        statusBadge = 'aw-badge-draft'; statusLabel = ev.status || 'Unknown';
+        statusBadge = 'draft'; statusLabel = ev.status || 'Unknown';
         statusLabel = statusLabel.charAt(0).toUpperCase() + statusLabel.slice(1);
       }
 
       return `<tr>
-        <td style="font-weight:600;color:var(--aw-text-muted)">${i + 1}</td>
-        <td style="font-weight:600;color:var(--aw-text)">${escapeHTML(ev.title)}</td>
+        <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
+        <td style="font-weight:600;color:var(--ev-text)">${escapeHTML(ev.title)}</td>
         <td>${escapeHTML(org.full_name || org.email || '—')}</td>
         <td>${date}</td>
-        <td><span class="aw-badge ${statusBadge}">${statusLabel}</span></td>
-        <td>${ev.admin_approved ? '<span style="color:var(--aw-green)">✓</span>' : '<span style="color:var(--aw-text-muted)">—</span>'}</td>
+        <td><span class="ev-badge ${statusBadge}">${statusLabel}</span></td>
+        <td>${ev.admin_approved ? '<span style="color:var(--ev-success)">✓</span>' : '<span style="color:var(--ev-text-muted)">—</span>'}</td>
         <td>${sold}/${cap}</td>
         <td style="font-weight:600">${rev > 0 ? '$' + rev.toLocaleString() : '—'}</td>
       </tr>`;
     }).join(''));
   } catch (err) {
     console.error('loadAllEvents error:', err);
-    setSafeHTML(tbody, `<tr><td colspan="8" class="aw-table-empty" style="color:var(--aw-red)">Error: ${escapeHTML(err.message)}</td></tr>`);
+    setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty" style="color:var(--ev-danger)">Error: ${escapeHTML(err.message)}</td></tr>`);
   }
 }
 
@@ -511,23 +589,21 @@ function animateStat(id, value, prefix = '') {
 }
 
 function showToast(message, type = 'success') {
-  // Remove existing toast
-  document.querySelector('.aw-toast')?.remove();
+  // Use the shared toast container if available
+  const container = document.getElementById('toast-container');
 
   const toast = document.createElement('div');
-  toast.className = `aw-toast ${type}`;
+  toast.className = `ev-toast ${type}`;
+  setSafeHTML(toast, `<span>${escapeHTML(message)}</span>`);
 
-  const icon = type === 'success'
-    ? '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#34d399" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
-    : '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#f87171" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-
-  setSafeHTML(toast, icon + `<span>${escapeHTML(message)}</span>`);
-  document.body.appendChild(toast);
+  if (container) {
+    container.appendChild(toast);
+  } else {
+    document.body.appendChild(toast);
+  }
 
   setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(16px)';
-    toast.style.transition = 'all .3s ease';
+    toast.classList.add('out');
     setTimeout(() => toast.remove(), 300);
   }, 4000);
 }
