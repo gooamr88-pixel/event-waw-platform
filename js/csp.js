@@ -35,7 +35,7 @@
     `img-src 'self' ${supabaseUrl} data: blob: https://*.tile.openstreetmap.org https://maps.googleapis.com https://maps.gstatic.com https://*.ggpht.com https://lh3.googleusercontent.com https://streetviewpixels-pa.googleapis.com`,
     
     // Connect: API calls to Supabase + Stripe + Brevo + Cloudflare + esm.sh + Google Maps
-    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com https://cloudflareinsights.com https://esm.sh https://*.tile.openstreetmap.org https://ipapi.co https://www.cloudflare.com https://maps.googleapis.com https://places.googleapis.com`,
+    `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com https://cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net https://*.tile.openstreetmap.org https://ipapi.co https://www.cloudflare.com https://maps.googleapis.com https://places.googleapis.com`,
     
     // Frames: Stripe Checkout + Google Maps
     "frame-src https://js.stripe.com https://hooks.stripe.com https://maps.google.com https://www.google.com",
