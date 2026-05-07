@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION admin_delete_event(p_event_id UUID)
+RETURNS void AS $$
+BEGIN
+  -- Check if the current user is an Admin
+  IF NOT is_admin() THEN
+    RAISE EXCEPTION 'Unauthorized: admin role required';
+  END IF;
+
+  -- Delete the event
+  DELETE FROM events WHERE id = p_event_id;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Event not found';
+  END IF;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION admin_delete_event(UUID) TO authenticated;

@@ -1066,7 +1066,7 @@ async function handleAdminSuspendEvent(eventId, title) {
   if (!reason || !reason.trim()) return;
   try {
     // Get organizer email
-    const { data: evData } = await supabase.from('events').select('organizer_email, profiles!events_organizer_id_fkey(email)').eq('id', eventId).single();
+    const { data: evData } = await supabase.from('events').select('organizer_email, profiles(email)').eq('id', eventId).single();
     const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
 
     const { error } = await supabase.rpc('admin_reject_event', { p_event_id: eventId, p_reason: reason.trim() });
@@ -1101,7 +1101,7 @@ async function handleAdminDeleteEvent(eventId, title) {
   if (!reason || !reason.trim()) return;
   try {
     // Get organizer email BEFORE deleting
-    const { data: evData } = await supabase.from('events').select('organizer_email, profiles!events_organizer_id_fkey(email)').eq('id', eventId).single();
+    const { data: evData } = await supabase.from('events').select('organizer_email, profiles(email)').eq('id', eventId).single();
     const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
 
     // Delete from Supabase via RPC to bypass RLS restrictions
