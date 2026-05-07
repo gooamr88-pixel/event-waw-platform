@@ -1,0 +1,33 @@
+{
+  "name": "event-waw-platform",
+  "version": "2.0.0",
+  "description": "Event Waw — Enterprise-Grade Event Management SaaS Platform",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx serve . -l 3000 --cors",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "node --experimental-vm-modules node_modules/.bin/jest --config jest.config.js",
+    "test:unit:watch": "node --experimental-vm-modules node_modules/.bin/jest --config jest.config.js --watch",
+    "test:e2e": "npx playwright test --config playwright.config.js",
+    "test:e2e:ui": "npx playwright test --config playwright.config.js --ui",
+    "test:e2e:headed": "npx playwright test --config playwright.config.js --headed",
+    "test:security": "npx playwright test tests/security/ --config playwright.config.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/.bin/jest --config jest.config.js --coverage",
+    "test:report": "npx playwright show-report test-results/playwright-report",
+    "lint": "npx eslint 'src/**/*.js' 'js/**/*.js' --max-warnings 0",
+    "lint:fix": "npx eslint 'src/**/*.js' 'js/**/*.js' --fix",
+    "audit:filesize": "node scripts/audit-filesize.js",
+    "precommit": "npm run lint && npm run audit:filesize && npm run test:unit"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "eslint": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

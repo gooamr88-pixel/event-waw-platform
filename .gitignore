@@ -30,8 +30,12 @@ npm-debug.log*
 # Node & Dependencies
 # =========================
 node_modules/
-package.json
 package-lock.json
+
+# =========================
+# Test Results & Coverage
+# =========================
+test-results/
 
 # =========================
 # Build Outputs (Vite)
