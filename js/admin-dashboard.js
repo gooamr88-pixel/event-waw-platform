@@ -457,7 +457,7 @@ async function loadApprovalQueue() {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('id, title, category, date, created_at, status, admin_approved, admin_rejected_reason, organizer_id, profiles!events_organizer_id_fkey(full_name, email)')
+      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, date, end_date, category, venue, venue_address, city, organizer_id, created_at, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
       .eq('status', 'published')
       .eq('admin_approved', false)
       .order('created_at', { ascending: true });
@@ -475,7 +475,7 @@ async function loadApprovalQueue() {
       const submitted = new Date(ev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       return `<tr>
         <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
-        <td style="font-weight:600;color:var(--ev-text)">${escapeHTML(ev.title)}</td>
+        <td><a href="#" class="ev-event-detail-link" data-event-idx="${i}" style="font-weight:600;color:var(--ev-accent);text-decoration:none;cursor:pointer">${escapeHTML(ev.title)}</a></td>
         <td>${escapeHTML(org.full_name || org.email || '—')}</td>
         <td>${date}</td>
         <td>${escapeHTML(ev.category || '—')}</td>
@@ -496,6 +496,15 @@ async function loadApprovalQueue() {
     });
     tbody.querySelectorAll('[data-reject]').forEach(btn => {
       btn.addEventListener('click', () => handleReject(btn.dataset.reject, btn.dataset.title));
+    });
+
+    // Wire up event detail links
+    tbody.querySelectorAll('.ev-event-detail-link').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const idx = parseInt(link.dataset.eventIdx, 10);
+        if (data[idx]) showEventDetailModal(data[idx]);
+      });
     });
   } catch (err) {
     console.error('loadApprovalQueue error:', err);
@@ -793,7 +802,10 @@ async function loadAllEvents() {
         <td>${sold}/${cap}</td>
         <td style="font-weight:600">${rev > 0 ? '$' + rev.toLocaleString() : '—'}</td>
         <td>
-          <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:var(--ev-danger);border-color:var(--ev-danger)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" ${statusBadge === 'draft' ? 'disabled' : ''}>Suspend</button>
+          <div style="display:flex;gap:6px">
+            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:#f59e0b;border-color:#f59e0b" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" ${statusBadge === 'draft' ? 'disabled' : ''}>Suspend</button>
+            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-delete-btn" style="color:var(--ev-danger);border-color:var(--ev-danger)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}">Delete</button>
+          </div>
         </td>
       </tr>`;
     }).join(''));
@@ -801,6 +813,11 @@ async function loadAllEvents() {
     // Wire up suspend buttons
     tbody.querySelectorAll('.ev-admin-suspend-btn').forEach(btn => {
       btn.addEventListener('click', () => handleAdminSuspendEvent(btn.dataset.id, btn.dataset.title));
+    });
+
+    // Wire up delete buttons
+    tbody.querySelectorAll('.ev-admin-delete-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleAdminDeleteEvent(btn.dataset.id, btn.dataset.title));
     });
 
     // Wire up event detail links
@@ -1044,13 +1061,25 @@ async function handleAdminSuspendEvent(eventId, title) {
     message: `Suspend "${title}"? This will hide it from the public. Provide a reason:`,
     placeholder: 'Reason for suspension...',
     confirmText: 'Suspend Event',
-    confirmColor: '#dc2626'
+    confirmColor: '#f59e0b'
   });
   if (!reason || !reason.trim()) return;
   try {
+    // Get organizer email
+    const { data: evData } = await supabase.from('events').select('organizer_email, profiles!events_organizer_id_fkey(email)').eq('id', eventId).single();
+    const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
+
     const { error } = await supabase.rpc('admin_reject_event', { p_event_id: eventId, p_reason: reason.trim() });
     if (error) throw error;
     showToast(`Event "${title}" has been suspended.`, 'success');
+    
+    // Automatically trigger email to organizer
+    if (organizerEmail) {
+      window.location.href = `mailto:${organizerEmail}?subject=Event%20Suspended:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20suspended.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`;
+    } else {
+      showToast('Organizer email not found. Email not sent.', 'error');
+    }
+
     loadedPanels.delete('events-all');
     loadedPanels.delete('dashboard');
     loadedPanels.delete('approvals');
@@ -1058,6 +1087,42 @@ async function handleAdminSuspendEvent(eventId, title) {
     await loadDashboardData();
   } catch (err) {
     showToast('Failed to suspend event: ' + err.message, 'error');
+  }
+}
+
+async function handleAdminDeleteEvent(eventId, title) {
+  const reason = await showPromptModal({
+    title: 'Delete Event',
+    message: `Are you sure you want to completely delete "${title}"? This cannot be undone. Provide a reason for deletion:`,
+    placeholder: 'Reason for deletion...',
+    confirmText: 'Delete Event',
+    confirmColor: '#dc2626'
+  });
+  if (!reason || !reason.trim()) return;
+  try {
+    // Get organizer email BEFORE deleting
+    const { data: evData } = await supabase.from('events').select('organizer_email, profiles!events_organizer_id_fkey(email)').eq('id', eventId).single();
+    const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
+
+    // Delete from Supabase
+    const { error } = await supabase.from('events').delete().eq('id', eventId);
+    if (error) throw error;
+    showToast(`Event "${title}" has been deleted.`, 'success');
+
+    // Automatically trigger email to organizer
+    if (organizerEmail) {
+      window.location.href = `mailto:${organizerEmail}?subject=Event%20Deleted:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20deleted.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`;
+    } else {
+      showToast('Organizer email not found. Email not sent.', 'error');
+    }
+
+    loadedPanels.delete('events-all');
+    loadedPanels.delete('dashboard');
+    loadedPanels.delete('approvals');
+    await loadAllEvents();
+    await loadDashboardData();
+  } catch (err) {
+    showToast('Failed to delete event: ' + err.message, 'error');
   }
 }
 

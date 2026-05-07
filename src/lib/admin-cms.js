@@ -138,10 +138,14 @@ export async function renderCMSEditor(container) {
         .cms-input{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--ev-border);background:var(--ev-bg);color:var(--ev-text);font-family:var(--ev-font);font-size:.82rem;transition:border-color .2s}
         .cms-input:focus{outline:none;border-color:var(--ev-yellow)}
         .cms-sponsor-row,.cms-stat-row{display:grid;gap:10px;align-items:end;padding:10px;border-radius:8px;border:1px solid var(--ev-border);margin-bottom:8px;background:var(--ev-bg)}
-        .cms-sponsor-row{grid-template-columns:1fr 2fr auto}
+        .cms-sponsor-row{grid-template-columns:120px 1fr auto; align-items:center;}
         .cms-stat-row{grid-template-columns:1fr 2fr 1fr auto}
         .cms-remove{background:none;border:none;color:var(--ev-danger);cursor:pointer;font-size:1.1rem;padding:4px 8px;border-radius:6px;transition:background .2s}
         .cms-remove:hover{background:rgba(220,38,38,.06)}
+        .cms-dropzone{border:2px dashed var(--ev-border);border-radius:8px;text-align:center;cursor:pointer;background:var(--ev-bg-alt);transition:all .2s ease;position:relative;overflow:hidden;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+        .cms-dropzone:hover,.cms-dropzone.dragover{border-color:var(--ev-yellow);background:rgba(245,158,11,.05)}
+        .cms-dropzone img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;background:var(--ev-bg);z-index:1}
+        .cms-dropzone input[type="file"]{position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2}
       `;
       document.head.appendChild(style);
     }
@@ -219,18 +223,81 @@ export async function renderCMSEditor(container) {
 
 /* ── Render helpers ── */
 
+async function handleSponsorUpload(file, rowEl, spinnerEl) {
+  if (!file) return;
+  spinnerEl.style.display = 'block';
+  const ext = file.name.split('.').pop();
+  const path = `cms/sponsors/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+  try {
+    const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+    if (urlData?.publicUrl) {
+      rowEl.querySelector('[data-field="logo_url"]').value = urlData.publicUrl;
+      let img = rowEl.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+        rowEl.querySelector('.cms-dropzone').appendChild(img);
+      }
+      img.src = urlData.publicUrl;
+    }
+  } catch (err) {
+    window.dispatchEvent(new CustomEvent('cms-error', { detail: { message: 'Upload failed: ' + err.message } }));
+  } finally {
+    spinnerEl.style.display = 'none';
+  }
+}
+
 function renderSponsorRows(container, sponsors) {
   container.innerHTML = sponsors.map((s, i) => `
     <div class="cms-sponsor-row">
-      <div><label class="cms-label">Name</label><input class="cms-input" data-field="name" value="${escAttr(s.name || '')}" /></div>
-      <div><label class="cms-label">Logo URL</label><input class="cms-input" data-field="logo_url" value="${escAttr(s.logo_url || '')}" /></div>
+      <div class="cms-dropzone">
+        <div class="dz-content" style="font-size:0.75rem;opacity:0.7;line-height:1.2;margin-top:5px">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><br/>
+          Drop Logo
+        </div>
+        ${s.logo_url ? `<img src="${escAttr(s.logo_url)}" />` : ''}
+        <div class="dz-spinner" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;background:rgba(0,0,0,0.6);color:#fff;padding:4px;border-radius:4px;font-size:12px">⏳</div>
+        <input type="file" accept="image/*" class="dz-file-input" title="Drag & drop or click to upload" />
+        <input type="hidden" data-field="logo_url" value="${escAttr(s.logo_url || '')}" />
+      </div>
+      <div>
+        <label class="cms-label">Sponsor Name</label>
+        <input class="cms-input" data-field="name" value="${escAttr(s.name || '')}" placeholder="e.g. Acme Corp" />
+      </div>
       <button class="cms-remove" data-idx="${i}" title="Remove">×</button>
     </div>
   `).join('');
+  
   container.querySelectorAll('.cms-remove').forEach(btn => {
     btn.addEventListener('click', () => {
       sponsors.splice(Number(btn.dataset.idx), 1);
       renderSponsorRows(container, sponsors);
+    });
+  });
+
+  container.querySelectorAll('.cms-dropzone').forEach(dz => {
+    const fileInput = dz.querySelector('.dz-file-input');
+    const spinner = dz.querySelector('.dz-spinner');
+    const rowEl = dz.closest('.cms-sponsor-row');
+
+    dz.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dz.classList.add('dragover');
+    });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dz.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleSponsorUpload(e.dataTransfer.files[0], rowEl, spinner);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) {
+        handleSponsorUpload(e.target.files[0], rowEl, spinner);
+      }
     });
   });
 }

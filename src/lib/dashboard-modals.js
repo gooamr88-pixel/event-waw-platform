@@ -434,9 +434,11 @@ export function setupCreateModal() {
     const timezone = document.getElementById('ce-timezone')?.value;
     if (!timezone) markError('ce-timezone', 'Time zone is required');
 
-    // Organizer Information
     const organizerName = document.getElementById('ce-organizer-name')?.value.trim();
     if (!organizerName) markError('ce-organizer-name', 'Organizer name is required');
+
+    const organizerEmail = document.getElementById('ce-organizer-email')?.value.trim();
+    if (!organizerEmail) markError('ce-organizer-email', 'Organizer email is required');
 
     const startDate = document.getElementById('ce-start-date')?.value;
     if (!startDate) markError('ce-start-date', 'Start date is required');
