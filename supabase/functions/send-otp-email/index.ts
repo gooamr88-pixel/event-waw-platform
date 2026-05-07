@@ -8,7 +8,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
-import { rateLimit } from '../_shared/rate-limit.ts';
+import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
 import { otpLoginEmail, otpRegisterEmail } from '../_shared/email-templates.ts';
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!;
@@ -18,6 +18,11 @@ const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Event Waw';
 serve(async (req) => {
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
+
+  // Usage at top of handler:
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
+  const limited = enforceRateLimit(ip);
+  if (limited) return limited;
 
   try {
     // 1. Authenticate the calling user

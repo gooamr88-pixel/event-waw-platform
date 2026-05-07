@@ -10,7 +10,7 @@ import Stripe from 'https://esm.sh/stripe@17?target=deno';
 import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { isValidUUID, isValidQuantity } from '../_shared/validation.ts';
-import { rateLimit } from '../_shared/rate-limit.ts';
+import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
 
@@ -18,6 +18,11 @@ serve(async (req) => {
   // Handle CORS preflight
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
+
+  // Usage at top of handler:
+  const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
+  const limited = enforceRateLimit(ip);
+  if (limited) return limited;
 
   try {
     // ── Parse and validate input ──
