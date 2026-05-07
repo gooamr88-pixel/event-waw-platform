@@ -324,8 +324,7 @@ async function saveSetting(key, value, label) {
   try {
     const { error } = await supabase
       .from('platform_settings')
-      .update({ value, updated_at: new Date().toISOString() })
-      .eq('key', key);
+      .upsert({ key, value, updated_at: new Date().toISOString() });
 
     if (error) throw error;
 
