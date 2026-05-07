@@ -103,6 +103,7 @@ export function renderNotifications() {
 
 export function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
+  if (diff < 0) return 'Just now'; // M-11: Fix for future dates (e.g. clock skew)
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return 'Just now';
   if (mins < 60) return `${mins}m ago`;

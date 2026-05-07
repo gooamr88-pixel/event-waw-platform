@@ -69,6 +69,14 @@ export function getRemainingRequests(key: string, maxRequests: number): number {
 const ipRateLimitMap = new Map<string, { count: number; reset: number }>();
 const MAX_REQ = 5, WINDOW = 60_000;
 
+// M-5: Cleanup expired entries to prevent memory leak
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of ipRateLimitMap.entries()) {
+    if (now > entry.reset) ipRateLimitMap.delete(ip);
+  }
+}, 60_000);
+
 export function enforceRateLimit(ip: string) {
   const now = Date.now();
   const entry = ipRateLimitMap.get(ip) ?? { count: 0, reset: now + WINDOW };

@@ -44,12 +44,17 @@ export function resetMapState() {
  * Initialize Google Places Autocomplete (PlaceAutocompleteElement API).
  * @param {Object} deps - { getKeywords, setKeywords, renderKeywords }
  */
+let googleMapsRetries = 0;
 export async function initGooglePlacesAutocomplete(deps) {
   if (googleAutocompleteInitialized) return;
 
   // Guard: wait for Google Maps API to load
   if (typeof google === 'undefined' || !google.maps || !google.maps.importLibrary) {
-    setTimeout(() => initGooglePlacesAutocomplete(deps), 500);
+    if (googleMapsRetries++ < 20) {
+      setTimeout(() => initGooglePlacesAutocomplete(deps), 500);
+    } else {
+      console.warn('Google Maps API failed to load after 10 seconds.');
+    }
     return;
   }
 

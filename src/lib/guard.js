@@ -225,10 +225,7 @@ export async function guestOnlyPage(options = {}) {
 
     // User is logged in → route by role
     let dest = redirectTo;
-    try {
-      const profile = await getCurrentProfile();
-      if (isAdminLevel(profile?.role)) dest = '/admin.html';
-    } catch (_) { /* fallback to provided redirectTo */ }
+    if (isAdminLevel(profile?.role)) dest = '/admin.html';
 
     window.location.href = dest;
     return false;

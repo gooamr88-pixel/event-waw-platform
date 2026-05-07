@@ -14,9 +14,9 @@ export function renderRevenueBreakdown(data) {
     <thead><tr><th>Event</th><th style="text-align:right">Gross</th><th style="text-align:right">Fee (5%)</th><th style="text-align:right">Net Payout</th><th style="text-align:center">Scan %</th></tr></thead>
     <tbody>${data.map(r => `<tr>
       <td><div style="font-weight:600">${escapeHTML(r.event_title)}</div><div style="font-size:.76rem;color:var(--ev-text-sec)">${r.total_tickets_sold} tickets</div></td>
-      <td style="text-align:right;font-weight:600">$${Number(r.gross_revenue).toLocaleString()}</td>
-      <td style="text-align:right;color:var(--ev-text-sec)">-$${Number(r.platform_fee).toLocaleString()}</td>
-      <td style="text-align:right;color:var(--ev-pink);font-weight:700">$${Number(r.net_revenue).toLocaleString()}</td>
+      <td style="text-align:right;font-weight:600">${formatCurrency(r.gross_revenue, r.currency || 'USD')}</td>
+      <td style="text-align:right;color:var(--ev-text-sec)">-${formatCurrency(r.platform_fee, r.currency || 'USD')}</td>
+      <td style="text-align:right;color:var(--ev-pink);font-weight:700">${formatCurrency(r.net_revenue, r.currency || 'USD')}</td>
       <td style="text-align:center">${Number(r.scan_rate)}%</td>
     </tr>`).join('')}</tbody></table></div>`);
 }

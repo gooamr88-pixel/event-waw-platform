@@ -65,21 +65,26 @@ async function loadProfileData() {
 
     if (data?.organizer_profile) {
       const p = data.organizer_profile;
-      if (p.brand_name) document.getElementById('prof-brand').value = p.brand_name;
-      if (p.address) document.getElementById('prof-address').value = p.address;
-      if (p.bio) document.getElementById('prof-bio').value = p.bio;
-      if (p.phone) document.getElementById('prof-phone').value = p.phone;
-      if (p.website) document.getElementById('prof-website').value = p.website;
-      if (p.payment_method) document.getElementById('prof-payment').value = p.payment_method;
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+
+      if (p.brand_name) setVal('prof-brand', p.brand_name);
+      if (p.address) setVal('prof-address', p.address);
+      if (p.bio) setVal('prof-bio', p.bio);
+      if (p.phone) setVal('prof-phone', p.phone);
+      if (p.website) setVal('prof-website', p.website);
+      if (p.payment_method) setVal('prof-payment', p.payment_method);
       if (p.social) {
-        if (p.social.instagram) document.getElementById('prof-ig').value = p.social.instagram;
-        if (p.social.tiktok) document.getElementById('prof-tiktok').value = p.social.tiktok;
-        if (p.social.facebook) document.getElementById('prof-fb').value = p.social.facebook;
-        if (p.social.x) document.getElementById('prof-x').value = p.social.x;
-        if (p.social.linkedin) document.getElementById('prof-linkedin').value = p.social.linkedin;
+        if (p.social.instagram) setVal('prof-ig', p.social.instagram);
+        if (p.social.tiktok) setVal('prof-tiktok', p.social.tiktok);
+        if (p.social.facebook) setVal('prof-fb', p.social.facebook);
+        if (p.social.x) setVal('prof-x', p.social.x);
+        if (p.social.linkedin) setVal('prof-linkedin', p.social.linkedin);
       }
     }
-  } catch (_) { /* No profile data yet */ }
+  } catch (err) {
+    // H-5: Proper error logging instead of silent swallow
+    console.error('Error loading profile data:', err);
+  }
 }
 
 export function setupUserDropdown() {

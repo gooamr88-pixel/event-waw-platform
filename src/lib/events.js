@@ -150,9 +150,9 @@ export async function getOrganizerEvents() {
   const { data, error } = await supabase
     .from('events')
     .select(`
-      *,
+      id, title, date, status, admin_approved, admin_rejected_reason, currency, created_at, listing_type,
       ticket_tiers (
-        id, name, price, capacity, sold_count
+        id, name, price, capacity, sold_count, currency
       )
     `)
     .eq('organizer_id', user.id)  // Explicit filter + RLS

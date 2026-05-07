@@ -3,25 +3,24 @@
  * Secure API Wrapper
  */
 import { supabase } from './supabase.js';
-import { showToast } from './dashboard-ui.js';
 
 export async function safeQuery(queryPromise) {
   try {
     const { data, error } = await queryPromise;
     if (error) {
       console.error('[Supabase Error]:', error.message, error.details);
-      showToast(error.message, 'error');
+      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('api-error', { detail: error.message }));
       return { data: null, error };
     }
     return { data, error: null };
   } catch (err) {
     console.error('[Network/Runtime Error]:', err);
-    showToast('Connection lost. Please check your network.', 'error');
+    if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('api-error', { detail: 'Connection lost. Please check your network.' }));
     return { data: null, error: err };
   }
 }
 
-/** @deprecated Use showToast from dashboard-ui.js directly */
+/** @deprecated Trigger via api-error event instead */
 export function showGlobalToast(message, type = 'error') {
-  showToast(message, type);
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('api-error', { detail: message }));
 }

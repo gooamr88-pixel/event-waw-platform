@@ -100,6 +100,15 @@ export function setupTicketListeners() {
     const earlyEnd = document.getElementById('ce-early-end')?.value || '';
     if (!name) { showToast('Ticket name is required', 'error'); return; }
     if (!price && price !== 0) { showToast('Ticket price is required', 'error'); return; }
+
+    // H-10: Early Bird Price Validation
+    if (earlyPrice !== '') {
+      const parsedEarly = parseFloat(earlyPrice);
+      if (isNaN(parsedEarly) || parsedEarly < 0) {
+        showToast('Early bird price must be a valid positive number', 'error');
+        return;
+      }
+    }
     const currency = document.getElementById('ce-currency')?.value || 'USD';
     ceTicketsList.push({ name, qty, price, category, earlyPrice, earlyEnd, currency });
     renderCeTicketsTable();

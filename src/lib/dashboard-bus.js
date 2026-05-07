@@ -12,7 +12,8 @@ const _handlers = new Map();
  * @param {Function} handler - Async handler function
  */
 export function onDashboardAction(action, handler) {
-  _handlers.set(action, handler);
+  if (!_handlers.has(action)) _handlers.set(action, new Set());
+  _handlers.get(action).add(handler);
 }
 
 /**
@@ -22,7 +23,10 @@ export function onDashboardAction(action, handler) {
  * @returns {Promise<any>}
  */
 export async function emitDashboardAction(action, ...args) {
-  const handler = _handlers.get(action);
-  if (handler) return await handler(...args);
+  const handlers = _handlers.get(action);
+  if (handlers && handlers.size > 0) {
+    const promises = Array.from(handlers).map(h => h(...args));
+    return await Promise.all(promises);
+  }
   console.warn(`[dashboard-bus] No handler for action: ${action}`);
 }

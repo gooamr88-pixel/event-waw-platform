@@ -5,8 +5,8 @@
    platform_settings table (Hero, Sponsors,
    Stats Bar). Loaded by admin-dashboard.js.
    =================================== */
-
 import { supabase } from './supabase.js';
+import { setSafeHTML } from './dom.js';
 
 /**
  * Renders the full CMS editor into the given container element.
@@ -24,14 +24,14 @@ export async function renderCMSEditor(container) {
     if (error) throw error;
 
     if (!data || data.length === 0) {
-      container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--ev-text-muted)">No CMS data found. Run migration v15 to seed initial data.</div>';
+      setSafeHTML(container, '<div style="text-align:center;padding:40px;color:var(--ev-text-muted)">No CMS data found. Run migration v15 to seed initial data.</div>');
       return;
     }
 
     const settings = Object.fromEntries(data.map(r => [r.key, r.value]));
     const timestamps = Object.fromEntries(data.map(r => [r.key, r.updated_at]));
 
-    container.innerHTML = `
+    setSafeHTML(container, `
       <p style="font-size:.85rem;color:var(--ev-text-sec);margin-bottom:24px">
         Edit the public landing page content. Changes are saved directly to the database and reflected on <a href="index.html" target="_blank" style="color:var(--ev-info)">the landing page</a> on next reload.
       </p>
@@ -67,7 +67,7 @@ export async function renderCMSEditor(container) {
             </div>
             <div>
               <label class="cms-label">Preview</label>
-              <img id="cms-hero-preview" src="${escAttr(settings.hero?.image_url || '')}" style="height:60px;border-radius:8px;border:1px solid var(--ev-border);object-fit:cover" onerror="this.style.display='none'" />
+              <img id="cms-hero-preview" src="${escAttr(settings.hero?.image_url || '')}" style="height:60px;border-radius:8px;border:1px solid var(--ev-border);object-fit:cover" />
             </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px">
@@ -127,7 +127,13 @@ export async function renderCMSEditor(container) {
           </div>
         </div>
       </div>
-    `;
+    `);
+
+    // Add safe error handler logic for hero preview image
+    const previewImg = document.getElementById('cms-hero-preview');
+    if (previewImg) {
+      previewImg.addEventListener('error', () => { previewImg.style.display = 'none'; });
+    }
 
     // Inject inline CMS form styles
     if (!document.getElementById('cms-editor-styles')) {
@@ -249,7 +255,7 @@ async function handleSponsorUpload(file, rowEl, spinnerEl) {
 }
 
 function renderSponsorRows(container, sponsors) {
-  container.innerHTML = sponsors.map((s, i) => `
+  setSafeHTML(container, sponsors.map((s, i) => `
     <div class="cms-sponsor-row">
       <div class="cms-dropzone">
         <div class="dz-content" style="font-size:0.75rem;opacity:0.7;line-height:1.2;margin-top:5px">
@@ -267,7 +273,7 @@ function renderSponsorRows(container, sponsors) {
       </div>
       <button class="cms-remove" data-idx="${i}" title="Remove">×</button>
     </div>
-  `).join('');
+  `).join(''));
   
   container.querySelectorAll('.cms-remove').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -303,14 +309,14 @@ function renderSponsorRows(container, sponsors) {
 }
 
 function renderStatRows(container, stats) {
-  container.innerHTML = stats.map((s, i) => `
+  setSafeHTML(container, stats.map((s, i) => `
     <div class="cms-stat-row">
       <div><label class="cms-label">Value</label><input class="cms-input" data-field="value" value="${escAttr(s.value || '')}" /></div>
       <div><label class="cms-label">Label</label><input class="cms-input" data-field="label" value="${escAttr(s.label || '')}" /></div>
       <div><label class="cms-label">Icon</label><input class="cms-input" data-field="icon" value="${escAttr(s.icon || 'calendar')}" placeholder="calendar, users, layers" /></div>
       <button class="cms-remove" data-idx="${i}" title="Remove">×</button>
     </div>
-  `).join('');
+  `).join(''));
   container.querySelectorAll('.cms-remove').forEach(btn => {
     btn.addEventListener('click', () => {
       stats.splice(Number(btn.dataset.idx), 1);

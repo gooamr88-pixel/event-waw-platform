@@ -91,7 +91,12 @@ export function setupTicketsPanel() {
             t.scanned_at ? 'Scanned' : 'Pending', t.created_at || ''
           ]);
         });
-        const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+        const sanitizeCsvCell = val => {
+          let str = String(val || '');
+          if (/^[=+\-@]/.test(str)) str = "'" + str; // L-5: Prevent CSV formula injection
+          return `"${str.replace(/"/g,'""')}"`;
+        };
+        const csv = rows.map(r => r.map(c => sanitizeCsvCell(c)).join(',')).join('\n');
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
         a.download = `tickets_${Date.now()}.csv`;

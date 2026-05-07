@@ -66,22 +66,23 @@ serve(async (req) => {
     let promoDiscountType = 'percentage';
     let promoId: string | null = null;
 
-    if (promo_code && typeof promo_code === 'string') {
-      // Look up the tier to get event_id
-      const { data: tierLookup } = await adminClient
-        .from('ticket_tiers')
-        .select('event_id')
-        .eq('id', tier_id)
-        .single();
+    // Look up the tier to get event_id and currency globally
+    const { data: tierLookup } = await adminClient
+      .from('ticket_tiers')
+      .select('event_id, currency')
+      .eq('id', tier_id)
+      .single();
 
-      if (tierLookup) {
-        const { data: promo } = await adminClient
-          .from('promo_codes')
-          .select('*')
-          .eq('code', promo_code.trim().toUpperCase())
-          .eq('event_id', tierLookup.event_id)
-          .eq('is_active', true)
-          .maybeSingle();
+    const checkoutCurrency = (tierLookup?.currency || 'usd').toLowerCase();
+
+    if (promo_code && typeof promo_code === 'string' && tierLookup) {
+      const { data: promo } = await adminClient
+        .from('promo_codes')
+        .select('*')
+        .eq('code', promo_code.trim().toUpperCase())
+        .or(`event_id.eq.${tierLookup.event_id},event_id.is.null`)
+        .eq('is_active', true)
+        .maybeSingle();
 
         if (promo) {
           const now = new Date();
@@ -96,7 +97,6 @@ serve(async (req) => {
           }
         }
       }
-    }
 
     // Helper: apply discount to unit price (in cents)
     function applyDiscount(unitAmountCents: number): number {
@@ -177,7 +177,7 @@ serve(async (req) => {
         line_items: [
           {
             price_data: {
-              currency: 'usd',
+              currency: checkoutCurrency,
               product_data: {
                 name: `${res.event_title} — ${res.tier_name}`,
                 description: `${qty}x ticket(s) · Guest: ${guest_name.trim()}`,
@@ -284,7 +284,7 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: 'usd',
+            currency: checkoutCurrency,
             product_data: {
               name: `${res.event_title} — ${res.tier_name}`,
               description: `${qty}x ticket(s)`,
@@ -305,7 +305,7 @@ serve(async (req) => {
         ...(promoId ? { promo_id: promoId, promo_code: promo_code } : {}),
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
+      cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}&tier=${tier_id}&qty=${qty}`,
       expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes
     };
 

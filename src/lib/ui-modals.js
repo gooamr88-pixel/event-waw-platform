@@ -1,3 +1,6 @@
+import { setSafeHTML } from './dom.js';
+import { escapeHTML } from './utils.js';
+
 export function showConfirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', confirmColor = '#2563eb', cancelText = 'Cancel' }) {
   return new Promise((resolve) => {
     // Remove existing
@@ -8,7 +11,7 @@ export function showConfirmModal({ title = 'Confirm Action', message = 'Are you 
     overlay.id = 'ev-global-confirm';
     overlay.style.zIndex = '999999';
 
-    overlay.innerHTML = `
+    setSafeHTML(overlay, `
       <div class="ev-modal" style="max-width:400px">
         <div class="ev-modal-header">
           <h2>${escapeHTML(title)}</h2>
@@ -22,7 +25,7 @@ export function showConfirmModal({ title = 'Confirm Action', message = 'Are you 
           <button class="ev-btn" id="ev-global-confirm-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
         </div>
       </div>
-    `;
+    `);
 
     document.body.appendChild(overlay);
 
@@ -56,7 +59,7 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
     overlay.id = 'ev-global-prompt';
     overlay.style.zIndex = '999999';
 
-    overlay.innerHTML = `
+    setSafeHTML(overlay, `
       <div class="ev-modal" style="max-width:400px">
         <div class="ev-modal-header">
           <h2>${escapeHTML(title)}</h2>
@@ -73,7 +76,7 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
           <button class="ev-btn" id="ev-global-prompt-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
         </div>
       </div>
-    `;
+    `);
 
     document.body.appendChild(overlay);
 
@@ -111,15 +114,7 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
   });
 }
 
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
+
 
 export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK', buttonColor = '#2563eb' }) {
   return new Promise((resolve) => {
@@ -130,7 +125,7 @@ export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK
     overlay.id = 'ev-global-alert';
     overlay.style.zIndex = '999999';
 
-    overlay.innerHTML = `
+    setSafeHTML(overlay, `
       <div class="ev-modal" style="max-width:400px; text-align:center;">
         <h2 style="margin-bottom:16px;">${escapeHTML(title)}</h2>
         <p style="font-size:.95rem;color:var(--ev-text-muted);margin-bottom:24px;">
@@ -138,7 +133,7 @@ export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK
         </p>
         <button class="ev-btn" id="ev-global-alert-btn" style="background:${buttonColor};color:#fff;border:none;width:100%;">${escapeHTML(buttonText)}</button>
       </div>
-    `;
+    `);
 
     document.body.appendChild(overlay);
 

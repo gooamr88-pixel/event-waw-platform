@@ -26,6 +26,11 @@ export function showToast(message, type = 'info') {
   setTimeout(() => { toast.classList.add('out'); setTimeout(() => toast.remove(), 300); }, 3500);
 }
 
+// L-8: Decoupled API error handler
+window.addEventListener('api-error', (e) => {
+  showToast(e.detail || 'API Error occurred', 'error');
+});
+
 const _intervals = {};
 
 export function animateCounter(id, target) {
@@ -43,6 +48,12 @@ export function animateCounter(id, target) {
   let current = 0;
   const step = Math.max(1, Math.ceil(numTarget / 20));
   const intervalId = setInterval(() => {
+    // L-3: Clear interval if element is removed from DOM to prevent memory leak
+    if (!document.getElementById(id)) {
+      clearInterval(intervalId);
+      delete _intervals[id];
+      return;
+    }
     current += step;
     if (current >= numTarget) {
       current = numTarget;

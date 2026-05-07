@@ -166,6 +166,7 @@ function setupNotifications() {
 
   // Toggle dropdown
   bell?.addEventListener('click', (e) => {
+    e.stopPropagation(); // H-6: Prevent event from bubbling and immediately closing the dropdown
     if (e.target.closest('.ev-notif-dropdown')) return;
     const isOpen = dropdown?.classList.toggle('open');
     bell.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
@@ -223,7 +224,7 @@ function setupUserDropdownToggle() {
    Only visible to users with role=admin
    ================================== */
 function injectAdminBridge(auth) {
-  if (auth.profile?.role !== 'admin') return;
+  if (!['super_admin', 'admin', 'moderator'].includes(auth.profile?.role)) return;
   const nav = document.querySelector('.ev-sidebar-nav');
   if (!nav || document.getElementById('admin-bridge-link')) return;
 

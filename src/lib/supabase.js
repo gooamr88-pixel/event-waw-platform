@@ -134,6 +134,14 @@ async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
   const { data: pubData } = supabase.storage.from(bucket).getPublicUrl(storagePath);
   const publicUrl = pubData?.publicUrl;
   if (publicUrl) {
+    // M-2: Skip HEAD check for known public buckets to prevent waterfall
+    const publicBuckets = ['event-covers', 'avatars', 'sponsor-logos', 'public'];
+    if (publicBuckets.includes(bucket)) {
+      _evictStorageCache();
+      _storageUrlCache.set(cacheKey, { url: publicUrl, ts: Date.now() });
+      return publicUrl;
+    }
+
     try {
       const resp = await fetch(publicUrl, { method: 'HEAD', mode: 'cors' });
       if (resp.ok) {
@@ -167,10 +175,11 @@ async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
  */
 export async function resolveImageUrl(url) {
   if (!url) return null;
-  const RE = /\/storage\/v1\/object\/(?:public|sign)\/event-covers\/(.+?)(?:\?.*)?$/;
+  // M-1: Dynamically capture the bucket name instead of hardcoding 'event-covers'
+  const RE = /\/storage\/v1\/object\/(?:public|sign)\/([^\/]+)\/(.+?)(?:\?.*)?$/;
   const m = url.match(RE);
-  if (m && m[1]) {
-    return await getWorkingStorageUrl(decodeURIComponent(m[1]));
+  if (m && m[1] && m[2]) {
+    return await getWorkingStorageUrl(decodeURIComponent(m[2]), m[1]);
   }
   return url;
 }

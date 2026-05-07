@@ -59,14 +59,19 @@ export async function loadPayoutData() {
 
     if (data?.payout_info) {
       const p = data.payout_info;
-      if (p.bank_name) document.getElementById('bank-name').value = p.bank_name;
-      if (p.account_holder) document.getElementById('account-holder').value = p.account_holder;
-      if (p.account_number) document.getElementById('account-number').value = p.account_number;
-      if (p.swift_code) document.getElementById('swift-code').value = p.swift_code;
-      if (p.payout_currency) document.getElementById('payout-currency').value = p.payout_currency;
-      if (p.payout_email) document.getElementById('payout-email').value = p.payout_email;
+      const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      
+      if (p.bank_name) setVal('bank-name', p.bank_name);
+      if (p.account_holder) setVal('account-holder', p.account_holder);
+      if (p.account_number) setVal('account-number', p.account_number);
+      if (p.swift_code) setVal('swift-code', p.swift_code);
+      if (p.payout_currency) setVal('payout-currency', p.payout_currency);
+      if (p.payout_email) setVal('payout-email', p.payout_email);
     }
-  } catch (_) { /* No payout info yet */ }
+  } catch (err) {
+    // H-4: Proper error logging instead of silent swallow
+    console.error('Error loading payout data:', err);
+  }
 }
 
 /* ==================================

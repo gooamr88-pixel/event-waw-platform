@@ -89,7 +89,12 @@ export function renderEventsTable(events) {
 
   if (!tableListenerAttached) {
     tableListenerAttached = true;
-    tbody.addEventListener('click', handleTableAction);
+    const table = tbody.closest('table');
+    if (table) {
+      table.addEventListener('click', handleTableAction);
+    } else {
+      tbody.addEventListener('click', handleTableAction);
+    }
   }
 }
 
@@ -289,7 +294,7 @@ export function populateEventSelects(events) {
     });
     if (events.length > 0 && el.options.length > 1) {
       el.selectedIndex = 1;
-      el.dispatchEvent(new Event('change'));
+      // el.dispatchEvent(new Event('change')); // M-10: Removed to prevent cascading query waterfall
     }
   });
 }

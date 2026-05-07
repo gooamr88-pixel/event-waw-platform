@@ -12,8 +12,7 @@
  *            javascript: protocol in href/src/action values.
  */
 
-// Tags that are always stripped from sanitised output
-const DANGEROUS_TAGS = 'script, iframe, object, embed';
+
 
 /**
  * Sanitize an HTML string, stripping dangerous tags and event-handler

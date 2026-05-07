@@ -31,6 +31,8 @@ function sanitizeDescriptionHTML(html) {
 /* ── Module-level state (orchestrator-owned) ── */
 let ceKeywords = [];
 let ceEditingEventId = null;
+let currentEventStatus = 'draft'; // track original status when editing
+let isPublishing = false; // H-1: Double-Submit protection semaphore
 let ceGalleryCount = 1;
 let ceListingTypeGetter = null;
 
@@ -382,7 +384,9 @@ export function setupCreateModal() {
   });
 
   // ── Publish Event ──
-  document.getElementById('ce-publish-btn')?.addEventListener('click', async () => {
+  document.getElementById('ce-publish-btn')?.addEventListener('click', async (e) => {
+    if (isPublishing) return; // H-1: Prevent double-submit
+    isPublishing = true;
     const btn = document.getElementById('ce-publish-btn');
 
     // ── VALIDATION ──
@@ -617,38 +621,32 @@ export function setupCreateModal() {
         if (ceEditingEventId) {
           // ── UPDATE MODE: delete old tiers (with 0 sales) and re-insert ──
           const { data: existingTiers } = await supabase.from('ticket_tiers').select('id, sold_count').eq('event_id', event.id);
-          for (const tier of (existingTiers || [])) {
-            if ((tier.sold_count || 0) === 0) {
-              await supabase.from('ticket_tiers').delete().eq('id', tier.id);
-            }
+          
+          const tiersToDelete = (existingTiers || []).filter(tier => (tier.sold_count || 0) === 0).map(t => t.id);
+          if (tiersToDelete.length > 0) {
+            await supabase.from('ticket_tiers').delete().in('id', tiersToDelete);
           }
-          // Insert updated tiers (skip ones that still exist with sales)
+
+          // Insert/Update updated tiers
           const remainingIds = (existingTiers || []).filter(t => (t.sold_count || 0) > 0).map(t => t.id);
-          for (const t of getTicketsList()) {
-            if (t.id && remainingIds.includes(t.id)) {
-              await supabase.from('ticket_tiers').update({
-                name: t.name, price: t.price, capacity: t.qty,
-                ticket_type: ticketType, category: t.category || null,
-                early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-                early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
-                max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-                currency: t.currency || 'USD',
-              }).eq('id', t.id);
-            } else {
-              await supabase.from('ticket_tiers').insert({
-                event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
-                ticket_type: ticketType, category: t.category || null,
-                early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-                early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
-                max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-                currency: t.currency || 'USD',
-              });
-            }
+          if (getTicketsList().length > 0) {
+            const tierPayloads = getTicketsList().map(t => ({
+              ...(t.id && remainingIds.includes(t.id) ? { id: t.id } : {}),
+              event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
+              ticket_type: ticketType, category: t.category || null,
+              early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
+              early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+              max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
+              currency: t.currency || 'USD',
+            }));
+            const { error: tierErr } = await supabase.from('ticket_tiers').upsert(tierPayloads);
+            if (tierErr) console.warn('Tier upsert failed:', tierErr.message);
           }
         } else {
           // ── CREATE MODE: insert all tiers with full payload (M-11: single round-trip) ──
-          for (const t of getTicketsList()) {
-            const { error: tierErr } = await supabase.from('ticket_tiers').insert({
+          // ── CREATE MODE: insert all tiers with full payload (H-3: single round-trip) ──
+          if (getTicketsList().length > 0) {
+            const tierPayloads = getTicketsList().map(t => ({
               event_id: event.id,
               name: t.name,
               price: t.price,
@@ -659,11 +657,9 @@ export function setupCreateModal() {
               early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
               max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
               currency: t.currency || 'USD',
-            });
-
-            if (tierErr) {
-              console.warn('Tier insert failed:', tierErr.message);
-            }
+            }));
+            const { error: tierErr } = await supabase.from('ticket_tiers').insert(tierPayloads);
+            if (tierErr) console.warn('Tier insert failed:', tierErr.message);
           }
         }
       }
@@ -682,6 +678,7 @@ export function setupCreateModal() {
       showToast('Error: ' + err.message, 'error');
     } finally {
       if (btn) { btn.disabled = false; setSafeHTML(btn, wasEditingForReset ? 'Update Event' : 'Publish Event'); }
+      isPublishing = false; // H-1: Release semaphore
     }
   });
 
