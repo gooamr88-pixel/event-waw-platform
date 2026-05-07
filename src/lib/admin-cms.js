@@ -364,10 +364,6 @@ async function handleHeroImageUpload(file, rowEl, spinnerEl) {
     if (error) throw error;
     const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
     if (urlData?.publicUrl) {
-      rowEl.querySelector('[data-field="hero_img_url"]').value = urlData.publicUrl;
-      let img = rowEl.querySelector('img');
-      if (!img) {
-        img = document.createElement('img');
       rowEl.querySelector('[data-field="image_url"]').value = urlData.publicUrl;
       let img = rowEl.querySelector('img');
       if (!img) {
