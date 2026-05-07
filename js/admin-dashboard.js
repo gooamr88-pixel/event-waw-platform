@@ -1104,8 +1104,8 @@ async function handleAdminDeleteEvent(eventId, title) {
     const { data: evData } = await supabase.from('events').select('organizer_email, profiles!events_organizer_id_fkey(email)').eq('id', eventId).single();
     const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
 
-    // Delete from Supabase
-    const { error } = await supabase.from('events').delete().eq('id', eventId);
+    // Delete from Supabase via RPC to bypass RLS restrictions
+    const { error } = await supabase.rpc('admin_delete_event', { p_event_id: eventId });
     if (error) throw error;
     showToast(`Event "${title}" has been deleted.`, 'success');
 
