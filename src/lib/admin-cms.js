@@ -46,47 +46,10 @@ export async function renderCMSEditor(container) {
           <span class="cms-ts" style="font-size:.7rem;color:var(--ev-text-muted)">${fmtTime(timestamps.hero)}</span>
         </div>
         <div style="padding:20px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-            <div>
-              <label class="cms-label">Heading Line 1</label>
-              <input class="cms-input" id="cms-hero-line1" value="${escAttr(settings.hero?.heading_line1 || '')}" />
-            </div>
-            <div>
-              <label class="cms-label">Heading Highlight</label>
-              <input class="cms-input" id="cms-hero-highlight" value="${escAttr(settings.hero?.heading_highlight || '')}" />
-            </div>
-          </div>
           <div style="margin-bottom:14px">
-            <label class="cms-label">Description</label>
-            <textarea class="cms-input" id="cms-hero-desc" rows="3" style="resize:vertical">${esc(settings.hero?.description || '')}</textarea>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-            <div>
-              <label class="cms-label">Hero Image URL</label>
-              <input class="cms-input" id="cms-hero-img" value="${escAttr(settings.hero?.image_url || '')}" />
-            </div>
-            <div>
-              <label class="cms-label">Preview</label>
-              <img id="cms-hero-preview" src="${escAttr(settings.hero?.image_url || '')}" style="height:60px;border-radius:8px;border:1px solid var(--ev-border);object-fit:cover" />
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px">
-            <div>
-              <label class="cms-label">CTA Primary Text</label>
-              <input class="cms-input" id="cms-hero-cta1-text" value="${escAttr(settings.hero?.cta_primary_text || '')}" />
-            </div>
-            <div>
-              <label class="cms-label">CTA Primary URL</label>
-              <input class="cms-input" id="cms-hero-cta1-url" value="${escAttr(settings.hero?.cta_primary_url || '')}" />
-            </div>
-            <div>
-              <label class="cms-label">CTA Secondary Text</label>
-              <input class="cms-input" id="cms-hero-cta2-text" value="${escAttr(settings.hero?.cta_secondary_text || '')}" />
-            </div>
-            <div>
-              <label class="cms-label">CTA Secondary URL</label>
-              <input class="cms-input" id="cms-hero-cta2-url" value="${escAttr(settings.hero?.cta_secondary_url || '')}" />
-            </div>
+            <label class="cms-label">Hero Slides (Drag to Reorder)</label>
+            <div id="cms-hero-slides-list"></div>
+            <button class="ev-btn ev-btn-outline" id="cms-add-hero-slide" style="margin-top:10px">+ Add Hero Slide</button>
           </div>
           <button class="ev-btn ev-btn-pink" id="cms-save-hero">Save Hero Section</button>
         </div>
@@ -148,6 +111,10 @@ export async function renderCMSEditor(container) {
         .cms-stat-row{grid-template-columns:1fr 2fr 1fr auto}
         .cms-remove{background:none;border:none;color:var(--ev-danger);cursor:pointer;font-size:1.1rem;padding:4px 8px;border-radius:6px;transition:background .2s}
         .cms-remove:hover{background:rgba(220,38,38,.06)}
+        .cms-slide-row{display:flex;gap:15px;align-items:flex-start;padding:15px;border-radius:8px;border:1px solid var(--ev-border);margin-bottom:12px;background:var(--ev-bg);position:relative;transition:all 0.2s ease;}
+        .cms-slide-row.dragging{opacity:0.5;background:var(--ev-bg-alt);border:2px dashed var(--ev-yellow);}
+        .cms-slide-drag-handle{cursor:grab;padding-top:5px;color:var(--ev-text-muted);font-size:1.2rem;user-select:none;}
+        .cms-slide-drag-handle:active{cursor:grabbing;}
         .cms-dropzone{border:2px dashed var(--ev-border);border-radius:8px;text-align:center;cursor:pointer;background:var(--ev-bg-alt);transition:all .2s ease;position:relative;overflow:hidden;height:80px;display:flex;flex-direction:column;align-items:center;justify-content:center}
         .cms-dropzone:hover,.cms-dropzone.dragover{border-color:var(--ev-yellow);background:rgba(245,158,11,.05)}
         .cms-dropzone img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;background:var(--ev-bg);z-index:1}
@@ -155,6 +122,36 @@ export async function renderCMSEditor(container) {
       `;
       document.head.appendChild(style);
     }
+
+    // ── Render hero slides list ──
+    const heroSlidesList = document.getElementById('cms-hero-slides-list');
+    let heroSlides = settings.hero?.slides || [];
+    
+    // Backward compatibility
+    if (heroSlides.length === 0 && settings.hero) {
+       const h = settings.hero;
+       const urls = h.image_urls || (h.image_url ? [h.image_url] : []);
+       if (urls.length > 0 || h.heading_line1) {
+          heroSlides = urls.map((url, i) => ({
+             image_url: url,
+             heading_line1: i === 0 ? h.heading_line1 : '',
+             heading_highlight: i === 0 ? h.heading_highlight : '',
+             description: i === 0 ? h.description : '',
+             cta_primary_text: i === 0 ? h.cta_primary_text : '',
+             cta_primary_url: i === 0 ? h.cta_primary_url : '',
+             cta_secondary_text: i === 0 ? h.cta_secondary_text : '',
+             cta_secondary_url: i === 0 ? h.cta_secondary_url : ''
+          }));
+          if (heroSlides.length === 0) heroSlides.push(h);
+       }
+    }
+
+    renderHeroSlideRows(heroSlidesList, heroSlides);
+
+    document.getElementById('cms-add-hero-slide').addEventListener('click', () => {
+      heroSlides.push({ image_url: '', heading_line1: '', heading_highlight: '', description: '', cta_primary_text: '', cta_primary_url: '', cta_secondary_text: '', cta_secondary_url: '' });
+      renderHeroSlideRows(heroSlidesList, heroSlides);
+    });
 
     // ── Render sponsors list ──
     const sponsorsList = document.getElementById('cms-sponsors-list');
@@ -178,17 +175,21 @@ export async function renderCMSEditor(container) {
 
     // ── Save Hero ──
     document.getElementById('cms-save-hero').addEventListener('click', async () => {
-      const heroData = {
-        heading_line1: document.getElementById('cms-hero-line1').value.trim(),
-        heading_highlight: document.getElementById('cms-hero-highlight').value.trim(),
-        description: document.getElementById('cms-hero-desc').value.trim(),
-        image_url: document.getElementById('cms-hero-img').value.trim(),
-        cta_primary_text: document.getElementById('cms-hero-cta1-text').value.trim(),
-        cta_primary_url: document.getElementById('cms-hero-cta1-url').value.trim(),
-        cta_secondary_text: document.getElementById('cms-hero-cta2-text').value.trim(),
-        cta_secondary_url: document.getElementById('cms-hero-cta2-url').value.trim(),
-      };
-      await saveSetting('hero', heroData, 'Hero section');
+      const rows = heroSlidesList.querySelectorAll('.cms-slide-row');
+      const arr = [];
+      rows.forEach(row => {
+         arr.push({
+            image_url: row.querySelector('[data-field="image_url"]').value.trim(),
+            heading_line1: row.querySelector('[data-field="heading_line1"]').value.trim(),
+            heading_highlight: row.querySelector('[data-field="heading_highlight"]').value.trim(),
+            description: row.querySelector('[data-field="description"]').value.trim(),
+            cta_primary_text: row.querySelector('[data-field="cta_primary_text"]').value.trim(),
+            cta_primary_url: row.querySelector('[data-field="cta_primary_url"]').value.trim(),
+            cta_secondary_text: row.querySelector('[data-field="cta_secondary_text"]').value.trim(),
+            cta_secondary_url: row.querySelector('[data-field="cta_secondary_url"]').value.trim()
+         });
+      });
+      await saveSetting('hero', { slides: arr }, 'Hero section');
     });
 
     // ── Save Sponsors ──
@@ -214,12 +215,6 @@ export async function renderCMSEditor(container) {
         if (value || label) arr.push({ value, label, icon: icon || 'calendar' });
       });
       await saveSetting('stats_bar', arr, 'Stats bar');
-    });
-
-    // ── Hero image preview ──
-    document.getElementById('cms-hero-img').addEventListener('input', (e) => {
-      const preview = document.getElementById('cms-hero-preview');
-      if (preview) { preview.src = e.target.value; preview.style.display = ''; }
     });
 
   } catch (err) {
@@ -357,4 +352,135 @@ function escAttr(str) {
 function fmtTime(iso) {
   if (!iso) return '';
   return 'Updated ' + new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function handleHeroImageUpload(file, rowEl, spinnerEl) {
+  if (!file) return;
+  spinnerEl.style.display = 'block';
+  const ext = file.name.split('.').pop();
+  const path = `cms/hero/${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+  try {
+    const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+    if (urlData?.publicUrl) {
+      rowEl.querySelector('[data-field="hero_img_url"]').value = urlData.publicUrl;
+      let img = rowEl.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+      rowEl.querySelector('[data-field="image_url"]').value = urlData.publicUrl;
+      let img = rowEl.querySelector('img');
+      if (!img) {
+        img = document.createElement('img');
+        rowEl.querySelector('.cms-dropzone').appendChild(img);
+      }
+      img.src = urlData.publicUrl;
+    }
+  } catch (err) {
+    window.dispatchEvent(new CustomEvent('cms-error', { detail: { message: 'Upload failed: ' + err.message } }));
+  } finally {
+    spinnerEl.style.display = 'none';
+  }
+}
+
+function renderHeroSlideRows(container, slides) {
+  setSafeHTML(container, slides.map((s, i) => `
+    <div class="cms-slide-row" draggable="true" data-idx="${i}">
+      <div class="cms-remove" data-idx="${i}" style="position:absolute; top:10px; right:10px; z-index:10;" title="Remove Slide">✕</div>
+      <div class="cms-slide-drag-handle" title="Drag to reorder">☰</div>
+      <div style="flex: 0 0 160px; display:flex; flex-direction:column; gap:10px;">
+        <div class="cms-dropzone" style="height:110px;">
+          <div class="dz-content" style="font-size:0.75rem;opacity:0.7;line-height:1.2;margin-top:5px">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><br/>
+            Drop Image
+          </div>
+          ${s.image_url ? `<img src="${escAttr(s.image_url)}" />` : ''}
+          <div class="dz-spinner" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;background:rgba(0,0,0,0.6);color:#fff;padding:4px;border-radius:4px;font-size:12px">⏳</div>
+          <input type="file" accept="image/*" class="dz-file-input" title="Drag & drop or click to upload" />
+        </div>
+        <input class="cms-input" data-field="image_url" value="${escAttr(s.image_url || '')}" placeholder="Image URL..." style="font-size:0.75rem; padding:6px;" />
+        <div style="text-align:center; font-size:0.7rem; color:var(--ev-text-muted); pointer-events:none;">Slide ${i+1}</div>
+      </div>
+      <div style="flex: 1; display: grid; gap: 10px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div><label class="cms-label">Heading Line 1</label><input class="cms-input" data-field="heading_line1" value="${escAttr(s.heading_line1 || '')}" /></div>
+          <div><label class="cms-label">Heading Highlight</label><input class="cms-input" data-field="heading_highlight" value="${escAttr(s.heading_highlight || '')}" /></div>
+        </div>
+        <div>
+          <label class="cms-label">Description</label>
+          <textarea class="cms-input" data-field="description" rows="2" style="resize:vertical">${esc(s.description || '')}</textarea>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px;">
+          <div><label class="cms-label">CTA 1 Text</label><input class="cms-input" data-field="cta_primary_text" value="${escAttr(s.cta_primary_text || '')}" /></div>
+          <div><label class="cms-label">CTA 1 URL</label><input class="cms-input" data-field="cta_primary_url" value="${escAttr(s.cta_primary_url || '')}" /></div>
+          <div><label class="cms-label">CTA 2 Text</label><input class="cms-input" data-field="cta_secondary_text" value="${escAttr(s.cta_secondary_text || '')}" /></div>
+          <div><label class="cms-label">CTA 2 URL</label><input class="cms-input" data-field="cta_secondary_url" value="${escAttr(s.cta_secondary_url || '')}" /></div>
+        </div>
+      </div>
+    </div>
+  `).join(''));
+  
+  container.querySelectorAll('.cms-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      slides.splice(Number(btn.dataset.idx), 1);
+      renderHeroSlideRows(container, slides);
+    });
+  });
+
+  setupDragAndDrop(container, slides, renderHeroSlideRows);
+
+  container.querySelectorAll('.cms-dropzone').forEach(dz => {
+    const fileInput = dz.querySelector('.dz-file-input');
+    const spinner = dz.querySelector('.dz-spinner');
+    const rowEl = dz.closest('.cms-slide-row');
+
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault(); dz.classList.remove('dragover');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) handleHeroImageUpload(e.dataTransfer.files[0], rowEl, spinner);
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files[0]) handleHeroImageUpload(e.target.files[0], rowEl, spinner);
+    });
+  });
+}
+
+function setupDragAndDrop(container, dataArray, renderFn) {
+  let draggedIdx = null;
+  container.querySelectorAll('.cms-slide-row').forEach(row => {
+    row.addEventListener('dragstart', (e) => {
+      draggedIdx = Number(row.dataset.idx);
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => row.classList.add('dragging'), 0);
+    });
+    row.addEventListener('dragend', () => {
+      row.classList.remove('dragging');
+      draggedIdx = null;
+    });
+    row.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+    row.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const targetIdx = Number(row.dataset.idx);
+      if (draggedIdx !== null && draggedIdx !== targetIdx) {
+        const rows = container.querySelectorAll('.cms-slide-row');
+        rows.forEach((r, idx) => {
+          dataArray[idx].image_url = r.querySelector('[data-field="image_url"]').value;
+          dataArray[idx].heading_line1 = r.querySelector('[data-field="heading_line1"]').value;
+          dataArray[idx].heading_highlight = r.querySelector('[data-field="heading_highlight"]').value;
+          dataArray[idx].description = r.querySelector('[data-field="description"]').value;
+          dataArray[idx].cta_primary_text = r.querySelector('[data-field="cta_primary_text"]').value;
+          dataArray[idx].cta_primary_url = r.querySelector('[data-field="cta_primary_url"]').value;
+          dataArray[idx].cta_secondary_text = r.querySelector('[data-field="cta_secondary_text"]').value;
+          dataArray[idx].cta_secondary_url = r.querySelector('[data-field="cta_secondary_url"]').value;
+        });
+        const item = dataArray.splice(draggedIdx, 1)[0];
+        dataArray.splice(targetIdx, 0, item);
+        renderFn(container, dataArray);
+      }
+    });
+  });
 }

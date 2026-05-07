@@ -656,26 +656,177 @@
 
         // ── Hero Section ──
         if (settings.hero) {
-          const h = settings.hero;
-          const h1 = document.querySelector('.ev-hero-text h1');
-          if (h1 && h.heading_line1 && h.heading_highlight) {
-            setSafeHTML(h1, `${escapeHTML(h.heading_line1).replace('&', '<span class="ev-ampersand">&</span>')}<br><span class="ev-highlight">${escapeHTML(h.heading_highlight)}</span>`);
+          let slides = settings.hero.slides || [];
+          // Backward compatibility
+          if (slides.length === 0) {
+             const h = settings.hero;
+             const urls = h.image_urls || (h.image_url ? [h.image_url] : []);
+             if (urls.length > 0 || h.heading_line1) {
+                slides = urls.map((url, i) => ({
+                   image_url: url,
+                   heading_line1: i === 0 ? h.heading_line1 : '',
+                   heading_highlight: i === 0 ? h.heading_highlight : '',
+                   description: i === 0 ? h.description : '',
+                   cta_primary_text: i === 0 ? h.cta_primary_text : '',
+                   cta_primary_url: i === 0 ? h.cta_primary_url : '',
+                   cta_secondary_text: i === 0 ? h.cta_secondary_text : '',
+                   cta_secondary_url: i === 0 ? h.cta_secondary_url : ''
+                }));
+                if (slides.length === 0) {
+                  slides.push(h); // The whole object behaves like a slide
+                }
+             }
           }
-          const desc = document.querySelector('.ev-hero-desc');
-          if (desc && h.description) {
-            setSafeHTML(desc, escapeHTML(h.description)
-              .replace('Event Waw', '<span class="ev-brand">Event Waw</span>')
-              .replace('Clicks', '<span class="ev-clicks">Clicks</span>')
-              .replace('For Organizers', '<span class="ev-organizers">For Organizers</span>'));
+
+          if (slides.length > 0) {
+             const heroTextContainer = document.querySelector('.ev-hero-text');
+             const heroImgContainer = document.querySelector('.ev-hero-image');
+             
+             // Setup Image Slider
+             if (heroImgContainer) {
+               if (slides.length === 1) {
+                  heroImgContainer.innerHTML = `<img src="${escapeHTML(slides[0].image_url)}" alt="Featured Event" loading="eager" style="border-radius:20px; width:100%; display:block; object-fit:cover;" />`;
+                  updateHeroText(slides[0]);
+               } else {
+                  // Build HTML for images, progress, and arrows
+                  let html = '';
+                  slides.forEach((s, i) => {
+                    if (i === 0) {
+                      html += `<img src="${escapeHTML(s.image_url)}" class="hero-slide active" style="border-radius:20px; transition:opacity 0.5s ease-in-out; width:100%; display:block;" />`;
+                    } else {
+                      html += `<img src="${escapeHTML(s.image_url)}" class="hero-slide" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; border-radius:20px; opacity:0; transition:opacity 0.5s ease-in-out;" />`;
+                    }
+                  });
+                  let arrowsHTML = `
+                    <button class="hero-arrow-left" aria-label="Previous Slide" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10094;</button>
+                    <button class="hero-arrow-right" aria-label="Next Slide" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10095;</button>
+                  `;
+                  let dotsHTML = `<div style="position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10">
+                    ${slides.map((_,i) => `<div class="hero-dot-wrapper" style="position:relative; width:30px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; overflow:hidden; cursor:pointer;" data-idx="${i}">
+                       <div class="hero-dot-progress" style="position:absolute; top:0; left:0; height:100%; width:${i===0?'100%':'0%'}; background:#fff; transition: width 0.1s linear;"></div>
+                    </div>`).join('')}
+                  </div>`;
+                  
+                  heroImgContainer.style.position = 'relative';
+                  heroImgContainer.style.borderRadius = '20px';
+                  heroImgContainer.style.touchAction = 'pan-y'; // Allow vertical scrolling, but catch horizontal swipes
+                  heroImgContainer.innerHTML = html + arrowsHTML + dotsHTML;
+                  
+                  let currentSlide = 0;
+                  let progressInterval;
+                  let progressValue = 0;
+                  const slideDuration = 5000;
+                  const updateRate = 50;
+
+                  const slideEls = heroImgContainer.querySelectorAll('.hero-slide');
+                  const progressEls = heroImgContainer.querySelectorAll('.hero-dot-progress');
+                  const dotWrappers = heroImgContainer.querySelectorAll('.hero-dot-wrapper');
+
+                  const renderProgress = () => {
+                     progressEls.forEach((el, idx) => {
+                        if (idx === currentSlide) {
+                           el.style.width = `${progressValue}%`;
+                        } else {
+                           el.style.width = idx < currentSlide ? '100%' : '0%';
+                        }
+                     });
+                  };
+
+                  const goToSlide = (idx, manual = false) => {
+                     slideEls[currentSlide].style.opacity = '0';
+                     currentSlide = (idx + slides.length) % slides.length;
+                     slideEls[currentSlide].style.opacity = '1';
+                     
+                     updateHeroText(slides[currentSlide]);
+
+                     progressValue = manual ? 100 : 0;
+                     renderProgress();
+
+                     if (manual) resetTimers();
+                  };
+
+                  const tickProgress = () => {
+                     progressValue += (updateRate / slideDuration) * 100;
+                     if (progressValue >= 100) {
+                        progressValue = 0;
+                        goToSlide(currentSlide + 1);
+                     } else {
+                        renderProgress();
+                     }
+                  };
+
+                  const startTimers = () => {
+                     progressInterval = setInterval(tickProgress, updateRate);
+                  };
+
+                  const resetTimers = () => {
+                     clearInterval(progressInterval);
+                     progressValue = 0;
+                     startTimers();
+                  };
+
+                  startTimers();
+
+                  heroImgContainer.querySelector('.hero-arrow-left').addEventListener('click', () => goToSlide(currentSlide - 1, true));
+                  heroImgContainer.querySelector('.hero-arrow-right').addEventListener('click', () => goToSlide(currentSlide + 1, true));
+                  dotWrappers.forEach(d => d.addEventListener('click', (e) => goToSlide(parseInt(e.currentTarget.dataset.idx), true)));
+                  
+                  // Touch Swipe logic
+                  let touchStartX = 0;
+                  let touchEndX = 0;
+                  heroImgContainer.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; }, {passive: true});
+                  heroImgContainer.addEventListener('touchend', e => {
+                     touchEndX = e.changedTouches[0].screenX;
+                     if (touchEndX < touchStartX - 40) goToSlide(currentSlide + 1, true); // Swipe left -> Next
+                     if (touchEndX > touchStartX + 40) goToSlide(currentSlide - 1, true); // Swipe right -> Prev
+                  }, {passive: true});
+
+                  updateHeroText(slides[0]);
+               }
+             }
+
+             function updateHeroText(s) {
+               if (!heroTextContainer) return;
+               heroTextContainer.style.opacity = '0';
+               heroTextContainer.style.transition = 'opacity 0.3s ease';
+               setTimeout(() => {
+                 const h1 = heroTextContainer.querySelector('h1');
+                 if (h1 && s.heading_line1) {
+                   setSafeHTML(h1, `${escapeHTML(s.heading_line1).replace('&', '<span class="ev-ampersand">&</span>')}${s.heading_highlight ? `<br><span class="ev-highlight">${escapeHTML(s.heading_highlight)}</span>` : ''}`);
+                 }
+                 const desc = heroTextContainer.querySelector('.ev-hero-desc');
+                 if (desc && s.description) {
+                   setSafeHTML(desc, escapeHTML(s.description)
+                     .replace('Event Waw', '<span class="ev-brand">Event Waw</span>')
+                     .replace('Clicks', '<span class="ev-clicks">Clicks</span>')
+                     .replace('For Organizers', '<span class="ev-organizers">For Organizers</span>'));
+                 }
+                 const createBtn = heroTextContainer.querySelector('#hero-create');
+                 if (createBtn) {
+                    if (s.cta_primary_text) {
+                        createBtn.textContent = s.cta_primary_text;
+                        createBtn.href = s.cta_primary_url || '#';
+                        createBtn.style.display = 'inline-block';
+                    } else {
+                        createBtn.style.display = 'none';
+                    }
+                 }
+
+                 const exploreBtn = heroTextContainer.querySelector('#hero-cta');
+                 if (exploreBtn) {
+                     if (s.cta_secondary_text) {
+                        exploreBtn.textContent = s.cta_secondary_text;
+                        exploreBtn.href = s.cta_secondary_url || '#';
+                        exploreBtn.style.display = 'inline-block';
+                     } else {
+                        exploreBtn.style.display = 'none';
+                     }
+                 }
+                 
+                 heroTextContainer.style.opacity = '1';
+               }, 300);
+             }
           }
-          const heroImg = document.querySelector('.ev-hero-image img');
-          if (heroImg && h.image_url) heroImg.src = h.image_url;
-          const createBtn = document.getElementById('hero-create');
-          if (createBtn && h.cta_primary_text) createBtn.textContent = h.cta_primary_text;
-          if (createBtn && h.cta_primary_url) createBtn.href = h.cta_primary_url;
-          const exploreBtn = document.getElementById('hero-cta');
-          if (exploreBtn && h.cta_secondary_text) exploreBtn.textContent = h.cta_secondary_text;
-          if (exploreBtn && h.cta_secondary_url) exploreBtn.href = h.cta_secondary_url;
         }
 
         // ── Sponsors ──
