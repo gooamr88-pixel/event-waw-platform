@@ -1036,11 +1036,11 @@
         const date = new Date(event.date);
         const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         const card = document.createElement('div');
-        card.className = 'event-poster-card';
+        card.className = 'event-poster-card image-overlay-wrapper';
         card.style.animationDelay = `${idx * 0.06}s`;
         card.onclick = () => window.location.href = `event-detail.html?id=${event.id}`;
         const coverSrc = resolvedCovers[idx] || 'images/event-concert.png';
-        setSafeHTML(card, `<img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="poster-badge">${escapeHTML(badgeText)}</div><div class="poster-overlay"><div class="poster-title">${escapeHTML(event.title)}</div><div class="poster-meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>${dateStr}${event.venue ? ' &middot; ' + escapeHTML(event.venue) : ''}</div></div>`);
+        setSafeHTML(card, `<img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(event.title)}" loading="lazy" /><div class="poster-badge">${escapeHTML(badgeText)}</div><div class="poster-overlay text-on-image"><div class="poster-title">${escapeHTML(event.title)}</div><div class="poster-meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"/></svg>${dateStr}${event.venue ? ' &middot; ' + escapeHTML(event.venue) : ''}</div></div>`);
         // Add onerror fallback for broken images
         const img = card.querySelector('img');
         if (img) img.onerror = () => { img.onerror = null; img.src = 'images/event-concert.png'; };

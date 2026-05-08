@@ -172,11 +172,13 @@ async function renderEvents(events) {
     card.onclick = () => window.location.href = `event-detail.html?id=${ev.id}`;
     const coverSrc = resolvedCovers[idx] || 'images/event-concert.png';
     setSafeHTML(card, `
-      <div class="ep-card-image">
+      <div class="ep-card-image image-overlay-wrapper">
         <img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(ev.title)}" loading="lazy" />
-        <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(categoryLabel)}</div>
-        ${statusTag}
-        ${distHtml}
+        <div class="text-on-image" style="padding: 1rem; padding-bottom: 0;">
+          <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(categoryLabel)}</div>
+          ${statusTag}
+          ${distHtml}
+        </div>
       </div>
       <div class="ep-card-body">
         <div class="ep-card-date">${dateStr}</div>
