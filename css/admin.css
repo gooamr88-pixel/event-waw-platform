@@ -13,14 +13,14 @@
   text-transform: uppercase;
   padding: 4px 12px;
   border-radius: 5px;
-  background: rgba(5,150,105,.08);
-  color: #059669;
-  border: 1px solid rgba(5,150,105,.18);
+  background: rgba(37,99,235,.08);
+  color: #2563EB;
+  border: 1px solid rgba(37,99,235,.18);
   white-space: nowrap;
 }
 body.ev-dash[data-theme="dark"] .admin-env-badge {
   background: rgba(96,165,250,.1);
-  color: #10b981;
+  color: #60a5fa;
   border-color: rgba(96,165,250,.2);
 }
 
@@ -88,7 +88,7 @@ body.ev-dash[data-theme="dark"] .admin-clock {
   width: 32px;
   height: 32px;
   border: 3px solid var(--ev-border);
-  border-top-color: #059669;
+  border-top-color: #2563EB;
   border-radius: 50%;
   animation: evSpin .7s linear infinite;
 }
@@ -178,13 +178,13 @@ body.ev-dash[data-theme="dark"] .ev-toast {
 }
 
 /* ── Admin-specific Table Badges ── */
-.ev-badge.admin-role   { background: rgba(5,150,105,.08); color: #059669; }
+.ev-badge.admin-role   { background: rgba(37,99,235,.08); color: #2563EB; }
 .ev-badge.organizer-role { background: rgba(22,163,74,.06); color: #16a34a; }
 .ev-badge.attendee-role  { background: var(--ev-border-lt); color: var(--ev-text-sec); }
 .ev-badge.approved-yes { background: rgba(22,163,74,.08); color: #16a34a; }
 .ev-badge.approved-no  { background: var(--ev-border-lt); color: var(--ev-text-muted); }
 
-body.ev-dash[data-theme="dark"] .ev-badge.admin-role   { background: rgba(96,165,250,.1); color: #10b981; }
+body.ev-dash[data-theme="dark"] .ev-badge.admin-role   { background: rgba(96,165,250,.1); color: #60a5fa; }
 body.ev-dash[data-theme="dark"] .ev-badge.organizer-role { background: rgba(52,211,153,.1); color: #34d399; }
 body.ev-dash[data-theme="dark"] .ev-badge.attendee-role  { background: rgba(255,255,255,.04); color: var(--ev-text-sec); }
 
