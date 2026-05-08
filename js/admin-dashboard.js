@@ -44,8 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupCMSEvents();
     
     // Navigation Init
-    setupNavigation(currentPanel, switchPanelWithData);
-    setupHeaderShortcuts(currentPanel, switchPanelWithData);
+    setupNavigation(switchPanelWithData);
+    setupHeaderShortcuts(switchPanelWithData);
     
     // Permissions
     enforceRolePermissions();

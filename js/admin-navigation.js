@@ -5,7 +5,7 @@
 /**
  * Sets up sidebar panel switching.
  */
-export function setupNavigation(currentPanel, onPanelSwitch) {
+export function setupNavigation(onPanelSwitch) {
   const sidebar = document.getElementById('sidebar');
   if (!sidebar) return;
 
@@ -14,8 +14,6 @@ export function setupNavigation(currentPanel, onPanelSwitch) {
     if (!item) return;
 
     const panelId = item.dataset.panel;
-    if (panelId === currentPanel) return;
-
     onPanelSwitch(panelId);
   });
 }
@@ -39,11 +37,11 @@ export function switchPanel(panelId) {
 /**
  * Sets up header shortcut links.
  */
-export function setupHeaderShortcuts(currentPanel, onPanelSwitch) {
+export function setupHeaderShortcuts(onPanelSwitch) {
   document.querySelectorAll('.ev-header-link[data-panel]').forEach(btn => {
     btn.addEventListener('click', () => {
       const panelId = btn.dataset.panel;
-      if (panelId !== currentPanel) onPanelSwitch(panelId);
+      onPanelSwitch(panelId);
     });
   });
 }
