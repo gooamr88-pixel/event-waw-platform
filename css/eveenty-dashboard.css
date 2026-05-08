@@ -33,7 +33,7 @@ body.ev-dash, .ev-sidebar, .ev-header, .ev-card, .ev-stat-card, .ev-modal, .ce-l
 /* ══════ SIDEBAR ══════ */
 .ev-sidebar{position:fixed;top:0;left:0;bottom:0;width:var(--ev-sidebar-w);background:linear-gradient(180deg,#60A5FA 0%,#2563EB 40%,#1D4ED8 100%);z-index:100;display:flex;flex-direction:column;box-shadow:2px 0 20px rgba(0,0,0,.08);transition:transform .3s cubic-bezier(.4,0,.2,1)}
 .ev-sidebar-brand{padding:24px 20px 20px;border-bottom:1px solid rgba(255,255,255,.2)}
-.ev-sidebar-brand h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:2.2rem;font-weight:700;color:#fff;letter-spacing:-.5px;text-shadow:0 1px 2px rgba(0,0,0,.08)}
+.ev-sidebar-brand h1{font-family:'Cormorant Garamond',Georgia,serif;font-size:1.6rem;font-weight:700;color:#fff;letter-spacing:-.5px;text-shadow:0 1px 2px rgba(0,0,0,.08)}
 .ev-sidebar-brand h1 span{color:#fff;font-style:italic}
 .ev-sidebar-brand p{font-size:.6rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:2.5px;margin-top:3px}
 .ev-sidebar-nav{flex:1;padding:16px 0;overflow-y:auto}
