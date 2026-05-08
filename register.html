@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="css/eveenty-auth.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#2563EB" />
+  <meta name="theme-color" content="#059669" />
   <link rel="icon" type="image/svg+xml" href="images/favicon.svg" />
 </head>
 <body class="eveenty-auth">
@@ -83,7 +83,7 @@
           <!-- STEP 2: OTP Verification -->
           <div id="step-otp" class="ev-otp-section">
             <div style="text-align:center;margin-bottom:24px;">
-              <div class="ev-otp-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
+              <div class="ev-otp-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
               <h2 style="color:#fff;font-size:1.1rem;margin-top:16px;">Verify your email</h2>
               <p style="font-size:0.82rem;color:#999;">We sent a 6-digit code to <strong id="otp-email-display" style="color:#fff;"></strong></p>
             </div>
@@ -334,7 +334,7 @@
       document.getElementById('reg-pass').addEventListener('input', (e) => {
         const val = e.target.value, fill = document.getElementById('pass-bar-fill'), label = document.getElementById('pass-label');
         let score = 0; if (val.length >= 8) score++; if (/[A-Z]/.test(val)) score++; if (/[0-9]/.test(val)) score++; if (/[^A-Za-z0-9]/.test(val)) score++;
-        const levels = [{ w:'0%',c:'',t:'' },{ w:'25%',c:'#ef4444',t:'Weak' },{ w:'50%',c:'#eab308',t:'Fair' },{ w:'75%',c:'#3b82f6',t:'Good' },{ w:'100%',c:'#22c55e',t:'Strong' }];
+        const levels = [{ w:'0%',c:'',t:'' },{ w:'25%',c:'#ef4444',t:'Weak' },{ w:'50%',c:'#eab308',t:'Fair' },{ w:'75%',c:'#10B981',t:'Good' },{ w:'100%',c:'#22c55e',t:'Strong' }];
         const l = levels[score]; fill.style.width = l.w; fill.style.background = l.c; label.textContent = l.t; label.style.color = l.c;
       });
     }

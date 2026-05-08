@@ -267,7 +267,7 @@ export function renderPreviewSVG(layoutJson, container) {
   }
 
   // Sections
-  const tierColors = ['#d4af37', '#8b5cf6', '#3b82f6', '#22c55e', '#3B82F6', '#ec4899', '#14b8a6', '#ef4444'];
+  const tierColors = ['#d4af37', '#8b5cf6', '#10B981', '#22c55e', '#10B981', '#ec4899', '#14b8a6', '#ef4444'];
   const tierColorMap = {};
   let colorIdx = 0;
 

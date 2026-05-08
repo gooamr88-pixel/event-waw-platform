@@ -11,9 +11,9 @@ import { setSafeHTML } from './dom.js';
 const TIER_COLORS = [
   '#d4af37', // Gold
   '#8b5cf6', // Purple
-  '#3b82f6', // Blue
+  '#10B981', // Blue
   '#22c55e', // Green
-  '#3B82F6', // Orange
+  '#10B981', // Orange
   '#ec4899', // Pink
   '#14b8a6', // Teal
   '#ef4444', // Red

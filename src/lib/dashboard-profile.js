@@ -102,14 +102,14 @@ export function setupUserDropdown() {
     overlay.setAttribute('aria-modal', 'true');
     overlay.style.cssText = 'z-index:10000';
     setSafeHTML(overlay, `<div class="ev-modal" style="max-width:380px;text-align:center;padding:32px 28px">
-      <div style="width:48px;height:48px;border-radius:50%;background:rgba(37,99,235,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <div style="width:48px;height:48px;border-radius:50%;background:rgba(5, 150, 105,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#059669" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </div>
       <h3 style="font-size:1.05rem;font-weight:700;margin-bottom:8px">Sign Out</h3>
       <p style="font-size:.85rem;color:var(--ev-text-sec);margin-bottom:24px">Are you sure you want to sign out of your account?</p>
       <div style="display:flex;gap:10px;justify-content:center">
         <button class="ev-btn ev-btn-outline" id="signout-cancel" style="flex:1;max-width:140px;padding:10px">Cancel</button>
-        <button class="ev-btn" id="signout-confirm" style="flex:1;max-width:140px;padding:10px;background:#2563eb;color:#fff;border:none;font-weight:600">Sign Out</button>
+        <button class="ev-btn" id="signout-confirm" style="flex:1;max-width:140px;padding:10px;background:#059669;color:#fff;border:none;font-weight:600">Sign Out</button>
       </div>
     </div>`);
     document.body.appendChild(overlay);

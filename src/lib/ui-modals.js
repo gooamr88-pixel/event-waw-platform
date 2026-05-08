@@ -1,7 +1,7 @@
 import { setSafeHTML } from './dom.js';
 import { escapeHTML } from './utils.js';
 
-export function showConfirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', confirmColor = '#2563eb', cancelText = 'Cancel' }) {
+export function showConfirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', confirmColor = '#059669', cancelText = 'Cancel' }) {
   return new Promise((resolve) => {
     // Remove existing
     document.getElementById('ev-global-confirm')?.remove();
@@ -49,7 +49,7 @@ export function showConfirmModal({ title = 'Confirm Action', message = 'Are you 
   });
 }
 
-export function showPromptModal({ title = 'Input Required', message = 'Please enter a value:', placeholder = '', defaultValue = '', confirmText = 'Submit', confirmColor = '#2563eb', cancelText = 'Cancel', required = true }) {
+export function showPromptModal({ title = 'Input Required', message = 'Please enter a value:', placeholder = '', defaultValue = '', confirmText = 'Submit', confirmColor = '#059669', cancelText = 'Cancel', required = true }) {
   return new Promise((resolve) => {
     // Remove existing
     document.getElementById('ev-global-prompt')?.remove();
@@ -116,7 +116,7 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
 
 
 
-export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK', buttonColor = '#2563eb' }) {
+export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK', buttonColor = '#059669' }) {
   return new Promise((resolve) => {
     document.getElementById('ev-global-alert')?.remove();
 
