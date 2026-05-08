@@ -168,7 +168,7 @@ serve(async (req) => {
       }
 
       // ── Create Stripe Checkout Session for Guest ──
-      const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
+      const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
 
       const sessionConfig: any = {
         payment_method_types: ['card'],
@@ -275,7 +275,7 @@ serve(async (req) => {
     */
 
     // ── Create Stripe Checkout Session ──
-    const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
+    const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
 
     const sessionConfig: any = {
       payment_method_types: ['card'],

@@ -11,11 +11,11 @@ import { test, expect } from '@playwright/test';
  *
  * PREREQUISITES:
  *   1. A test Organizer account exists in Supabase Auth:
- *      Email: test-organizer@eventwaw.com  |  Password: TestOrg2026!
+ *      Email: test-organizer@eventsli.com  |  Password: TestOrg2026!
  *      Role:  organizer
  *
  *   2. A test Admin account exists in Supabase Auth:
- *      Email: test-admin@eventwaw.com  |  Password: TestAdmin2026!
+ *      Email: test-admin@eventsli.com  |  Password: TestAdmin2026!
  *      Role:  admin (or super_admin)
  *
  *   Set these via environment variables for CI:
@@ -24,9 +24,9 @@ import { test, expect } from '@playwright/test';
  * ═══════════════════════════════════════════════════════════════
  */
 
-const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL || 'test-organizer@eventwaw.com';
+const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL || 'test-organizer@eventsli.com';
 const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD || 'TestOrg2026!';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'test-admin@eventwaw.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'test-admin@eventsli.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TestAdmin2026!';
 
 // Unique event title per run to avoid collisions

@@ -12,8 +12,8 @@ import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
 import { otpPasswordResetEmail } from '../_shared/email-templates.ts';
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!;
-const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventwaw.com';
-const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Event Waw';
+const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventsli.com';
+const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Eventsli';
 
 serve(async (req) => {
   const corsResponse = handleCORS(req);
@@ -69,7 +69,7 @@ serve(async (req) => {
     const userEmail = normalizedEmail;
 
     // 3. Build email content
-    const subject = `${code} — Reset your Event Waw password`;
+    const subject = `${code} — Reset your Eventsli password`;
     const htmlContent = otpPasswordResetEmail(code);
 
     // 4. Send via Brevo

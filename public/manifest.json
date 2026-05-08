@@ -1,5 +1,5 @@
 {
-  "name": "Event Waw Scanner",
+  "name": "Eventsli Scanner",
   "short_name": "Scanner",
   "description": "Scan and validate event tickets with QR codes",
   "start_url": "/scanner.html",

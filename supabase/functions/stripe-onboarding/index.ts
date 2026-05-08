@@ -12,7 +12,7 @@ import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit } from '../_shared/rate-limit.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!);
-const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || 'https://eventwaw.com';
+const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
 
 serve(async (req) => {
   const corsResponse = handleCORS(req);
@@ -101,7 +101,7 @@ serve(async (req) => {
         },
         business_profile: {
           mcc: '7922', // Theatrical Producers & Ticket Agencies
-          url: `https://eventwaw.com`,
+          url: `https://eventsli.com`,
         },
       });
 

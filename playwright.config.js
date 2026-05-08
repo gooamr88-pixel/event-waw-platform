@@ -2,7 +2,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Event Waw — Playwright E2E Configuration
+ * Eventsli — Playwright E2E Configuration
  * ─────────────────────────────────────────
  * Optimized for a Vanilla JS + Supabase SaaS platform.
  * Tests run against a live dev server on port 3000.

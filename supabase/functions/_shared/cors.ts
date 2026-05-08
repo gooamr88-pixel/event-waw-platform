@@ -7,8 +7,8 @@
 
 // Multiple allowed origins — custom domain + Vercel + localhost dev
 const ALLOWED_ORIGINS = [
-  'https://eventwaw.com',
-  'https://www.eventwaw.com',
+  'https://eventsli.com',
+  'https://www.eventsli.com',
   'https://event-waw-platform.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',

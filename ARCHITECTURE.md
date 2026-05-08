@@ -1,4 +1,4 @@
-# Event Waw — System Architecture
+# Eventsli — System Architecture
 
 > **Version**: 2.0 · Enterprise Grade  
 > **Last Updated**: 2026-05-07  
@@ -285,11 +285,11 @@ The `npm run test:coverage` command will **fail** if coverage drops below 80%, b
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ORGANIZER_EMAIL` | `test-organizer@eventwaw.com` | E2E organizer account |
+| `ORGANIZER_EMAIL` | `test-organizer@eventsli.com` | E2E organizer account |
 | `ORGANIZER_PASSWORD` | `TestOrg2026!` | E2E organizer password |
-| `ADMIN_EMAIL` | `test-admin@eventwaw.com` | E2E admin account |
+| `ADMIN_EMAIL` | `test-admin@eventsli.com` | E2E admin account |
 | `ADMIN_PASSWORD` | `TestAdmin2026!` | E2E admin password |
-| `ATTENDEE_EMAIL` | `test-attendee@eventwaw.com` | Security test account |
+| `ATTENDEE_EMAIL` | `test-attendee@eventsli.com` | Security test account |
 | `ATTENDEE_PASSWORD` | `TestAttendee2026!` | Security test password |
 | `BASE_URL` | `http://localhost:3000` | Server base URL |
 

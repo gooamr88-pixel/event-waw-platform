@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Event Details — Event Waw</title>
-  <meta name="description" content="View event details and book your tickets on Event Waw." />
+  <title>Event Details — Eventsli</title>
+  <meta name="description" content="View event details and book your tickets on Eventsli." />
 
   <!-- Open Graph (dynamically updated by JS when event loads) -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Event Details — Event Waw" id="og-title" />
-  <meta property="og:description" content="View event details and book your tickets on Event Waw." id="og-desc" />
+  <meta property="og:title" content="Event Details — Eventsli" id="og-title" />
+  <meta property="og:description" content="View event details and book your tickets on Eventsli." id="og-desc" />
   <meta property="og:image" content="images/logo.png" id="og-image" />
-  <meta property="og:site_name" content="Event Waw" />
+  <meta property="og:site_name" content="Eventsli" />
   <meta name="twitter:card" content="summary_large_image" />
 
   <!-- PWA -->
@@ -33,7 +33,7 @@
     <div class="container">
       <a href="index.html" class="nav-logo">
         <div class="nav-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
-        <span class="nav-logo-text shimmer">Event Waw</span>
+        <span class="nav-logo-text shimmer">Eventsli</span>
       </a>
       <div class="nav-links"><a href="dashboard.html">Events</a><a href="dashboard.html" style="display: none !important; /* TEMP: DISABLED TICKETS */">My Tickets</a></div>
       <div class="nav-actions">
@@ -142,7 +142,7 @@
                 <div class="ed-info-icon">👤</div>
                 <div>
                   <div class="ed-info-label">Organizer</div>
-                  <div class="ed-info-value" id="ed-organizer">Event Waw</div>
+                  <div class="ed-info-value" id="ed-organizer">Eventsli</div>
                 </div>
               </div>
             </div>
@@ -493,7 +493,7 @@
     }
 
     async function renderEvent(event) {
-      document.title = `${event.title} — Event Waw`;
+      document.title = `${event.title} — Eventsli`;
       document.getElementById('event-cover').src = event.cover_image || event.cover_url || 'images/event-concert.png';
       document.getElementById('event-cover-main').src = event.cover_image || event.cover_url || 'images/event-concert.png';
       // Resolve Supabase storage URLs (handles private buckets)
@@ -520,12 +520,12 @@
       }
 
       // Dynamic SEO: update page title + OG meta tags for social sharing
-      document.title = `${event.title} — Event Waw`;
+      document.title = `${event.title} — Eventsli`;
       const ogTitle = document.getElementById('og-title');
       const ogDesc = document.getElementById('og-desc');
       const ogImage = document.getElementById('og-image');
-      if (ogTitle) ogTitle.setAttribute('content', `${event.title} — Event Waw`);
-      if (ogDesc) ogDesc.setAttribute('content', event.description || `Book tickets for ${event.title} on Event Waw.`);
+      if (ogTitle) ogTitle.setAttribute('content', `${event.title} — Eventsli`);
+      if (ogDesc) ogDesc.setAttribute('content', event.description || `Book tickets for ${event.title} on Eventsli.`);
       if (ogImage && event.cover_image) ogImage.setAttribute('content', event.cover_image);
 
       // Check if description needs "See more"
@@ -560,7 +560,7 @@
       document.getElementById('ed-location').textContent = address || event.venue;
 
       // Organizer
-      const orgName = event.profiles?.full_name || 'Event Waw';
+      const orgName = event.profiles?.full_name || 'Eventsli';
       document.getElementById('ed-organizer').textContent = `By: ${orgName}`;
 
       // Hero bar

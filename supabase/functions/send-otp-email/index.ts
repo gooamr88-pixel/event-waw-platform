@@ -12,8 +12,8 @@ import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
 import { otpLoginEmail, otpRegisterEmail } from '../_shared/email-templates.ts';
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!;
-const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventwaw.com';
-const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Event Waw';
+const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventsli.com';
+const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Eventsli';
 
 serve(async (req) => {
   const corsResponse = handleCORS(req);
@@ -72,7 +72,7 @@ serve(async (req) => {
 
     // 4. Build email content based on type
     const isRegistration = type === 'register';
-    const subject = `${code} — ${isRegistration ? 'Verify your' : 'Your'} Event Waw ${isRegistration ? 'account' : 'verification code'}`;
+    const subject = `${code} — ${isRegistration ? 'Verify your' : 'Your'} Eventsli ${isRegistration ? 'account' : 'verification code'}`;
 
     const htmlContent = isRegistration
       ? otpRegisterEmail(code, safeName)

@@ -14,19 +14,19 @@ import { test, expect } from '@playwright/test';
  *   5. XSS protection in the DOM sanitizer
  *
  * PREREQUISITES:
- *   Attendee account:   test-attendee@eventwaw.com / TestAttendee2026!
- *   Organizer account:  test-organizer@eventwaw.com / TestOrg2026!
- *   Admin account:      test-admin@eventwaw.com / TestAdmin2026!
+ *   Attendee account:   test-attendee@eventsli.com / TestAttendee2026!
+ *   Organizer account:  test-organizer@eventsli.com / TestOrg2026!
+ *   Admin account:      test-admin@eventsli.com / TestAdmin2026!
  *
  *   Set via env vars: ATTENDEE_EMAIL, ATTENDEE_PASSWORD, etc.
  * ═══════════════════════════════════════════════════════════════
  */
 
-const ATTENDEE_EMAIL = process.env.ATTENDEE_EMAIL || 'test-attendee@eventwaw.com';
+const ATTENDEE_EMAIL = process.env.ATTENDEE_EMAIL || 'test-attendee@eventsli.com';
 const ATTENDEE_PASSWORD = process.env.ATTENDEE_PASSWORD || 'TestAttendee2026!';
-const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL || 'test-organizer@eventwaw.com';
+const ORGANIZER_EMAIL = process.env.ORGANIZER_EMAIL || 'test-organizer@eventsli.com';
 const ORGANIZER_PASSWORD = process.env.ORGANIZER_PASSWORD || 'TestOrg2026!';
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'test-admin@eventwaw.com';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'test-admin@eventsli.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'TestAdmin2026!';
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://bmtwdwoibvoewbesohpu.supabase.co';

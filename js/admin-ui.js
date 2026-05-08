@@ -38,7 +38,7 @@ export function setupDarkMode() {
 export function setupUserInfo(auth, adminRole) {
   const { user, profile } = auth;
   const name = profile?.full_name || user?.user_metadata?.full_name || (user?.email ? user.email.split('@')[0] : null) || 'Admin';
-  const email = profile?.email || user?.email || 'admin@eventwaw.com';
+  const email = profile?.email || user?.email || 'admin@eventsli.com';
   const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 
   const nameEl = document.getElementById('user-name');

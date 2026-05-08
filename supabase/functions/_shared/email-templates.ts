@@ -7,7 +7,7 @@
 
 // ── Shared design tokens ──
 const BRAND = {
-  name: 'Event Waw',
+  name: 'Eventsli',
   color: '#D4AF37',
   colorDark: '#b8941f',
   bg: '#09090b',

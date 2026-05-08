@@ -1,7 +1,7 @@
 {
   "name": "event-waw-platform",
   "version": "2.0.0",
-  "description": "Event Waw — Enterprise-Grade Event Management SaaS Platform",
+  "description": "Eventsli — Enterprise-Grade Event Management SaaS Platform",
   "private": true,
   "type": "module",
   "scripts": {

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Register — Event Waw</title>
-  <meta name="description" content="Create your Event Waw account — Discover & Create Events Effortlessly." />
+  <title>Register — Eventsli</title>
+  <meta name="description" content="Create your Eventsli account — Discover & Create Events Effortlessly." />
   <link rel="stylesheet" href="css/landing-eveenty.css" />
   <link rel="stylesheet" href="css/eveenty-auth.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
@@ -19,7 +19,7 @@
     <div class="ev-auth-left">
       <a href="index.html" class="ev-logo">
         <div class="ev-logo-icon"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
-        <span class="ev-logo-text">Event Waw<span class="ev-logo-dot">.</span></span>
+        <span class="ev-logo-text">Eventsli<span class="ev-logo-dot">.</span></span>
       </a>
       <div class="ev-logo-tagline">DISCOVER & CREATE EVENTS EFFORTLESSLY</div>
       <div class="ev-cards-area">
@@ -114,7 +114,7 @@
     <div class="ev-chatbox-header">
       <div class="ev-chatbox-header-left">
         <div class="ev-chatbox-avatar"><svg viewBox="0 0 200 200" fill="none"><circle cx="100" cy="85" r="52" stroke="currentColor" stroke-width="10"/><path d="M68 75 L80 105 L100 80 L120 105 L132 75" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><line x1="62" y1="125" x2="38" y2="155" stroke="currentColor" stroke-width="10" stroke-linecap="round"/><circle cx="135" cy="52" r="5" fill="currentColor"/></svg></div>
-        <div><div class="ev-chatbox-title">Event Waw</div><div class="ev-chatbox-status"><span class="ev-status-dot"></span> Online — Instant Replies</div></div>
+        <div><div class="ev-chatbox-title">Eventsli</div><div class="ev-chatbox-status"><span class="ev-status-dot"></span> Online — Instant Replies</div></div>
       </div>
       <button class="ev-chatbox-close" id="ev-chatbox-close" aria-label="Close chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
@@ -140,9 +140,9 @@
       { q: "💰 Can I get a refund?", a: "Refund policies are set by each event organizer. Check the event details page for the specific refund policy." },
       { q: "🎪 How do I create an event?", a: "Sign up as an organizer, go to the <a href='dashboard.html'>Dashboard</a>, and click <b>\"Create Event\"</b>. You can set pricing, venue, seating charts, and manage tickets all in one place." },
       { q: "📱 How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly. One scan = one entry." },
-      { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventwaw.com</b> or use the contact form. We typically respond within 24 hours." },
+      { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventsli.com</b> or use the contact form. We typically respond within 24 hours." },
       { q: "🔒 Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers. Everything is encrypted with bank-level security." },
-      { q: "👥 What roles does the platform support?", a: "Event Waw supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools." }
+      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools." }
     ];
     const chatbox = document.getElementById('ev-chatbox');
     const fab = document.getElementById('ev-chat-fab');
@@ -155,9 +155,9 @@
     function sanitize(html){const t=document.createElement('template');t.innerHTML=html;const f=t.content;f.querySelectorAll('script,iframe,object,embed').forEach(e=>e.remove());f.querySelectorAll('*').forEach(el=>{for(let i=el.attributes.length-1;i>=0;i--){const a=el.attributes[i];const n=a.name.toLowerCase();const v=a.value.trim().toLowerCase();if(n.startsWith('on')){el.removeAttribute(a.name);continue;}if(/^(javascript|data|vbscript|blob):/i.test(v))el.removeAttribute(a.name);}});return f;}
     function addMessage(content, type, isHtml) { const w=document.createElement('div');w.className='ev-msg ev-msg-'+type;const b=document.createElement('div');b.className='ev-msg-bubble';if(isHtml){b.appendChild(sanitize(content));}else{b.textContent=content;}w.appendChild(b);msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
     function addQuickReplies() { const w=document.createElement('div');w.className='ev-quick-replies';FAQ.forEach(function(item){const btn=document.createElement('button');btn.className='ev-quick-btn';btn.textContent=item.q;btn.addEventListener('click',function(){addMessage(item.q,'user',false);w.remove();setTimeout(function(){addMessage(item.a,'bot',true);setTimeout(addQuickReplies,400);},500);});w.appendChild(btn);});msgArea.appendChild(w);msgArea.scrollTop=msgArea.scrollHeight; }
-    function handleUserInput() { const t=input.value.trim();if(!t)return;addMessage(t,'user',false);input.value='';const lower=t.toLowerCase();let matched=FAQ.find(function(f){const kw=f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w){return w.length>3;});return kw.some(function(k){return lower.includes(k);});});setTimeout(function(){if(matched){addMessage(matched.a,'bot',true);}else{addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventwaw.com</b>.","bot",true);}setTimeout(addQuickReplies,400);},600); }
+    function handleUserInput() { const t=input.value.trim();if(!t)return;addMessage(t,'user',false);input.value='';const lower=t.toLowerCase();let matched=FAQ.find(function(f){const kw=f.q.toLowerCase().replace(/[^\w\s]/g,'').split(' ').filter(function(w){return w.length>3;});return kw.some(function(k){return lower.includes(k);});});setTimeout(function(){if(matched){addMessage(matched.a,'bot',true);}else{addMessage("Thanks for your message! For the fastest help, try one of the quick questions below or email us at <b>support@eventsli.com</b>.","bot",true);}setTimeout(addQuickReplies,400);},600); }
     function toggleChat() { isOpen=!isOpen;chatbox.classList.toggle('open',isOpen);fab.classList.toggle('active',isOpen);if(badge)badge.style.display='none';if(isOpen)input.focus(); }
-    addMessage("👋 Hey there! Welcome to <b>Event Waw</b>. How can I help you today?","bot",true);
+    addMessage("👋 Hey there! Welcome to <b>Eventsli</b>. How can I help you today?","bot",true);
     setTimeout(addQuickReplies,300);
     fab.addEventListener('click',toggleChat);
     closeBtn.addEventListener('click',toggleChat);
@@ -277,7 +277,7 @@
           if (!data[0].is_verified) throw new Error(data[0].error_message);
           await markOTPVerified();
           const otpDest = await getPostAuthRedirect();
-          showMsg('success','✓ Email verified! Welcome to Event Waw!');
+          showMsg('success','✓ Email verified! Welcome to Eventsli!');
           setTimeout(() => { window.location.href = otpDest; }, 1000);
         } catch (err) {
           showMsg('error', err.message || 'Invalid code.');

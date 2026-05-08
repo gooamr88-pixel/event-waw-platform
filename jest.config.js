@@ -1,5 +1,5 @@
 /**
- * Event Waw — Jest Unit Test Configuration
+ * Eventsli — Jest Unit Test Configuration
  * ─────────────────────────────────────────
  * For testing pure business logic, utility functions,
  * and data transformation modules in isolation.
