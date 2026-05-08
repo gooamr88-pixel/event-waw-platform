@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Venue Designer Renderers
+   EVENTSLI - Venue Designer Renderers
    =================================== */
 
 export function renderCanvas(elements, container, state, ELEMENT_TYPES, SEAT_R, SEAT_GAP, ROW_GAP) {

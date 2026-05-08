@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Venue Designer Persistence
+   EVENTSLI - Venue Designer Persistence
    =================================== */
 
 import { supabase } from './supabase.js';

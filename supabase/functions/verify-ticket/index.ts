@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Verify Ticket Edge Function (Hardened v3)
+// EVENTSLI — Verify Ticket Edge Function (Hardened v3)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy verify-ticket --no-verify-jwt

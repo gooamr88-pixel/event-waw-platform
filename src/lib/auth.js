@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Auth Helpers
+   EVENTSLI - Auth Helpers
    =================================== */
 
 import { supabase, getCurrentUser } from './supabase.js';

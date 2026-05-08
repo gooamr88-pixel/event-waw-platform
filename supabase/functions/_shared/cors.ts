@@ -1,15 +1,15 @@
 /// <reference types="https://deno.land/x/deploy@0.12.0/types.ts" />
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions)
 // ═══════════════════════════════════
-// EVENT WAW — Shared CORS & Response Helpers
+// EVENTSLI — Shared CORS & Response Helpers
 // Used by all Edge Functions
 // ═══════════════════════════════════
 
-// Multiple allowed origins — custom domain + Vercel + localhost dev
+// Multiple allowed origins — custom domain + Vercel deploy + localhost dev
 const ALLOWED_ORIGINS = [
   'https://eventsli.com',
   'https://www.eventsli.com',
-  'https://event-waw-platform.vercel.app',
+  'https://event-waw-platform.vercel.app',  // Keep during DNS transition; remove post-launch
   'http://localhost:3000',
   'http://localhost:5173',
   'http://localhost:8080',
@@ -32,8 +32,8 @@ if (envOrigin && !ALLOWED_ORIGINS.includes(envOrigin)) {
 function isAllowedOrigin(origin: string): boolean {
   if (!origin || origin === 'null') return true; // file:// protocol sends 'null'
   if (ALLOWED_ORIGINS.includes(origin)) return true;
-  // Allow any Vercel preview deployment
-  if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return true;
+  // Allow only OUR Vercel preview deployments (project-scoped)
+  if (/^https:\/\/event-waw-platform(-[a-z0-9]+)?(-[a-z0-9]+)?\.vercel\.app$/.test(origin)) return true;
   return false;
 }
 
@@ -42,9 +42,9 @@ function isAllowedOrigin(origin: string): boolean {
  */
 function getCorsHeaders(req?: Request): Record<string, string> {
   const origin = req?.headers?.get('Origin') || '';
-  // For null origin (file://), use wildcard; otherwise match the actual origin
+  // For null/empty origin, return primary domain (never wildcard — prevents credential leaks)
   const allowOrigin = (!origin || origin === 'null')
-    ? '*'
+    ? ALLOWED_ORIGINS[0]
     : isAllowedOrigin(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowOrigin,

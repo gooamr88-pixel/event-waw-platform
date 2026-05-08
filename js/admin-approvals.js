@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin Approvals Panel
+   EVENTSLI — Admin Approvals Panel
    =================================== */
 
 import { supabase } from '../src/lib/supabase.js';

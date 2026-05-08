@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Seating Chart UI Integration
+   EVENTSLI - Seating Chart UI Integration
    Bridges SeatingChart engine with event-detail page
    =================================== */
 

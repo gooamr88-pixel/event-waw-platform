@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions)
 // ═══════════════════════════════════
-// EVENT WAW — Shared Validation Helpers
+// EVENTSLI — Shared Validation Helpers
 // Used by Edge Functions
 // ═══════════════════════════════════
 

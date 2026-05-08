@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Supabase Client
+   EVENTSLI - Supabase Client
    =================================== */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -47,7 +47,7 @@ export async function getCurrentProfile() {
   // Use maybeSingle() instead of single() to avoid error on 0 rows
   const { data, error } = await supabase
     .from('profiles')
-    .select('*')
+    .select('id, email, full_name, phone, role, avatar_url, is_blocked, blocked_at, blocked_reason, otp_verified_at, organizer_approved, organizer_profile, payout_info, created_at')
     .eq('id', user.id)
     .maybeSingle();
 

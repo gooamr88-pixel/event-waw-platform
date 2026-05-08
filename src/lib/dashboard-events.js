@@ -162,7 +162,7 @@ export async function handleTableAction(e) {
 
 export async function duplicateEvent(eventId) {
   try {
-    const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
+    const { data: ev, error } = await supabase.from('events').select('id, organizer_id, title, description, venue, city, date, category, status, cover_image, tags, age_restriction, dress_code, max_capacity, refund_policy, contact_email, contact_phone, lat, lng').eq('id', eventId).single();
     if (error || !ev) { showToast('Failed to load event', 'error'); return; }
     const user = await getCurrentUser();
     const copy = {
@@ -177,7 +177,7 @@ export async function duplicateEvent(eventId) {
     };
     const newEvent = await createEvent(copy);
     
-    const { data: tiers } = await supabase.from('ticket_tiers').select('*').eq('event_id', eventId);
+    const { data: tiers } = await supabase.from('ticket_tiers').select('name, price, capacity, sort_order').eq('event_id', eventId);
     if (tiers?.length) {
       for (const t of tiers) {
         await supabase.from('ticket_tiers').insert({

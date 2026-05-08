@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Modal Orchestrator
+   EVENTSLI — Modal Orchestrator
    =================================== */
 
 import { supabase, resolveImageUrl } from './supabase.js';
@@ -493,7 +493,7 @@ export function resetCreateEventForm() {
 export async function showEditModal(eventId) {
   document.querySelectorAll('.ev-modal-overlay.ev-edit-modal').forEach(m => m.remove());
 
-  const { data: ev, error } = await supabase.from('events').select('*').eq('id', eventId).single();
+  const { data: ev, error } = await supabase.from('events').select('id, title, description, venue, city, date, category, status, cover_image, tags, age_restriction, dress_code, max_capacity, refund_policy, contact_email, contact_phone, lat, lng').eq('id', eventId).single();
   if (error || !ev) { showToast('Failed to load event', 'error'); return; }
 
   const evDate = ev.date ? new Date(ev.date) : new Date();

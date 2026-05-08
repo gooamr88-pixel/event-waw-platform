@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Main JavaScript (Landing Page)
+   EVENTSLI - Main JavaScript (Landing Page)
    ===================================
    This file is loaded via <script src> on index.html
    (non-module). It handles landing-page-specific features

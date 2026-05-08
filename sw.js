@@ -1,12 +1,12 @@
 /* ===================================
-   EVENT WAW - Service Worker
+   EVENTSLI - Service Worker
    Network-first for API calls and JS modules,
    cache-first for CSS/images/fonts.
    =================================== */
 
 // M-7: Bump version on every deploy to purge stale caches.
 // The activate handler below auto-deletes any cache !== CACHE_NAME.
-const CACHE_NAME = 'event-waw-v2';
+const CACHE_NAME = 'eventsli-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

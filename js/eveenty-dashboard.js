@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW DASHBOARD - Controller
+   EVENTSLI DASHBOARD - Controller
    Single-file, modular, production-ready
    =================================== */
 

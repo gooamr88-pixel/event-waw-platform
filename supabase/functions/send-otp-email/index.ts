@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Send OTP Email Edge Function (Hardened v3)
+// EVENTSLI — Send OTP Email Edge Function (Hardened v3)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy send-otp-email --no-verify-jwt

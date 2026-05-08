@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Wizard Sponsors & Images
+   EVENTSLI — Wizard Sponsors & Images
    =================================== */
 
 import { handleCeFileUpload, setupCeUpload } from './wizard-uploads.js';

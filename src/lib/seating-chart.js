@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Interactive Seating Chart Engine
+   EVENTSLI - Interactive Seating Chart Engine
    SVG-based renderer with panzoom (3.4KB)
    =================================== */
 

@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Onboarding Edge Function
+// EVENTSLI — Stripe Onboarding Edge Function
 // Handles Stripe Connect account creation & onboarding links
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy stripe-onboarding --no-verify-jwt
@@ -97,7 +97,7 @@ serve(async (req) => {
         email: user.email,
         metadata: {
           user_id: user.id,
-          platform: 'event_waw',
+          platform: 'eventsli',
         },
         business_profile: {
           mcc: '7922', // Theatrical Producers & Ticket Agencies

@@ -16,7 +16,7 @@ export function setupEmailAttendees() {
       if (!tiers?.length) { showToast('No tiers found', 'error'); return; }
       const { data: tickets } = await supabase
         .from('tickets')
-        .select('*')
+        .select('id, order_id, attendee_email')
         .in('ticket_tier_id', tiers.map(t => t.id));
 
       // Get emails from orders table (where guest emails are stored)

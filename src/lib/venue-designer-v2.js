@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Venue Designer Facade
+   EVENTSLI - Venue Designer Facade
    =================================== */
 
 export { ELEMENT_TYPES, VenueDesignerEngine, createElement } from './vd-engine.js';

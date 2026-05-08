@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin UI Helpers
+   EVENTSLI — Admin UI Helpers
    =================================== */
 
 import { performSignOut } from '../src/lib/guard.js';

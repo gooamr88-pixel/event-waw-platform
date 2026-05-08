@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * ═══════════════════════════════════════════════════════════════
- * EVENT WAW — E2E: Approval Pipeline Critical Path
+ * EVENTSLI — E2E: Approval Pipeline Critical Path
  * ═══════════════════════════════════════════════════════════════
  *
  * Tests the full business-critical flow:

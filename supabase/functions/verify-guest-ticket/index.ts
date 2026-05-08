@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Verify Guest Ticket Edge Function
+// EVENTSLI — Verify Guest Ticket Edge Function
 // Validates a guest token and returns ticket data for display.
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy verify-guest-ticket --no-verify-jwt

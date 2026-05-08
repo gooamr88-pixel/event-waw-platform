@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions)
 // ═══════════════════════════════════
-// EVENT WAW — In-Memory Rate Limiter
+// EVENTSLI — In-Memory Rate Limiter
 // For Supabase Edge Functions (Deno)
 // ═══════════════════════════════════
 //

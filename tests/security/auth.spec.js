@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 
 /**
  * ═══════════════════════════════════════════════════════════════
- * EVENT WAW — Security Test Suite: Auth & Access Control
+ * EVENTSLI — Security Test Suite: Auth & Access Control
  * ═══════════════════════════════════════════════════════════════
  *
  * Verifies:

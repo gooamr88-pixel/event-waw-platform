@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Service Worker
+   EVENTSLI - Service Worker
    PWA offline support for Scanner
    =================================== */
 

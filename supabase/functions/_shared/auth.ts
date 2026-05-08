@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions)
 // ═══════════════════════════════════
-// EVENT WAW — Shared Auth Helper
+// EVENTSLI — Shared Auth Helper
 // Authenticates users via JWT in Edge Functions
 // ═══════════════════════════════════
 

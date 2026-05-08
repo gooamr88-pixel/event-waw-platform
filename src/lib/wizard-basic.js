@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Wizard Basic & General
+   EVENTSLI — Wizard Basic & General
    =================================== */
 
 import { setSafeHTML } from './dom.js';

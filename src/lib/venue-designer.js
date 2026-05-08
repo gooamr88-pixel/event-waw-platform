@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Venue Designer Engine
+   EVENTSLI - Venue Designer Engine
    Generates layout_json + bulk-creates seats
    =================================== */
 

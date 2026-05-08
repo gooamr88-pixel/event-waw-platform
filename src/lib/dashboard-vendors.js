@@ -41,7 +41,7 @@ async function loadApprovalData() {
   setSafeHTML(tbody, generateSkeletonRows(['20px', '140px', '160px', '100px', '120px', '100px', '80px', '100px', '80px'], 5));
 
   try {
-    let query = supabase.from('vendor_requests').select('*').eq('status', approvalTabFilter).order('created_at', { ascending: false }).limit(20);
+    let query = supabase.from('vendor_requests').select('id, event_id, user_id, business_name, contact_email, category, status, booth_size, notes, created_at').eq('status', approvalTabFilter).order('created_at', { ascending: false }).limit(20);
     if (eventId) query = query.eq('event_id', eventId);
     const { data, error } = await query;
 

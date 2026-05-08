@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * EVENT WAW — File Size Audit Script
+ * EVENTSLI — File Size Audit Script
  * ═══════════════════════════════════════════════════════════════
  *
  * Enforces the "No file over 300 lines" rule.
@@ -58,7 +58,7 @@ function scanDir(dir) {
 // ── Run scan ──
 console.log('');
 console.log('═══════════════════════════════════════════════');
-console.log('  EVENT WAW — File Size Audit');
+console.log('  EVENTSLI — File Size Audit');
 console.log(`  Max: ${MAX_LINES} lines | Dirs: ${SCAN_DIRS.join(', ')}`);
 console.log('═══════════════════════════════════════════════');
 console.log('');

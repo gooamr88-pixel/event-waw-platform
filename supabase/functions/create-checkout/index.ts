@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Create Checkout Edge Function (v5 — Guest + Auth + Seating)
+// EVENTSLI — Create Checkout Edge Function (v5 — Guest + Auth + Seating)
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy create-checkout --no-verify-jwt

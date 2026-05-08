@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Venue Designer Engine Core
+   EVENTSLI - Venue Designer Engine Core
    =================================== */
 
 import { renderCanvas } from './vd-renderers.js';

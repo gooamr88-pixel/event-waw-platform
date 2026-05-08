@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════
-   EVENT WAW — Professional Email Templates
+   EVENTSLI — Professional Email Templates
    ═══════════════════════════════════
    Reusable across Edge Functions.
    Copy these into your Deno edge functions.

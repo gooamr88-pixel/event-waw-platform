@@ -30,7 +30,7 @@ export function setupTicketsPanel() {
       tiers.forEach(t => { tierMap[t.id] = t; });
 
       const { data: tickets, error: tickErr } = await safeQuery(
-        supabase.from('tickets').select('*').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
+        supabase.from('tickets').select('id, ticket_tier_id, order_id, user_id, status, qr_hash, created_at').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
       );
       if (getSwitchId() !== mySwitch) return;  // stale — user switched tabs
 

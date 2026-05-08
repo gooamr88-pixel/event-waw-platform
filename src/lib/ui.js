@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Shared UI Utilities
+   EVENTSLI - Shared UI Utilities
    ===================================
    Single source of truth for theme,
    nav, mobile menu, and particles.

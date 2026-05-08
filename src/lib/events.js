@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Events API
+   EVENTSLI - Events API
    =================================== */
 
 import { supabase } from './supabase.js';

@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Centralized Auth Guard
+   EVENTSLI - Centralized Auth Guard
    ===================================
    Single source of truth for page access
    control, OTP verification, and nav UI.

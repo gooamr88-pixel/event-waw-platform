@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin Navigation
+   EVENTSLI — Admin Navigation
    =================================== */
 
 /**

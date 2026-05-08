@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin CMS Editor
+   EVENTSLI — Admin CMS Editor
    ===================================
    Provides in-place editing UI for the
    platform_settings table (Hero, Sponsors,

@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin Motherboard Controller
+   EVENTSLI — Admin Motherboard Controller
    ===================================
    Orchestrates the Super Admin Dashboard.
    Guards access to admin role only.

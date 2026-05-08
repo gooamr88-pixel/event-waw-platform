@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin CMS Controller
+   EVENTSLI — Admin CMS Controller
    =================================== */
 
 import { supabase } from '../src/lib/supabase.js';

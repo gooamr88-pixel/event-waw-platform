@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Events Page Logic
+   EVENTSLI - Events Page Logic
    =================================== */
 import { getEvents } from '../src/lib/events.js';
 import { escapeHTML, formatCurrency } from '../src/lib/utils.js';

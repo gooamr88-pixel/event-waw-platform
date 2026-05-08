@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW - Geolocation & Proximity Module
+   EVENTSLI - Geolocation & Proximity Module
    ===================================
    IP-based geolocation (no browser permission needed).
    Uses ipapi.co free API for real IP detection.

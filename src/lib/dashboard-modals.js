@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Dashboard Modals Facade
+   EVENTSLI — Dashboard Modals Facade
    =================================== */
 
 // Re-export the extracted domain modules

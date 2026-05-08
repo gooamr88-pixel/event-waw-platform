@@ -96,7 +96,7 @@ export async function loadPromoCodes() {
     if (getSwitchId() !== mySwitch) return;
     const { data, error } = await supabase
       .from('promo_codes')
-      .select('*')
+      .select('id, code, discount_type, discount_value, discount_percent, discount_currency, max_uses, used_count, valid_until, is_active, event_id, created_at')
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false });
     if (getSwitchId() !== mySwitch) return;

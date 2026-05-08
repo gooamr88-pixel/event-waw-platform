@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Stripe Webhook Edge Function (v5 — Guest + Auth + Seating)
+// EVENTSLI — Stripe Webhook Edge Function (v5 — Guest + Auth + Seating)
 // Handles: checkout.session.completed, charge.refunded,
 //          checkout.session.expired, charge.dispute.created
 // ═══════════════════════════════════
@@ -211,60 +211,62 @@ serve(async (req) => {
       }
     }
 
-    const tickets = [];
-    for (let i = 0; i < qty; i++) {
-      const ticketId = crypto.randomUUID();
-      const nonce = crypto.randomUUID();
+    // ── Pre-import HMAC key once (PERF-01: was re-imported per ticket) ──
+    const hmacKey = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(hmacSecret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
 
-      // Build the base payload
-      const payloadObj: any = {
-        v: 2,
-        ticket_id: ticketId,
-        order_id: order.id,
-        event_id,
-        user_id: isGuest ? null : user_id,
-        tier_id,
-        nonce,
-        is_guest: isGuest,
-        iat: Math.floor(Date.now() / 1000),
-      };
+    const tickets = await Promise.all(
+      Array.from({ length: qty }, async (_, i) => {
+        const ticketId = crypto.randomUUID();
+        const nonce = crypto.randomUUID();
 
-      // ── Inject seat location into the signed payload ──
-      const seatId = orderedSeatIds[i];
-      if (seatId && seatLookup[seatId]) {
-        const loc = seatLookup[seatId];
-        payloadObj.sec = loc.section_key;
-        payloadObj.row = loc.row_label;
-        payloadObj.seat = loc.seat_number;
-      }
+        const payloadObj: any = {
+          v: 2,
+          ticket_id: ticketId,
+          order_id: order.id,
+          event_id,
+          user_id: isGuest ? null : user_id,
+          tier_id,
+          nonce,
+          is_guest: isGuest,
+          iat: Math.floor(Date.now() / 1000),
+        };
 
-      const payload = JSON.stringify(payloadObj);
+        // ── Inject seat location into the signed payload ──
+        const seatId = orderedSeatIds[i];
+        if (seatId && seatLookup[seatId]) {
+          const loc = seatLookup[seatId];
+          payloadObj.sec = loc.section_key;
+          payloadObj.row = loc.row_label;
+          payloadObj.seat = loc.seat_number;
+        }
 
-      // HMAC-SHA256 signature
-      const key = await crypto.subtle.importKey(
-        'raw',
-        new TextEncoder().encode(hmacSecret),
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      );
-      const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload));
-      const hash = base64url(new Uint8Array(sig));
+        const payload = JSON.stringify(payloadObj);
 
-      const qrData = JSON.stringify({
-        ...JSON.parse(payload),
-        hash,
-      });
+        // HMAC-SHA256 signature (key pre-imported above)
+        const sig = await crypto.subtle.sign('HMAC', hmacKey, new TextEncoder().encode(payload));
+        const hash = base64url(new Uint8Array(sig));
 
-      tickets.push({
-        id: ticketId,
-        order_id: order.id,
-        ticket_tier_id: tier_id,
-        user_id: isGuest ? null : user_id,  // NULL for guest tickets
-        qr_hash: qrData,
-        status: 'valid',
-      });
-    }
+        const qrData = JSON.stringify({
+          ...JSON.parse(payload),
+          hash,
+        });
+
+        return {
+          id: ticketId,
+          order_id: order.id,
+          ticket_tier_id: tier_id,
+          user_id: isGuest ? null : user_id,
+          qr_hash: qrData,
+          status: 'valid',
+        };
+      })
+    );
 
     const { error: ticketError } = await supabase
       .from('tickets')
@@ -336,7 +338,7 @@ serve(async (req) => {
           p_raw_token: rawToken,
         });
 
-        const originUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://event-waw-platform.vercel.app';
+        const originUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
         guestTicketUrl = `${originUrl}/my-tickets.html?guest_token=${rawToken}`;
         console.log(`🔗 Guest ticket URL generated for ${userEmail}`);
       } catch (tokenErr) {
@@ -376,7 +378,7 @@ serve(async (req) => {
               eventVenue,
               eventDate: formattedDate,
               orderId: order.id,
-              ticketLink: `https://event-waw-platform.vercel.app/my-tickets.html`,
+              ticketLink: `${Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com'}/my-tickets.html`,
             });
 
         await fetch('https://api.brevo.com/v3/smtp/email', {

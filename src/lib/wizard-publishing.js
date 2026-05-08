@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Wizard Publishing & Validation
+   EVENTSLI — Wizard Publishing & Validation
    =================================== */
 
 import { supabase, getCurrentUser } from './supabase.js';
@@ -8,15 +8,32 @@ import { showToast } from './dashboard-ui.js';
 import { emitDashboardAction } from './dashboard-bus.js';
 import { getTicketsList } from './wizard-tickets.js';
 import { uploadCoverImage, uploadEventFile, getPendingCoverFile } from './wizard-uploads.js';
+import DOMPurify from 'https://esm.sh/dompurify@3.2.4';
 
 let isPublishing = false;
 
+/**
+ * Sanitize rich-text HTML from the event description editor.
+ * Uses DOMPurify to strip ALL XSS vectors: script tags, event handlers,
+ * javascript: URIs, data: URIs in dangerous contexts, and CSS expressions.
+ */
 function sanitizeDescriptionHTML(html) {
   if (!html || !html.trim()) return '';
-  const temp = document.createElement('div');
-  // In a real env, use DOMPurify or safeHTML. For now, basic sanitize
-  temp.innerHTML = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-  return temp.innerHTML;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'b', 'i', 'u', 'strong', 'em', 'a', 'ul', 'ol', 'li',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',
+      'span', 'div', 'hr', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+    ],
+    ALLOWED_ATTR: [
+      'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'style',
+      'width', 'height', 'colspan', 'rowspan',
+    ],
+    ALLOW_DATA_ATTR: false,
+    ADD_ATTR: ['target'],
+    FORBID_TAGS: ['script', 'iframe', 'object', 'embed', 'form', 'input', 'textarea', 'select', 'button'],
+    FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'],
+  });
 }
 
 export function setupPublishing(getOrchestratorState, switchToPanel) {

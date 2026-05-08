@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions)
 // ═══════════════════════════════════
-// EVENT WAW — Gemini Chat Proxy
+// EVENTSLI — Gemini Chat Proxy
 // Keeps GEMINI_API_KEY server-side (Supabase secret)
 // Deploy: supabase functions deploy gemini-chat --no-verify-jwt
 // Set key: supabase secrets set GEMINI_API_KEY=your_key_here
@@ -14,7 +14,7 @@ const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 const SYSTEM_PROMPT = `You are the official AI assistant for **Eventsli** — a premium event ticketing platform. Your name is "Waw Assistant".
 
-ABOUT EVENT WAW:
+ABOUT EVENTSLI:
 - Eventsli lets users discover, book, and attend events (concerts, festivals, conferences, sports, workshops, trips, nightlife, art & culture, food & drink).
 - Tickets are delivered as QR codes for instant entry.
 - Payments are handled securely via Stripe (bank-grade security, PCI DSS compliant).

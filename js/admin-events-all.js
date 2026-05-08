@@ -1,5 +1,5 @@
 /* ===================================
-   EVENT WAW — Admin All Events Panel
+   EVENTSLI — Admin All Events Panel
    =================================== */
 
 import { supabase } from '../src/lib/supabase.js';
@@ -125,7 +125,7 @@ export async function handleAdminSuspendEvent(eventId, title, onRefresh) {
     showToast(`Event "${title}" has been suspended.`, 'success');
     
     if (organizerEmail) {
-      window.location.href = `mailto:${organizerEmail}?subject=Event%20Suspended:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20suspended.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`;
+      window.open(`mailto:${organizerEmail}?subject=Event%20Suspended:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20suspended.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`, '_blank');
     }
     onRefresh();
   } catch (err) {
@@ -151,7 +151,7 @@ export async function handleAdminDeleteEvent(eventId, title, onRefresh) {
     showToast(`Event "${title}" has been deleted.`, 'success');
 
     if (organizerEmail) {
-      window.location.href = `mailto:${organizerEmail}?subject=Event%20Deleted:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20deleted.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`;
+      window.open(`mailto:${organizerEmail}?subject=Event%20Deleted:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20deleted.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`, '_blank');
     }
     onRefresh();
   } catch (err) {

@@ -1,6 +1,6 @@
 // @ts-nocheck — This file runs on Deno (Supabase Edge Functions), not Node/Browser
 // ═══════════════════════════════════
-// EVENT WAW — Send Password Reset OTP Edge Function
+// EVENTSLI — Send Password Reset OTP Edge Function
 // Supabase Edge Function (Deno)
 // ═══════════════════════════════════
 // Deploy: supabase functions deploy send-password-reset-otp --no-verify-jwt
