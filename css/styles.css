@@ -1,13 +1,17 @@
 /* ═══════════════════════════════════════════════
-   VIA — PREMIUM DESIGN SYSTEM
-   Adapted from Roya/Nabda Architecture
-   Gold · Black · Blue Glow · Cinematic
+   EVENTSLI — CORE STYLES
+   ═══════════════════════════════════════════════
+   IMPORTANT: Design tokens are defined in tokens.css
+   which MUST be loaded before this file.
+   See css/tokens.css for the unified token system.
    ═══════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
+/* @deprecated — These :root vars will be migrated to tokens.css.
+   During Phase 1 transition, both systems coexist. */
 :root {
   /* ── Brand ── */
   --accent-primary: #059669;
@@ -40,8 +44,11 @@
   --font-serif: 'Cormorant Garamond', Georgia, serif;
 
   /* ── Motion ── */
-  --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.2s ease;
+  /* FIX: Replaced 'transition: all' with targeted properties to prevent
+     layout thrashing. 'all' animates width/height/padding causing reflows.
+     Components should declare their own targeted transition properties. */
+  --transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
   --card-radius: 16px;
   --section-padding: 80px 0;
 }
@@ -319,7 +326,10 @@ body::after { top: 20%; right: -120px; background: linear-gradient(180deg, trans
 
 a { text-decoration: none; color: inherit; }
 img { max-width: 100%; display: block; }
-button, input, select, textarea { font-family: inherit; border: none; outline: none; background: none; }
+/* FIX: Removed 'outline: none' — it was killing ALL keyboard focus indicators,
+   violating WCAG 2.4.7 (Focus Visible). Focus rings are now handled by
+   :focus-visible in tokens.css, which only fires on keyboard navigation. */
+button, input, select, textarea { font-family: inherit; border: none; background: none; }
 button { cursor: pointer; }
 
 /* ── Container ── */
@@ -2205,7 +2215,8 @@ button { cursor: pointer; }
   border: 3px solid var(--border-color);
   border-top-color: var(--accent-primary);
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  /* FIX: Was referencing 'spin' but the keyframe is 'guardSpin' */
+  animation: guardSpin 0.8s linear infinite;
 }
 @keyframes guardSpin { to { transform: rotate(360deg); } }
 .guard-overlay p {
@@ -2238,6 +2249,7 @@ button { cursor: pointer; }
    INTERACTIVE SEATING CHART
    ══════════════════════════════════ */
 
+/* @deprecated — Seating vars: merge into tokens.css in Phase 2 */
 :root {
   --seat-available: #666;
   --seat-reserved: #4a4a4a;

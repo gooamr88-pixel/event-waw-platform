@@ -1,11 +1,13 @@
 /* ═══════════════════════════════════════════════
-   EVENT WAW DASHBOARD — Organizer UI
-   Blue sidebar · Clean content · Premium feel
+   EVENTSLI DASHBOARD — Organizer UI
+   Emerald sidebar · Clean content · Premium feel
+   IMPORTANT: tokens.css + bridge.css must load first.
    ═══════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
+/* @deprecated — These vars are now bridged from tokens.css via bridge.css */
 :root{
   --ev-yellow:#059669;--ev-yellow-dark:#047857;--ev-yellow-light:#EFF6FF;
   --ev-pink:#059669;--ev-pink-light:rgba(5, 150, 105,.08);

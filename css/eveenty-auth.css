@@ -1,7 +1,8 @@
 /* ═══════════════════════════════════════════════════════
-   EVENT WAW — Auth Pages (Login / Register)
+   EVENTSLI — Auth Pages (Login / Register / Forgot Password)
    Matches the landing page design system exactly.
-   Blue brand: #059669 · DM Sans · Premium feel
+   Emerald brand: #059669 · DM Sans · Premium feel
+   IMPORTANT: tokens.css + bridge.css must load first.
    ═══════════════════════════════════════════════════════ */
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
@@ -549,9 +550,9 @@ body.eveenty-auth {
   border: 2px solid rgba(255,255,255,0.3);
   border-top-color: #fff;
   border-radius: 50%;
-  animation: evSpin 0.6s linear infinite;
+  animation: esSpin 0.6s linear infinite;
 }
-@keyframes evSpin { to { transform: rotate(360deg); } }
+/* @removed — @keyframes evSpin: now uses esSpin from motion.css */
 
 /* Blue Top Bar */
 .ev-top-bar {

@@ -1,0 +1,504 @@
+/* ═══════════════════════════════════════════════════════════
+   EVENTSLI — MOTION SYSTEM (motion.css)
+   ═══════════════════════════════════════════════════════════
+   PHASE 3: MOTION & FLUIDITY
+   
+   Centralizes ALL animation patterns, provides hardware-
+   accelerated keyframes, micro-interactions, panel
+   transitions, and reduced-motion enforcement.
+   
+   Load AFTER bridge.css, BEFORE domain CSS.
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════
+   1. HARDWARE ACCELERATION LAYER
+   ══════════════════════════════════
+   Promote animated elements to GPU compositing layer
+   to prevent main-thread layout thrashing.
+   ══════════════════════════════════ */
+
+.ev-card, .ev-stat-card, .ev-chart-card,
+.ev-modal, .ev-toast, .ev-user-dropdown,
+.ev-sidebar, .ev-notif-panel,
+.btn, .ev-btn, .ev-btn-icon,
+.ev-nav-item, .ev-tab,
+.ce-listing-card-inner, .ce-ticket-card,
+.ep-event-card {
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+
+/* ══════════════════════════════════
+   2. TRANSITION: ALL PURGE
+   ══════════════════════════════════
+   Override every known 'transition: all' in domain CSS
+   with targeted property lists. This eliminates
+   layout-triggering property animations (width, height,
+   padding, margin, top, left).
+   ══════════════════════════════════ */
+
+/* ── Dashboard Sidebar Footer ── */
+.ev-sidebar-footer a,
+.ev-sidebar-footer button {
+  transition: color var(--es-duration-fast) var(--es-ease-default),
+              background-color var(--es-duration-fast) var(--es-ease-default),
+              transform var(--es-duration-fast) var(--es-ease-default);
+}
+
+/* ── Dashboard Dropdown ── */
+.ev-user-dropdown {
+  transition: opacity var(--es-duration-normal) var(--es-ease-spring),
+              visibility var(--es-duration-normal) var(--es-ease-spring),
+              transform var(--es-duration-normal) var(--es-ease-spring);
+}
+.ev-user-drop-item {
+  transition: color var(--es-duration-fast) ease,
+              background-color var(--es-duration-fast) ease;
+}
+
+/* ── Dashboard Stat Cards ── */
+.ev-stat-card {
+  transition: box-shadow var(--es-duration-normal) var(--es-ease-default),
+              transform var(--es-duration-normal) var(--es-ease-default);
+}
+
+/* ── Dashboard Buttons ── */
+.ev-btn, .ev-payout-btn {
+  transition: color var(--es-duration-fast) var(--es-ease-default),
+              background-color var(--es-duration-fast) var(--es-ease-default),
+              border-color var(--es-duration-fast) var(--es-ease-default),
+              box-shadow var(--es-duration-fast) var(--es-ease-default),
+              transform var(--es-duration-fast) var(--es-ease-default);
+}
+
+/* ── Dashboard Form Inputs ── */
+.ev-form-input {
+  transition: border-color var(--es-duration-fast) var(--es-ease-default),
+              box-shadow var(--es-duration-fast) var(--es-ease-default),
+              background-color var(--es-duration-fast) var(--es-ease-default);
+}
+
+/* ── Dashboard Dark Toggle ── */
+.ev-dark-toggle {
+  transition: background-color var(--es-duration-normal) var(--es-ease-spring),
+              border-color var(--es-duration-normal) var(--es-ease-spring),
+              transform var(--es-duration-normal) var(--es-ease-spring);
+}
+.ev-dark-toggle svg {
+  transition: transform var(--es-duration-slow) var(--es-ease-spring),
+              opacity var(--es-duration-slow) var(--es-ease-spring);
+}
+
+/* ── Dashboard Notification Bell ── */
+.ev-notif-bell {
+  transition: background-color var(--es-duration-normal) ease,
+              border-color var(--es-duration-normal) ease,
+              box-shadow var(--es-duration-normal) ease;
+}
+
+/* ── Dashboard Calendar ── */
+.ev-calendar-nav button {
+  transition: background-color var(--es-duration-fast) ease,
+              border-color var(--es-duration-fast) ease,
+              color var(--es-duration-fast) ease;
+}
+.ev-calendar-cell {
+  transition: background-color var(--es-duration-fast) ease,
+              border-color var(--es-duration-fast) ease;
+}
+
+/* ── Dashboard Upload Areas ── */
+.ev-cover-upload,
+.ce-upload-area {
+  transition: border-color var(--es-duration-normal) ease,
+              background-color var(--es-duration-normal) ease,
+              box-shadow var(--es-duration-normal) ease;
+}
+
+/* ── Create Event Components ── */
+.ce-listing-card-inner {
+  transition: border-color var(--es-duration-normal) var(--es-ease-spring),
+              box-shadow var(--es-duration-normal) var(--es-ease-spring),
+              transform var(--es-duration-normal) var(--es-ease-spring);
+}
+.ce-listing-card-check {
+  transition: opacity var(--es-duration-normal) ease,
+              border-color var(--es-duration-normal) ease,
+              background-color var(--es-duration-normal) ease;
+}
+.ce-listing-change-btn,
+.ce-editor-btn,
+.ce-social-del {
+  transition: color var(--es-duration-fast) ease,
+              background-color var(--es-duration-fast) ease,
+              border-color var(--es-duration-fast) ease;
+}
+.ce-tab {
+  transition: color var(--es-duration-fast) ease,
+              background-color var(--es-duration-fast) ease;
+}
+.ce-tab-dot {
+  transition: background-color var(--es-duration-normal) ease,
+              border-color var(--es-duration-normal) ease,
+              transform var(--es-duration-normal) ease;
+}
+.ce-ticket-card,
+.ce-service-check {
+  transition: border-color var(--es-duration-fast) ease,
+              background-color var(--es-duration-fast) ease,
+              box-shadow var(--es-duration-fast) ease;
+}
+
+/* ── Map Buttons ── */
+.ce-map-open-btn,
+.ed-map-directions-btn {
+  transition: transform var(--es-duration-normal) ease,
+              box-shadow var(--es-duration-normal) ease;
+}
+
+/* ── Google Places ── */
+gmp-placeautocomplete::part(input) {
+  transition: border-color var(--es-duration-fast) ease,
+              box-shadow var(--es-duration-fast) ease;
+}
+
+/* ── Landing Page Overrides ── */
+.eveenty-landing .ev-feature-card,
+.eveenty-landing .ev-step-card,
+.eveenty-landing .ev-security-card {
+  transition: transform var(--es-duration-normal) var(--es-ease-spring),
+              box-shadow var(--es-duration-normal) var(--es-ease-spring),
+              border-color var(--es-duration-normal) var(--es-ease-spring);
+}
+.eveenty-landing .nav-links a {
+  transition: color var(--es-duration-fast) ease !important;
+}
+.ev-chat-fab {
+  transition: transform var(--es-duration-normal) var(--es-ease-spring),
+              box-shadow var(--es-duration-normal) var(--es-ease-spring);
+}
+.ev-chatbox {
+  transition: opacity var(--es-duration-normal) var(--es-ease-spring),
+              transform var(--es-duration-normal) var(--es-ease-spring),
+              visibility var(--es-duration-normal) var(--es-ease-spring);
+}
+
+
+/* ══════════════════════════════════
+   3. UNIFIED KEYFRAME LIBRARY
+   ══════════════════════════════════
+   Canonical, hardware-accelerated keyframes.
+   Uses translate3d() for GPU compositing.
+   ══════════════════════════════════ */
+
+/* ── Entrance: Fade Up ── */
+@keyframes esFadeInUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ── Entrance: Scale In (Modals) ── */
+@keyframes esScaleIn {
+  from {
+    opacity: 0;
+    transform: scale3d(0.94, 0.94, 1) translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+  }
+}
+
+/* ── Exit: Scale Out (Modals) ── */
+@keyframes esScaleOut {
+  from {
+    opacity: 1;
+    transform: scale3d(1, 1, 1) translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: scale3d(0.94, 0.94, 1) translate3d(0, 10px, 0);
+  }
+}
+
+/* ── Entrance: Slide Right (Toasts) ── */
+@keyframes esSlideInRight {
+  from {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ── Exit: Slide Right (Toasts) ── */
+@keyframes esSlideOutRight {
+  to {
+    opacity: 0;
+    transform: translate3d(40px, 0, 0);
+  }
+}
+
+/* ── Entrance: Slide Up (Mobile Menu / Sheets) ── */
+@keyframes esSlideUp {
+  from {
+    transform: translate3d(0, 100%, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* ── Pulse (Notifications) ── */
+@keyframes esPulse {
+  0%, 100% { transform: scale3d(1, 1, 1); }
+  50% { transform: scale3d(1.15, 1.15, 1); }
+}
+
+/* ── Spring Pop (Badges) ── */
+@keyframes esSpringPop {
+  from { transform: scale3d(0, 0, 1); }
+  60%  { transform: scale3d(1.2, 1.2, 1); }
+  to   { transform: scale3d(1, 1, 1); }
+}
+
+/* ── Shimmer (Skeletons / CTA buttons) ── */
+@keyframes esShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── Spin (Loaders) ── */
+@keyframes esSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Glow Pulse (Accent borders) ── */
+@keyframes esGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(5, 150, 105, 0.12); }
+  50%      { box-shadow: 0 0 30px rgba(5, 150, 105, 0.25); }
+}
+
+/* ── Staggered Grid Entrance ── */
+@keyframes esStaggerIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+
+/* ══════════════════════════════════
+   4. PANEL TRANSITION CHOREOGRAPHY
+   ══════════════════════════════════
+   Dashboard panels get crossfade + slide on switch.
+   ══════════════════════════════════ */
+
+.ev-panel {
+  animation: none;
+}
+.ev-panel.active {
+  animation: esFadeInUp var(--es-duration-normal) var(--es-ease-spring) both;
+}
+
+/* ── Staggered card grid entrance ── */
+.ev-stat-grid > * {
+  animation: esStaggerIn var(--es-duration-normal) var(--es-ease-spring) both;
+}
+.ev-stat-grid > *:nth-child(1) { animation-delay: 0ms; }
+.ev-stat-grid > *:nth-child(2) { animation-delay: 60ms; }
+.ev-stat-grid > *:nth-child(3) { animation-delay: 120ms; }
+.ev-stat-grid > *:nth-child(4) { animation-delay: 180ms; }
+.ev-stat-grid > *:nth-child(5) { animation-delay: 240ms; }
+.ev-stat-grid > *:nth-child(6) { animation-delay: 300ms; }
+
+
+/* ══════════════════════════════════
+   5. MICRO-INTERACTION LAYER
+   ══════════════════════════════════ */
+
+/* ── Button Press Feedback ── */
+.btn:active, .ev-btn:active,
+.ev-submit-btn:active, .ev-btn-create:active {
+  transform: translateY(0) scale(0.97);
+  transition-duration: 80ms;
+}
+
+/* ── Button Ripple Effect ── */
+.btn::after, .ev-btn-primary::after, .ev-btn-pink::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at var(--ripple-x, 50%) var(--ripple-y, 50%),
+    rgba(255,255,255,0.25) 0%,
+    transparent 60%);
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.btn:active::after, .ev-btn-primary:active::after, .ev-btn-pink:active::after {
+  opacity: 1;
+  transform: scale(2.5);
+  transition-duration: 0s;
+}
+
+/* ── Card Hover Lift ── */
+.ev-card:hover, .ev-stat-card:hover,
+.ce-listing-card-inner:hover, .ce-ticket-card:hover {
+  transform: translateY(-3px);
+}
+
+/* ── Input Focus Glow ── */
+.fi:focus, .ev-form-input:focus, .ev-input:focus {
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12),
+              0 2px 8px rgba(5, 150, 105, 0.08);
+}
+
+/* ── Notification Badge Spring ── */
+.ev-notif-dot {
+  animation: esSpringPop 0.4s var(--es-ease-spring) both;
+}
+
+/* ── Skeleton → Content Crossfade ── */
+.ev-skeleton-row,
+[class*="skeleton"] {
+  animation: esShimmer 1.8s ease-in-out infinite;
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0.04) 25%,
+    rgba(0,0,0,0.08) 50%,
+    rgba(0,0,0,0.04) 75%);
+  background-size: 400% 100%;
+}
+
+/* ── Tab Indicator Slide ── */
+.ev-tab.active::after,
+.ce-tab.active::after {
+  transition: left var(--es-duration-normal) var(--es-ease-spring),
+              width var(--es-duration-normal) var(--es-ease-spring);
+}
+
+/* ── Toast Auto-Dismiss Progress Bar ── */
+.ev-toast::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.35);
+  border-radius: 0 0 12px 12px;
+  animation: esToastProgress 5s linear forwards;
+}
+@keyframes esToastProgress {
+  from { width: 100%; }
+  to   { width: 0%; }
+}
+
+
+/* ══════════════════════════════════
+   6. MODAL EXIT CHOREOGRAPHY
+   ══════════════════════════════════
+   Modals now have exit animations.
+   JS should add .closing class before remove().
+   ══════════════════════════════════ */
+
+.ev-modal-overlay.active {
+  animation: esFadeInUp 0s forwards;
+  /* Overlay itself just fades */
+  opacity: 1;
+}
+.ev-modal-overlay.active .ev-modal {
+  animation: esScaleIn var(--es-duration-normal) var(--es-ease-spring) both;
+}
+.ev-modal-overlay.closing {
+  opacity: 0;
+  transition: opacity var(--es-duration-fast) ease;
+}
+.ev-modal-overlay.closing .ev-modal {
+  animation: esScaleOut var(--es-duration-fast) ease both;
+}
+
+
+/* ══════════════════════════════════
+   7. MOBILE MENU CHOREOGRAPHY
+   ══════════════════════════════════
+   Replaces instant display:none/flex with slide animation.
+   ══════════════════════════════════ */
+
+.mobile-menu {
+  transition: opacity var(--es-duration-normal) var(--es-ease-spring),
+              transform var(--es-duration-normal) var(--es-ease-spring),
+              visibility var(--es-duration-normal);
+  opacity: 0;
+  transform: translate3d(0, -10px, 0);
+  visibility: hidden;
+}
+.mobile-menu.active {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  visibility: visible;
+}
+
+
+/* ══════════════════════════════════
+   8. REDUCED MOTION — GLOBAL OVERRIDE
+   ══════════════════════════════════
+   WCAG 2.3.3: Disable all non-essential motion
+   for users with vestibular disorders.
+   Applies to ALL domain CSS animations.
+   ══════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Kill ALL animations globally */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Preserve essential state-change transforms
+     but make them instant */
+  .ev-panel.active,
+  .ev-stat-grid > * {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  /* Keep skeleton shimmer but slow it way down */
+  .ev-skeleton-row,
+  [class*="skeleton"] {
+    animation: none !important;
+    background: rgba(0,0,0,0.06) !important;
+  }
+
+  /* Toast progress bar: instant */
+  .ev-toast::before {
+    animation: none !important;
+    width: 0 !important;
+  }
+
+  /* Modal: instant display */
+  .ev-modal-overlay.active .ev-modal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

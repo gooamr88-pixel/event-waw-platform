@@ -1,0 +1,315 @@
+/* ═══════════════════════════════════════════════════════════
+   EVENTSLI — BRIDGE LAYER (bridge.css)
+   ═══════════════════════════════════════════════════════════
+   PHASE 2: COMPONENT STANDARDIZATION
+   
+   This file bridges legacy CSS variables to the unified
+   token system. Load AFTER tokens.css, BEFORE domain CSS.
+   
+   Strategy: Re-declare legacy vars using token values so
+   existing components automatically adopt the new system
+   without touching 2000+ lines of domain CSS.
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════
+   1. LEGACY → TOKEN VARIABLE BRIDGE
+   ══════════════════════════════════
+   Maps old --accent-*, --bg-*, --text-* vars
+   to the canonical --es-* tokens.
+   ══════════════════════════════════ */
+
+:root {
+  /* ── Brand Bridge ── */
+  --accent-primary:       var(--es-emerald-600);
+  --accent-light:         var(--es-emerald-400);
+  --accent-dark:          var(--es-emerald-700);
+  --accent-gradient:      linear-gradient(135deg, var(--es-emerald-600), var(--es-emerald-700));
+
+  /* ── Typography Bridge ── */
+  --font-sans:            var(--es-font-sans);
+  --font-serif:           var(--es-font-serif);
+
+  /* ── Motion Bridge ── */
+  --card-radius:          var(--es-radius-lg);
+}
+
+/* Dashboard domain bridge */
+body.ev-dash {
+  --ev-yellow:            var(--es-emerald-600);
+  --ev-yellow-dark:       var(--es-emerald-700);
+  --ev-yellow-light:      var(--es-emerald-50);
+  --ev-pink:              var(--es-emerald-600);
+  --ev-pink-light:        rgba(5, 150, 105, 0.08);
+  --ev-info:              var(--es-emerald-500);
+  --ev-success:           var(--es-color-success);
+  --ev-warning:           var(--es-color-warning);
+  --ev-danger:            var(--es-color-danger);
+  --ev-font:              var(--es-font-sans);
+  --ev-radius:            var(--es-radius-md);
+  --ev-radius-lg:         var(--es-radius-lg);
+}
+
+
+/* ══════════════════════════════════
+   2. UNIFIED BUTTON SYSTEM
+   ══════════════════════════════════
+   Standardizes .btn (public pages) and .ev-btn (dashboard)
+   to share the same token-based foundation.
+   ══════════════════════════════════ */
+
+/* ── Base: shared by .btn AND .ev-btn ── */
+.btn, .ev-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--es-space-2);
+  font-family: var(--es-font-sans);
+  font-weight: var(--es-weight-semibold);
+  font-size: var(--es-text-sm);
+  border-radius: var(--es-radius-md);
+  padding: var(--es-space-2_5) var(--es-space-5);
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  overflow: hidden;
+  transition: color var(--es-transition-fast),
+              background-color var(--es-transition-fast),
+              border-color var(--es-transition-fast),
+              box-shadow var(--es-transition-fast),
+              transform var(--es-transition-fast);
+}
+
+/* ── Primary variant ── */
+.btn-primary, .ev-btn-primary, .ev-btn-pink {
+  background: var(--accent-gradient);
+  color: #fff;
+  border: 1px solid var(--es-emerald-600);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+.btn-primary:hover, .ev-btn-primary:hover, .ev-btn-pink:hover {
+  box-shadow: 0 6px 24px rgba(5, 150, 105, 0.35);
+  transform: translateY(-2px);
+}
+
+/* ── Outline variant ── */
+.btn-outline, .ev-btn-outline {
+  color: var(--text-secondary, #334155);
+  border: 1px solid var(--border-heavy, rgba(15, 23, 42, 0.12));
+  background: transparent;
+}
+.btn-outline:hover, .ev-btn-outline:hover {
+  border-color: var(--es-emerald-600);
+  color: var(--es-emerald-600);
+  background: rgba(5, 150, 105, 0.06);
+}
+
+/* ── Danger variant ── */
+.btn-danger, .ev-btn-danger {
+  background: rgba(239, 68, 68, 0.08);
+  color: var(--es-color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+}
+.btn-danger:hover, .ev-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ── Size modifiers ── */
+.btn-lg, .ev-btn-lg {
+  padding: var(--es-space-3_5) var(--es-space-7);
+  font-size: var(--es-text-base);
+  border-radius: var(--es-radius-lg);
+}
+.btn-sm, .ev-btn-sm {
+  padding: var(--es-space-1_5) var(--es-space-3_5);
+  font-size: var(--es-text-xs);
+  border-radius: var(--es-radius-sm);
+}
+.btn-full { width: 100%; }
+
+/* ── Icon button ── */
+.btn-icon, .ev-btn-icon {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--es-radius-sm);
+  border: 1px solid var(--ev-border, rgba(15, 23, 42, 0.08));
+  background: var(--ev-white, #fff);
+  color: var(--ev-text-sec, #334155);
+  cursor: pointer;
+  transition: border-color var(--es-transition-fast),
+              color var(--es-transition-fast),
+              background-color var(--es-transition-fast);
+}
+.btn-icon:hover, .ev-btn-icon:hover {
+  border-color: var(--es-emerald-600);
+  color: var(--es-emerald-600);
+  background: rgba(5, 150, 105, 0.06);
+}
+.btn-icon svg, .ev-btn-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+
+/* ══════════════════════════════════
+   3. UNIFIED INPUT SYSTEM
+   ══════════════════════════════════
+   Standardizes .fi (public), .ev-form-input (dashboard),
+   .ev-input (auth) to a shared token foundation.
+   ══════════════════════════════════ */
+
+.fi, .ev-form-input, .ev-input, .ev-select {
+  width: 100%;
+  padding: var(--es-space-2_5) var(--es-space-4);
+  font-family: var(--es-font-sans);
+  font-size: var(--es-text-sm);
+  color: var(--ev-text, var(--text-primary, #0F172A));
+  background: var(--bg-input, var(--ev-bg, #fff));
+  border: 1px solid var(--ev-border, var(--border-color, rgba(15,23,42,0.08)));
+  border-radius: var(--es-radius-md);
+  transition: border-color var(--es-transition-fast),
+              box-shadow var(--es-transition-fast),
+              background-color var(--es-transition-fast);
+}
+.fi:focus, .ev-form-input:focus, .ev-input:focus, .ev-select:focus {
+  border-color: var(--es-emerald-600);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+  outline: none;
+  background: var(--ev-white, var(--bg-input-focus, #fff));
+}
+.fi::placeholder, .ev-form-input::placeholder,
+.ev-input::placeholder {
+  color: var(--ev-text-muted, var(--text-muted, #71717a));
+}
+
+
+/* ══════════════════════════════════
+   4. UNIFIED CARD SYSTEM
+   ══════════════════════════════════
+   Shared elevation & radius tokens for all card types.
+   ══════════════════════════════════ */
+
+.ev-card, .ev-stat-card, .ev-chart-card {
+  background: var(--ev-white, var(--bg-card, #fff));
+  border: 1px solid var(--ev-border, var(--border-color, rgba(15,23,42,0.08)));
+  border-radius: var(--es-radius-lg);
+  box-shadow: var(--es-shadow-sm);
+  transition: box-shadow var(--es-transition-normal),
+              transform var(--es-transition-normal);
+}
+.ev-card:hover, .ev-stat-card:hover {
+  box-shadow: var(--es-shadow-md);
+  transform: translateY(-3px);
+}
+
+
+/* ══════════════════════════════════
+   5. UNIFIED TABLE SYSTEM
+   ══════════════════════════════════ */
+
+.ev-table th {
+  font-size: var(--es-text-xs);
+  font-weight: var(--es-weight-semibold);
+  letter-spacing: var(--es-tracking-wide);
+  text-transform: uppercase;
+}
+.ev-table tr {
+  transition: background-color var(--es-transition-fast);
+}
+.ev-table tr:hover td {
+  background: rgba(5, 150, 105, 0.03);
+}
+
+
+/* ══════════════════════════════════
+   6. UNIFIED BADGE SYSTEM
+   ══════════════════════════════════ */
+
+.ev-badge {
+  font-size: var(--es-text-xs);
+  font-weight: var(--es-weight-semibold);
+  border-radius: var(--es-radius-full);
+  padding: var(--es-space-1) var(--es-space-3);
+}
+
+
+/* ══════════════════════════════════
+   7. UNIFIED MODAL SYSTEM
+   ══════════════════════════════════ */
+
+.ev-modal-overlay {
+  z-index: var(--es-z-modal);
+}
+.ev-modal {
+  border-radius: var(--es-radius-xl);
+  box-shadow: var(--es-shadow-2xl);
+}
+
+
+/* ══════════════════════════════════
+   8. UNIFIED TOAST SYSTEM
+   ══════════════════════════════════ */
+
+.ev-toast-container {
+  z-index: var(--es-z-toast);
+}
+.ev-toast {
+  border-radius: var(--es-radius-lg);
+  box-shadow: var(--es-shadow-lg);
+}
+
+
+/* ══════════════════════════════════
+   9. Z-INDEX ENFORCEMENT
+   ══════════════════════════════════
+   Override hardcoded z-index values across
+   all domains with the token layer map.
+   ══════════════════════════════════ */
+
+.ev-sidebar           { z-index: var(--es-z-sticky); }
+.ev-header            { z-index: calc(var(--es-z-sticky) - 1); }
+.ev-user-dropdown     { z-index: var(--es-z-dropdown); }
+.navbar               { z-index: var(--es-z-navbar); }
+.mobile-menu          { z-index: var(--es-z-mobile-menu); }
+.guard-overlay        { z-index: var(--es-z-guard); }
+
+
+/* ══════════════════════════════════
+   10. HARDCODED COLOR PURGE
+   ══════════════════════════════════
+   Override the most common hardcoded hex values
+   in auth and dashboard CSS with token references.
+   ══════════════════════════════════ */
+
+/* Auth domain: hardcoded #059669 → token */
+.ev-logo-icon         { color: var(--es-emerald-600); }
+.ev-logo-dot          { color: var(--es-emerald-600); }
+.ev-submit-btn        { background: var(--es-emerald-600); }
+.ev-submit-btn:hover  { background: var(--es-emerald-700); }
+
+/* Dashboard domain: hardcoded colors → tokens */
+.ev-user-avatar {
+  background: linear-gradient(135deg, var(--es-emerald-600), var(--es-emerald-700));
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+.ev-header-link.create-event {
+  background: var(--es-emerald-600);
+  border-color: var(--es-emerald-600);
+}
+.ev-header-link.create-event:hover {
+  background: var(--es-emerald-700);
+}
+.ev-welcome {
+  background: linear-gradient(135deg,
+    var(--es-emerald-600) 0%,
+    var(--es-emerald-700) 50%,
+    var(--es-emerald-800) 100%);
+  box-shadow: 0 4px 20px rgba(5, 150, 105, 0.2);
+}

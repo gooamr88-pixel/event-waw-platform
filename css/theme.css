@@ -1,10 +1,11 @@
 /* ═══════════════════════════════════════════════════════════
-   EVENT WAW — MASTER THEME SYSTEM
+   EVENTSLI — THEME SYSTEM
    ═══════════════════════════════════════════════════════════
-   This file defines the SINGLE SOURCE OF TRUTH for all theme
-   colors. Light mode = :root. Dark mode = [data-theme="dark"].
+   @deprecated — Brand tokens now live in tokens.css.
+   This file provides light/dark theme switching only.
+   Bridge.css maps legacy vars → token system.
    
-   Load this AFTER styles.css but BEFORE page-specific CSS.
+   Load AFTER tokens.css + bridge.css, BEFORE domain CSS.
    ═══════════════════════════════════════════════════════════ */
 
 
@@ -98,8 +99,9 @@
   --font-serif: 'Cormorant Garamond', Georgia, serif;
 
   /* ── Motion ── */
-  --transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-fast: all 0.2s ease;
+  /* FIX: Replaced 'transition: all' — see styles.css for rationale */
+  --transition: color 0.35s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1), transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
   --card-radius: 16px;
   --section-padding: 80px 0;
 }

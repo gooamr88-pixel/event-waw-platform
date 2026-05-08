@@ -90,11 +90,9 @@ body.ev-dash[data-theme="dark"] .admin-clock {
   border: 3px solid var(--ev-border);
   border-top-color: #059669;
   border-radius: 50%;
-  animation: evSpin .7s linear infinite;
+  animation: esSpin .7s linear infinite;
 }
-@keyframes evSpin {
-  to { transform: rotate(360deg); }
-}
+/* @removed — @keyframes evSpin: now uses esSpin from motion.css */
 
 /* ── Toast Notifications ── */
 .ev-toast-container {

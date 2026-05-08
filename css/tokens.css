@@ -1,0 +1,266 @@
+/* ═══════════════════════════════════════════════════════════════
+   EVENTSLI — DESIGN TOKEN SYSTEM  (tokens.css)
+   ═══════════════════════════════════════════════════════════════
+   PHASE 1: FOUNDATION
+   This file is the SINGLE SOURCE OF TRUTH for all design tokens.
+   It MUST be loaded FIRST in every HTML page.
+
+   Naming convention:  --es-{category}-{name}
+   Namespace prefix:   es = Eventsli
+
+   DO NOT declare :root variables in any other CSS file.
+   DO NOT use hardcoded color values outside this file.
+   ═══════════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════
+   1. COLOR PALETTE
+   ══════════════════════════════════ */
+
+:root {
+  /* ── Brand: Eventsli Emerald ── */
+  --es-emerald-50:  #ecfdf5;
+  --es-emerald-100: #d1fae5;
+  --es-emerald-200: #a7f3d0;
+  --es-emerald-300: #6ee7b7;
+  --es-emerald-400: #34d399;
+  --es-emerald-500: #10b981;
+  --es-emerald-600: #059669;
+  --es-emerald-700: #047857;
+  --es-emerald-800: #065f46;
+  --es-emerald-900: #064e3b;
+
+  /* ── Semantic Colors ── */
+  --es-color-success:  #16a34a;
+  --es-color-warning:  #f59e0b;
+  --es-color-danger:   #ef4444;
+  --es-color-info:     #3b82f6;
+
+  /* ── Neutral Scale ── */
+  --es-gray-50:  #fafafa;
+  --es-gray-100: #f4f4f5;
+  --es-gray-200: #e4e4e7;
+  --es-gray-300: #d4d4d8;
+  --es-gray-400: #a1a1aa;
+  --es-gray-500: #71717a;
+  --es-gray-600: #52525b;
+  --es-gray-700: #3f3f46;
+  --es-gray-800: #27272a;
+  --es-gray-900: #18181b;
+  --es-gray-950: #09090b;
+}
+
+
+/* ══════════════════════════════════
+   2. TYPOGRAPHY SCALE
+   ══════════════════════════════════
+
+   Based on a 1.25 (Major Third) modular scale.
+   Uses clamp() for fluid responsive sizing.
+   ══════════════════════════════════ */
+
+:root {
+  /* ── Font Stacks ── */
+  --es-font-sans:  'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --es-font-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --es-font-mono:  'DM Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+
+  /* ── Type Scale (fluid) ── */
+  --es-text-xs:   clamp(0.65rem, 0.6rem + 0.2vw, 0.72rem);   /*  ~11-12px */
+  --es-text-sm:   clamp(0.78rem, 0.74rem + 0.2vw, 0.82rem);   /*  ~12-13px */
+  --es-text-base: clamp(0.85rem, 0.82rem + 0.2vw, 0.92rem);   /*  ~14-15px */
+  --es-text-md:   clamp(0.95rem, 0.9rem + 0.25vw, 1.05rem);   /*  ~15-17px */
+  --es-text-lg:   clamp(1.1rem, 1rem + 0.4vw, 1.25rem);       /*  ~18-20px */
+  --es-text-xl:   clamp(1.3rem, 1.15rem + 0.6vw, 1.55rem);    /*  ~21-25px */
+  --es-text-2xl:  clamp(1.6rem, 1.3rem + 1vw, 2rem);          /*  ~26-32px */
+  --es-text-3xl:  clamp(2rem, 1.6rem + 1.5vw, 2.8rem);        /*  ~32-45px */
+  --es-text-4xl:  clamp(2.4rem, 1.8rem + 2.5vw, 3.5rem);      /*  ~38-56px */
+
+  /* ── Font Weights ── */
+  --es-weight-normal: 400;
+  --es-weight-medium: 500;
+  --es-weight-semibold: 600;
+  --es-weight-bold: 700;
+  --es-weight-extrabold: 800;
+  --es-weight-black: 900;
+
+  /* ── Line Heights ── */
+  --es-leading-tight: 1.15;
+  --es-leading-snug:  1.3;
+  --es-leading-normal: 1.5;
+  --es-leading-relaxed: 1.7;
+  --es-leading-loose: 1.85;
+
+  /* ── Letter Spacing ── */
+  --es-tracking-tight: -0.02em;
+  --es-tracking-normal: 0;
+  --es-tracking-wide: 0.02em;
+  --es-tracking-wider: 0.05em;
+  --es-tracking-widest: 0.1em;
+}
+
+
+/* ══════════════════════════════════
+   3. Z-INDEX LAYER MAP
+   ══════════════════════════════════
+
+   Ordered layers prevent stacking conflicts.
+   Every z-index in the codebase MUST use these tokens.
+   ══════════════════════════════════ */
+
+:root {
+  --es-z-base:       1;
+  --es-z-above:      5;
+  --es-z-card:       10;
+  --es-z-sticky:     100;     /* sidebar, headers */
+  --es-z-dropdown:   200;     /* dropdowns, tooltips */
+  --es-z-overlay:    500;     /* sidebar overlay */
+  --es-z-navbar:     1000;    /* main navigation */
+  --es-z-mobile-menu: 1010;   /* mobile menu (above navbar) */
+  --es-z-modal:      5000;    /* modals, dialogs */
+  --es-z-toast:      8000;    /* toast notifications */
+  --es-z-guard:      9000;    /* auth guard overlay */
+  --es-z-max:        9999;    /* escape hatch (use sparingly) */
+}
+
+
+/* ══════════════════════════════════
+   4. SPACING SCALE
+   ══════════════════════════════════
+
+   Based on a 4px base unit for consistent rhythm.
+   ══════════════════════════════════ */
+
+:root {
+  --es-space-0:   0;
+  --es-space-px:  1px;
+  --es-space-0_5: 2px;
+  --es-space-1:   4px;
+  --es-space-1_5: 6px;
+  --es-space-2:   8px;
+  --es-space-2_5: 10px;
+  --es-space-3:   12px;
+  --es-space-3_5: 14px;
+  --es-space-4:   16px;
+  --es-space-5:   20px;
+  --es-space-6:   24px;
+  --es-space-7:   28px;
+  --es-space-8:   32px;
+  --es-space-9:   36px;
+  --es-space-10:  40px;
+  --es-space-12:  48px;
+  --es-space-14:  56px;
+  --es-space-16:  64px;
+  --es-space-20:  80px;
+  --es-space-24:  96px;
+}
+
+
+/* ══════════════════════════════════
+   5. MOTION TOKENS
+   ══════════════════════════════════
+
+   Standardized easing curves and durations.
+   Eliminates ad-hoc `ease`, `ease-in-out`, etc.
+   ══════════════════════════════════ */
+
+:root {
+  /* ── Durations ── */
+  --es-duration-instant: 0ms;
+  --es-duration-fast:    150ms;
+  --es-duration-normal:  300ms;
+  --es-duration-slow:    500ms;
+  --es-duration-slower:  800ms;
+
+  /* ── Easing Curves ── */
+  --es-ease-default:   cubic-bezier(0.4, 0, 0.2, 1);   /* Material Standard */
+  --es-ease-in:        cubic-bezier(0.4, 0, 1, 1);      /* Accelerate */
+  --es-ease-out:       cubic-bezier(0, 0, 0.2, 1);      /* Decelerate */
+  --es-ease-spring:    cubic-bezier(0.16, 1, 0.3, 1);   /* Overshoot / bounce-back */
+  --es-ease-bounce:    cubic-bezier(0.34, 1.56, 0.64, 1); /* Playful bounce */
+  --es-ease-smooth:    cubic-bezier(0.25, 0.1, 0.25, 1);  /* Smooth default */
+
+  /* ── Composed Transitions ── */
+  --es-transition-fast:   var(--es-duration-fast) var(--es-ease-default);
+  --es-transition-normal: var(--es-duration-normal) var(--es-ease-default);
+  --es-transition-slow:   var(--es-duration-slow) var(--es-ease-default);
+  --es-transition-spring: var(--es-duration-normal) var(--es-ease-spring);
+}
+
+
+/* ══════════════════════════════════
+   6. BORDER RADIUS SCALE
+   ══════════════════════════════════ */
+
+:root {
+  --es-radius-sm:   6px;
+  --es-radius-md:   10px;
+  --es-radius-lg:   14px;
+  --es-radius-xl:   20px;
+  --es-radius-2xl:  24px;
+  --es-radius-full: 9999px;
+}
+
+
+/* ══════════════════════════════════
+   7. SHADOW SCALE
+   ══════════════════════════════════ */
+
+:root {
+  --es-shadow-xs:  0 1px 2px rgba(0,0,0,0.05);
+  --es-shadow-sm:  0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --es-shadow-md:  0 4px 12px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06);
+  --es-shadow-lg:  0 8px 30px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.08);
+  --es-shadow-xl:  0 16px 50px rgba(0,0,0,0.2), 0 4px 12px rgba(0,0,0,0.1);
+  --es-shadow-2xl: 0 24px 80px rgba(0,0,0,0.3), 0 8px 20px rgba(0,0,0,0.12);
+}
+
+
+/* ══════════════════════════════════
+   8. FOCUS & ACCESSIBILITY
+   ══════════════════════════════════
+
+   - Restores keyboard focus indicators (WCAG 2.4.7)
+   - Uses :focus-visible to avoid mouse-click focus rings
+   - Uses outline (not box-shadow) to avoid clipping
+   ══════════════════════════════════ */
+
+:root {
+  --es-focus-ring-color: var(--es-emerald-600);
+  --es-focus-ring-width: 2px;
+  --es-focus-ring-offset: 2px;
+  --es-focus-ring: var(--es-focus-ring-width) solid var(--es-focus-ring-color);
+}
+
+/* ── Global Focus-Visible Ring ──
+   Applied to ALL interactive elements.
+   :focus-visible only fires on keyboard navigation, not mouse clicks. */
+:focus-visible {
+  outline: var(--es-focus-ring);
+  outline-offset: var(--es-focus-ring-offset);
+}
+
+/* ── Suppress the old outline:none that was killing accessibility ──
+   We intentionally do NOT set outline:none on any element.
+   Individual components can customize via :focus-visible, not :focus. */
+
+
+/* ══════════════════════════════════
+   9. REDUCED MOTION
+   ══════════════════════════════════
+
+   Respects user's OS-level motion preferences.
+   All animations and transitions are suppressed.
+   (WCAG 2.3.3 — Animation from Interactions)
+   ══════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

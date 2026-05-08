@@ -1,0 +1,474 @@
+/* ═══════════════════════════════════════════════════════════
+   EVENTSLI — DOMAIN POLISH (polish.css)
+   ═══════════════════════════════════════════════════════════
+   PHASE 4: DOMAIN-SPECIFIC POLISH
+   
+   Fixes hardcoded colors, theme-awareness gaps, dead code
+   remnants, and cascade issues across all domains WITHOUT
+   modifying the original domain CSS files.
+   
+   Load AFTER motion.css, BEFORE domain CSS.
+   ═══════════════════════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════
+   1. AUTH LAYER OVERHAUL
+   ══════════════════════════════════
+   Kill hardcoded #2a2a2a, #e0e0e0, #333, #ccc, #999, #aaa.
+   Make the auth form box theme-aware.
+   ══════════════════════════════════ */
+
+/* ── Form Box: Theme-Aware ── */
+.ev-form-box {
+  background: var(--es-neutral-800, #27272a);
+  border-radius: var(--es-radius-xl);
+  border: 1px solid var(--es-neutral-700, #3f3f46);
+}
+
+/* ── Auth Page Title ── */
+.ev-page-title {
+  font-family: var(--es-font-sans);
+  color: var(--text-primary, #0F172A);
+}
+
+/* ── Auth Labels ── */
+.ev-label {
+  color: var(--es-neutral-100, #f4f4f5);
+  font-size: var(--es-text-sm);
+}
+.ev-label .required {
+  color: var(--es-emerald-500);
+}
+
+/* ── Auth Inputs: Kill hardcoded border/bg ── */
+.ev-input {
+  border-color: var(--es-neutral-200, #e4e4e7);
+  background: #fff;
+  color: var(--es-neutral-800, #27272a);
+  font-family: var(--es-font-sans);
+  font-size: var(--es-text-sm);
+}
+.ev-input::placeholder {
+  color: var(--es-neutral-400, #a1a1aa);
+}
+.ev-input:focus {
+  border-color: var(--es-emerald-600);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+/* ── Auth Select ── */
+.ev-select {
+  border-color: var(--es-neutral-200, #e4e4e7);
+  font-family: var(--es-font-sans);
+}
+.ev-select:focus {
+  border-color: var(--es-emerald-600);
+  color: var(--es-neutral-800, #27272a);
+}
+
+/* ── Auth Radio Labels ── */
+.ev-radio-label {
+  color: var(--es-neutral-100, #f4f4f5);
+  font-size: var(--es-text-sm);
+}
+.ev-radio {
+  accent-color: var(--es-emerald-600);
+}
+
+/* ── Password Toggle ── */
+.ev-pass-toggle {
+  color: var(--es-neutral-400, #a1a1aa);
+}
+.ev-pass-toggle:hover {
+  color: var(--es-neutral-500, #71717a);
+}
+
+/* ── Phone Input ── */
+.ev-fg .iti .iti__tel-input {
+  border-color: var(--es-neutral-200, #e4e4e7);
+  color: var(--es-neutral-800, #27272a);
+  font-family: var(--es-font-sans);
+}
+.ev-fg .iti .iti__tel-input:focus {
+  border-color: var(--es-emerald-600);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.12);
+}
+.ev-fg .iti__country-list {
+  border-radius: var(--es-radius-md);
+  box-shadow: var(--es-shadow-lg);
+  border-color: var(--es-neutral-200, #e4e4e7);
+}
+.ev-fg .iti__country.iti__highlight {
+  background: var(--es-emerald-50);
+}
+.ev-fg .iti__search-input {
+  font-family: var(--es-font-sans);
+  border-color: var(--es-neutral-200, #e4e4e7);
+}
+.ev-fg .iti__search-input:focus {
+  border-color: var(--es-emerald-600);
+}
+.ev-fg .iti__selected-country:focus {
+  box-shadow: inset 0 0 0 2px var(--es-emerald-600);
+}
+
+/* ── Remember / Terms Text ── */
+.ev-remember {
+  color: var(--es-neutral-300, #d4d4d8);
+  font-size: var(--es-text-sm);
+}
+.ev-remember input[type="checkbox"],
+.ev-terms-label input[type="checkbox"] {
+  accent-color: var(--es-emerald-600);
+}
+.ev-terms-label {
+  color: var(--es-neutral-300, #d4d4d8);
+  font-size: var(--es-text-xs);
+}
+.ev-terms-label a {
+  color: var(--es-emerald-600);
+}
+.ev-terms-label a.yellow-link {
+  color: var(--es-emerald-400);
+}
+.ev-terms-label a.yellow-link:hover {
+  color: var(--es-emerald-300);
+}
+
+/* ── Forgot Link ── */
+.ev-forgot-link {
+  color: var(--es-emerald-600);
+  font-size: var(--es-text-sm);
+}
+.ev-forgot-link:hover {
+  color: var(--es-emerald-400);
+}
+
+/* ── Submit Button ── */
+.ev-submit-btn {
+  background: var(--es-emerald-600);
+  border-radius: var(--es-radius-full);
+  font-family: var(--es-font-sans);
+  font-weight: var(--es-weight-bold);
+  transition: background-color var(--es-transition-fast),
+              box-shadow var(--es-transition-fast),
+              transform var(--es-transition-fast);
+}
+.ev-submit-btn:hover {
+  background: var(--es-emerald-700);
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.3);
+  transform: translateY(-1px);
+}
+.ev-submit-btn:active {
+  transform: translateY(0) scale(0.97);
+}
+.ev-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Auth Message ── */
+.ev-auth-msg {
+  border-radius: var(--es-radius-md);
+  font-size: var(--es-text-sm);
+}
+
+
+/* ══════════════════════════════════
+   2. DASHBOARD DARK MODE FIXES
+   ══════════════════════════════════
+   Kill brown gradients (#1a1510), gold remnants
+   (rgba(245,197,24)), off-brand dark colors.
+   ══════════════════════════════════ */
+
+/* ── Welcome Banner: Fix brown → emerald dark ── */
+body.ev-dash[data-theme="dark"] .ev-welcome {
+  background: linear-gradient(
+    135deg,
+    var(--es-emerald-900, #064E3B) 0%,
+    #0a3d2e 50%,
+    #0f2d22 100%
+  );
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3),
+              inset 0 1px 0 rgba(52, 211, 153, 0.1);
+}
+
+/* ── Mobile Toggle: Fix brown → emerald dark ── */
+body.ev-dash[data-theme="dark"] .ev-mobile-toggle {
+  background: var(--es-emerald-900, #064E3B);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Gold Color Ghost Purge ── */
+/* Table hover: gold → emerald */
+.ev-table tr:hover td {
+  background: rgba(5, 150, 105, 0.03);
+}
+
+/* Social input focus: gold → emerald */
+.ev-social-input:focus-within {
+  border-color: var(--es-emerald-600);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+/* Search bar focus: gold → emerald */
+.ev-search-bar:focus-within {
+  border-color: var(--es-emerald-600);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+/* Primary button shadows: gold → emerald */
+.ev-btn-primary {
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+.ev-btn-primary:hover {
+  box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+}
+
+/* Form input focus: gold → emerald */
+.ev-form-input:focus {
+  border-color: var(--es-emerald-600);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+}
+
+/* Filter select focus: gold → emerald */
+.ev-filter-select:focus {
+  border-color: var(--es-emerald-600);
+}
+
+
+/* ══════════════════════════════════
+   3. LANDING PAGE — !IMPORTANT OVERRIDE
+   ══════════════════════════════════
+   Rather than touching landing-eveenty.css (100+ !important),
+   we use higher-specificity selectors to normalize.
+   These rules use the same .eveenty-landing scope
+   but with body prefix for winning specificity.
+   ══════════════════════════════════ */
+
+/* ── Navbar normalization ── */
+body.eveenty-landing .navbar {
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--nav-shadow);
+}
+body.eveenty-landing .nav-logo-text {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+body.eveenty-landing .nav-logo-icon {
+  color: var(--es-emerald-600);
+}
+body.eveenty-landing .nav-links a {
+  color: var(--nav-link);
+  font-weight: 500;
+  font-size: var(--es-text-sm);
+}
+body.eveenty-landing .nav-links a:hover {
+  color: var(--es-emerald-600);
+}
+
+/* ── Section labels ── */
+body.eveenty-landing .section-label {
+  color: var(--es-emerald-600);
+  border-color: rgba(5, 150, 105, 0.12);
+  background: rgba(5, 150, 105, 0.06);
+}
+body.eveenty-landing .section-label::before {
+  background: var(--es-emerald-600);
+}
+
+/* ── Text colors ── */
+body.eveenty-landing h1, body.eveenty-landing h2,
+body.eveenty-landing h3, body.eveenty-landing h4 {
+  color: var(--text-primary);
+}
+body.eveenty-landing p {
+  color: var(--text-secondary);
+}
+body.eveenty-landing .gold,
+body.eveenty-landing .text-gold {
+  color: var(--es-emerald-600);
+}
+
+/* ── Buttons ── */
+body.eveenty-landing .btn-primary {
+  background: var(--es-emerald-600);
+  color: #fff;
+  border-color: var(--es-emerald-600);
+}
+body.eveenty-landing .btn-primary:hover {
+  background: var(--es-emerald-700);
+  border-color: var(--es-emerald-700);
+}
+body.eveenty-landing .btn-outline {
+  color: var(--text-secondary);
+  border-color: var(--border-heavy);
+  background: transparent;
+}
+body.eveenty-landing .btn-outline:hover {
+  border-color: var(--es-emerald-600);
+  color: var(--es-emerald-600);
+}
+
+/* ── Hero ── */
+body.eveenty-landing .hero-wrapper {
+  background: var(--bg-primary);
+}
+
+
+/* ══════════════════════════════════
+   4. CHAT WIDGET — LIGHT MODE SUPPORT
+   ══════════════════════════════════ */
+
+/* Light mode defaults */
+.ev-chatbox {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border-color, rgba(15,23,42,0.08));
+  color: var(--text-primary, #0F172A);
+}
+.ev-chat-messages {
+  background: var(--bg-secondary, #f1f5f9);
+}
+.ev-chat-input-area {
+  background: var(--bg-card, #fff);
+  border-top: 1px solid var(--border-color, rgba(15,23,42,0.08));
+}
+.ev-chat-input {
+  background: var(--bg-input, #fff);
+  color: var(--text-primary, #0F172A);
+  border-color: var(--border-color, rgba(15,23,42,0.08));
+}
+
+/* Dark mode overrides (for pages with data-theme="dark") */
+[data-theme="dark"] .ev-chatbox {
+  background: var(--es-neutral-900, #18181b);
+  border-color: var(--es-neutral-700, #3f3f46);
+  color: var(--es-neutral-100, #f4f4f5);
+}
+[data-theme="dark"] .ev-chat-messages {
+  background: var(--es-neutral-950, #09090b);
+}
+[data-theme="dark"] .ev-chat-input-area {
+  background: var(--es-neutral-900, #18181b);
+  border-top-color: var(--es-neutral-700, #3f3f46);
+}
+[data-theme="dark"] .ev-chat-input {
+  background: var(--es-neutral-800, #27272a);
+  color: var(--es-neutral-100, #f4f4f5);
+  border-color: var(--es-neutral-700, #3f3f46);
+}
+
+
+/* ══════════════════════════════════
+   5. CHECKOUT FLOW POLISH
+   ══════════════════════════════════ */
+
+/* ── Processing state for payment button ── */
+.checkout-btn:disabled,
+.payment-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.checkout-btn.processing,
+.payment-btn.processing {
+  position: relative;
+  color: transparent;
+}
+.checkout-btn.processing::after,
+.payment-btn.processing::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: esSpin 0.6s linear infinite;
+}
+
+
+/* ══════════════════════════════════
+   6. CHART & SKELETON STATES
+   ══════════════════════════════════ */
+
+/* ── Chart empty state ── */
+.ev-chart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--ev-text-muted, var(--text-muted, #71717a));
+  font-size: var(--es-text-sm);
+  text-align: center;
+  gap: var(--es-space-3);
+}
+.ev-chart-empty svg {
+  width: 48px;
+  height: 48px;
+  opacity: 0.3;
+}
+
+/* ── Chart loading skeleton ── */
+.ev-chart-skeleton {
+  background: linear-gradient(90deg,
+    rgba(0,0,0,0.04) 25%,
+    rgba(0,0,0,0.08) 50%,
+    rgba(0,0,0,0.04) 75%);
+  background-size: 400% 100%;
+  animation: esShimmer 1.8s ease-in-out infinite;
+  border-radius: var(--es-radius-md);
+  min-height: 260px;
+}
+
+/* ── Chart entrance animation ── */
+.ev-chart-card canvas,
+.ev-chart-card .chartjs-render-monitor {
+  animation: esFadeInUp var(--es-duration-normal) var(--es-ease-spring) both;
+}
+
+
+/* ══════════════════════════════════
+   7. ADMIN CLOCK TYPOGRAPHY FIX
+   ══════════════════════════════════ */
+
+.admin-clock,
+#admin-clock {
+  font-family: var(--es-font-sans);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+
+/* ══════════════════════════════════
+   8. DEAD CODE NEUTRALIZATION
+   ══════════════════════════════════
+   Override orphaned old-brand styles that can't
+   be safely deleted (may have HTML references).
+   ══════════════════════════════════ */
+
+/* ── Old .gold / .text-gold → emerald ── */
+.gold, .text-gold {
+  color: var(--es-emerald-600);
+}
+
+/* ── Old .ev-pink references → emerald ── */
+.ev-card-title .ev-pink,
+.ev-event-name,
+.ev-tab.active,
+.ev-tab.active::after {
+  color: var(--es-emerald-600);
+}
+.ev-tab.active::after {
+  background: var(--es-emerald-600);
+}
+
+/* ── Contrast fix: auth muted text on dark ── */
+/* Audit: #ccc on #2a2a2a was borderline 4.5:1 */
+.ev-remember,
+.ev-terms-label {
+  color: var(--es-neutral-300, #d4d4d8);
+}
