@@ -702,7 +702,7 @@
                     <button class="hero-arrow-left" aria-label="Previous Slide" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10094;</button>
                     <button class="hero-arrow-right" aria-label="Next Slide" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10095;</button>
                   `;
-                  let dotsHTML = `<div style="position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10">
+                  let dotsHTML = `<div style="position:absolute;bottom:35px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10">
                     ${slides.map((_,i) => `<div class="hero-dot-wrapper" style="position:relative; width:30px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; overflow:hidden; cursor:pointer;" data-idx="${i}">
                        <div class="hero-dot-progress" style="position:absolute; top:0; left:0; height:100%; width:${i===0?'100%':'0%'}; background:#fff; transition: width 0.1s linear;"></div>
                     </div>`).join('')}
