@@ -19,7 +19,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') || '';
 const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventsli.com';
-const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Eventsli';
+const BREVO_SENDER_NAME = 'Eventsli';
 
 // ── Supported webhook event types ──
 const HANDLED_EVENTS = new Set([

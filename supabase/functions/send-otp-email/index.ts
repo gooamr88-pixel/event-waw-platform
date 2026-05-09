@@ -13,7 +13,7 @@ import { otpLoginEmail, otpRegisterEmail } from '../_shared/email-templates.ts';
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!;
 const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventsli.com';
-const BREVO_SENDER_NAME = Deno.env.get('BREVO_SENDER_NAME') || 'Eventsli';
+const BREVO_SENDER_NAME = 'Eventsli';
 
 serve(async (req) => {
   const corsResponse = handleCORS(req);

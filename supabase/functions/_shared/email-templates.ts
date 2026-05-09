@@ -8,14 +8,14 @@
 // ── Shared design tokens ──
 const BRAND = {
   name: 'Eventsli',
-  color: '#D4AF37',
-  colorDark: '#b8941f',
+  color: '#059669',
+  colorDark: '#047857',
   bg: '#09090b',
   cardBg: '#18181b',
   text: '#f4f4f5',
   textMuted: '#a1a1aa',
   textDim: '#71717a',
-  border: 'rgba(212,175,55,0.08)',
+  border: 'rgba(5,150,105,0.08)',
   borderLight: 'rgba(255,255,255,0.06)',
 };
 
@@ -82,7 +82,7 @@ function emailWrapper(content: string, footerLinks = true): string {
 export function otpLoginEmail(code: string): string {
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
-      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(212,175,55,0.08);border-radius:50%;line-height:56px;text-align:center;">
+      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(5,150,105,0.08);border-radius:50%;line-height:56px;text-align:center;">
         <span style="font-size:24px;">🔐</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:${BRAND.text};">Login Verification</h1>
@@ -90,7 +90,7 @@ export function otpLoginEmail(code: string): string {
         Enter this code to complete your sign-in:
       </p>
       <table role="presentation" align="center" cellpadding="0" cellspacing="0"
-        style="background:${BRAND.bg};border:2px solid rgba(212,175,55,0.15);border-radius:16px;">
+        style="background:${BRAND.bg};border:2px solid rgba(5,150,105,0.15);border-radius:16px;">
         <tr><td style="padding:20px 40px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
             ${code}
@@ -111,7 +111,7 @@ export function otpLoginEmail(code: string): string {
 export function otpRegisterEmail(code: string, name: string): string {
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
-      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(212,175,55,0.08);border-radius:50%;line-height:56px;text-align:center;">
+      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(5,150,105,0.08);border-radius:50%;line-height:56px;text-align:center;">
         <span style="font-size:24px;">✉️</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:${BRAND.text};">Verify your email</h1>
@@ -120,7 +120,7 @@ export function otpRegisterEmail(code: string, name: string): string {
         welcome to ${BRAND.name}! Use this code to complete your registration:
       </p>
       <table role="presentation" align="center" cellpadding="0" cellspacing="0"
-        style="background:${BRAND.bg};border:2px solid rgba(212,175,55,0.15);border-radius:16px;">
+        style="background:${BRAND.bg};border:2px solid rgba(5,150,105,0.15);border-radius:16px;">
         <tr><td style="padding:20px 40px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
             ${code}
@@ -141,7 +141,7 @@ export function otpRegisterEmail(code: string, name: string): string {
 export function ticketConfirmationEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string }): string {
   const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink } = data;
   const content = `
-    <!-- Gold Header -->
+    <!-- Emerald Header -->
     <tr><td style="background:linear-gradient(135deg,${BRAND.color},${BRAND.colorDark});padding:20px 36px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
         <td><span style="font-size:11px;font-weight:800;letter-spacing:0.2em;color:${BRAND.bg};text-transform:uppercase;">Booking Confirmed ✓</span></td>
@@ -198,7 +198,7 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
 
       <!-- Important Note -->
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
-        <tr><td style="padding:16px;background:rgba(212,175,55,0.04);border:1px solid ${BRAND.border};border-radius:12px;">
+        <tr><td style="padding:16px;background:rgba(5,150,105,0.04);border:1px solid ${BRAND.border};border-radius:12px;">
           <p style="margin:0;font-size:12px;color:${BRAND.textMuted};line-height:1.6;">
             💡 <strong style="color:${BRAND.text};">Pro tip:</strong> Take a screenshot of your QR code or save this email. 
             You'll need it when entering the event.
@@ -216,7 +216,7 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
 export function guestTicketEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string }): string {
   const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink } = data;
   const content = `
-    <!-- Gold Header -->
+    <!-- Emerald Header -->
     <tr><td style="background:linear-gradient(135deg,${BRAND.color},${BRAND.colorDark});padding:20px 36px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
         <td><span style="font-size:11px;font-weight:800;letter-spacing:0.2em;color:${BRAND.bg};text-transform:uppercase;">Guest Booking Confirmed ✓</span></td>
@@ -285,7 +285,7 @@ export function guestTicketEmail(data: { userName: string; eventTitle: string; t
 
       <!-- Security Badge -->
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;">
-        <tr><td style="padding:16px;background:rgba(212,175,55,0.04);border:1px solid ${BRAND.border};border-radius:12px;">
+        <tr><td style="padding:16px;background:rgba(5,150,105,0.04);border:1px solid ${BRAND.border};border-radius:12px;">
           <p style="margin:0;font-size:12px;color:${BRAND.textMuted};line-height:1.6;">
             🔒 Your tickets are protected by HMAC-SHA256 signed QR codes and cannot be forged or transferred. 
             You must present a valid ID matching your booking at the venue.
@@ -304,7 +304,7 @@ export function welcomeEmail(name: string, role: string): string {
   const isOrganizer = role === 'organizer';
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
-      <div style="width:64px;height:64px;margin:0 auto 20px;background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(212,175,55,0.05));border-radius:50%;line-height:64px;">
+      <div style="width:64px;height:64px;margin:0 auto 20px;background:linear-gradient(135deg,rgba(5,150,105,0.1),rgba(5,150,105,0.05));border-radius:50%;line-height:64px;">
         <span style="font-size:28px;">${isOrganizer ? '🎪' : '🎫'}</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND.text};">
@@ -363,7 +363,7 @@ export function welcomeEmail(name: string, role: string): string {
 export function otpPasswordResetEmail(code: string): string {
   const content = `
     <tr><td style="padding:40px 36px;text-align:center;">
-      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(212,175,55,0.08);border-radius:50%;line-height:56px;text-align:center;">
+      <div style="width:56px;height:56px;margin:0 auto 20px;background:rgba(5,150,105,0.08);border-radius:50%;line-height:56px;text-align:center;">
         <span style="font-size:24px;">🔑</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:${BRAND.text};">Password Reset</h1>
@@ -371,7 +371,7 @@ export function otpPasswordResetEmail(code: string): string {
         You requested to reset your password. Enter this code to proceed:
       </p>
       <table role="presentation" align="center" cellpadding="0" cellspacing="0"
-        style="background:${BRAND.bg};border:2px solid rgba(212,175,55,0.15);border-radius:16px;">
+        style="background:${BRAND.bg};border:2px solid rgba(5,150,105,0.15);border-radius:16px;">
         <tr><td style="padding:20px 40px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
             ${code}
