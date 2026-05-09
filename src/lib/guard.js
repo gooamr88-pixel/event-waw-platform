@@ -164,7 +164,11 @@ export async function protectPage(options = {}) {
       || isAdminLevel(userRole);  // admin-level roles pass ALL role gates
     if (!roleOk) {
       hideLoadingOverlay();
-      showUpgradeModal(requireRole);
+      if (userRole === 'attendee' && requireRole === 'organizer') {
+        showUpgradeModal(requireRole);
+      } else {
+        window.location.href = '/dashboard.html';
+      }
       return null;
     }
 

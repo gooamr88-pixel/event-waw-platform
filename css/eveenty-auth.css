@@ -36,7 +36,6 @@ body.eveenty-auth {
   position: relative;
 }
 
-/* Logo */
 .ev-logo {
   display: flex;
   align-items: center;
@@ -44,26 +43,10 @@ body.eveenty-auth {
   margin-bottom: 8px;
   text-decoration: none;
 }
-.ev-logo-icon {
-  width: 48px;
-  height: 48px;
-  color: #059669;
-  flex-shrink: 0;
-}
-.ev-logo-icon svg {
-  width: 100%;
-  height: 100%;
-}
-.ev-logo-text {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1a1a1f;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-.ev-logo-text .ev-logo-dot {
-  color: #059669;
+.ev-logo img {
+  height: 50px;
+  width: auto;
+  object-fit: contain;
 }
 .ev-logo-tagline {
   font-size: 0.68rem;
