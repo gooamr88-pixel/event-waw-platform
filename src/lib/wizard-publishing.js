@@ -171,6 +171,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (ceEditingEventId) {
         const allUpdates = { ...eventData };
         delete allUpdates.organizer_id;
+        allUpdates.admin_approved = false; // Send back to approval queue
         event = await updateEvent(ceEditingEventId, allUpdates);
       } else {
         event = await createEvent(eventData);

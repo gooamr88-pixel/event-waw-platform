@@ -18,7 +18,7 @@ export async function loadApprovalQueue(onRefresh) {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, date, end_date, category, venue, venue_address, city, organizer_id, created_at, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
+      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, has_been_approved_before, date, end_date, category, venue, venue_address, city, organizer_id, created_at, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
       .eq('status', 'published')
       .eq('admin_approved', false)
       .order('created_at', { ascending: true });
@@ -41,7 +41,12 @@ export async function loadApprovalQueue(onRefresh) {
         <td>${date}</td>
         <td>${escapeHTML(ev.category || '—')}</td>
         <td>${submitted}</td>
-        <td><span class="ev-badge pending">Pending</span></td>
+        <td>
+          <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="ev-badge pending">Pending</span>
+            ${ev.has_been_approved_before ? '<span class="ev-badge" style="background:var(--ev-accent);color:#fff;font-weight:700">Edited</span>' : '<span class="ev-badge" style="background:#10b981;color:#fff;font-weight:700">New</span>'}
+          </div>
+        </td>
         <td>
           <div style="display:flex;gap:6px">
             <button class="ev-btn ev-btn-pink" style="padding:5px 12px;font-size:.75rem" data-approve="${ev.id}">Approve</button>
