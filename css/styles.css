@@ -2664,3 +2664,11 @@ html[data-theme="light"] .logo-light-theme {
   object-fit: contain;
   transition: filter 0.3s ease;
 }
+
+/* Custom style for navbar signup button to make it fit well */
+#nav-signup {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
