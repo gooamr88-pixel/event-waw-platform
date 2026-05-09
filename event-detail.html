@@ -566,7 +566,13 @@
       // Doors open
       if (event.doors_open) {
         document.getElementById('ed-doors-card').style.display = 'flex';
-        document.getElementById('ed-doors').textContent = event.doors_open;
+        const doorsDate = new Date(event.doors_open);
+        // If it's a valid date, format it. Otherwise, show it as is.
+        if (!isNaN(doorsDate.getTime())) {
+          document.getElementById('ed-doors').textContent = doorsDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        } else {
+          document.getElementById('ed-doors').textContent = event.doors_open;
+        }
       }
 
       // Venue & location
