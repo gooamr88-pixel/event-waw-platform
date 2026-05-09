@@ -47,7 +47,7 @@ export async function getCurrentProfile() {
   // Use maybeSingle() instead of single() to avoid error on 0 rows
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, full_name, phone, role, avatar_url, is_blocked, blocked_at, blocked_reason, otp_verified_at, organizer_approved, organizer_profile, payout_info, created_at')
+    .select('*')
     .eq('id', user.id)
     .maybeSingle();
 
@@ -87,7 +87,7 @@ export async function getCurrentProfile() {
   // process already created the profile with a different role)
   const { data: freshProfile } = await supabase
     .from('profiles')
-    .select('id, email, full_name, phone, role, avatar_url, is_blocked, blocked_at, blocked_reason, otp_verified_at, organizer_approved, organizer_profile, payout_info, created_at')
+    .select('*')
     .eq('id', user.id)
     .maybeSingle();
 

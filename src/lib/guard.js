@@ -149,7 +149,7 @@ export async function protectPage(options = {}) {
       // Re-fetch profile from DB to avoid stale cached role
       const { data: freshProfile } = await supabase
         .from('profiles')
-        .select('id, email, full_name, phone, role, avatar_url, is_blocked, blocked_at, blocked_reason, otp_verified_at, organizer_approved, organizer_profile, payout_info, created_at')
+        .select('*')
         .eq('id', user.id)
         .maybeSingle();
       profile = freshProfile || await getCurrentProfile();
