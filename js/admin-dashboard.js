@@ -91,9 +91,13 @@ export async function loadDashboardData() {
       animateStat('stat-tickets',    stats.total_tickets);
 
       const badge = document.getElementById('pending-count');
-      if (badge && stats.pending_approval > 0) {
-        badge.textContent = stats.pending_approval;
-        badge.style.display = '';
+      if (badge) {
+        if (stats.pending_approval > 0) {
+          badge.textContent = stats.pending_approval;
+          badge.style.display = '';
+        } else {
+          badge.style.display = 'none';
+        }
       }
     }
     initRevenueChart();
