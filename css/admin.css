@@ -19,9 +19,9 @@
   white-space: nowrap;
 }
 .admin-env-badge.role-super_admin {
-  background: rgba(124, 58, 237, 0.08);
-  color: #7c3aed;
-  border-color: rgba(124, 58, 237, 0.18);
+  background: #065f46;
+  color: #ffffff;
+  border-color: #064e3b;
 }
 .admin-env-badge.role-moderator {
   background: rgba(8, 145, 178, 0.08);
@@ -35,9 +35,9 @@ body.ev-dash[data-theme="dark"] .admin-env-badge {
   border-color: rgba(52, 211, 153,.2);
 }
 body.ev-dash[data-theme="dark"] .admin-env-badge.role-super_admin {
-  background: rgba(167, 139, 250, 0.1);
-  color: #a78bfa;
-  border-color: rgba(167, 139, 250, 0.2);
+  background: #064e3b;
+  color: #ffffff;
+  border-color: #022c22;
 }
 body.ev-dash[data-theme="dark"] .admin-env-badge.role-moderator {
   background: rgba(34, 211, 238, 0.1);
