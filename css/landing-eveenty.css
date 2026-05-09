@@ -104,7 +104,7 @@
   font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
 }
 .ev-btn-explore:hover { border-color: #059669; color: #059669; }
-.ev-hero-image { display: flex; justify-content: center; }
+.ev-hero-image { display: flex; justify-content: center; margin-top: -60px; }
 .ev-hero-image img { max-width: 100%; height: auto; border-radius: 20px; }
 
 /* ── 4. STATS BAR ── */
@@ -636,6 +636,7 @@
   .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
   .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
   .ev-hero-buttons { justify-content: center; }
+  .ev-hero-image { margin-top: 0; }
   .ev-hero-image img { max-width: 80%; margin: 0 auto; }
   .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
 
