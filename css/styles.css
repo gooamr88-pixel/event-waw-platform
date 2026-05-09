@@ -2664,7 +2664,3 @@ html[data-theme="light"] .logo-light-theme {
   object-fit: contain;
   transition: filter 0.3s ease;
 }
-
-html:not([data-theme="light"]) .footer-logo-img {
-  filter: brightness(0) invert(1);
-}
