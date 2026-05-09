@@ -37,10 +37,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   setupUserInfo(auth);
   setupSidebar();
-  injectAdminBridge(auth);
   setupCreateModal();
   setupSearch();
-  setupSignOut();
+  
+  // Sign Out Button (Sidebar)
+  document.getElementById('signout-btn')?.addEventListener('click', async () => {
+    await performSignOut('/login.html');
+  });
+
   setupApprovalPanel();
   setupPromoPanel();
   setupFinancialPanel();
@@ -53,7 +57,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupProfilePanel();
   setupPromoForm();
   loadPromoCodes();            // Initial load for promos
-  setupUserDropdownToggle();   // H-3: click-toggle + aria-expanded
+  
+  // H-3: click-toggle + aria-expanded
+  const userWrap = document.getElementById('user-wrap');
+  const userDropdown = document.getElementById('user-dropdown');
+  userWrap?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    userDropdown?.classList.toggle('active');
+  });
+  document.addEventListener('click', () => {
+    userDropdown?.classList.remove('active');
+  });
+
   setupGlobalKeyboardManager(); // H-3: Escape key handler
 
   // Register actions on the event bus (replaces window.* globals)

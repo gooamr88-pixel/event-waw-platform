@@ -96,7 +96,7 @@ export async function loadPromoCodes() {
     if (getSwitchId() !== mySwitch) return;
     const { data, error } = await supabase
       .from('promo_codes')
-      .select('id, code, discount_type, discount_value, discount_percent, discount_currency, max_uses, used_count, valid_until, is_active, event_id, created_at')
+      .select('*')
       .eq('organizer_id', user.id)
       .order('created_at', { ascending: false });
     if (getSwitchId() !== mySwitch) return;
@@ -304,16 +304,6 @@ export function setupPromoForm() {
         is_active: true,
         used_count: 0,
       };
-
-      // Also set discount_percent for backward compat if percentage
-      if (discountType === 'percentage') {
-        insertData.discount_percent = discountVal;
-      }
-
-      // Store currency in discount_currency if the column exists
-      if (discountType === 'fixed') {
-        insertData.discount_currency = currency;
-      }
 
       const { error } = await supabase.from('promo_codes').insert(insertData);
 
