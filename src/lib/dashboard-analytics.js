@@ -1,5 +1,5 @@
 import { supabase, getCurrentUser } from './supabase.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML } from './dom.js';
 
 let revenueChartInstance = null, tierChartInstance = null;
