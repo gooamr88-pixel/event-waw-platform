@@ -104,7 +104,7 @@
   font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
 }
 .ev-btn-explore:hover { border-color: #059669; color: #059669; }
-.ev-hero-image { display: flex; justify-content: center; margin-top: -60px; }
+.ev-hero-image { display: flex; justify-content: center; margin-top: 0; }
 .ev-hero-image img { max-width: 100%; height: auto; border-radius: 20px; }
 
 /* ── 4. STATS BAR ── */
