@@ -337,7 +337,7 @@
         </div>
       </div>
       <div style="text-align:center;margin-top:48px;" data-reveal>
-        <a href="register.html" class="btn btn-primary" style="padding:16px 40px;font-size:1rem;">Start Creating Your Event <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:8px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></a>
+        <a href="register.html" id="footer-create" class="btn btn-primary" style="padding:16px 40px;font-size:1rem;">Start Creating Your Event <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:8px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg></a>
       </div>
     </div>
   </section>
@@ -894,8 +894,13 @@
         if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = dashLabel; el.href = dashHref; } }
         const mm = document.getElementById('mobile-menu');
         if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = dashLabel; a.href = dashHref; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
-        const heroCta = document.getElementById('hero-cta');
-        if (heroCta) heroCta.href = dashHref;
+        
+        // Update "Create Your Event" buttons to go to Dashboard
+        const heroCreate = document.getElementById('hero-create');
+        if (heroCreate) { heroCreate.href = dashHref; heroCreate.textContent = 'Go to Dashboard'; }
+        
+        const footerCreate = document.getElementById('footer-create');
+        if (footerCreate) { footerCreate.href = dashHref; footerCreate.innerHTML = `Go to Dashboard <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:8px;vertical-align:middle;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>`; }
       }
 
       const [eventsResult, geoResult] = await Promise.allSettled([loadLandingEvents(), detectAndUpdateGeo()]);
