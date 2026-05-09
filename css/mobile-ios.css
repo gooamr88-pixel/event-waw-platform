@@ -150,12 +150,9 @@ select {
 .ev-table-wrap,
 .ev-chatbox-messages {
   -webkit-overflow-scrolling: touch;
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
 }
 
 /* Snap points for card sliders (works on all modern mobile browsers) */
-.ev-slider-track > *,
 .category-scroller > * {
   scroll-snap-align: start;
 }
@@ -574,8 +571,10 @@ select {
   }
 
   /* ── 3d. COMPONENT RESTRUCTURING ── */
-  /* Event grid — force single column, prevent overflow */
-  .events-grid,
+  /* Event grid — force single column, prevent overflow.
+     IMPORTANT: Do NOT override .ev-slider-track (the landing page poster
+     slider uses both .events-grid AND .ev-slider-track — it MUST stay flex) */
+  .events-grid:not(.ev-slider-track),
   .ep-events-grid {
     grid-template-columns: 1fr !important;
     gap: 14px;
@@ -593,12 +592,16 @@ select {
     gap: 14px;
   }
 
-  /* Poster cards — fit viewport */
+  /* Poster cards — fit viewport for swipe-friendly sliding */
   .ev-slider-track > .event-poster-card {
-    flex: 0 0 calc(100vw - 48px);
-    min-width: calc(100vw - 48px);
+    flex: 0 0 calc(100vw - 56px);
+    min-width: calc(100vw - 56px);
     height: 200px;
     border-radius: 14px;
+  }
+  .ev-slider-track {
+    gap: 14px;
+    padding: 12px 8px 20px;
   }
 
   /* List view cards — stack vertically */
