@@ -2640,11 +2640,9 @@ button { cursor: pointer; }
 
 /* Theme Logos */
 .nav-logo img {
-  height: 60px;
+  height: 24px;
   width: auto;
   object-fit: contain;
-  transform: scale(2.5);
-  transform-origin: left center;
 }
 html:not([data-theme="light"]) .logo-light-theme {
   display: none !important;
@@ -2661,11 +2659,9 @@ html[data-theme="light"] .logo-light-theme {
 
 /* Footer Logo */
 .footer-logo-img {
-  height: 80px;
+  height: 30px;
   width: auto;
   object-fit: contain;
-  transform: scale(2);
-  transform-origin: left center;
   transition: filter 0.3s ease;
 }
 
