@@ -45,7 +45,7 @@ export async function loadApprovalQueue(onRefresh) {
         <td>
           <div style="display:flex;gap:6px">
             <button class="ev-btn ev-btn-pink" style="padding:5px 12px;font-size:.75rem" data-approve="${ev.id}">Approve</button>
-            <button class="ev-btn ev-btn-danger" style="padding:5px 12px;font-size:.75rem" data-reject="${ev.id}" data-title="${escapeHTML(ev.title)}">Reject</button>
+            <button class="ev-btn ev-btn-danger" style="padding:5px 12px;font-size:.75rem" data-reject="${ev.id}" data-title="${escapeHTML(ev.title)}" data-email="${escapeHTML(org.email || '')}">Reject</button>
           </div>
         </td>
       </tr>`;
@@ -55,7 +55,7 @@ export async function loadApprovalQueue(onRefresh) {
       btn.addEventListener('click', () => handleApprove(btn.dataset.approve, onRefresh));
     });
     tbody.querySelectorAll('[data-reject]').forEach(btn => {
-      btn.addEventListener('click', () => handleReject(btn.dataset.reject, btn.dataset.title, onRefresh));
+      btn.addEventListener('click', () => handleReject(btn.dataset.reject, btn.dataset.title, btn.dataset.email, onRefresh));
     });
 
     tbody.querySelectorAll('.ev-event-detail-link').forEach(link => {
@@ -89,7 +89,7 @@ async function handleApprove(eventId, onRefresh) {
   }
 }
 
-async function handleReject(eventId, title, onRefresh) {
+async function handleReject(eventId, title, organizerEmail, onRefresh) {
   const reason = await showPromptModal({
     title: 'Reject Event',
     message: `Reject "${title}"? Please provide a reason:`,
@@ -102,6 +102,11 @@ async function handleReject(eventId, title, onRefresh) {
     const { error } = await supabase.rpc('admin_reject_event', { p_event_id: eventId, p_reason: reason.trim() });
     if (error) throw error;
     showToast('Event rejected and returned to organizer as draft.', 'success');
+    
+    if (organizerEmail) {
+      window.open(`mailto:${organizerEmail}?subject=Event%20Rejected:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AWe%20regret%20to%20inform%20you%20that%20your%20event%20"${encodeURIComponent(title)}"%20has%20been%20rejected.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEventsli%20Admin%20Team`, '_blank');
+    }
+    
     onRefresh();
   } catch (err) {
     showToast('Reject failed: ' + err.message, 'error');

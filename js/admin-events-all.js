@@ -81,18 +81,18 @@ export async function loadAllEvents(onRefresh) {
         <td style="font-weight:600">${rev > 0 ? '$' + rev.toLocaleString() : '—'}</td>
         <td>
           <div style="display:flex;gap:6px">
-            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:#f59e0b;border-color:#f59e0b" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" ${ev.status === 'draft' ? 'disabled' : ''}>Suspend</button>
-            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-delete-btn" style="color:var(--ev-danger);border-color:var(--ev-danger)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}">Delete</button>
+            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:#f59e0b;border-color:#f59e0b" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-email="${escapeHTML(org.email || '')}" ${ev.status === 'draft' ? 'disabled' : ''}>Suspend</button>
+            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-delete-btn" style="color:var(--ev-danger);border-color:var(--ev-danger)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-email="${escapeHTML(org.email || '')}">Delete</button>
           </div>
         </td>
       </tr>`;
     }).join(''));
 
     tbody.querySelectorAll('.ev-admin-suspend-btn').forEach(btn => {
-      btn.addEventListener('click', () => handleAdminSuspendEvent(btn.dataset.id, btn.dataset.title, onRefresh));
+      btn.addEventListener('click', () => handleAdminSuspendEvent(btn.dataset.id, btn.dataset.title, btn.dataset.email, onRefresh));
     });
     tbody.querySelectorAll('.ev-admin-delete-btn').forEach(btn => {
-      btn.addEventListener('click', () => handleAdminDeleteEvent(btn.dataset.id, btn.dataset.title, onRefresh));
+      btn.addEventListener('click', () => handleAdminDeleteEvent(btn.dataset.id, btn.dataset.title, btn.dataset.email, onRefresh));
     });
     tbody.querySelectorAll('.ev-event-detail-link').forEach(link => {
       link.addEventListener('click', (e) => {
@@ -107,7 +107,7 @@ export async function loadAllEvents(onRefresh) {
   }
 }
 
-export async function handleAdminSuspendEvent(eventId, title, onRefresh) {
+export async function handleAdminSuspendEvent(eventId, title, organizerEmail, onRefresh) {
   const reason = await showPromptModal({
     title: 'Suspend Event',
     message: `Suspend "${title}"? This will hide it from the public. Provide a reason:`,
@@ -117,15 +117,12 @@ export async function handleAdminSuspendEvent(eventId, title, onRefresh) {
   });
   if (!reason || !reason.trim()) return;
   try {
-    const { data: evData } = await supabase.from('events').select('organizer_email, profiles(email)').eq('id', eventId).single();
-    const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
-
     const { error } = await supabase.rpc('admin_reject_event', { p_event_id: eventId, p_reason: reason.trim() });
     if (error) throw error;
     showToast(`Event "${title}" has been suspended.`, 'success');
     
     if (organizerEmail) {
-      window.open(`mailto:${organizerEmail}?subject=Event%20Suspended:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20suspended.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`, '_blank');
+      window.open(`mailto:${organizerEmail}?subject=Event%20Suspended:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20suspended.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEventsli%20Admin%20Team`, '_blank');
     }
     onRefresh();
   } catch (err) {
@@ -133,7 +130,7 @@ export async function handleAdminSuspendEvent(eventId, title, onRefresh) {
   }
 }
 
-export async function handleAdminDeleteEvent(eventId, title, onRefresh) {
+export async function handleAdminDeleteEvent(eventId, title, organizerEmail, onRefresh) {
   const reason = await showPromptModal({
     title: 'Delete Event',
     message: `Are you sure you want to completely delete "${title}"? This cannot be undone. Provide a reason for deletion:`,
@@ -143,15 +140,12 @@ export async function handleAdminDeleteEvent(eventId, title, onRefresh) {
   });
   if (!reason || !reason.trim()) return;
   try {
-    const { data: evData } = await supabase.from('events').select('organizer_email, profiles(email)').eq('id', eventId).single();
-    const organizerEmail = evData?.organizer_email || evData?.profiles?.email || '';
-
     const { error } = await supabase.rpc('admin_delete_event', { p_event_id: eventId });
     if (error) throw error;
     showToast(`Event "${title}" has been deleted.`, 'success');
 
     if (organizerEmail) {
-      window.open(`mailto:${organizerEmail}?subject=Event%20Deleted:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20deleted.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEvent%20Waw%20Admin%20Team`, '_blank');
+      window.open(`mailto:${organizerEmail}?subject=Event%20Deleted:%20${encodeURIComponent(title)}&body=Dear%20Organizer,%0A%0AYour%20event%20"${encodeURIComponent(title)}"%20has%20been%20deleted.%0A%0AReason:%0A${encodeURIComponent(reason.trim())}%0A%0AEventsli%20Admin%20Team`, '_blank');
     }
     onRefresh();
   } catch (err) {
