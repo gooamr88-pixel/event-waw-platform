@@ -104,8 +104,79 @@
   font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: all 0.3s;
 }
 .ev-btn-explore:hover { border-color: #059669; color: #059669; }
-.ev-hero-image { display: flex; justify-content: center; margin-top: 0; }
-.ev-hero-image img { max-width: 100%; height: auto; border-radius: 20px; }
+.ev-hero-image { display: flex; justify-content: center; margin-top: 0; align-items: center; }
+.ev-hero-image > img { max-width: 100%; height: auto; border-radius: 20px; }
+
+/* ── Hero Slideshow ── */
+/* IMPORTANT: styles.css defines .hero-slideshow as position:absolute fullscreen
+   background with dark scrim. These rules OVERRIDE that for the landing page
+   content slideshow inside .ev-hero-image. */
+.ev-hero-image .hero-slideshow {
+  position: relative !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  width: 100%;
+  max-width: 520px;
+  aspect-ratio: 16/10;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 12px 48px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.08);
+}
+/* Kill the dark scrim overlay from styles.css */
+.ev-hero-image .hero-slideshow::after {
+  display: none !important;
+}
+.ev-hero-image .hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(.4,0,.2,1) !important;
+  transform: none !important;
+  z-index: 1;
+}
+.ev-hero-image .hero-slide.active {
+  opacity: 1;
+  z-index: 2;
+  transform: none !important;
+}
+.ev-hero-image .hero-slide img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  object-fit: cover !important;
+  display: block;
+  border-radius: 20px;
+}
+.hero-slide-dots {
+  position: absolute;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 50px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.hero-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255,255,255,0.45);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s ease;
+}
+.hero-dot.active {
+  background: #059669;
+  width: 22px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px rgba(5,150,105,0.5);
+}
 
 /* ── 4. STATS BAR ── */
 .ev-stats-bar { background: #1a1a22; padding: 40px 0; }
@@ -632,12 +703,12 @@
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
   /* Hero */
-  .ev-hero-split { grid-template-columns: 1fr; gap: 32px; text-align: center; }
+  .ev-hero-split { grid-template-columns: 1fr; gap: 20px; text-align: center; }
   .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
   .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
   .ev-hero-buttons { justify-content: center; }
   .ev-hero-image { margin-top: 0; }
-  .ev-hero-image img { max-width: 80%; margin: 0 auto; }
+  .ev-hero-image > img { max-width: 80%; margin: 0 auto; }
   .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
 
   /* Stats */

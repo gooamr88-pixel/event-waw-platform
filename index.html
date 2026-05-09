@@ -149,7 +149,22 @@
         </div>
       </div>
       <div class="ev-hero-image">
-        <!-- Image removed as requested -->
+        <div class="hero-slideshow" id="hero-slideshow">
+          <div class="hero-slide active">
+            <img src="images/event-concert.png" alt="Concert events on Eventsli" loading="eager" />
+          </div>
+          <div class="hero-slide">
+            <img src="images/event-conference.png" alt="Conference events on Eventsli" loading="lazy" />
+          </div>
+          <div class="hero-slide">
+            <img src="images/event-gala.png" alt="Gala events on Eventsli" loading="lazy" />
+          </div>
+          <div class="hero-slide-dots" id="hero-slide-dots">
+            <button class="hero-dot active" data-slide="0" aria-label="Slide 1"></button>
+            <button class="hero-dot" data-slide="1" aria-label="Slide 2"></button>
+            <button class="hero-dot" data-slide="2" aria-label="Slide 3"></button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -1138,6 +1153,44 @@
     const mo = new MutationObserver(() => setTimeout(updateArrows, 100));
     mo.observe(track, { childList: true });
     setTimeout(updateArrows, 500);
+  })();
+  </script>
+
+  <!-- Hero Slideshow -->
+  <script>
+  (function(){
+    const show = document.getElementById('hero-slideshow');
+    if (!show) return;
+    const slides = show.querySelectorAll('.hero-slide');
+    const dots = show.querySelectorAll('.hero-dot');
+    if (slides.length < 2) return;
+    let current = 0, timer = null;
+
+    function goTo(idx) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = (idx + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+    function next() { goTo(current + 1); }
+    function startAuto() { clearInterval(timer); timer = setInterval(next, 4000); }
+    function stopAuto() { clearInterval(timer); }
+
+    dots.forEach(d => d.addEventListener('click', () => { goTo(+d.dataset.slide); startAuto(); }));
+    show.addEventListener('mouseenter', stopAuto);
+    show.addEventListener('mouseleave', startAuto);
+
+    // Touch swipe support
+    let tx = 0;
+    show.addEventListener('touchstart', e => { tx = e.touches[0].clientX; stopAuto(); }, { passive: true });
+    show.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - tx;
+      if (Math.abs(dx) > 40) dx > 0 ? goTo(current - 1) : next();
+      startAuto();
+    }, { passive: true });
+
+    startAuto();
   })();
   </script>
 
