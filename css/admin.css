@@ -7,21 +7,42 @@
 
 /* ── Admin Environment Badge ── */
 .admin-env-badge {
-  font-size: .58rem;
+  font-size: .65rem;
   font-weight: 800;
-  letter-spacing: .14em;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 5px;
+  padding: 5px 12px;
+  border-radius: 6px;
   background: rgba(5, 150, 105,.08);
   color: #059669;
   border: 1px solid rgba(5, 150, 105,.18);
   white-space: nowrap;
 }
+.admin-env-badge.role-super_admin {
+  background: rgba(124, 58, 237, 0.08);
+  color: #7c3aed;
+  border-color: rgba(124, 58, 237, 0.18);
+}
+.admin-env-badge.role-moderator {
+  background: rgba(8, 145, 178, 0.08);
+  color: #0891b2;
+  border-color: rgba(8, 145, 178, 0.18);
+}
+
 body.ev-dash[data-theme="dark"] .admin-env-badge {
   background: rgba(52, 211, 153,.1);
   color: #34D399;
   border-color: rgba(52, 211, 153,.2);
+}
+body.ev-dash[data-theme="dark"] .admin-env-badge.role-super_admin {
+  background: rgba(167, 139, 250, 0.1);
+  color: #a78bfa;
+  border-color: rgba(167, 139, 250, 0.2);
+}
+body.ev-dash[data-theme="dark"] .admin-env-badge.role-moderator {
+  background: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border-color: rgba(34, 211, 238, 0.2);
 }
 
 /* ── Admin Clock (header) ── */

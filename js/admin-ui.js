@@ -57,8 +57,7 @@ export function setupUserInfo(auth, adminRole) {
   const envBadge = document.querySelector('.admin-env-badge');
   if (envBadge) {
     envBadge.textContent = (roleMap[adminRole] || 'ADMIN').toUpperCase();
-    if (adminRole === 'super_admin') envBadge.style.background = '#7c3aed';
-    else if (adminRole === 'moderator') envBadge.style.background = '#0891b2';
+    envBadge.className = `admin-env-badge role-${adminRole}`;
   }
 }
 
