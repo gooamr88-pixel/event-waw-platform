@@ -6,7 +6,7 @@
 
 // M-7: Bump version on every deploy to purge stale caches.
 // The activate handler below auto-deletes any cache !== CACHE_NAME.
-const CACHE_NAME = 'eventsli-v6';
+const CACHE_NAME = 'eventsli-v7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
