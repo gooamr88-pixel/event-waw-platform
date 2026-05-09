@@ -232,17 +232,35 @@
           const signUpData = await signUp({ email, password, firstName, lastName, phone, role });
           registeredEmail = email;
           let session = signUpData?.session;
+          let user = signUpData?.user;
+
           if (!session) {
             try {
               const { data: sid, error: sie } = await supabase.auth.signInWithPassword({ email, password });
               if (sie) throw sie;
               session = sid?.session;
+              user = sid?.user || user;
             } catch (e) {
               showMsg('error','Please disable "Confirm email" in Supabase Dashboard → Auth → Email provider.');
               btn.disabled = false; document.getElementById('reg-text').textContent = 'Register'; document.getElementById('reg-spinner').style.display = 'none';
               return;
             }
           }
+
+          // Force profile creation to prevent desync or trigger overrides
+          if (user) {
+            await supabase.from('profiles').upsert({
+              id: user.id,
+              email: user.email,
+              full_name: `${firstName} ${lastName}`.trim(),
+              phone: phone || null,
+              role: role
+            }, { onConflict: 'id' });
+            
+            // Refresh session token to ensure JWT claims are up-to-date
+            await supabase.auth.refreshSession();
+          }
+
           const { getCurrentProfile } = await import('./src/lib/supabase.js');
           await getCurrentProfile();
           try {
