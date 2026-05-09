@@ -28,13 +28,16 @@
 .legal-nav .nav-logo {
   display: flex; align-items: center; gap: 10px; text-decoration: none;
 }
-.legal-nav .nav-logo-icon {
-  width: 28px; height: 28px; color: #059669;
+.legal-nav .nav-logo img {
+  height: 45px;
+  width: auto;
+  object-fit: contain;
 }
-.legal-nav .nav-logo-text {
-  font-size: 1.1rem; font-weight: 800; color: #1a1a2e !important;
-  -webkit-text-fill-color: #1a1a2e !important;
-  background: none !important; animation: none !important;
+.legal-nav .logo-dark-theme {
+  display: none !important;
+}
+.legal-nav .logo-light-theme {
+  display: block !important;
 }
 .legal-back {
   display: flex; align-items: center; gap: 6px;
