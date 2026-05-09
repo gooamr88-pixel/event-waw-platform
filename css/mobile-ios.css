@@ -1,11 +1,64 @@
 /* ═══════════════════════════════════════════════════════════
-   EVENTSLI — GOD-TIER MOBILE & iOS MASTER CSS
+   EVENTSLI — UNIVERSAL MOBILE MASTER CSS
+   Targets: iOS Safari, Android Chrome, Samsung Internet,
+            Firefox Mobile, Opera Mobile, all phones & tablets.
    Load LAST, after all other stylesheets.
    ═══════════════════════════════════════════════════════════ */
 
 /* ══════════════════════════════════
-   1. iOS SAFARI VIEWPORT & NOTCH FIXES
-   (Applied globally, no media query needed)
+   0. GLOBAL CROSS-BROWSER MOBILE RESETS
+   (Applied on ALL devices, no media query)
+   ══════════════════════════════════ */
+
+/* Remove tap highlight on Android Chrome & Samsung Internet */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent pull-to-refresh / overscroll bounce (Android Chrome + iOS Safari) */
+html, body {
+  overscroll-behavior-y: contain;
+}
+
+/* Smooth scrolling everywhere */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Hide scrollbars on mobile scroll containers (Chrome/Edge/Samsung + Firefox) */
+.ev-slider-track::-webkit-scrollbar,
+.category-scroller::-webkit-scrollbar,
+.ev-chatbox-messages::-webkit-scrollbar,
+.ev-table-wrap::-webkit-scrollbar,
+.mobile-menu::-webkit-scrollbar {
+  display: none;
+}
+.ev-slider-track,
+.category-scroller,
+.ev-chatbox-messages,
+.ev-table-wrap,
+.mobile-menu {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+}
+
+/* ══════════════════════════════════
+   1. VIEWPORT, NOTCH & ADDRESS BAR FIXES
+   (iOS Safari + Android Chrome + Samsung Internet)
    ══════════════════════════════════ */
 
 /* Kill all 100vh — replace with dynamic viewport */
@@ -43,7 +96,9 @@ body::before, body::after {
   padding-top: env(safe-area-inset-top, 0px);
 }
 
-/* iOS input zoom prevention — ALL inputs must be >= 16px */
+/* Input zoom prevention — iOS Safari auto-zooms on <16px inputs.
+   Android Chrome doesn't zoom but 16px is still the correct
+   minimum for readability on ALL mobile browsers. */
 input, select, textarea,
 .smart-search-input,
 .ep-search-input,
@@ -62,12 +117,47 @@ input, select, textarea,
   font-size: 16px !important;
 }
 
-/* Momentum scrolling for horizontal containers */
+/* Fix Android Chrome auto-fill styling override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--text-primary, #f4f4f5);
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Ensure proper box-sizing on all form elements (Samsung Internet fix) */
+input, select, textarea, button {
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* Momentum scrolling for horizontal containers
+   -webkit-overflow-scrolling is iOS Safari only (deprecated but still needed).
+   Standard overflow: auto handles Android Chrome, Samsung, Firefox. */
 .ev-slider-track,
 .category-scroller,
 .ev-table-wrap,
 .ev-chatbox-messages {
   -webkit-overflow-scrolling: touch;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+}
+
+/* Snap points for card sliders (works on all modern mobile browsers) */
+.ev-slider-track > *,
+.category-scroller > * {
+  scroll-snap-align: start;
 }
 
 
@@ -76,7 +166,7 @@ input, select, textarea,
    ══════════════════════════════════════════ */
 @media (max-width: 768px) {
 
-  /* ── 2a. iOS VIEWPORT FIXES ── */
+  /* ── 2a. VIEWPORT FIXES (all mobile browsers) ── */
   .hero-wrapper {
     min-height: auto;
     padding-top: 80px;
@@ -413,7 +503,7 @@ input, select, textarea,
    ══════════════════════════════════════════ */
 @media (max-width: 480px) {
 
-  /* ── 3a. iOS FIXES ── */
+  /* ── 3a. SMALL-SCREEN VIEWPORT FIXES ── */
   .ev-chatbox {
     width: calc(100vw - 16px);
     right: 8px;
@@ -811,7 +901,7 @@ input, select, textarea,
 
 
 /* ══════════════════════════════════════════
-   5. LANDSCAPE PHONE FIX
+   5. LANDSCAPE PHONE FIX (all phones)
    ══════════════════════════════════════════ */
 @media (max-height: 500px) and (orientation: landscape) {
   .hero-wrapper {
@@ -827,5 +917,99 @@ input, select, textarea,
   .mobile-menu a {
     font-size: 0.95rem;
     padding: 10px 20px;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   6. ANDROID-SPECIFIC FIXES
+   ══════════════════════════════════════════ */
+
+/* Android Chrome URL bar — prevent 100vh from causing
+   content to hide behind the collapsing address bar.
+   The dvh unit handles this on newer Android Chrome (v108+);
+   this fallback covers older versions. */
+@supports not (min-height: 100dvh) {
+  .hero-wrapper,
+  .auth-page,
+  .ev-auth-container,
+  body.eveenty-auth {
+    min-height: -webkit-fill-available;
+  }
+  html {
+    height: -webkit-fill-available;
+  }
+}
+
+/* Fix Samsung Internet sticky-hover bug */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover,
+  .ev-nav-item:hover,
+  .nav-links a:hover,
+  .footer-links a:hover,
+  .event-poster-card:hover,
+  .ep-event-card:hover,
+  .event-card:hover,
+  .step-card:hover,
+  .security-card:hover,
+  .trust-badge:hover {
+    transform: none !important;
+    box-shadow: inherit;
+  }
+}
+
+/* Android notch support (display-cutout) */
+@supports (padding: env(safe-area-inset-top)) {
+  .navbar,
+  .ev-header,
+  .scanner-header {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   7. TOUCH-DEVICE UNIVERSAL ENHANCEMENTS
+   ══════════════════════════════════════════ */
+@media (hover: none) and (pointer: coarse) {
+  /* All interactive elements get active-state feedback
+     instead of hover (which sticks on touch devices) */
+  .btn:active,
+  .ev-submit-btn:active,
+  .ev-google-btn:active,
+  .nav-toggle:active,
+  .theme-toggle:active,
+  .filter-btn:active,
+  .cat-pill:active,
+  .ep-time-btn:active,
+  .ev-quick-btn:active {
+    transform: scale(0.97);
+    opacity: 0.85;
+    transition: transform 0.1s ease, opacity 0.1s ease;
+  }
+
+  /* Prevent text selection on interactive elements */
+  .btn,
+  .ev-submit-btn,
+  .ev-google-btn,
+  .nav-toggle,
+  .theme-toggle,
+  .filter-btn,
+  .cat-pill,
+  .ep-time-btn,
+  .ev-nav-item,
+  .mobile-menu a {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Ensure smooth momentum scrolling on all containers */
+  .ev-main,
+  .ev-panel,
+  .legal-content,
+  .ev-auth-right-inner {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
