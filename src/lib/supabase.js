@@ -71,9 +71,9 @@ export async function getCurrentProfile() {
     avatar_url: meta.avatar_url || null,
   };
 
-  const { data: created, error: createError } = await supabase
+  const { error: createError } = await supabase
     .from('profiles')
-    .upsert(newProfile, { onConflict: 'id' })
+    .upsert(newProfile, { onConflict: 'id', ignoreDuplicates: true })
     .select()
     .single();
 
@@ -83,8 +83,16 @@ export async function getCurrentProfile() {
     return newProfile;
   }
 
-  console.log('Profile auto-created successfully:', created);
-  return created;
+  // Re-fetch from DB to get the canonical state (in case another
+  // process already created the profile with a different role)
+  const { data: freshProfile } = await supabase
+    .from('profiles')
+    .select('id, email, full_name, phone, role, avatar_url, is_blocked, blocked_at, blocked_reason, otp_verified_at, organizer_approved, organizer_profile, payout_info, created_at')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  console.log('Profile auto-created/fetched successfully:', freshProfile);
+  return freshProfile || newProfile;
 }
 
 /**

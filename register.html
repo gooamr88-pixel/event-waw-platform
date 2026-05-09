@@ -247,21 +247,32 @@
             }
           }
 
-          // Force profile creation to prevent desync or trigger overrides
+          // Step 1: Ensure profile row exists (upsert WITHOUT role — RLS blocks role changes)
           if (user) {
             await supabase.from('profiles').upsert({
               id: user.id,
               email: user.email,
               full_name: `${firstName} ${lastName}`.trim(),
-              phone: phone || null,
-              role: role
+              phone: phone || null
             }, { onConflict: 'id' });
-            
-            // Refresh session token to ensure JWT claims are up-to-date
+
+            // Step 2: If organizer was selected, use the SECURITY DEFINER RPC
+            // to set the role (bypasses the RLS role-lock policy)
+            if (role === 'organizer') {
+              const { error: upgradeErr } = await supabase.rpc('request_organizer_upgrade');
+              if (upgradeErr) {
+                console.error('Organizer upgrade RPC failed:', upgradeErr);
+              }
+            }
+
+            // Step 3: Sync role to user metadata so JWT claims match
+            await supabase.auth.updateUser({ data: { role } });
+
+            // Step 4: Force session refresh to pick up the new role in JWT
             await supabase.auth.refreshSession();
           }
 
-          const { getCurrentProfile } = await import('./src/lib/supabase.js');
+          // Step 5: Re-fetch profile to bust any cached 'attendee' state
           await getCurrentProfile();
           try {
             const otpResult = await sendOTPEmail(firstName, 'register');

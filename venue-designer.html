@@ -106,7 +106,7 @@
     let engine, eventId, tiers = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
-      const auth = await protectPage('organizer');
+      const auth = await protectPage({ requireRole: 'organizer' });
       const params = new URLSearchParams(location.search);
       eventId = params.get('event_id');
       if (!eventId) { alert('Missing event_id'); location.href = 'dashboard.html'; return; }

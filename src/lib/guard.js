@@ -141,7 +141,21 @@ export async function protectPage(options = {}) {
     }
 
     // 3. Check role (admin is a superclass — passes all role checks)
-    const profile = await getCurrentProfile();
+    // Force a fresh profile read from DB (not cache) for role checks
+    let profile = null;
+    if (requireRole) {
+      // Refresh the session to ensure the JWT is current before role-gating
+      try { await supabase.auth.refreshSession(); } catch (_) {}
+      // Re-fetch profile from DB to avoid stale cached role
+      const { data: freshProfile } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, phone, role, avatar_url, is_blocked, blocked_at, blocked_reason, otp_verified_at, organizer_approved, organizer_profile, payout_info, created_at')
+        .eq('id', user.id)
+        .maybeSingle();
+      profile = freshProfile || await getCurrentProfile();
+    } else {
+      profile = await getCurrentProfile();
+    }
     const userRole = profile?.role;
     
     // Check if user is blocked
