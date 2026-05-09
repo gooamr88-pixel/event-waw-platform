@@ -161,7 +161,7 @@ async function renderEvents(events) {
     const isDisplayOnly = ev.listing_type === 'display_only';
     let statusTag = '';
     if (isDisplayOnly) statusTag = '<span class="ep-card-tag ep-tag-display">Display Only</span>';
-    else statusTag = '<span class="ep-card-tag" style="background: rgba(212,175,55,0.15); color: #b48600; /* TEMP: DISABLED TICKETS */">Tickets Soon</span>';
+    else statusTag = '<span class="ep-card-tag" style="background: rgba(0, 0, 0, 0.65); color: #fcd34d; border-color: rgba(245,158,11,0.3); /* TEMP: DISABLED TICKETS */">Tickets Soon</span>';
     // else if (totalCap > 0 && totalAvail <= 0) statusTag = '<span class="ep-card-tag ep-tag-soldout">Sold Out</span>';
     // else if (soldPct >= 90) statusTag = '<span class="ep-card-tag ep-tag-hot">Selling Fast 🔥</span>';
     const date = new Date(ev.date);
@@ -172,13 +172,11 @@ async function renderEvents(events) {
     card.onclick = () => window.location.href = `event-detail.html?id=${ev.id}`;
     const coverSrc = resolvedCovers[idx] || 'images/event-concert.png';
     setSafeHTML(card, `
-      <div class="ep-card-image image-overlay-wrapper">
+      <div class="ep-card-image">
         <img src="${escapeHTML(coverSrc)}" alt="${escapeHTML(ev.title)}" loading="lazy" />
-        <div class="text-on-image" style="padding: 1rem; padding-bottom: 0;">
-          <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(categoryLabel)}</div>
-          ${statusTag}
-          ${distHtml}
-        </div>
+        <div class="ep-card-badge"><span class="dot"></span>${escapeHTML(categoryLabel)}</div>
+        ${statusTag}
+        ${distHtml}
       </div>
       <div class="ep-card-body">
         <div class="ep-card-date">${dateStr}</div>

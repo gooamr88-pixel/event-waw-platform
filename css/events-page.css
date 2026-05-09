@@ -366,14 +366,7 @@
 .ep-event-card:hover .ep-card-image img {
   transform: scale(1.06);
 }
-.ep-card-image::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 60%;
-  background: linear-gradient(to top, var(--bg-card) 5%, transparent);
-  pointer-events: none;
-}
+
 .ep-card-badge {
   position: absolute;
   top: 12px; left: 12px;
@@ -428,17 +421,17 @@
   border: 1px solid rgba(255,255,255,0.1);
 }
 .ep-tag-display {
-  background: rgba(139,92,246,0.2);
+  background: rgba(0, 0, 0, 0.65);
   color: #c4b5fd;
   border-color: rgba(139,92,246,0.3);
 }
 .ep-tag-soldout {
-  background: rgba(239,68,68,0.2);
+  background: rgba(0, 0, 0, 0.65);
   color: #fca5a5;
   border-color: rgba(239,68,68,0.3);
 }
 .ep-tag-hot {
-  background: rgba(245,158,11,0.2);
+  background: rgba(0, 0, 0, 0.65);
   color: #fcd34d;
   border-color: rgba(245,158,11,0.3);
 }
@@ -464,6 +457,7 @@
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
