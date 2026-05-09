@@ -84,11 +84,13 @@ export function setupDarkMode() {
   const saved = localStorage.getItem('theme');
   const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
   toggle?.addEventListener('click', () => {
     const nowDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const next = nowDark ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', next);
+    document.body.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
   });
 }
