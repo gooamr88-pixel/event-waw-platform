@@ -2637,3 +2637,34 @@ button { cursor: pointer; }
   .ed-map-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
   .ed-map-directions-btn { width: 100%; justify-content: center; }
 }
+
+/* Theme Logos */
+.nav-logo img {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+}
+html:not([data-theme="light"]) .logo-light-theme {
+  display: none !important;
+}
+html:not([data-theme="light"]) .logo-dark-theme {
+  display: block !important;
+}
+html[data-theme="light"] .logo-dark-theme {
+  display: none !important;
+}
+html[data-theme="light"] .logo-light-theme {
+  display: block !important;
+}
+
+/* Footer Logo */
+.footer-logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
+  transition: filter 0.3s ease;
+}
+
+html:not([data-theme="light"]) .footer-logo-img {
+  filter: brightness(0) invert(1);
+}
