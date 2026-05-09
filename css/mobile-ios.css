@@ -1,0 +1,831 @@
+/* ═══════════════════════════════════════════════════════════
+   EVENTSLI — GOD-TIER MOBILE & iOS MASTER CSS
+   Load LAST, after all other stylesheets.
+   ═══════════════════════════════════════════════════════════ */
+
+/* ══════════════════════════════════
+   1. iOS SAFARI VIEWPORT & NOTCH FIXES
+   (Applied globally, no media query needed)
+   ══════════════════════════════════ */
+
+/* Kill all 100vh — replace with dynamic viewport */
+.hero-wrapper,
+.auth-page,
+.ev-auth-container,
+body.eveenty-auth {
+  min-height: 100dvh;
+}
+body::before, body::after {
+  height: 100dvh;
+}
+
+/* Safe-area for fixed navbar */
+.navbar {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Safe-area for mobile menu overlay */
+.mobile-menu {
+  padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Safe-area for fixed chat FAB */
+.ev-chat-fab {
+  bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+}
+.ev-chatbox {
+  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Safe-area for dashboard fixed elements */
+.ev-header {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* iOS input zoom prevention — ALL inputs must be >= 16px */
+input, select, textarea,
+.smart-search-input,
+.ep-search-input,
+.ev-input,
+.ev-form-input,
+.ev-chatbox-input,
+.ev-form-group input,
+.ev-form-group select,
+.ev-form-group textarea,
+.fi,
+.adv-select,
+.adv-date-pill,
+.ev-search-bar input,
+.ev-filter-select,
+.ev-otp-digit {
+  font-size: 16px !important;
+}
+
+/* Momentum scrolling for horizontal containers */
+.ev-slider-track,
+.category-scroller,
+.ev-table-wrap,
+.ev-chatbox-messages {
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* ══════════════════════════════════════════
+   2. TABLET BREAKPOINT (max-width: 768px)
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* ── 2a. iOS VIEWPORT FIXES ── */
+  .hero-wrapper {
+    min-height: auto;
+    padding-top: 80px;
+    padding-bottom: 40px;
+  }
+  .ev-main {
+    min-height: calc(100dvh - var(--ev-header-h));
+  }
+  .ev-chatbox {
+    max-height: calc(100dvh - 120px);
+  }
+  .events-page-body {
+    min-height: 50dvh;
+  }
+
+  /* ── 2b. IMAGE LEGIBILITY — Scrim System ── */
+  /* Event poster cards: aggressive scrim */
+  .event-poster-card .poster-overlay {
+    padding: 32px 16px 14px;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.88) 0%,
+      rgba(0,0,0,0.6) 50%,
+      rgba(0,0,0,0.15) 80%,
+      transparent 100%
+    ) !important;
+  }
+  .event-poster-card .poster-title {
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.4);
+    font-size: 0.95rem;
+  }
+  .event-poster-card .poster-meta {
+    text-shadow: 0 1px 6px rgba(0,0,0,0.7);
+  }
+
+  /* Role cards: heavy scrim + blur */
+  .ev-role-label {
+    padding: 20px 16px 16px;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.9) 0%,
+      rgba(0,0,0,0.55) 60%,
+      transparent 100%
+    ) !important;
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+  }
+
+  /* Event card image overlay — stronger gradient */
+  .event-card-image::after,
+  .ep-card-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 70%;
+    background: linear-gradient(
+      to top,
+      var(--bg-card, #18181b) 8%,
+      rgba(0,0,0,0.2) 60%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Card badges — stronger backdrop */
+  .event-card-badge,
+  .ep-card-badge,
+  .poster-badge {
+    background: rgba(0,0,0,0.75) !important;
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    padding: 7px 14px;
+    font-size: 0.72rem;
+  }
+
+  /* ── 2c. TOUCH TARGETS — 44px Minimum ── */
+  .btn-sm {
+    padding: 10px 18px;
+    min-height: 44px;
+    font-size: 0.84rem;
+  }
+  .filter-btn,
+  .ep-time-btn {
+    padding: 11px 20px;
+    min-height: 44px;
+    font-size: 0.84rem;
+  }
+  .cat-pill {
+    padding: 12px 18px;
+    min-height: 44px;
+  }
+  .ep-page-btn {
+    min-width: 44px;
+    height: 44px;
+  }
+  .mobile-menu .close-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+  }
+  .ev-quick-btn {
+    padding: 10px 16px;
+    min-height: 44px;
+    font-size: 0.78rem;
+  }
+  .nav-toggle {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px;
+  }
+  .theme-toggle {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .search-clear-btn,
+  .ep-clear-btn {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+  }
+  /* Checkbox/radio touch targets */
+  .ev-terms-label input[type="checkbox"],
+  .ev-remember input[type="checkbox"],
+  .chk,
+  .ev-radio,
+  .ce-radio input[type="radio"] {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+  }
+  /* Increase gap to prevent fat-finger errors */
+  .filters {
+    gap: 10px;
+  }
+  .adv-filters-inline,
+  .ep-filters-row {
+    gap: 10px;
+  }
+  .ev-quick-replies {
+    gap: 8px;
+  }
+  .footer-links {
+    gap: 16px;
+  }
+
+  /* ── 2d. COMPONENT RESTRUCTURING ── */
+
+  /* Tables → horizontal scroll with visible hint */
+  .ev-table-wrap {
+    position: relative;
+    margin: 0 -16px;
+    padding: 0 16px;
+    border-radius: 0;
+  }
+  .ev-table-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(to left, var(--ev-white, #fff), transparent);
+    pointer-events: none;
+    z-index: 2;
+    border-radius: 0 10px 10px 0;
+  }
+
+  /* Mobile menu — full-screen with safe areas */
+  .mobile-menu {
+    background: var(--bg-primary, #09090b);
+    -webkit-backdrop-filter: blur(40px) saturate(1.8);
+    backdrop-filter: blur(40px) saturate(1.8);
+    justify-content: flex-start;
+    padding-top: calc(80px + env(safe-area-inset-top, 0px));
+    gap: 4px;
+    overflow-y: auto;
+  }
+  .mobile-menu a {
+    font-size: 1.1rem;
+    padding: 14px 32px;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Auth form layout */
+  .ev-fg-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* Footer collapse */
+  .footer-grid {
+    grid-template-columns: 1fr !important;
+    gap: 28px;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    gap: 14px;
+    text-align: center;
+  }
+
+  /* ── 2e. VISUAL HIERARCHY & SPACING ── */
+  .section {
+    padding: 48px 0;
+  }
+  .container {
+    padding: 0 16px;
+  }
+  .section-header {
+    margin-bottom: 28px;
+  }
+  .section-header h2 {
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
+  }
+  .section-desc {
+    font-size: 0.88rem;
+  }
+  .events-page-hero {
+    padding: 90px 0 32px;
+  }
+  .events-hero-content h1 {
+    font-size: clamp(1.5rem, 5.5vw, 2rem) !important;
+  }
+
+  /* Hero content spacing */
+  .hero-content h1 {
+    font-size: clamp(1.6rem, 5vw, 2.2rem);
+    margin-bottom: 16px;
+  }
+  .hero-content p {
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    line-height: 1.7;
+  }
+  .hero-stats {
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  /* Reduce card body padding */
+  .event-card-body,
+  .ep-card-body {
+    padding: 16px;
+  }
+  .step-card {
+    padding: 22px;
+  }
+  .security-card {
+    padding: 22px;
+  }
+
+  /* CTA sections */
+  .cta-section {
+    padding: 60px 0;
+  }
+  .ep-cta-banner {
+    padding: 48px 16px;
+  }
+
+  /* Footer padding */
+  .footer {
+    padding: 48px 0 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Dashboard modal — bottom sheet on mobile */
+  .ev-modal {
+    border-radius: 20px 20px 0 0;
+    max-height: calc(100dvh - 40px);
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Contact form */
+  .ev-contact-grid {
+    grid-template-columns: 1fr;
+  }
+  .ev-contact-info-panel,
+  .ev-contact-form-wrap {
+    padding: 28px 20px;
+  }
+  .ev-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* Stats bar */
+  .ev-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  /* Slider arrows — larger on mobile for touch */
+  .ev-slider-arrow {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Search bar */
+  .smart-search-bar,
+  .ep-search-bar {
+    border-radius: 14px;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  /* About grid */
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .about-features {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Auth pages */
+  .auth-page {
+    min-height: 100dvh;
+    padding: 1.5rem 1rem;
+    padding-top: calc(1.5rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  .auth-box {
+    padding: 24px 20px;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   3. SMALL MOBILE BREAKPOINT (max-width: 480px)
+   ══════════════════════════════════════════ */
+@media (max-width: 480px) {
+
+  /* ── 3a. iOS FIXES ── */
+  .ev-chatbox {
+    width: calc(100vw - 16px);
+    right: 8px;
+    bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+    height: calc(100dvh - 110px);
+    max-height: none;
+    border-radius: 16px;
+  }
+  .ev-chatbox-footer {
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* ── 3b. IMAGE LEGIBILITY — Maximum Aggression ── */
+  .event-poster-card .poster-overlay {
+    padding: 36px 14px 12px;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.92) 0%,
+      rgba(0,0,0,0.7) 45%,
+      rgba(0,0,0,0.25) 75%,
+      transparent 100%
+    ) !important;
+  }
+  .event-poster-card .poster-title {
+    font-size: 0.88rem;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.9), 0 0 30px rgba(0,0,0,0.5);
+  }
+  .ev-role-label {
+    font-size: 0.82rem;
+    padding: 18px 14px 14px;
+    background: linear-gradient(
+      to top,
+      rgba(0,0,0,0.92) 0%,
+      rgba(0,0,0,0.6) 55%,
+      transparent 100%
+    ) !important;
+  }
+
+  /* Hero overlay — stronger for small screens */
+  .hero-slideshow::after {
+    background: linear-gradient(
+      to bottom,
+      rgba(2,2,2,0.75) 0%,
+      rgba(2,2,2,0.9) 100%
+    );
+  }
+
+  /* ── 3c. TOUCH TARGETS — Extra Padding ── */
+  .filter-btn,
+  .ep-time-btn {
+    padding: 12px 16px;
+    min-height: 44px;
+    font-size: 0.8rem;
+  }
+  .cat-pill {
+    padding: 11px 14px;
+    min-height: 44px;
+    font-size: 0.78rem;
+  }
+  .ep-page-btn {
+    min-width: 44px;
+    height: 44px;
+    font-size: 0.88rem;
+  }
+  .ev-slider-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* ── 3d. COMPONENT RESTRUCTURING ── */
+  /* Event grid — force single column, prevent overflow */
+  .events-grid,
+  .ep-events-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  /* Steps grid */
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  /* Security grid */
+  .security-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Poster cards — fit viewport */
+  .ev-slider-track > .event-poster-card {
+    flex: 0 0 calc(100vw - 48px);
+    min-width: calc(100vw - 48px);
+    height: 200px;
+    border-radius: 14px;
+  }
+
+  /* List view cards — stack vertically */
+  .ep-events-grid.list-view .ep-event-card {
+    grid-template-columns: 1fr;
+  }
+  .ep-events-grid.list-view .ep-card-image {
+    height: 180px;
+  }
+
+  /* Roles grid */
+  .ev-roles-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  /* Trust badges */
+  .trust-badges {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px;
+  }
+
+  /* Chart grid */
+  .ev-chart-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* Stat grid */
+  .ev-stat-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px;
+  }
+
+  /* Seating chart */
+  .seating-chart-container {
+    height: 280px;
+  }
+  .seating-selection-bar {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  .seating-legend {
+    gap: 6px;
+  }
+  .seating-legend-item {
+    padding: 6px 10px;
+    font-size: 0.72rem;
+  }
+
+  /* ── 3e. VISUAL HIERARCHY & SPACING ── */
+  .section {
+    padding: 36px 0;
+  }
+  .container {
+    padding: 0 14px;
+  }
+  .section-header {
+    margin-bottom: 22px;
+  }
+  .section-header h2 {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+  }
+
+  .events-page-hero {
+    padding: 80px 0 24px;
+  }
+  .events-hero-content h1 {
+    font-size: clamp(1.3rem, 6vw, 1.6rem) !important;
+  }
+  .events-stats-strip {
+    gap: 8px;
+  }
+  .events-stat-chip {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+  }
+
+  /* Hero */
+  .hero-content h1 {
+    font-size: clamp(1.4rem, 6vw, 1.8rem);
+    line-height: 1.25;
+  }
+  .hero-content p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+  .hero-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .hero-buttons .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
+  .hero-stat .number {
+    font-size: 1.3rem;
+  }
+  .hero-stat .label {
+    font-size: 0.72rem;
+  }
+
+  /* Landing hero */
+  .ev-hero-text h1 {
+    font-size: clamp(1.4rem, 6vw, 1.65rem) !important;
+    line-height: 1.25 !important;
+  }
+  .ev-hero-desc {
+    font-size: 0.85rem;
+  }
+  .ev-btn-create,
+  .ev-btn-explore {
+    padding: 14px 24px;
+    font-size: 0.9rem;
+    min-height: 48px;
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+  .ev-hero-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  /* Card images */
+  .event-card-image,
+  .ep-card-image {
+    height: 170px;
+  }
+
+  /* Card body */
+  .event-card-body,
+  .ep-card-body {
+    padding: 14px;
+  }
+  .event-card-body h3,
+  .ep-card-body h3 {
+    font-size: 1.05rem;
+  }
+
+  /* CTA */
+  .cta-section {
+    padding: 48px 0;
+  }
+  .cta-section h2 {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+  }
+  .ep-cta-banner {
+    padding: 36px 14px;
+  }
+  .ep-cta-banner h2 {
+    font-size: clamp(1.2rem, 5vw, 1.5rem);
+  }
+
+  /* Footer */
+  .footer {
+    padding: 36px 0 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  .footer-grid {
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+
+  /* Auth pages */
+  .auth-page {
+    padding: 1rem 0.75rem;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+  .auth-box {
+    padding: 20px 16px;
+    border-radius: 14px;
+  }
+  .auth-wrap {
+    max-width: 100%;
+  }
+
+  /* Dashboard welcome */
+  .ev-welcome {
+    padding: 18px 16px;
+    border-radius: 12px;
+  }
+  .ev-welcome h2 {
+    font-size: 1.1rem;
+  }
+  .ev-welcome-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .ev-welcome-actions .ev-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* Dashboard main */
+  .ev-main {
+    padding: 16px 12px;
+  }
+  .ev-card {
+    padding: 18px 14px;
+    border-radius: 12px;
+  }
+
+  /* Map */
+  .ed-map-preview,
+  .ce-map-preview {
+    height: 200px;
+  }
+  .ed-map-bar,
+  .ce-map-address-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .ed-map-directions-btn,
+  .ce-map-open-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  /* Scroll hint */
+  .scroll-hint {
+    bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Partners */
+  .ev-partners-track {
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .ev-partner-logo {
+    height: 26px;
+  }
+
+  /* Trusted pills */
+  .ev-trusted-track {
+    gap: 6px;
+  }
+  .ev-trusted-pill {
+    padding: 6px 10px;
+    min-height: 34px;
+    border-radius: 8px;
+  }
+
+  /* Contact */
+  .ev-contact-section {
+    padding: 36px 0 48px;
+  }
+  .ev-contact-info-panel,
+  .ev-contact-form-wrap {
+    padding: 24px 16px;
+  }
+  .ev-form-submit {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+  }
+
+  /* Search filters inline */
+  .adv-filters-inline,
+  .ep-filters-row {
+    gap: 8px;
+  }
+  .adv-pill-select .adv-select,
+  .ep-filter-select select {
+    padding: 10px 30px 10px 12px;
+    min-height: 44px;
+    font-size: 16px !important;
+  }
+  .adv-date-pill {
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+  .adv-reset-pill,
+  .ep-reset-btn {
+    min-height: 44px;
+    padding: 10px 18px;
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   4. DARK MODE TABLE SCROLL HINT FIX
+   ══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  body.ev-dash[data-theme="dark"] .ev-table-wrap::after {
+    background: linear-gradient(to left, var(--ev-white, #1a1a22), transparent);
+  }
+}
+
+
+/* ══════════════════════════════════════════
+   5. LANDSCAPE PHONE FIX
+   ══════════════════════════════════════════ */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-wrapper {
+    min-height: auto;
+    padding: 80px 0 32px;
+  }
+  .mobile-menu {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  }
+  .mobile-menu a {
+    font-size: 0.95rem;
+    padding: 10px 20px;
+  }
+}
