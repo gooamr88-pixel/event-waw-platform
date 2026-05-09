@@ -2640,7 +2640,7 @@ button { cursor: pointer; }
 
 /* Theme Logos */
 .nav-logo img {
-  height: 40px;
+  height: 55px;
   width: auto;
   object-fit: contain;
 }
@@ -2659,7 +2659,7 @@ html[data-theme="light"] .logo-light-theme {
 
 /* Footer Logo */
 .footer-logo-img {
-  height: 50px;
+  height: 75px;
   width: auto;
   object-fit: contain;
   transition: filter 0.3s ease;
