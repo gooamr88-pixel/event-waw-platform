@@ -3,7 +3,7 @@
    PWA offline support for Scanner
    =================================== */
 
-const CACHE_NAME = 'event-waw-v1';
+const CACHE_NAME = 'eventsli-v1';
 const ASSETS_TO_CACHE = [
   '/scanner.html',
   '/css/styles.css',

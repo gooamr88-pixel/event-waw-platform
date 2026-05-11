@@ -9,6 +9,8 @@
 const ALLOWED_ORIGINS = [
   'https://eventsli.com',
   'https://www.eventsli.com',
+  'https://eventwaw.com',
+  'https://www.eventwaw.com',
   'https://event-waw-platform.vercel.app',  // Keep during DNS transition; remove post-launch
   'http://localhost:3000',
   'http://localhost:5173',
