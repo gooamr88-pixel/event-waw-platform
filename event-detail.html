@@ -511,7 +511,7 @@
   <script type="module">
     import { supabase, getCurrentUser, resolveImageUrl } from './src/lib/supabase.js';
     import { getEvent, createCheckout, createGuestCheckout, createSeatedCheckout, createGuestSeatedCheckout } from './src/lib/events.js';
-    import { initSeatingUI } from './src/lib/seating-ui.js';
+    import { initSeatingUI } from './src/lib/seating-ui.js?v=2';
     import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
