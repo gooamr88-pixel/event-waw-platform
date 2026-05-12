@@ -1,9 +1,9 @@
 /* ===================================
    EVENTSLI - Interactive Seating Chart Engine
-   SVG-based renderer with panzoom (3.4KB)
+   SVG-based renderer with @panzoom/panzoom (4.6KB)
    =================================== */
 
-import panzoomModule from 'https://esm.sh/panzoom@9?cjs';
+import Panzoom from 'https://esm.sh/@panzoom/panzoom@4';
 import { supabase } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 
@@ -215,8 +215,12 @@ export class SeatingChart {
    */
   destroy() {
     if (this.panzoomInstance) {
-      this.panzoomInstance.dispose();
+      this.panzoomInstance.destroy();
       this.panzoomInstance = null;
+    }
+    if (this._wheelHandler && this.container) {
+      this.container.removeEventListener('wheel', this._wheelHandler);
+      this._wheelHandler = null;
     }
     if (this.pollInterval) {
       clearInterval(this.pollInterval);
@@ -366,10 +370,20 @@ export class SeatingChart {
       svg.appendChild(sectionGroup);
     }
 
+    // Wrap all SVG content in a <g> for panzoom to transform
+    const sceneGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    sceneGroup.setAttribute('id', 'seating-scene');
+    // Move all children into the scene group
+    while (svg.firstChild) {
+      sceneGroup.appendChild(svg.firstChild);
+    }
+    svg.appendChild(sceneGroup);
+
     // Mount
     this.container.textContent = '';
     this.container.appendChild(svg);
     this.svgEl = svg;
+    this.sceneEl = sceneGroup;
   }
 
   _findSeatRecord(sectionKey, rowLabel, seatNumber) {
@@ -407,32 +421,34 @@ export class SeatingChart {
   // ====================================
 
   _initPanzoom() {
-    if (!this.svgEl) return;
+    if (!this.sceneEl) return;
 
     try {
-      // Robustly unwrap the panzoom function from ESM/CJS wrapper
-      let initPz = panzoomModule;
-      if (typeof initPz !== 'function') initPz = initPz?.default;
-      if (typeof initPz !== 'function') initPz = initPz?.default; // double-wrapped
-      if (typeof initPz !== 'function') {
-        console.error('panzoom: could not resolve callable export, got:', panzoomModule);
+      // Resolve the Panzoom constructor (handle ESM default wrapping)
+      const PzInit = typeof Panzoom === 'function' ? Panzoom : Panzoom?.default;
+      if (typeof PzInit !== 'function') {
+        console.error('Panzoom: could not resolve callable export, got:', Panzoom);
         return;
       }
 
-      this.panzoomInstance = initPz(this.svgEl, {
-        maxZoom: 8,
-        minZoom: 0.3,
-        smoothScroll: false,
-        zoomDoubleClickSpeed: 1,
-        // Bounds to prevent losing the map
-        bounds: true,
-        boundsPadding: 0.2,
+      // Initialize on the <g> scene group inside the SVG
+      this.panzoomInstance = PzInit(this.sceneEl, {
+        maxScale: 8,
+        minScale: 0.3,
+        step: 0.15,
+        contain: 'outside',
+        cursor: 'grab',
+        canvas: true,
       });
+
+      // Register wheel-to-zoom on the SVG's parent container
+      this._wheelHandler = this.panzoomInstance.zoomWithWheel.bind(this.panzoomInstance);
+      this.container.addEventListener('wheel', this._wheelHandler, { passive: false });
 
       // Add zoom controls
       this._renderZoomControls();
     } catch (err) {
-      console.error('Seating chart init failed, using GA fallback:', err);
+      console.error('Seating chart panzoom init failed:', err);
     }
   }
 
@@ -453,15 +469,12 @@ export class SeatingChart {
 
     controls.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-action]');
-      if (!btn) return;
+      if (!btn || !this.panzoomInstance) return;
       const action = btn.dataset.action;
-      const rect = this.svgEl.getBoundingClientRect();
-      const cx = rect.width / 2;
-      const cy = rect.height / 2;
 
-      if (action === 'in') this.panzoomInstance.smoothZoom(cx, cy, 1.5);
-      else if (action === 'out') this.panzoomInstance.smoothZoom(cx, cy, 0.67);
-      else if (action === 'reset') { this.panzoomInstance.moveTo(0, 0); this.panzoomInstance?.zoomAbs(0, 0, 1); }
+      if (action === 'in') this.panzoomInstance.zoomIn();
+      else if (action === 'out') this.panzoomInstance.zoomOut();
+      else if (action === 'reset') this.panzoomInstance.reset();
     });
 
     this.container.appendChild(controls);
