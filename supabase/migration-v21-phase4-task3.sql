@@ -140,11 +140,11 @@ BEGIN
   FROM seats s
   WHERE s.id = ANY(p_seat_ids)
     AND s.status = 'available'
-    AND s.tier_id = p_tier_id
+    AND s.ticket_tier_id = p_tier_id
   FOR UPDATE SKIP LOCKED;
 
   -- Check we got all the seats we asked for
-  IF (SELECT COUNT(*) FROM seats WHERE id = ANY(p_seat_ids) AND status = 'available' AND tier_id = p_tier_id) != array_length(p_seat_ids, 1) THEN
+  IF (SELECT COUNT(*) FROM seats WHERE id = ANY(p_seat_ids) AND status = 'available' AND ticket_tier_id = p_tier_id) != array_length(p_seat_ids, 1) THEN
     RAISE EXCEPTION 'One or more seats are no longer available';
   END IF;
 
@@ -228,10 +228,10 @@ BEGIN
   FROM seats s
   WHERE s.id = ANY(p_seat_ids)
     AND s.status = 'available'
-    AND s.tier_id = p_tier_id
+    AND s.ticket_tier_id = p_tier_id
   FOR UPDATE SKIP LOCKED;
 
-  IF (SELECT COUNT(*) FROM seats WHERE id = ANY(p_seat_ids) AND status = 'available' AND tier_id = p_tier_id) != array_length(p_seat_ids, 1) THEN
+  IF (SELECT COUNT(*) FROM seats WHERE id = ANY(p_seat_ids) AND status = 'available' AND ticket_tier_id = p_tier_id) != array_length(p_seat_ids, 1) THEN
     RAISE EXCEPTION 'One or more seats are no longer available';
   END IF;
 
