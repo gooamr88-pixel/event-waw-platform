@@ -95,8 +95,11 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || 'Failed to create checkout');
+    const errText = await response.text();
+    console.error('Checkout API Error:', response.status, errText);
+    let err;
+    try { err = JSON.parse(errText); } catch(e) {}
+    throw new Error(err?.error || errText || 'Failed to create checkout');
   }
 
   return response.json();
@@ -130,8 +133,11 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || 'Failed to create guest checkout');
+    const errText = await response.text();
+    console.error('Guest Checkout API Error:', response.status, errText);
+    let err;
+    try { err = JSON.parse(errText); } catch(e) {}
+    throw new Error(err?.error || errText || 'Failed to create guest checkout');
   }
 
   return response.json();
