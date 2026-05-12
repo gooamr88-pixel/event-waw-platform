@@ -94,8 +94,17 @@ export function getCurrentTheme() {
 export function initNavScroll() {
   const nav = document.querySelector('.navbar');
   if (!nav) return;
-  const check = () => nav.classList.toggle('scrolled', window.scrollY > 50);
-  window.addEventListener('scroll', check, { passive: true });
+  let ticking = false;
+  const check = () => {
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      ticking = true;
+      requestAnimationFrame(check);
+    }
+  }, { passive: true });
   check();
 }
 
@@ -134,12 +143,14 @@ export function initPasswordToggles() {
 
 export function initParticles() {
   document.querySelectorAll('.particles').forEach(c => {
+    const frag = document.createDocumentFragment();
     for (let i = 0; i < 20; i++) {
       const p = document.createElement('div');
       p.className = 'particle';
       const s = Math.random() * 2.5 + 1;
       p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random() * 100}%;bottom:-5%;animation-duration:${Math.random() * 16 + 10}s;animation-delay:${Math.random() * 12}s;`;
-      c.appendChild(p);
+      frag.appendChild(p);
     }
+    c.appendChild(frag);
   });
 }

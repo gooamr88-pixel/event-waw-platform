@@ -238,6 +238,23 @@
 :focus-visible {
   outline: var(--es-focus-ring);
   outline-offset: var(--es-focus-ring-offset);
+  transition: outline-offset 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Elevated focus for buttons and cards */
+.btn:focus-visible, .ev-btn:focus-visible,
+.ep-event-card:focus-visible, .event-card:focus-visible,
+.filter-btn:focus-visible, .cat-pill:focus-visible,
+.ep-time-btn:focus-visible, .ep-page-btn:focus-visible {
+  outline-offset: 4px;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+}
+
+/* Suppress focus ring on mouse interaction for inputs */
+.fi:focus:not(:focus-visible),
+.ev-form-input:focus:not(:focus-visible),
+.ev-input:focus:not(:focus-visible) {
+  outline: none;
 }
 
 /* ── Suppress the old outline:none that was killing accessibility ──
@@ -263,4 +280,26 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+
+/* ══════════════════════════════════
+   10. PREMIUM INTERACTION CURVES
+   ══════════════════════════════════
+
+   Spring-overshoot for card lifts.
+   Snappy press-down for buttons.
+   ══════════════════════════════════ */
+
+/* Card lift: overshoot for tactile feel */
+.event-card, .ep-event-card, .event-poster-card,
+.step-card, .security-card, .trust-badge, .ev-role-card {
+  transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* Button press: snappy with micro-bounce */
+.btn:active, .ev-btn:active, .ev-btn-create:active,
+.ev-form-submit:active, .ep-cta-btn:active {
+  transition-duration: 80ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }

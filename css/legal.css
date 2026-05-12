@@ -3,7 +3,7 @@
    Terms, Privacy, Merchant Agreement
    ═══════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+/* PERF: @import moved to <link> in HTML <head> for non-blocking font load */
 
 .legal-page {
   min-height: 100vh;

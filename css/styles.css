@@ -6,7 +6,7 @@
    See css/tokens.css for the unified token system.
    ═══════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800;900&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap');
+/* PERF: @import moved to <link> in HTML <head> for non-blocking font load */
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 
@@ -407,7 +407,7 @@ button { cursor: pointer; }
   -webkit-backdrop-filter: blur(20px) saturate(1.6);
   border: 1px solid var(--border-primary);
   box-shadow: var(--nav-shadow);
-  will-change: background, box-shadow, transform;
+  will-change: transform;
 }
 
 .navbar.scrolled {
@@ -2642,6 +2642,7 @@ button { cursor: pointer; }
 .nav-logo img {
   height: 45px;
   width: auto;
+  aspect-ratio: auto 150 / 45;
   object-fit: contain;
 }
 html:not([data-theme="light"]) .logo-light-theme {
@@ -2661,6 +2662,7 @@ html[data-theme="light"] .logo-light-theme {
 .footer-logo-img {
   height: 60px;
   width: auto;
+  aspect-ratio: auto 200 / 60;
   object-fit: contain;
   transition: filter 0.3s ease;
 }
