@@ -50,19 +50,171 @@
 </head>
 <body class="eveenty-landing cms-loading">
   <style>
-    /* Prevent FOUC for CMS content */
-    body.cms-loading .ev-hero-text h1,
-    body.cms-loading .ev-hero-text p,
-    body.cms-loading .ev-partners-track,
-    body.cms-loading .ev-stats-grid {
-      opacity: 0;
-      transform: translateY(10px);
+    /* ═══ SKELETON SCREEN — Zero-FOUC CMS Loading Architecture ═══
+       Pattern: Hide ALL hardcoded CMS content from first paint.
+       Show animated skeleton placeholders that match exact layout.
+       On data arrival: crossfade skeletons → real content.
+       Failsafe: auto-reveal after 2.5s if fetch stalls. */
+
+    /* 1. Shimmer animation — available before any external CSS */
+    @keyframes cms-shimmer {
+      0%   { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
     }
-    .ev-hero-text h1,
-    .ev-hero-text p,
-    .ev-partners-track,
-    .ev-stats-grid {
-      transition: opacity 0.4s ease, transform 0.4s ease;
+
+    /* 2. Skeleton base — reusable shimmer surface */
+    .cms-skeleton {
+      background: linear-gradient(
+        90deg,
+        var(--skel-base, rgba(128,128,128,0.08)) 0%,
+        var(--skel-shine, rgba(128,128,128,0.15)) 50%,
+        var(--skel-base, rgba(128,128,128,0.08)) 100%
+      );
+      background-size: 800px 100%;
+      animation: cms-shimmer 1.8s ease-in-out infinite;
+      border-radius: 8px;
+    }
+
+    /* 3. While loading: hide ALL real CMS content, show skeletons */
+    body.cms-loading .ev-hero-text h1,
+    body.cms-loading .ev-hero-text .ev-hero-desc,
+    body.cms-loading .ev-hero-buttons,
+    body.cms-loading .ev-hero-image .hero-slideshow,
+    body.cms-loading .ev-hero-image > img,
+    body.cms-loading .ev-partners-track .ev-sponsor-item,
+    body.cms-loading .ev-stats-grid .ev-stat-item {
+      opacity: 0 !important;
+      position: absolute !important;
+      pointer-events: none !important;
+    }
+
+    /* 4. Skeleton placeholders — injected via JS, exact dimensions */
+    .cms-skel-heading {
+      height: 3.2rem;
+      width: 85%;
+      margin-bottom: 12px;
+    }
+    .cms-skel-heading-sm {
+      height: 2.8rem;
+      width: 55%;
+    }
+    .cms-skel-desc {
+      height: 0.9rem;
+      width: 90%;
+      margin-top: 20px;
+    }
+    .cms-skel-desc-sm {
+      height: 0.9rem;
+      width: 70%;
+      margin-top: 8px;
+    }
+    .cms-skel-desc-xs {
+      height: 0.9rem;
+      width: 50%;
+      margin-top: 8px;
+      margin-bottom: 32px;
+    }
+    .cms-skel-btn-group {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .cms-skel-btn {
+      height: 48px;
+      width: 160px;
+      border-radius: 10px;
+    }
+    .cms-skel-btn-outline {
+      height: 48px;
+      width: 150px;
+      border-radius: 10px;
+    }
+    .cms-skel-image {
+      width: 100%;
+      max-width: 520px;
+      aspect-ratio: 4/5;
+      border-radius: 20px;
+      margin: 0 auto;
+    }
+    .cms-skel-stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 40px;
+      text-align: center;
+    }
+    .cms-skel-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .cms-skel-stat-num {
+      height: 2.2rem;
+      width: 80px;
+      border-radius: 6px;
+    }
+    .cms-skel-stat-label {
+      height: 0.75rem;
+      width: 120px;
+      border-radius: 4px;
+    }
+    .cms-skel-sponsor-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 0 8px;
+    }
+    .cms-skel-sponsor {
+      height: 48px;
+      width: 100px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+
+    /* 5. Reveal transition — staggered cascade when .cms-ready is applied */
+    body.cms-ready .ev-hero-text h1,
+    body.cms-ready .ev-hero-text .ev-hero-desc,
+    body.cms-ready .ev-hero-buttons,
+    body.cms-ready .ev-hero-image,
+    body.cms-ready .ev-partners-track .ev-sponsor-item,
+    body.cms-ready .ev-stats-grid .ev-stat-item {
+      animation: cms-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+    body.cms-ready .ev-hero-text h1        { animation-delay: 0.00s; }
+    body.cms-ready .ev-hero-text .ev-hero-desc { animation-delay: 0.06s; }
+    body.cms-ready .ev-hero-buttons         { animation-delay: 0.12s; }
+    body.cms-ready .ev-hero-image            { animation-delay: 0.08s; }
+    body.cms-ready .ev-partners-track .ev-sponsor-item { animation-delay: 0.15s; }
+    body.cms-ready .ev-stats-grid .ev-stat-item { animation-delay: 0.18s; }
+
+    @keyframes cms-reveal {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* 6. Hide skeletons once content is ready */
+    body.cms-ready .cms-skeleton-group {
+      display: none !important;
+    }
+
+    /* 7. Mobile skeleton adjustments */
+    @media (max-width: 768px) {
+      .cms-skel-stat-row { grid-template-columns: 1fr; gap: 20px; }
+      .cms-skel-sponsor-row { flex-wrap: wrap; justify-content: center; }
+      .cms-skel-image { max-width: 80%; }
+      .cms-skel-heading { width: 90%; margin-left: auto; margin-right: auto; }
+      .cms-skel-heading-sm { width: 65%; margin-left: auto; margin-right: auto; }
+      .cms-skel-desc,
+      .cms-skel-desc-sm,
+      .cms-skel-desc-xs { margin-left: auto; margin-right: auto; }
+      .cms-skel-btn-group { justify-content: center; }
     }
   </style>
   <!-- Skip link for keyboard accessibility -->
@@ -136,7 +288,20 @@
   <!-- â•â•â•â•â•â• HERO â€" Split Layout â•â•â•â•â•â• -->
   <main class="hero-wrapper" id="main-content">
     <div class="ev-hero-split">
-      <div class="ev-hero-text">
+      <div class="ev-hero-text" style="position:relative;">
+        <!-- Skeleton: Hero Text -->
+        <div class="cms-skeleton-group" aria-hidden="true">
+          <div class="cms-skeleton cms-skel-heading"></div>
+          <div class="cms-skeleton cms-skel-heading-sm"></div>
+          <div class="cms-skeleton cms-skel-desc"></div>
+          <div class="cms-skeleton cms-skel-desc-sm"></div>
+          <div class="cms-skeleton cms-skel-desc-xs"></div>
+          <div class="cms-skel-btn-group">
+            <div class="cms-skeleton cms-skel-btn"></div>
+            <div class="cms-skeleton cms-skel-btn-outline"></div>
+          </div>
+        </div>
+        <!-- Real CMS content -->
         <h1>
           Discover <span class="ev-ampersand">&</span> Create Events<br>
           <span class="ev-highlight">Effortlessly</span>
@@ -153,7 +318,12 @@
           <a href="#events" class="ev-btn-explore" id="hero-cta">Explore Events</a>
         </div>
       </div>
-      <div class="ev-hero-image">
+      <div class="ev-hero-image" style="position:relative;">
+        <!-- Skeleton: Hero Image -->
+        <div class="cms-skeleton-group" aria-hidden="true">
+          <div class="cms-skeleton cms-skel-image"></div>
+        </div>
+        <!-- Real CMS content -->
         <div class="hero-slideshow" id="hero-slideshow">
           <div class="hero-slide active">
             <img src="images/event-concert.png" alt="Concert events on Eventsli" loading="eager" />
@@ -236,7 +406,14 @@
   <!-- â•â•â•â•â•â• STATS BAR â•â•â•â•â•â• -->
   <section class="ev-stats-bar">
     <div class="container">
-      <div class="ev-stats-grid">
+      <div class="ev-stats-grid" style="position:relative;">
+        <!-- Skeleton: Stats -->
+        <div class="cms-skeleton-group cms-skel-stat-row" aria-hidden="true">
+          <div class="cms-skel-stat"><div class="cms-skeleton cms-skel-stat-num"></div><div class="cms-skeleton cms-skel-stat-label"></div></div>
+          <div class="cms-skel-stat"><div class="cms-skeleton cms-skel-stat-num"></div><div class="cms-skeleton cms-skel-stat-label"></div></div>
+          <div class="cms-skel-stat"><div class="cms-skeleton cms-skel-stat-num"></div><div class="cms-skeleton cms-skel-stat-label"></div></div>
+        </div>
+        <!-- Real CMS content -->
         <div class="ev-stat-item">
           <div class="ev-stat-number">+50</div>
           <div class="ev-stat-label">
@@ -301,7 +478,18 @@
 
         <h2>Our <span class="gold">Sponsors</span></h2>
       </div>
-      <div class="ev-partners-track">
+      <div class="ev-partners-track" style="position:relative;">
+        <!-- Skeleton: Sponsors -->
+        <div class="cms-skeleton-group cms-skel-sponsor-row" aria-hidden="true">
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+          <div class="cms-skeleton cms-skel-sponsor"></div>
+        </div>
+        <!-- Real CMS content -->
         <div class="ev-sponsor-item"><img src="images/sponsor-worldtrade.png" alt="World Trade Centre" class="ev-partner-logo" loading="lazy" /></div>
         <div class="ev-sponsor-item"><img src="images/sponsor-edge.png" alt="EDGE" class="ev-partner-logo" loading="lazy" /></div>
         <div class="ev-sponsor-item"><img src="images/sponsor-cafe.png" alt="Cafe" class="ev-partner-logo" loading="lazy" /></div>
@@ -661,10 +849,11 @@
 
     /* ── CMS: Load dynamic landing page content from platform_settings ── */
     async function loadCMSContent() {
-      // Failsafe: reveal content after 1s max
+      // Failsafe: reveal content after 2.5s max
       const failsafeTimer = setTimeout(() => {
         document.body.classList.remove('cms-loading');
-      }, 1000);
+        document.body.classList.add('cms-ready');
+      }, 2500);
 
       try {
         const { data, error } = await supabase
@@ -809,8 +998,14 @@
 
              function updateHeroText(s) {
                if (!heroTextContainer) return;
-               heroTextContainer.style.opacity = '0';
-               heroTextContainer.style.transition = 'opacity 0.3s ease';
+               
+               // Only apply manual fade for slide transitions, not initial load
+               const isInitialLoad = !document.body.classList.contains('cms-ready');
+               if (!isInitialLoad) {
+                 heroTextContainer.style.opacity = '0';
+                 heroTextContainer.style.transition = 'opacity 0.3s ease';
+               }
+
                setTimeout(() => {
                  const h1 = heroTextContainer.querySelector('h1');
                  if (h1 && s.heading_line1) {
@@ -845,8 +1040,10 @@
                      }
                  }
                  
-                 heroTextContainer.style.opacity = '1';
-               }, 300);
+                 if (!isInitialLoad) {
+                   heroTextContainer.style.opacity = '1';
+                 }
+               }, isInitialLoad ? 0 : 300);
              }
           }
         }
@@ -880,7 +1077,11 @@
       } finally {
         clearTimeout(failsafeTimer);
         // Always reveal content, whether DB loaded or fallback used
-        document.body.classList.remove('cms-loading');
+        // Use requestAnimationFrame to ensure DOM paints before triggering CSS animations
+        requestAnimationFrame(() => {
+          document.body.classList.remove('cms-loading');
+          document.body.classList.add('cms-ready');
+        });
       }
     }
 
