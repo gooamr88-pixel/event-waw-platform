@@ -463,7 +463,7 @@
     let chatHistory = [];
     let isSending = false;
 
-    function sanitize(html){const t=document.createElement('template');t.innerHTML=html;const f=t.content;f.querySelectorAll('script,iframe,object,embed').forEach(e=>e.remove());f.querySelectorAll('*').forEach(el=>{for(let i=el.attributes.length-1;i>=0;i--){const a=el.attributes[i];const n=a.name.toLowerCase();const v=a.value.trim().toLowerCase();if(n.startsWith('on')){el.removeAttribute(a.name);continue;}if(/^(javascript|data|vbscript|blob):/i.test(v))el.removeAttribute(a.name);}});return f;}
+    function sanitize(html){const t=document.createElement('template');t.innerHTML=html;const f=t.content;f.querySelectorAll('script,iframe,object,embed').forEach(e=>e.remove());f.querySelectorAll('*').forEach(el=>{for(let i=el.attributes.length-1;i>=0;i--){const a=el.attributes[i];const n=a.name.toLowerCase();const v=a.value.trim().toLowerCase();if(n.startsWith('on')){el.removeAttribute(a.name);continue;}if(/^(javascript|vbscript|blob):/i.test(v))el.removeAttribute(a.name);}});return f;}
 
     function addMessage(content, type, isHtml) {
       const wrap = document.createElement('div');

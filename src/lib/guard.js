@@ -152,7 +152,11 @@ export async function protectPage(options = {}) {
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
-      profile = freshProfile || await getCurrentProfile();
+      profile = freshProfile;
+      if (!profile) {
+        // Profile row missing — use getCurrentProfile's self-healing logic
+        profile = await getCurrentProfile();
+      }
     } else {
       profile = await getCurrentProfile();
     }
@@ -226,7 +230,7 @@ export async function guestOnlyPage(options = {}) {
       const { data: mmData } = await supabase.from('platform_settings').select('value').eq('key', 'maintenance_mode').single();
       if (mmData && (mmData.value === true || mmData.value === 'true') && !isAdminLevel(userRole)) {
         window.location.href = '/maintenance.html';
-        return true;
+        return false;
       }
     } catch (e) { /* ignore */ }
 

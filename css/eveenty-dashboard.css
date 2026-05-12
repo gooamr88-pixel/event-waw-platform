@@ -313,10 +313,13 @@ body.ev-dash::-webkit-scrollbar-thumb:hover{background:#B0B0B0}
 }
 @keyframes evSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 @media(max-width:480px){
-  .ev-stat-grid{grid-template-columns:1fr}
+  .ev-stat-grid{grid-template-columns:repeat(2,1fr)}
   .ev-user-meta{display:none}
   .ev-welcome-actions{flex-direction:column;width:100%}
   .ev-welcome-actions .ev-btn{width:100%;justify-content:center}
+}
+@media(max-width:360px){
+  .ev-stat-grid{grid-template-columns:1fr}
 }
 
 /* ══════ AUTH GUARD OVERLAY ══════ */

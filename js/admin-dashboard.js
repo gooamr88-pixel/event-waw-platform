@@ -154,8 +154,8 @@ function initRevenueChart() {
     data: {
       labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
       datasets: [
-        { label: 'Ticket Sales', data: [120, 190, 300, 250, 400, 450, 500], borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', borderWidth: 2, fill: true, tension: 0.4 },
-        { label: 'Platform Revenue ($)', data: [300, 450, 700, 600, 1000, 1200, 1500], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }
+        { label: 'Ticket Sales (Sample)', data: [120, 190, 300, 250, 400, 450, 500], borderColor: '#059669', backgroundColor: 'rgba(5, 150, 105, 0.1)', borderWidth: 2, fill: true, tension: 0.4 },
+        { label: 'Platform Revenue (Sample)', data: [300, 450, 700, 600, 1000, 1200, 1500], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }
       ]
     },
     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true } } }

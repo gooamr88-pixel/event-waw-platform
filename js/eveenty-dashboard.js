@@ -36,14 +36,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!auth) return;
 
   setupUserInfo(auth);
+  injectAdminBridge(auth);
   setupSidebar();
   setupCreateModal();
   setupSearch();
-  
-  // Sign Out Button (Sidebar)
-  document.getElementById('signout-btn')?.addEventListener('click', async () => {
-    await performSignOut('/login.html');
-  });
+  setupSignOut();
 
   setupApprovalPanel();
   setupPromoPanel();
@@ -57,17 +54,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupProfilePanel();
   setupPromoForm();
   loadPromoCodes();            // Initial load for promos
-  
-  // H-3: click-toggle + aria-expanded
-  const userWrap = document.getElementById('user-wrap');
-  const userDropdown = document.getElementById('user-dropdown');
-  userWrap?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    userDropdown?.classList.toggle('active');
-  });
-  document.addEventListener('click', () => {
-    userDropdown?.classList.remove('active');
-  });
 
   setupGlobalKeyboardManager(); // H-3: Escape key handler
 

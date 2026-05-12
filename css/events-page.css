@@ -343,7 +343,7 @@
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), border-color 0.35s cubic-bezier(0.4,0,0.2,1), box-shadow 0.35s cubic-bezier(0.4,0,0.2,1);
   position: relative;
 }
 .ep-event-card:hover {
@@ -698,7 +698,7 @@
   font-weight: 700;
   font-size: 0.95rem;
   text-decoration: none;
-  transition: all 0.3s;
+  transition: transform 0.3s, box-shadow 0.3s;
   position: relative;
   z-index: 2;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);

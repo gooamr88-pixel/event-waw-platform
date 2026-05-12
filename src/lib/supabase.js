@@ -27,7 +27,12 @@ export const supabase = createClient(
  */
 export async function getCurrentUser() {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error && (error.status === 401 || error.message?.includes('expired') || error.message?.includes('invalid'))) {
+      // Token expired — attempt silent refresh
+      const { data: refreshData } = await supabase.auth.refreshSession();
+      return refreshData?.user || null;
+    }
     return user;
   } catch (e) {
     console.warn('Auth check failed (Supabase not configured?):', e.message);
