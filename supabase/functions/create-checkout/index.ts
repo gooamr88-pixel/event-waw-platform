@@ -91,6 +91,15 @@ serve(async (req) => {
     const totalCents = Math.round(breakdown.total * 100);
     const platformFeeCents = Math.round(breakdown.platform_fee_total * 100);
 
+    // Ensure organizer row exists (auto-heal) so they can request payouts later
+    if (breakdown.organizer_id) {
+      const { error: orgUpsertErr } = await adminClient.from('organizers')
+        .upsert({ user_id: breakdown.organizer_id }, { onConflict: 'user_id' });
+      if (orgUpsertErr) {
+        console.warn('⚠️ Failed to auto-heal organizer row:', orgUpsertErr.message);
+      }
+    }
+
     // Stripe minimum is $0.50 (50 cents)
     if (totalCents > 0 && totalCents < 50) {
       return errorResponse(400, 'Order total is below minimum ($0.50)');

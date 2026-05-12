@@ -139,8 +139,9 @@ serve(async (req) => {
       // Financial snapshot (Phase 2)
       subtotal: parseFloat(metaSubtotal || '0'),
       tax_amount: parseFloat(metaTaxAmount || '0'),
-      tax_rate_snapshot: parseFloat(metaTaxRate || '0'),
-      platform_fee_amount: parseFloat(metaPlatformFee || '0'),
+      // Safely fallback to the raw metadata fields if the mapped variables are missing
+      tax_rate_snapshot: parseFloat(metaTaxRate || session.metadata?.tax_rate_snapshot || session.metadata?.tax_rate || '0'),
+      platform_fee_amount: parseFloat(metaPlatformFee || session.metadata?.platform_fee_amount || session.metadata?.platform_fee || '0'),
     };
 
     if (isGuest) {
