@@ -49,7 +49,7 @@
 .eveenty-landing .nav-links { margin: 0 auto !important; }
 .eveenty-landing .nav-links a {
   color: var(--nav-link) !important; font-weight: 500 !important;
-  font-size: 0.9rem !important; padding: 8px 16px !important;
+  font-size: 0.9rem; padding: 8px 16px;
   transition: color 0.3s !important;
 }
 .eveenty-landing .nav-links a:hover { color: #059669 !important; }
