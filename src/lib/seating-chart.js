@@ -3,7 +3,7 @@
    SVG-based renderer with panzoom (3.4KB)
    =================================== */
 
-import panzoom from 'https://esm.sh/panzoom@9';
+import panzoomModule from 'https://esm.sh/panzoom@9?cjs';
 import { supabase } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 
@@ -234,7 +234,11 @@ export class SeatingChart {
 
   _renderSVG() {
     const layout = this.layout;
-    const canvas = layout.canvas || { width: 1200, height: 800 };
+    const rawCanvas = layout.canvas || {};
+    const canvas = {
+      width: Number(rawCanvas.width) || 1200,
+      height: Number(rawCanvas.height) || 800,
+    };
 
     // Create SVG element
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -245,8 +249,8 @@ export class SeatingChart {
 
     // Background
     const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    bg.setAttribute('width', canvas.width);
-    bg.setAttribute('height', canvas.height);
+    bg.setAttribute('width', String(canvas.width));
+    bg.setAttribute('height', String(canvas.height));
     bg.setAttribute('fill', 'transparent');
     svg.appendChild(bg);
 
@@ -263,17 +267,19 @@ export class SeatingChart {
       const stY = Number(st.y) || 20;
 
       const stageRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      stageRect.setAttribute('x', stX);
-      stageRect.setAttribute('y', stY);
-      stageRect.setAttribute('width', stW);
-      stageRect.setAttribute('height', stH);
+      stageRect.setAttribute('x', String(stX));
+      stageRect.setAttribute('y', String(stY));
+      stageRect.setAttribute('width', String(stW));
+      stageRect.setAttribute('height', String(stH));
       stageRect.setAttribute('rx', '8');
       stageRect.setAttribute('class', 'stage-rect');
       stageGroup.appendChild(stageRect);
 
+      const stageLabelX = stX + stW / 2;
+      const stageLabelY = stY + stH / 2 + 5;
       const stageLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      stageLabel.setAttribute('x', stX + stW / 2);
-      stageLabel.setAttribute('y', stY + stH / 2 + 5);
+      stageLabel.setAttribute('x', String(isFinite(stageLabelX) ? stageLabelX : canvas.width / 2));
+      stageLabel.setAttribute('y', String(isFinite(stageLabelY) ? stageLabelY : 50));
       stageLabel.setAttribute('text-anchor', 'middle');
       stageLabel.setAttribute('class', 'stage-label');
       stageLabel.textContent = st.label || 'STAGE';
@@ -404,8 +410,14 @@ export class SeatingChart {
     if (!this.svgEl) return;
 
     try {
-      // Handle potential ESM .default wrapper
-      const initPz = typeof panzoom === 'function' ? panzoom : panzoom.default;
+      // Robustly unwrap the panzoom function from ESM/CJS wrapper
+      let initPz = panzoomModule;
+      if (typeof initPz !== 'function') initPz = initPz?.default;
+      if (typeof initPz !== 'function') initPz = initPz?.default; // double-wrapped
+      if (typeof initPz !== 'function') {
+        console.error('panzoom: could not resolve callable export, got:', panzoomModule);
+        return;
+      }
 
       this.panzoomInstance = initPz(this.svgEl, {
         maxZoom: 8,
