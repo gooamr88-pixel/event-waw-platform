@@ -887,7 +887,7 @@
             ${desc ? `
               <div class="tier-card-desc" id="desc-${tier.id}">
                 <div class="tier-card-desc-text">${escapeHTML(shortDesc).replace(/\n/g, '<br>')}</div>
-                ${hasMore ? `<button class="ed-see-more" onclick="toggleTierDesc('${tier.id}', this)" data-full="${escapeHTML(desc).replace(/"/g, '&quot;')}">See More</button>` : ''}
+                ${hasMore ? `<button class="ed-see-more" data-action="toggle-desc" data-tier-id="${tier.id}" data-full="${escapeHTML(desc).replace(/"/g, '&quot;')}">See More</button>` : ''}
               </div>
             ` : ''}
             ${!soldOut ? `
@@ -895,13 +895,13 @@
                 <div class="tier-card-qty-wrap">
                   <span style="font-size:0.82rem;color:var(--text-muted);font-weight:500;">Quantity:</span>
                   <div class="tier-qty">
-                    <button onclick="changeQty('${tier.id}', -1)">−</button>
+                    <button data-action="decrease-qty" data-tier-id="${tier.id}">−</button>
                     <span id="qty-${tier.id}">0</span>
-                    <button onclick="changeQty('${tier.id}', 1)">+</button>
+                    <button data-action="increase-qty" data-tier-id="${tier.id}">+</button>
                   </div>
                 </div>
                 <div class="tier-card-actions">
-                  <button class="btn btn-primary btn-sm btn-full" onclick="buyNow('${tier.id}')">Buy now</button>
+                  <button class="btn btn-primary btn-sm btn-full" data-action="buy-now" data-tier-id="${tier.id}">Buy now</button>
                 </div>
               </div>
               <div class="tier-avail-text">${avail} remaining</div>
@@ -909,6 +909,25 @@
           </div>
         `;
       }).join(''));
+
+      // Event delegation for tier card actions (since safeHTML strips inline onclick)
+      list.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-action]');
+        if (!btn) return;
+        
+        const action = btn.dataset.action;
+        const tierId = btn.dataset.tierId;
+        
+        if (action === 'decrease-qty') {
+          window.changeQty(tierId, -1);
+        } else if (action === 'increase-qty') {
+          window.changeQty(tierId, 1);
+        } else if (action === 'buy-now') {
+          window.buyNow(tierId);
+        } else if (action === 'toggle-desc') {
+          window.toggleTierDesc(tierId, btn);
+        }
+      });
 
       // ── WAITLIST FORM: Show when ALL tiers are sold out ──
       if (allSoldOut && eventData) {
