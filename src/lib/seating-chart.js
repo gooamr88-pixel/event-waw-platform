@@ -256,18 +256,24 @@ export class SeatingChart {
       const stageGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       stageGroup.setAttribute('class', 'stage-group');
 
+      // Safely fallback dimensions to prevent NaN/undefined SVG corruption
+      const stW = Number(st.width) || 400;
+      const stH = Number(st.height) || 60;
+      const stX = Number(st.x) || (canvas.width / 2 - stW / 2);
+      const stY = Number(st.y) || 20;
+
       const stageRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-      stageRect.setAttribute('x', st.x);
-      stageRect.setAttribute('y', st.y);
-      stageRect.setAttribute('width', st.width);
-      stageRect.setAttribute('height', st.height);
+      stageRect.setAttribute('x', stX);
+      stageRect.setAttribute('y', stY);
+      stageRect.setAttribute('width', stW);
+      stageRect.setAttribute('height', stH);
       stageRect.setAttribute('rx', '8');
       stageRect.setAttribute('class', 'stage-rect');
       stageGroup.appendChild(stageRect);
 
       const stageLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-      stageLabel.setAttribute('x', st.x + st.width / 2);
-      stageLabel.setAttribute('y', st.y + st.height / 2 + 5);
+      stageLabel.setAttribute('x', stX + stW / 2);
+      stageLabel.setAttribute('y', stY + stH / 2 + 5);
       stageLabel.setAttribute('text-anchor', 'middle');
       stageLabel.setAttribute('class', 'stage-label');
       stageLabel.textContent = st.label || 'STAGE';
@@ -397,18 +403,25 @@ export class SeatingChart {
   _initPanzoom() {
     if (!this.svgEl) return;
 
-    this.panzoomInstance = panzoom(this.svgEl, {
-      maxZoom: 8,
-      minZoom: 0.3,
-      smoothScroll: false,
-      zoomDoubleClickSpeed: 1,
-      // Bounds to prevent losing the map
-      bounds: true,
-      boundsPadding: 0.2,
-    });
+    try {
+      // Handle potential ESM .default wrapper
+      const initPz = typeof panzoom === 'function' ? panzoom : panzoom.default;
 
-    // Add zoom controls
-    this._renderZoomControls();
+      this.panzoomInstance = initPz(this.svgEl, {
+        maxZoom: 8,
+        minZoom: 0.3,
+        smoothScroll: false,
+        zoomDoubleClickSpeed: 1,
+        // Bounds to prevent losing the map
+        bounds: true,
+        boundsPadding: 0.2,
+      });
+
+      // Add zoom controls
+      this._renderZoomControls();
+    } catch (err) {
+      console.error('Seating chart init failed, using GA fallback:', err);
+    }
   }
 
   _renderZoomControls() {
