@@ -41,6 +41,7 @@ export class SeatingChart {
     this.container = containerEl;
     this.eventId = eventId;
     this.onSelectionChange = options.onSelectionChange || (() => {});
+    this.onOrphanWarning = options.onOrphanWarning || null; // Phase 4: orphan seat callback
     this.maxSelectable = options.maxSelectable || 10;
 
     // State
@@ -462,7 +463,15 @@ export class SeatingChart {
 
       // Toggle selection
       if (this.selectedSeats.has(seatId)) {
+        // ── DESELECTION: check if removing creates an orphan ──
         this.selectedSeats.delete(seatId);
+        const orphanCheck = this._checkOrphanSeats(seatId);
+        if (orphanCheck.hasOrphan) {
+          // Revert: put it back
+          this.selectedSeats.add(seatId);
+          this._showOrphanWarning(orphanCheck);
+          return;
+        }
       } else {
         // Check max selectable
         if (this.selectedSeats.size >= this.maxSelectable) {
@@ -475,7 +484,16 @@ export class SeatingChart {
             this.clearSelection();
           }
         }
+
+        // ── SELECTION: check if adding creates an orphan ──
         this.selectedSeats.add(seatId);
+        const orphanCheck = this._checkOrphanSeats(seatId);
+        if (orphanCheck.hasOrphan) {
+          // Revert: remove it
+          this.selectedSeats.delete(seatId);
+          this._showOrphanWarning(orphanCheck);
+          return;
+        }
 
         // Add selection animation
         circle.classList.add('seat-selected-anim');
@@ -625,6 +643,269 @@ export class SeatingChart {
 
     // Notify if selection changed due to stolen seats
     this.onSelectionChange(this.getSelectedSeats());
+  }
+
+  // ====================================
+  // PRIVATE: Orphan Warning UI
+  // Phase 4 Task 2: UX Warning
+  // ====================================
+
+  /**
+   * Show a premium warning toast + highlight orphan seats.
+   * Falls back to built-in UI if no external onOrphanWarning callback.
+   */
+  _showOrphanWarning(orphanCheck) {
+    // Fire external callback if provided
+    if (this.onOrphanWarning) {
+      this.onOrphanWarning(orphanCheck);
+    }
+
+    // Always show built-in visual feedback
+    this._injectOrphanStyles();
+    this._highlightOrphanSeats(orphanCheck.orphanSeats);
+
+    // Remove existing warning if any
+    this.container.querySelector('.ev-orphan-toast')?.remove();
+
+    // Build toast
+    const toast = document.createElement('div');
+    toast.className = 'ev-orphan-toast';
+    toast.setAttribute('role', 'alert');
+
+    const seatLabels = orphanCheck.orphanSeats
+      .map(s => `<strong>Row ${s.row_label}, Seat ${s.seat_number}</strong>`)
+      .join(', ');
+
+    toast.innerHTML = `
+      <div class="ev-orphan-toast__icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="ev-orphan-toast__content">
+        <div class="ev-orphan-toast__title">Isolated Seat Detected</div>
+        <div class="ev-orphan-toast__msg">
+          This would leave ${seatLabels} empty with no adjacent seat.
+          Please select neighboring seats.
+        </div>
+      </div>
+      <button class="ev-orphan-toast__close" aria-label="Dismiss">&times;</button>
+    `;
+
+    // Close button
+    toast.querySelector('.ev-orphan-toast__close').addEventListener('click', () => {
+      toast.classList.add('ev-orphan-toast--exit');
+      setTimeout(() => toast.remove(), 300);
+    });
+
+    this.container.appendChild(toast);
+
+    // Haptic feedback
+    if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
+
+    // Auto-dismiss after 4s
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.classList.add('ev-orphan-toast--exit');
+        setTimeout(() => toast.remove(), 300);
+      }
+    }, 4000);
+  }
+
+  /**
+   * Temporarily highlight orphan seats with red pulse.
+   */
+  _highlightOrphanSeats(orphanSeats) {
+    if (!this.svgEl) return;
+
+    for (const os of orphanSeats) {
+      const circle = this.svgEl.querySelector(`circle[data-seat-id="${os.seat_id}"]`);
+      if (!circle) continue;
+
+      circle.classList.add('seat-orphan-pulse');
+      // Remove after animation
+      setTimeout(() => circle.classList.remove('seat-orphan-pulse'), 2500);
+    }
+  }
+
+  /**
+   * Inject orphan warning CSS once.
+   */
+  _injectOrphanStyles() {
+    if (document.getElementById('ev-orphan-styles')) return;
+
+    const style = document.createElement('style');
+    style.id = 'ev-orphan-styles';
+    style.textContent = `
+      /* ── Orphan Seat Pulse ── */
+      @keyframes seat-orphan-blink {
+        0%, 100% { fill: #ef4444; opacity: 0.9; }
+        50% { fill: #dc2626; opacity: 0.5; }
+      }
+      .seat-orphan-pulse {
+        animation: seat-orphan-blink 0.5s ease-in-out 4 !important;
+        stroke: #ef4444 !important;
+        stroke-width: 3px !important;
+      }
+
+      /* ── Warning Toast ── */
+      .ev-orphan-toast {
+        position: absolute;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%) translateY(0);
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        max-width: 420px;
+        width: calc(100% - 32px);
+        padding: 14px 16px;
+        background: rgba(30, 10, 10, 0.92);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        border-radius: 14px;
+        box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2), 0 0 0 1px rgba(239, 68, 68, 0.1);
+        color: #fca5a5;
+        font-family: var(--ev-font, 'Inter', system-ui, sans-serif);
+        z-index: 1000;
+        animation: ev-orphan-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .ev-orphan-toast--exit {
+        animation: ev-orphan-slide-out 0.3s ease forwards;
+      }
+      @keyframes ev-orphan-slide-in {
+        from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+        to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+      }
+      @keyframes ev-orphan-slide-out {
+        from { opacity: 1; transform: translateX(-50%) translateY(0); }
+        to   { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      }
+      .ev-orphan-toast__icon {
+        flex-shrink: 0;
+        color: #ef4444;
+        margin-top: 2px;
+      }
+      .ev-orphan-toast__content {
+        flex: 1;
+        min-width: 0;
+      }
+      .ev-orphan-toast__title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #fca5a5;
+        margin-bottom: 4px;
+      }
+      .ev-orphan-toast__msg {
+        font-size: 12.5px;
+        color: #f87171;
+        line-height: 1.4;
+      }
+      .ev-orphan-toast__msg strong {
+        color: #fca5a5;
+        font-weight: 600;
+      }
+      .ev-orphan-toast__close {
+        flex-shrink: 0;
+        background: none;
+        border: none;
+        color: #f87171;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 4px;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+      }
+      .ev-orphan-toast__close:hover { opacity: 1; }
+    `;
+    document.head.appendChild(style);
+  }
+
+  // ====================================
+  // PRIVATE: No-Single-Seat (Orphan) Algorithm
+  // Phase 4: BRD Section 22
+  // "منع ترك كرسي مفرد بين مقاعد محجوزة"
+  // ====================================
+
+  /**
+   * Check if the current selection would leave an isolated (orphan) seat
+   * in ANY row affected by the given seat.
+   *
+   * Algorithm:
+   *   1. Find the row of the given seat (section + row_label)
+   *   2. Collect ALL seats in that row, sorted by seat_number
+   *   3. Classify each as "occupied" (sold/reserved/selected) or "empty"
+   *   4. Walk the sorted list looking for single-empty gaps:
+   *      - Empty seat with BOTH neighbors occupied → ORPHAN
+   *      - Empty seat at row edge with inner neighbor occupied → ORPHAN
+   *        (only if it's the ONLY empty seat at that edge)
+   *
+   * @param {string} triggeredSeatId - The seat that was just added/removed
+   * @returns {{ hasOrphan: boolean, orphanSeats: Array, message: string }}
+   */
+  _checkOrphanSeats(triggeredSeatId) {
+    const triggered = this.seatData.get(triggeredSeatId);
+    if (!triggered) return { hasOrphan: false, orphanSeats: [], message: '' };
+
+    // Collect all seats in the same section + row
+    const rowSeats = [];
+    for (const [id, d] of this.seatData) {
+      if (d.section_key === triggered.section_key && d.row_label === triggered.row_label) {
+        rowSeats.push({ id, ...d });
+      }
+    }
+
+    // Sort by seat_number (numeric)
+    rowSeats.sort((a, b) => {
+      const na = parseInt(a.seat_number) || 0;
+      const nb = parseInt(b.seat_number) || 0;
+      return na - nb;
+    });
+
+    if (rowSeats.length < 3) {
+      // A row with ≤2 seats can't have an orphan
+      return { hasOrphan: false, orphanSeats: [], message: '' };
+    }
+
+    // Classify each seat
+    const classified = rowSeats.map(s => ({
+      ...s,
+      isOccupied: s.status === 'sold' || s.status === 'reserved' ||
+                  this.selectedSeats.has(s.id),
+    }));
+
+    // Detect orphans
+    const orphanSeats = [];
+
+    for (let i = 0; i < classified.length; i++) {
+      const seat = classified[i];
+      if (seat.isOccupied) continue; // Only check empty seats
+
+      const leftOccupied = i === 0 ? true : classified[i - 1].isOccupied;
+      const rightOccupied = i === classified.length - 1 ? true : classified[i + 1].isOccupied;
+
+      // Single empty seat with both sides occupied (or at wall) = ORPHAN
+      if (leftOccupied && rightOccupied) {
+        orphanSeats.push({
+          seat_id: seat.id,
+          row_label: seat.row_label,
+          seat_number: seat.seat_number,
+          section_key: seat.section_key,
+        });
+      }
+    }
+
+    if (orphanSeats.length > 0) {
+      const seatLabels = orphanSeats.map(s => `Row ${s.row_label}, Seat ${s.seat_number}`).join('; ');
+      return {
+        hasOrphan: true,
+        orphanSeats,
+        message: `This selection would leave an isolated seat (${seatLabels}). Please select adjacent seats to avoid gaps.`,
+      };
+    }
+
+    return { hasOrphan: false, orphanSeats: [], message: '' };
   }
 
   // ====================================

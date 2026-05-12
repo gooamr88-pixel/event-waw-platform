@@ -60,13 +60,11 @@ serve(async (req) => {
     const adminClient = createAdminClient();
 
     // ════════════════════════════════════════════════
-    // PROMO CODE VALIDATION (applies to both guest & auth)
+    // FINANCIAL BREAKDOWN via server-side RPC
+    // BRD: "الضريبة والعمولة يجب أن تُحسب في الخادم"
     // ════════════════════════════════════════════════
-    let promoDiscount = 0; // percentage discount (0-100) or fixed amount
-    let promoDiscountType = 'percentage';
-    let promoId: string | null = null;
 
-    // Look up the tier to get event_id and currency globally
+    // Look up the tier to get event_id and currency
     const { data: tierLookup } = await adminClient
       .from('ticket_tiers')
       .select('event_id, currency')
@@ -75,41 +73,30 @@ serve(async (req) => {
 
     const checkoutCurrency = (tierLookup?.currency || 'usd').toLowerCase();
 
-    if (promo_code && typeof promo_code === 'string' && tierLookup) {
-      const { data: promo } = await adminClient
-        .from('promo_codes')
-        .select('*')
-        .eq('code', promo_code.trim().toUpperCase())
-        .or(`event_id.eq.${tierLookup.event_id},event_id.is.null`)
-        .eq('is_active', true)
-        .maybeSingle();
+    // Call calculate_order_breakdown — single source of truth for all pricing
+    const { data: breakdown, error: breakdownErr } = await adminClient
+      .rpc('calculate_order_breakdown', {
+        p_tier_id: tier_id,
+        p_quantity: qty,
+        p_promo_code: promo_code || null,
+      });
 
-        if (promo) {
-          const now = new Date();
-          const expired = promo.valid_until && new Date(promo.valid_until) < now;
-          const maxedOut = promo.max_uses && promo.used_count >= promo.max_uses;
-
-          if (!expired && !maxedOut) {
-            promoDiscount = promo.discount_value || 0;
-            promoDiscountType = promo.discount_type || 'percentage';
-            promoId = promo.id;
-            console.log(`🏷️ Promo ${promo.code} applied: ${promoDiscount}${promoDiscountType === 'percentage' ? '%' : '$'} off`);
-          }
-        }
-      }
-
-    // Helper: apply discount to unit price (in cents)
-    function applyDiscount(unitAmountCents: number): number {
-      if (promoDiscount <= 0) return unitAmountCents;
-      if (promoDiscountType === 'fixed') {
-        // Fixed discount spread across quantity
-        const discountCents = Math.round(promoDiscount * 100 / qty);
-        return Math.max(50, unitAmountCents - discountCents); // Stripe minimum $0.50
-      }
-      // Percentage
-      const discounted = unitAmountCents * (1 - promoDiscount / 100);
-      return Math.max(50, Math.round(discounted)); // Stripe minimum $0.50
+    if (breakdownErr || !breakdown) {
+      console.error('Breakdown error:', breakdownErr?.message);
+      return errorResponse(400, breakdownErr?.message || 'Failed to calculate pricing');
     }
+
+    // Extract values from the server-calculated breakdown
+    const promoId = breakdown.promo_id || null;
+    const totalCents = Math.round(breakdown.total * 100);
+    const platformFeeCents = Math.round(breakdown.platform_fee_total * 100);
+
+    // Stripe minimum is $0.50 (50 cents)
+    if (totalCents > 0 && totalCents < 50) {
+      return errorResponse(400, 'Order total is below minimum ($0.50)');
+    }
+
+    console.log(`💰 Breakdown: subtotal=$${breakdown.subtotal} tax=$${breakdown.tax_amount} fee=$${breakdown.platform_fee_total} total=$${breakdown.total}`);
 
     // ════════════════════════════════════════════════
     // GUEST CHECKOUT PATH — No auth required
@@ -182,14 +169,14 @@ serve(async (req) => {
                 name: `${res.event_title} — ${res.tier_name}`,
                 description: `${qty}x ticket(s) · Guest: ${guest_name.trim()}`,
               },
-              unit_amount: applyDiscount(Math.round(res.tier_price * 100)),
+              unit_amount: totalCents,  // Server-calculated total (includes tax + fees)
             },
-            quantity: qty,
+            quantity: 1,  // Total is already multiplied by qty in RPC
           },
         ],
         metadata: {
           reservation_id: res.reservation_id,
-          user_id: '__GUEST__',  // Sentinel value — webhook uses this to detect guest orders
+          user_id: '__GUEST__',
           event_id: res.event_id,
           tier_id: tier_id,
           quantity: String(qty),
@@ -200,17 +187,41 @@ serve(async (req) => {
           guest_national_id: guest_national_id.trim(),
           ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
           ...(promoId ? { promo_id: promoId, promo_code: promo_code } : {}),
+          // Financial snapshot for webhook to save to payments table
+          subtotal: String(breakdown.subtotal),
+          tax_amount: String(breakdown.tax_amount),
+          tax_rate: String(breakdown.tax_rate),
+          platform_fee_total: String(breakdown.platform_fee_total),
+          platform_fee_pct: String(breakdown.platform_fee_pct),
+          promo_discount: String(breakdown.promo_discount),
+          organizer_net: String(breakdown.organizer_net),
+          organizer_id: breakdown.organizer_id || '',
         },
         success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&guest=true`,
         cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
-        expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes
+        expires_at: Math.floor(Date.now() / 1000) + 660,
       };
+
+      // ── Stripe Connect: Route payment to organizer ──
+      const { data: guestOrg } = await adminClient
+        .from('profiles')
+        .select('stripe_account_id, stripe_onboarding_complete')
+        .eq('id', breakdown.organizer_id)
+        .single();
+
+      if (guestOrg?.stripe_account_id && guestOrg.stripe_onboarding_complete && platformFeeCents > 0) {
+        sessionConfig.payment_intent_data = {
+          application_fee_amount: platformFeeCents,
+          transfer_data: { destination: guestOrg.stripe_account_id },
+        };
+      }
 
       const session = await stripe.checkout.sessions.create(sessionConfig);
 
       return jsonResponse({
         checkout_url: session.url,
         reservation_id: res.reservation_id,
+        breakdown: breakdown,  // Return breakdown to frontend for display
       });
     }
 
@@ -260,19 +271,12 @@ serve(async (req) => {
       res = reservation[0];
     }
 
-    // ── Check if organizer has Stripe Connect (future-ready) ──
-    // When Stripe Connect is active, uncomment this block:
-    /*
+    // ── Check if organizer has Stripe Connect ──
     const { data: organizer } = await adminClient
       .from('profiles')
       .select('stripe_account_id, stripe_onboarding_complete')
-      .eq('id', res.organizer_id)
+      .eq('id', breakdown.organizer_id)
       .single();
-
-    if (!organizer?.stripe_account_id || !organizer.stripe_onboarding_complete) {
-      return errorResponse(400, 'Organizer has not completed payment setup');
-    }
-    */
 
     // ── Create Stripe Checkout Session ──
     const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
@@ -289,9 +293,9 @@ serve(async (req) => {
               name: `${res.event_title} — ${res.tier_name}`,
               description: `${qty}x ticket(s)`,
             },
-            unit_amount: applyDiscount(Math.round(res.tier_price * 100)), // Apply promo discount
+            unit_amount: totalCents,  // Server-calculated total
           },
-          quantity: qty,
+          quantity: 1,  // Total already includes qty
         },
       ],
       metadata: {
@@ -303,27 +307,35 @@ serve(async (req) => {
         is_guest: 'false',
         ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
         ...(promoId ? { promo_id: promoId, promo_code: promo_code } : {}),
+        // Financial snapshot for webhook to save to payments table
+        subtotal: String(breakdown.subtotal),
+        tax_amount: String(breakdown.tax_amount),
+        tax_rate: String(breakdown.tax_rate),
+        platform_fee_total: String(breakdown.platform_fee_total),
+        platform_fee_pct: String(breakdown.platform_fee_pct),
+        promo_discount: String(breakdown.promo_discount),
+        organizer_net: String(breakdown.organizer_net),
+        organizer_id: breakdown.organizer_id || '',
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}&tier=${tier_id}&qty=${qty}`,
-      expires_at: Math.floor(Date.now() / 1000) + 2100, // 35 minutes
+      expires_at: Math.floor(Date.now() / 1000) + 660,
     };
 
-    // ── Stripe Connect: Route payment to organizer (uncomment when ready) ──
-    /*
-    sessionConfig.payment_intent_data = {
-      application_fee_amount: Math.round((res.tier_price * qty * 0.05 + 1) * 100), // 5% + $1
-      transfer_data: {
-        destination: organizer.stripe_account_id,
-      },
-    };
-    */
+    // ── Stripe Connect: Route payment to organizer ──
+    if (organizer?.stripe_account_id && organizer.stripe_onboarding_complete && platformFeeCents > 0) {
+      sessionConfig.payment_intent_data = {
+        application_fee_amount: platformFeeCents,
+        transfer_data: { destination: organizer.stripe_account_id },
+      };
+    }
 
     const session = await stripe.checkout.sessions.create(sessionConfig);
 
     return jsonResponse({
       checkout_url: session.url,
       reservation_id: res.reservation_id,
+      breakdown: breakdown,  // Return breakdown to frontend for display
     });
   } catch (err) {
     console.error('Checkout error:', err);

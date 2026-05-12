@@ -88,6 +88,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
         Landing Page CMS
       </button>
+      <button class="ev-nav-item" data-panel="email-templates">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        Email Templates
+      </button>
+      <button class="ev-nav-item" data-panel="payouts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Payouts
+      </button>
       <div style="height:1px;background:rgba(255,255,255,.12);margin:10px 14px"></div>
       <a class="ev-nav-item" href="dashboard.html" style="text-decoration:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
@@ -295,6 +303,32 @@
         <div id="cms-body" style="padding:20px">
           <div class="ev-loading"><div class="ev-spinner"></div>Loading CMS…</div>
         </div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: EMAIL TEMPLATES ════ -->
+    <div class="ev-panel" id="panel-email-templates">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">📧 Email Templates</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Manage notification email templates, preview designs, and view send logs.</p>
+        </div>
+      </div>
+      <div id="email-templates-body">
+        <div class="ev-loading"><div class="ev-spinner"></div>Loading templates…</div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: PAYOUTS ════ -->
+    <div class="ev-panel" id="panel-payouts">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">💳 Payout Management</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Review, approve, or reject organizer payout requests.</p>
+        </div>
+      </div>
+      <div id="admin-payouts-body">
+        <div class="ev-loading"><div class="ev-spinner"></div>Loading payouts…</div>
       </div>
     </div>
 

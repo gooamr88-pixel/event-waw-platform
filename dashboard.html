@@ -81,10 +81,9 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
         Promo Code
       </button>
-      <button class="ev-nav-item" data-panel="financial" style="display: none !important; /* TEMP: DISABLED TICKETS */">
+      <button class="ev-nav-item" data-panel="financial">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         Financial
-        <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
       <button class="ev-nav-item" data-panel="archives">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
@@ -339,25 +338,8 @@
 
     <!-- ════ PANEL: FINANCIAL ════ -->
     <div class="ev-panel" id="panel-financial">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">💳 Financial Overview</h2>
-      <div class="ev-card">
-        <div class="ev-card-header">
-          <div class="ev-event-selector">
-            <label>Event:</label>
-            <select class="ev-filter-select" id="fin-event-select"><option value="">All Events</option></select>
-          </div>
-          <div class="ev-export-group">
-            <button class="ev-btn-icon" title="Export CSV" id="fin-csv-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-          </div>
-        </div>
-        <div class="ev-table-wrap">
-          <table class="ev-table">
-            <thead><tr><th>#</th><th>Event</th><th>Tickets Sold</th><th>Gross Revenue</th><th>Platform Fee (5%)</th><th>Net Payout</th><th>Status</th></tr></thead>
-            <tbody id="financial-tbody">
-              <tr><td colspan="7" class="ev-table-empty">No financial data yet</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div id="financial-dashboard-body">
+        <div class="ev-loading"><div class="ev-spinner"></div>Loading financial data…</div>
       </div>
     </div>
 

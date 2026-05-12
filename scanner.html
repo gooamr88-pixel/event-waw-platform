@@ -53,8 +53,17 @@
     <!-- Result Flash -->
     <div id="scanner-result" class="scanner-result" style="display:none;">
       <div id="result-icon" class="result-icon">✓</div>
+      <!-- Entry type badge (Phase 5) -->
+      <div id="result-entry-badge" class="result-entry-badge" style="display:none;">FIRST ENTRY</div>
       <h2 id="result-title">Valid Ticket</h2>
       <p id="result-detail">General Admission — Fadi Auchi</p>
+      <!-- Scan counter (Phase 5) -->
+      <div id="result-scan-info" class="result-scan-info" style="display:none;">
+        <div class="result-scan-counter">
+          <span id="result-scan-count">1</span> / <span id="result-scan-max">3</span>
+        </div>
+        <div id="result-scan-label" class="result-scan-label">entries used</div>
+      </div>
       <!-- Seat location box (hidden for GA) -->
       <div id="result-seat-box" class="result-seat-box" style="display:none;">
         <div class="result-seat-label">YOUR SEAT</div>
@@ -76,13 +85,32 @@
       <button class="btn btn-outline" id="result-dismiss" style="margin-top:20px;">Scan Next</button>
     </div>
 
-    <!-- Manual Entry -->
+    <!-- Manual Entry + Manual Check-in -->
     <div class="scanner-manual">
-      <button class="btn btn-outline btn-sm" id="manual-toggle">Manual Entry</button>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-outline btn-sm" id="manual-toggle">⌨️ Manual QR Entry</button>
+        <button class="btn btn-outline btn-sm" id="checkin-toggle" style="border-color:var(--accent-primary);color:var(--accent-primary)">🔍 Manual Check-in</button>
+      </div>
       <div id="manual-form" style="display:none;margin-top:12px;">
         <div style="display:flex;gap:8px;">
-          <input type="text" class="fi" id="manual-input" placeholder="Enter ticket ID…" style="flex:1;" />
+          <input type="text" class="fi" id="manual-input" placeholder="Enter ticket ID / QR payload…" style="flex:1;" />
           <button class="btn btn-primary btn-sm" id="manual-submit">Verify</button>
+        </div>
+      </div>
+      <!-- Manual Check-in Panel -->
+      <div id="checkin-panel" style="display:none;margin-top:16px;">
+        <div style="margin-bottom:12px">
+          <label style="font-size:.75rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Select Event</label>
+          <select class="fi" id="checkin-event-select" style="width:100%;font-size:.85rem">
+            <option value="">Loading events…</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <input type="text" class="fi" id="checkin-search" placeholder="Search by name, email, or order ID…" style="flex:1" />
+          <button class="btn btn-primary btn-sm" id="checkin-search-btn">Search</button>
+        </div>
+        <div id="checkin-results" style="max-height:320px;overflow-y:auto">
+          <p style="color:var(--text-muted);font-size:.82rem;text-align:center;padding:12px 0">Select an event and search for an attendee</p>
         </div>
       </div>
     </div>
@@ -155,6 +183,7 @@
     .scanner-result.valid { background: rgba(16, 80, 30, 0.97); }
     .scanner-result.invalid { background: rgba(130, 20, 20, 0.97); }
     .scanner-result.duplicate { background: rgba(130, 90, 10, 0.97); }
+    .scanner-result.reentry { background: rgba(15, 50, 120, 0.97); }
     @keyframes resultIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
 
     .result-icon {
@@ -165,6 +194,43 @@
     .scanner-result.valid .result-icon { background: rgba(34,197,94,.2); border: 2px solid #22c55e; color: #22c55e; }
     .scanner-result.invalid .result-icon { background: rgba(239,68,68,.2); border: 2px solid #ef4444; color: #ef4444; }
     .scanner-result.duplicate .result-icon { background: rgba(234,179,8,.2); border: 2px solid #eab308; color: #eab308; }
+    .scanner-result.reentry .result-icon { background: rgba(59,130,246,.2); border: 2px solid #3b82f6; color: #3b82f6; }
+
+    /* Phase 5: Entry type badge */
+    .result-entry-badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 50px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .scanner-result.valid .result-entry-badge { background: rgba(34,197,94,.2); color: #22c55e; border: 1px solid rgba(34,197,94,.3); }
+    .scanner-result.reentry .result-entry-badge { background: rgba(59,130,246,.2); color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
+
+    /* Phase 5: Scan counter */
+    .result-scan-info {
+      margin-top: 16px;
+      padding: 12px 24px;
+      background: rgba(0,0,0,.2);
+      border-radius: 12px;
+      text-align: center;
+    }
+    .result-scan-counter {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: var(--font-serif);
+    }
+    .result-scan-label {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
 
     .scanner-result h2 { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
     .scanner-result p { color: rgba(255,255,255,.7); font-size: 0.95rem; }
@@ -239,8 +305,10 @@
 
   <script type="module">
     import { getCurrentUser } from './src/lib/supabase.js';
+    import { supabase } from './src/lib/supabase.js';
     import { verifyTicket } from './src/lib/tickets.js';
     import { protectPage } from './src/lib/guard.js';
+    import { getOrganizerEvents } from './src/lib/events.js';
     import { Html5Qrcode } from 'https://esm.sh/html5-qrcode@2';
 
     let scanner = null;
@@ -264,6 +332,7 @@
 
       initScanner();
       initManualEntry();
+      initManualCheckin();
       initResultDismiss();
     });
 
@@ -291,34 +360,67 @@
 
       try {
         const result = await verifyTicket(decodedText);
-        
+
+        // Phase 5: Parse multi-scan response from scan_ticket RPC
         if (result.valid) {
+          const scanResult = result.scan_result || 'admitted';
+          const isReentry = scanResult === 're_entry';
+          const isDuplicate = scanResult === 'duplicate';
+          const isUnlimited = result.is_unlimited || false;
+          const scansRemaining = result.scans_remaining;
+          const scanCount_ = result.scan_count || 1;
+          const maxScans = result.max_scans || 1;
+
           // Build detail string
-          let detail = result.ticket?.tier_name || 'Admission Granted';
-          if (result.ticket?.attendee) detail += ` — ${result.ticket.attendee}`;
+          let detail = result.tier_name || 'Admission';
+          if (result.buyer_name) detail += ` — ${result.buyer_name}`;
 
-          showResult('valid', 'Access Granted', detail, result.ticket);
-          playSound('success');
-          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-          scanCount++;
-          document.getElementById('scan-count').textContent = scanCount;
+          // Build scan info for display
+          const scanInfo = {
+            count: scanCount_,
+            max: maxScans,
+            remaining: scansRemaining,
+            isUnlimited,
+            isReentry,
+          };
 
-          // History label includes seat info
-          let histLabel = result.ticket?.tier_name || 'Valid';
-          if (result.ticket?.section) histLabel += ` | ${result.ticket.section} R${result.ticket.row} S${result.ticket.seat}`;
-          addToHistory('valid', histLabel, decodedText);
-        } else if (result.error?.includes('already scanned') || result.error?.includes('duplicate')) {
-          showResult('duplicate', 'Already Scanned', result.error, result.ticket);
-          playSound('warning');
-          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-          let dupLabel = 'Duplicate';
-          if (result.ticket?.section) dupLabel += ` | ${result.ticket.section} R${result.ticket.row} S${result.ticket.seat}`;
-          addToHistory('duplicate', dupLabel, decodedText);
+          if (isDuplicate) {
+            // Rapid re-scan cooldown
+            showResult('duplicate', 'Already Scanned', result.message || 'Cooldown active', result, scanInfo);
+            playSound('warning');
+            if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+            addToHistory('duplicate', 'Duplicate scan', decodedText);
+          } else if (isReentry) {
+            // Re-entry scan
+            let reLabel = isUnlimited ? 'Unlimited Re-entry' : `${scansRemaining} scan${scansRemaining !== 1 ? 's' : ''} remaining`;
+            showResult('reentry', 'Re-entry Granted', detail, result, scanInfo);
+            playSound('success');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            scanCount++;
+            document.getElementById('scan-count').textContent = scanCount;
+            addToHistory('valid', `Re-entry | ${result.tier_name || 'Ticket'}`, decodedText);
+          } else {
+            // First entry
+            showResult('valid', 'Access Granted', detail, result, scanInfo);
+            playSound('success');
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            scanCount++;
+            document.getElementById('scan-count').textContent = scanCount;
+
+            let histLabel = result.tier_name || 'Valid';
+            if (result.section) histLabel += ` | ${result.section} R${result.row} S${result.seat}`;
+            addToHistory('valid', histLabel, decodedText);
+          }
         } else {
-          showResult('invalid', 'Invalid Ticket', result.error || 'Ticket not recognized');
+          // Rejected
+          const message = result.message || result.error || 'Ticket not recognized';
+          showResult('invalid', 'Entry Denied', message, result);
           playSound('error');
           if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
-          addToHistory('invalid', result.error || 'Invalid', decodedText);
+
+          let histLabel = 'Rejected';
+          if (result.scan_count && result.max_scans) histLabel = `Max reached (${result.scan_count}/${result.max_scans})`;
+          addToHistory('invalid', histLabel, decodedText);
         }
       } catch (err) {
         showResult('invalid', 'Error', err.message || 'Verification failed');
@@ -326,19 +428,52 @@
       }
     }
 
-    function showResult(type, title, detail, ticketData) {
+    function showResult(type, title, detail, resultData, scanInfo) {
       const el = document.getElementById('scanner-result');
       el.className = `scanner-result ${type}`;
-      document.getElementById('result-icon').textContent = type === 'valid' ? '✓' : type === 'duplicate' ? '⚠' : '✕';
+      document.getElementById('result-icon').textContent =
+        type === 'valid' ? '✓' : type === 'reentry' ? '↻' : type === 'duplicate' ? '⚠' : '✕';
       document.getElementById('result-title').textContent = title;
       document.getElementById('result-detail').textContent = detail;
 
+      // Phase 5: Entry type badge
+      const badge = document.getElementById('result-entry-badge');
+      if (type === 'valid') {
+        badge.textContent = 'FIRST ENTRY';
+        badge.style.display = 'inline-block';
+      } else if (type === 'reentry') {
+        badge.textContent = 'RE-ENTRY';
+        badge.style.display = 'inline-block';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      // Phase 5: Scan counter
+      const scanInfoEl = document.getElementById('result-scan-info');
+      if (scanInfo && (type === 'valid' || type === 'reentry')) {
+        if (scanInfo.isUnlimited) {
+          document.getElementById('result-scan-count').textContent = scanInfo.count;
+          document.getElementById('result-scan-max').textContent = '∞';
+          document.getElementById('result-scan-label').textContent = 'unlimited re-entry';
+        } else {
+          document.getElementById('result-scan-count').textContent = scanInfo.count;
+          document.getElementById('result-scan-max').textContent = scanInfo.max;
+          const left = scanInfo.remaining;
+          document.getElementById('result-scan-label').textContent =
+            left === 0 ? 'final entry — no more scans' :
+            `${left} scan${left !== 1 ? 's' : ''} remaining`;
+        }
+        scanInfoEl.style.display = 'block';
+      } else {
+        scanInfoEl.style.display = 'none';
+      }
+
       // Show seat location box for seated tickets
       const seatBox = document.getElementById('result-seat-box');
-      if ((type === 'valid' || type === 'duplicate') && ticketData?.section) {
-        document.getElementById('result-seat-section').textContent = ticketData.section;
-        document.getElementById('result-seat-row').textContent = ticketData.row || '—';
-        document.getElementById('result-seat-number').textContent = ticketData.seat || '—';
+      if ((type === 'valid' || type === 'reentry' || type === 'duplicate') && resultData?.section) {
+        document.getElementById('result-seat-section').textContent = resultData.section;
+        document.getElementById('result-seat-row').textContent = resultData.row || '—';
+        document.getElementById('result-seat-number').textContent = resultData.seat || '—';
         seatBox.style.display = 'block';
       } else {
         seatBox.style.display = 'none';
@@ -389,6 +524,142 @@
 
       document.getElementById('manual-input').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') document.getElementById('manual-submit').click();
+      });
+    }
+
+    // ══════ MANUAL CHECK-IN ══════
+    async function initManualCheckin() {
+      const toggleBtn = document.getElementById('checkin-toggle');
+      const panel = document.getElementById('checkin-panel');
+      const eventSelect = document.getElementById('checkin-event-select');
+      const searchInput = document.getElementById('checkin-search');
+      const searchBtn = document.getElementById('checkin-search-btn');
+      const resultsDiv = document.getElementById('checkin-results');
+
+      // Toggle panel
+      toggleBtn.addEventListener('click', () => {
+        const isHidden = panel.style.display === 'none';
+        panel.style.display = isHidden ? 'block' : 'none';
+        toggleBtn.style.background = isHidden ? 'var(--accent-primary)' : '';
+        toggleBtn.style.color = isHidden ? '#fff' : 'var(--accent-primary)';
+        // Hide QR manual entry
+        if (isHidden) document.getElementById('manual-form').style.display = 'none';
+      });
+
+      // Load organizer events into dropdown
+      try {
+        const events = await getOrganizerEvents();
+        eventSelect.innerHTML = '<option value="">Select an event…</option>';
+        events.forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.id;
+          opt.textContent = ev.title;
+          eventSelect.appendChild(opt);
+        });
+      } catch (e) {
+        eventSelect.innerHTML = '<option value="">Failed to load events</option>';
+      }
+
+      // Search
+      async function doSearch() {
+        const eventId = eventSelect.value;
+        const query = searchInput.value.trim();
+        if (!eventId) {
+          resultsDiv.innerHTML = '<p style="color:#f59e0b;font-size:.82rem;text-align:center;padding:12px">⚠ Please select an event first</p>';
+          return;
+        }
+        if (query.length < 2) {
+          resultsDiv.innerHTML = '<p style="color:#f59e0b;font-size:.82rem;text-align:center;padding:12px">⚠ Type at least 2 characters</p>';
+          return;
+        }
+
+        resultsDiv.innerHTML = '<p style="color:var(--text-muted);font-size:.82rem;text-align:center;padding:12px">Searching…</p>';
+
+        try {
+          const { data, error } = await supabase.rpc('manual_checkin_search', {
+            p_event_id: eventId,
+            p_query: query
+          });
+          if (error) throw error;
+
+          const tickets = data || [];
+          if (tickets.error) throw new Error(tickets.error);
+
+          if (tickets.length === 0) {
+            resultsDiv.innerHTML = '<p style="color:var(--text-muted);font-size:.82rem;text-align:center;padding:16px">No attendees found matching "' + escapeHtml(query) + '"</p>';
+            return;
+          }
+
+          resultsDiv.innerHTML = tickets.map(t => {
+            const isScanned = !!t.scanned_at;
+            const name = escapeHtml(t.display_name || 'Guest');
+            const email = escapeHtml(t.display_email || '');
+            const tier = escapeHtml(t.tier_name || '');
+            const seat = t.seat_section ? `${escapeHtml(t.seat_section)} R${t.seat_row} S${t.seat_number}` : 'GA';
+            const scanInfo = isScanned
+              ? `<span style="color:#22c55e;font-size:.72rem">✓ Scanned (${t.scan_count || 1}x)</span>`
+              : `<span style="color:#f59e0b;font-size:.72rem">○ Not scanned</span>`;
+
+            const maxReached = t.max_scans && t.max_scans > 0 && (t.scan_count || 0) >= t.max_scans;
+
+            return `
+              <div class="checkin-result-card" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:10px;margin-bottom:6px">
+                <div style="flex:1;min-width:0">
+                  <div style="font-weight:600;font-size:.85rem">${name}</div>
+                  <div style="font-size:.72rem;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${email}</div>
+                  <div style="font-size:.72rem;color:var(--text-secondary);margin-top:2px">${tier} · ${seat} · ${scanInfo}</div>
+                </div>
+                ${maxReached
+                  ? '<span style="font-size:.72rem;color:#ef4444;font-weight:600;flex-shrink:0">MAX</span>'
+                  : `<button class="btn btn-primary btn-sm checkin-admit-btn" data-ticket="${t.ticket_id}" data-event="${eventId}" style="flex-shrink:0;font-size:.75rem;padding:6px 14px">${isScanned ? 'Re-entry' : '✓ Admit'}</button>`
+                }
+              </div>
+            `;
+          }).join('');
+
+          // Attach admit handlers
+          resultsDiv.querySelectorAll('.checkin-admit-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+              btn.disabled = true;
+              btn.textContent = '...';
+              try {
+                const { data: result, error } = await supabase.rpc('manual_checkin_admit', {
+                  p_ticket_id: btn.dataset.ticket,
+                  p_event_id: btn.dataset.event
+                });
+                if (error) throw error;
+                if (result?.error) throw new Error(result.error);
+
+                // Update UI
+                btn.textContent = '✓ Done';
+                btn.style.background = '#22c55e';
+                playSound('success');
+                if (navigator.vibrate) navigator.vibrate(100);
+
+                // Add to scan history
+                scanCount++;
+                document.getElementById('scan-count').textContent = scanCount;
+                addToHistory('valid', result.attendee_name + ' (Manual)', result.tier_name || 'Check-in');
+
+                // Refresh search after 1.5s
+                setTimeout(() => doSearch(), 1500);
+              } catch (err) {
+                btn.textContent = '✗ Error';
+                btn.style.background = '#ef4444';
+                playSound('error');
+                setTimeout(() => { btn.textContent = 'Retry'; btn.disabled = false; btn.style.background = ''; }, 2000);
+              }
+            });
+          });
+
+        } catch (err) {
+          resultsDiv.innerHTML = '<p style="color:#ef4444;font-size:.82rem;text-align:center;padding:12px">Error: ' + escapeHtml(err.message) + '</p>';
+        }
+      }
+
+      searchBtn.addEventListener('click', doSearch);
+      searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') doSearch();
       });
     }
 

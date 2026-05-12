@@ -147,6 +147,7 @@
     import { getOrderBySessionPublic } from './src/lib/tickets.js';
     import { initUI, initParticles } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
+    import { showTransferModal } from './src/lib/ticket-transfer.js';
     import QRCode from 'https://esm.sh/qrcode@1';
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -299,6 +300,9 @@
                 <span class="ticket-status-badge badge-valid">✦ Valid</span>
                 <span class="ticket-amount">$${Number(order.amount).toLocaleString()}</span>
               </div>
+              <button class="btn btn-outline btn-sm ticket-transfer-btn" data-ticket-id="${t.id}" data-event-title="${escapeHTML(t.event_title)}" data-tier-name="${escapeHTML(t.tier_name)}" style="margin-top:14px;font-size:.78rem;padding:8px 18px;border-color:rgba(212,175,55,.25);color:#D4AF37">
+                🔄 Transfer Ticket
+              </button>
             </div>
           </div>
         `;
@@ -316,6 +320,24 @@
           } catch (qrErr) {
             console.error('QR generation error:', qrErr);
           }
+        }
+
+        // Transfer button handler
+        const transferBtn = card.querySelector('.ticket-transfer-btn');
+        if (transferBtn) {
+          transferBtn.addEventListener('click', () => {
+            showTransferModal(t.id, {
+              eventTitle: t.event_title,
+              tierName: t.tier_name,
+              attendeeName: isGuest ? (order.guest_name || 'Guest') : 'Ticket Holder'
+            }, () => {
+              // On success: mark the button as transferred
+              transferBtn.textContent = '✓ Transferred';
+              transferBtn.disabled = true;
+              transferBtn.style.color = '#22c55e';
+              transferBtn.style.borderColor = 'rgba(34,197,94,.3)';
+            });
+          });
         }
       }
 

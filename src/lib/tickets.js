@@ -195,3 +195,228 @@ export async function getGuestTickets(guestToken) {
 
   return response.json();
 }
+
+/**
+ * Download a ticket PDF for a single ticket.
+ * Calls the generate-ticket-pdf Edge Function.
+ * @param {string} ticketId - UUID of the ticket
+ * @returns {Promise<void>} Triggers browser download
+ */
+export async function downloadTicketPDF(ticketId) {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const response = await fetch(
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token
+          ? { 'Authorization': `Bearer ${session.access_token}` }
+          : {}),
+      },
+      body: JSON.stringify({ ticket_id: ticketId }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Download failed' }));
+    throw new Error(err.error || 'Failed to generate PDF');
+  }
+
+  // Trigger browser download
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `eventsli-ticket-${ticketId.substring(0, 8)}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download a PDF containing ALL tickets in an order.
+ * @param {string} orderId - UUID of the order
+ * @returns {Promise<void>} Triggers browser download
+ */
+export async function downloadOrderPDF(orderId) {
+  const { data: { session } } = await supabase.auth.getSession();
+
+  const response = await fetch(
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(session?.access_token
+          ? { 'Authorization': `Bearer ${session.access_token}` }
+          : {}),
+      },
+      body: JSON.stringify({ order_id: orderId }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Download failed' }));
+    throw new Error(err.error || 'Failed to generate PDF');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `eventsli-tickets-${orderId.substring(0, 8)}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Download a guest's ticket PDF using order_id (no auth needed).
+ * For guest users who received their order_id via email.
+ * @param {string} orderId - UUID of the order
+ * @returns {Promise<void>} Triggers browser download
+ */
+export async function downloadGuestPDF(orderId) {
+  const response = await fetch(
+    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order_id: orderId }),
+    }
+  );
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({ error: 'Download failed' }));
+    throw new Error(err.error || 'Failed to generate PDF');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `eventsli-tickets-${orderId.substring(0, 8)}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Create a styled "Download PDF" button element.
+ * Handles loading/error states automatically.
+ *
+ * @param {Object} options
+ * @param {string} [options.ticketId] - Download single ticket PDF
+ * @param {string} [options.orderId] - Download all tickets in order
+ * @param {boolean} [options.isGuest=false] - Use guest download flow
+ * @param {string} [options.label='Download PDF'] - Button label
+ * @returns {HTMLButtonElement} The button element (append to your container)
+ *
+ * Usage:
+ *   const btn = createDownloadButton({ orderId: order.id });
+ *   document.getElementById('ticket-actions').appendChild(btn);
+ */
+export function createDownloadButton({ ticketId, orderId, isGuest = false, label = 'Download PDF' } = {}) {
+  const btn = document.createElement('button');
+  btn.className = 'ev-download-btn';
+  btn.innerHTML = `
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+    </svg>
+    <span>${label}</span>
+  `;
+
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const span = btn.querySelector('span');
+    const originalText = span.textContent;
+
+    btn.disabled = true;
+    span.textContent = 'Generating...';
+    btn.classList.add('ev-download-btn--loading');
+
+    try {
+      if (isGuest && orderId) {
+        await downloadGuestPDF(orderId);
+      } else if (orderId) {
+        await downloadOrderPDF(orderId);
+      } else if (ticketId) {
+        await downloadTicketPDF(ticketId);
+      }
+      span.textContent = 'Downloaded!';
+      btn.classList.remove('ev-download-btn--loading');
+      btn.classList.add('ev-download-btn--success');
+      setTimeout(() => {
+        span.textContent = originalText;
+        btn.disabled = false;
+        btn.classList.remove('ev-download-btn--success');
+      }, 2000);
+    } catch (err) {
+      span.textContent = err.message || 'Failed';
+      btn.classList.remove('ev-download-btn--loading');
+      btn.classList.add('ev-download-btn--error');
+      setTimeout(() => {
+        span.textContent = originalText;
+        btn.disabled = false;
+        btn.classList.remove('ev-download-btn--error');
+      }, 3000);
+    }
+  });
+
+  // Inject styles once
+  if (!document.getElementById('ev-download-btn-styles')) {
+    const style = document.createElement('style');
+    style.id = 'ev-download-btn-styles';
+    style.textContent = `
+      .ev-download-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: linear-gradient(135deg, rgba(167,139,250,0.15), rgba(167,139,250,0.05));
+        border: 1px solid rgba(167,139,250,0.3);
+        border-radius: 10px;
+        color: #a78bfa;
+        font-family: var(--ev-font, 'Inter', system-ui, sans-serif);
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+      }
+      .ev-download-btn:hover:not(:disabled) {
+        background: linear-gradient(135deg, rgba(167,139,250,0.25), rgba(167,139,250,0.1));
+        border-color: rgba(167,139,250,0.5);
+        transform: translateY(-1px);
+      }
+      .ev-download-btn:disabled {
+        opacity: 0.7;
+        cursor: wait;
+      }
+      .ev-download-btn--loading svg {
+        animation: ev-dl-spin 0.8s linear infinite;
+      }
+      .ev-download-btn--success {
+        border-color: rgba(74,222,128,0.4) !important;
+        color: #4ade80 !important;
+      }
+      .ev-download-btn--error {
+        border-color: rgba(248,113,113,0.4) !important;
+        color: #f87171 !important;
+      }
+      @keyframes ev-dl-spin {
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  return btn;
+}

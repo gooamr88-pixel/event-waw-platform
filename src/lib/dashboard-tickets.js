@@ -78,31 +78,15 @@ export function setupTicketsPanel() {
       setSafeHTML(tbody, htmlString);
 
       const csvBtn = document.getElementById('ticket-csv-btn');
-      if (csvBtn) csvBtn.onclick = () => {
-        const rows = [['Name','Email','Tier','Seat','Status','Date']];
-        tickets.forEach(t => {
-          const order = orderMap[t.order_id] || {};
-          const name = t.attendee_name || order.guest_name || '';
-          const email = t.attendee_email || order.guest_email || '';
-          const tierName = tierMap[t.ticket_tier_id]?.name || '';
-          rows.push([
-            name, email, tierName,
-            t.seat_section ? `${t.seat_section} R${t.seat_row} S${t.seat_number}` : '',
-            t.scanned_at ? 'Scanned' : 'Pending', t.created_at || ''
-          ]);
-        });
-        const sanitizeCsvCell = val => {
-          let str = String(val || '');
-          if (/^[=+\-@]/.test(str)) str = "'" + str; // L-5: Prevent CSV formula injection
-          return `"${str.replace(/"/g,'""')}"`;
-        };
-        const csv = rows.map(r => r.map(c => sanitizeCsvCell(c)).join(',')).join('\n');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-        a.download = `tickets_${Date.now()}.csv`;
-        a.click();
-        URL.revokeObjectURL(a.href);
-        showToast('CSV exported', 'success');
+      if (csvBtn) csvBtn.onclick = async () => {
+        try {
+          const { exportAttendeeReport } = await import('./csv-export.js');
+          const eventName = document.getElementById('ticket-event-select')?.selectedOptions[0]?.textContent || 'Event';
+          const count = await exportAttendeeReport(eventId, eventName, supabase);
+          showToast(`Exported ${count} attendees to CSV`, 'success');
+        } catch (err) {
+          showToast('Export failed: ' + err.message, 'error');
+        }
       };
 
       const pdfBtn = document.getElementById('ticket-pdf-btn');

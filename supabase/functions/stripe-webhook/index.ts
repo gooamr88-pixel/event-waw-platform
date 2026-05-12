@@ -71,6 +71,17 @@ serve(async (req) => {
       guest_email,
       guest_phone,
       guest_national_id,
+      // Financial snapshot from create-checkout (Phase 2)
+      subtotal: metaSubtotal,
+      tax_amount: metaTaxAmount,
+      tax_rate: metaTaxRate,
+      platform_fee_total: metaPlatformFee,
+      platform_fee_pct: metaPlatformFeePct,
+      promo_discount: metaPromoDiscount,
+      organizer_net: metaOrganizerNet,
+      organizer_id: metaOrganizerId,
+      promo_id: metaPromoId,
+      promo_code: metaPromoCode,
     } = session.metadata!;
 
     const qty = parseInt(quantity || '1');
@@ -125,10 +136,14 @@ serve(async (req) => {
       amount: (session.amount_total || 0) / 100,
       currency: session.currency || 'usd',
       status: 'paid',
+      // Financial snapshot (Phase 2)
+      subtotal: parseFloat(metaSubtotal || '0'),
+      tax_amount: parseFloat(metaTaxAmount || '0'),
+      tax_rate_snapshot: parseFloat(metaTaxRate || '0'),
+      platform_fee_amount: parseFloat(metaPlatformFee || '0'),
     };
 
     if (isGuest) {
-      // GUEST order: no user_id, store guest info directly
       orderData.user_id = null;
       orderData.is_guest = true;
       orderData.guest_email = guest_email || session.customer_email || '';
@@ -136,7 +151,6 @@ serve(async (req) => {
       orderData.guest_phone = guest_phone || '';
       orderData.guest_national_id = guest_national_id || '';
     } else {
-      // AUTHENTICATED order
       orderData.user_id = user_id;
       orderData.is_guest = false;
     }
@@ -151,6 +165,62 @@ serve(async (req) => {
     if (orderError) {
       console.error('Error creating order:', orderError);
       return new Response(JSON.stringify({ error: 'Failed to create order' }), { status: 500 });
+    }
+
+    // ── Create Payment Record (Phase 2: Financial Ledger) ──
+    // BRD: "حفظ كل الرسوم والضرائب داخل الطلب حتى لا تتغير"
+    try {
+      const paymentData: any = {
+        order_id: order.id,
+        event_id: event_id,
+        subtotal: parseFloat(metaSubtotal || '0'),
+        tax_rate_snapshot: parseFloat(metaTaxRate || '0'),
+        tax_amount: parseFloat(metaTaxAmount || '0'),
+        platform_fee_pct: parseFloat(metaPlatformFeePct || '0'),
+        platform_fee_total: parseFloat(metaPlatformFee || '0'),
+        total_amount: (session.amount_total || 0) / 100,
+        currency: session.currency || 'usd',
+        organizer_net: parseFloat(metaOrganizerNet || '0'),
+        stripe_payment_intent: session.payment_intent || '',
+        stripe_charge_id: '',  // Will be populated by charge events if needed
+        promo_code: metaPromoCode || null,
+        promo_discount: parseFloat(metaPromoDiscount || '0'),
+        status: 'paid',
+        paid_at: new Date().toISOString(),
+      };
+
+      // Link to organizers table if organizer_id exists
+      if (metaOrganizerId) {
+        const { data: orgRow } = await supabase
+          .from('organizers')
+          .select('id')
+          .eq('user_id', metaOrganizerId)
+          .maybeSingle();
+        if (orgRow) paymentData.organizer_id = orgRow.id;
+      }
+
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert(paymentData);
+
+      if (paymentError) {
+        // Non-critical: log but don't fail the webhook
+        console.error('⚠️ Failed to create payment record:', paymentError.message);
+      } else {
+        console.log(`💰 Payment record created for order ${order.id}`);
+      }
+    } catch (payErr) {
+      console.error('⚠️ Payment record error:', payErr);
+    }
+
+    // ── Increment promo code usage if applicable ──
+    if (metaPromoId) {
+      try {
+        await supabase.rpc('increment_promo_usage', { p_promo_id: metaPromoId });
+        console.log(`🏷️ Promo ${metaPromoCode} usage incremented`);
+      } catch (promoErr) {
+        console.error('⚠️ Failed to increment promo usage:', promoErr);
+      }
     }
 
     // ── Fetch event + tier details for ticket/email ──
@@ -347,7 +417,8 @@ serve(async (req) => {
       }
     }
 
-    // ── Send Confirmation Email ──
+    // ── Send Confirmation Email with PDF Attachment ──
+    // BRD Section 16: "إرسال التذكرة كملف PDF مرفق في إيميل التأكيد"
     if (BREVO_API_KEY && userEmail) {
       try {
         const formattedDate = eventDate
@@ -381,6 +452,55 @@ serve(async (req) => {
               ticketLink: `${Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com'}/my-tickets.html`,
             });
 
+        // ── Generate PDF for attachment ──
+        let pdfAttachment: any = null;
+        try {
+          const pdfResponse = await fetch(
+            `${supabaseUrl}/functions/v1/generate-ticket-pdf`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({ order_id: order.id }),
+            }
+          );
+
+          if (pdfResponse.ok && pdfResponse.headers.get('content-type')?.includes('pdf')) {
+            const pdfBuffer = await pdfResponse.arrayBuffer();
+            // Base64 encode for Brevo attachment
+            const pdfBase64 = btoa(
+              String.fromCharCode(...new Uint8Array(pdfBuffer))
+            );
+            pdfAttachment = {
+              content: pdfBase64,
+              name: `eventsli-tickets-${order.id.substring(0, 8)}.pdf`,
+            };
+            console.log(`📄 PDF generated for email attachment (${pdfBuffer.byteLength} bytes)`);
+          } else {
+            console.warn('⚠️ PDF generation returned non-PDF response, sending email without attachment');
+          }
+        } catch (pdfErr) {
+          console.error('⚠️ PDF generation failed (non-critical):', pdfErr);
+          // Continue sending email without PDF attachment
+        }
+
+        // ── Send via Brevo ──
+        const emailPayload: any = {
+          sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
+          to: [{ email: userEmail }],
+          subject: isGuest
+            ? `🎫 Your guest tickets for ${eventTitle} are confirmed!`
+            : `🎫 Your tickets for ${eventTitle} are confirmed!`,
+          htmlContent: emailHtml,
+        };
+
+        // Attach PDF if generated successfully
+        if (pdfAttachment) {
+          emailPayload.attachment = [pdfAttachment];
+        }
+
         await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
           headers: {
@@ -388,16 +508,9 @@ serve(async (req) => {
             'api-key': BREVO_API_KEY,
             'content-type': 'application/json',
           },
-          body: JSON.stringify({
-            sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
-            to: [{ email: userEmail }],
-            subject: isGuest
-              ? `🎫 Your guest tickets for ${eventTitle} are confirmed!`
-              : `🎫 Your tickets for ${eventTitle} are confirmed!`,
-            htmlContent: emailHtml,
-          }),
+          body: JSON.stringify(emailPayload),
         });
-        console.log(`✉️ Confirmation email sent to ${userEmail} (guest=${isGuest})`);
+        console.log(`✉️ Confirmation email ${pdfAttachment ? 'with PDF ' : ''}sent to ${userEmail} (guest=${isGuest})`);
       } catch (emailErr) {
         console.error('Failed to send confirmation email:', emailErr);
         // Don't fail the webhook — email is best-effort

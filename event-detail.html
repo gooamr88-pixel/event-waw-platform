@@ -873,6 +873,12 @@
       const sorted = [...tiers].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
       const list = document.getElementById('tiers-list');
       
+      // Check if ALL tiers are sold out
+      const allSoldOut = sorted.every(tier => {
+        const avail = (tier.capacity || 0) - (tier.sold_count || 0);
+        return avail <= 0;
+      });
+      
       setSafeHTML(list, sorted.map(tier => {
         const avail = (tier.capacity || 0) - (tier.sold_count || 0);
         const soldOut = avail <= 0;
@@ -914,6 +920,88 @@
           </div>
         `;
       }).join(''));
+
+      // ── WAITLIST FORM: Show when ALL tiers are sold out ──
+      if (allSoldOut && eventData) {
+        const waitlistHtml = `
+          <div id="waitlist-section" style="margin-top:24px;padding:28px;background:linear-gradient(135deg,rgba(245,158,11,.04),rgba(239,68,68,.03));border:1px solid rgba(245,158,11,.15);border-radius:var(--card-radius);">
+            <div style="text-align:center;margin-bottom:20px">
+              <div style="width:56px;height:56px;margin:0 auto 14px;border-radius:50%;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🔔</div>
+              <h3 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:6px">All Tickets Sold Out!</h3>
+              <p style="font-size:.82rem;color:var(--text-muted);line-height:1.5;max-width:300px;margin:0 auto">Join the waitlist and we'll notify you if spots open up.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <input type="text" class="fi" id="waitlist-name" placeholder="Your Full Name" style="font-size:.88rem" />
+              <input type="email" class="fi" id="waitlist-email" placeholder="Your Email Address *" required style="font-size:.88rem" />
+              <button class="btn btn-primary btn-full" id="waitlist-submit" style="padding:13px;font-weight:600">
+                🔔 Join Waitlist
+              </button>
+            </div>
+            <div id="waitlist-status" style="display:none;margin-top:14px;text-align:center"></div>
+          </div>
+        `;
+        list.insertAdjacentHTML('afterend', waitlistHtml);
+
+        // Auto-fill if user is logged in
+        if (authState?.user) {
+          const emailInput = document.getElementById('waitlist-email');
+          const nameInput = document.getElementById('waitlist-name');
+          if (emailInput && authState.user.email) emailInput.value = authState.user.email;
+          if (nameInput && authState.user.user_metadata?.full_name) nameInput.value = authState.user.user_metadata.full_name;
+        }
+
+        // Submit handler
+        document.getElementById('waitlist-submit').addEventListener('click', async () => {
+          const email = document.getElementById('waitlist-email').value.trim();
+          const name = document.getElementById('waitlist-name').value.trim();
+          const btn = document.getElementById('waitlist-submit');
+          const statusDiv = document.getElementById('waitlist-status');
+
+          if (!email || !email.includes('@')) {
+            document.getElementById('waitlist-email').style.borderColor = '#ef4444';
+            document.getElementById('waitlist-email').focus();
+            return;
+          }
+
+          btn.disabled = true;
+          btn.textContent = 'Joining...';
+
+          try {
+            const { data, error } = await supabase.rpc('join_waitlist', {
+              p_event_id: eventData.id,
+              p_email: email,
+              p_name: name || null
+            });
+
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+
+            // Success
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = `
+              <div style="padding:16px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.15);border-radius:12px">
+                <div style="font-size:1.3rem;margin-bottom:6px">✅</div>
+                <div style="font-weight:700;font-size:.92rem;margin-bottom:4px">${data.already_registered ? 'Already Registered!' : 'You\'re on the List!'}</div>
+                <div style="font-size:.82rem;color:var(--text-muted)">Your position: <strong>#${data.position || '—'}</strong></div>
+                <div style="font-size:.78rem;color:var(--text-muted);margin-top:4px">We'll email you at <strong>${escapeHTML(email)}</strong> when tickets become available.</div>
+              </div>
+            `;
+            btn.textContent = '✓ Joined';
+            btn.style.background = '#22c55e';
+          } catch (err) {
+            statusDiv.style.display = 'block';
+            statusDiv.innerHTML = `<div style="color:#ef4444;font-size:.82rem;padding:10px">❌ ${escapeHTML(err.message)}</div>`;
+            btn.disabled = false;
+            btn.textContent = '🔔 Join Waitlist';
+          }
+        });
+
+        // Hide checkout buttons when sold out
+        const checkoutBtn = document.getElementById('checkout-btn');
+        const guestBtn = document.getElementById('guest-checkout-btn');
+        if (checkoutBtn) checkoutBtn.style.display = 'none';
+        if (guestBtn) guestBtn.style.display = 'none';
+      }
     }
 
     // Expose to window for onclick handlers

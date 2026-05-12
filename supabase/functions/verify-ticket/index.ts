@@ -93,31 +93,26 @@ serve(async (req) => {
       return errorResponse(403, 'Invalid ticket signature — possible forgery');
     }
 
-    // ── Look up ticket in database ──
+    // ── Call scan_ticket RPC (Phase 5: handles concurrency, limits, logging) ──
     const supabase = createAdminClient();
-    const { data: ticket, error: ticketError } = await supabase
+
+    // Capture device info from request headers
+    const deviceInfo = req.headers.get('user-agent') || 'Unknown device';
+    const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+
+    // ── Verify scanner is authorized (organizer or admin) ──
+    // Quick lookup: get the event's organizer_id from the ticket
+    const { data: ticketCheck } = await supabase
       .from('tickets')
       .select(`
-        id, status, scanned_at,
         ticket_tiers (
-          name, price,
-          events (
-            id, title, organizer_id, date
-          )
-        ),
-        profiles (
-          full_name, email
+          events ( organizer_id )
         )
       `)
       .eq('id', ticket_id)
       .single();
 
-    if (ticketError || !ticket) {
-      return errorResponse(404, 'Ticket not found');
-    }
-
-    // ── Verify scanner is the event organizer (or admin) ──
-    const eventOrganizerId = ticket.ticket_tiers?.events?.organizer_id;
+    const eventOrganizerId = ticketCheck?.ticket_tiers?.events?.organizer_id;
     if (eventOrganizerId && eventOrganizerId !== user.id) {
       const { data: scannerProfile } = await supabase
         .from('profiles')
@@ -131,7 +126,13 @@ serve(async (req) => {
     }
 
     // ── Check if event has ended (24h grace period) ──
-    const eventDate = ticket.ticket_tiers?.events?.date;
+    const { data: eventCheck } = await supabase
+      .from('tickets')
+      .select('ticket_tiers ( events ( date ) )')
+      .eq('id', ticket_id)
+      .single();
+
+    const eventDate = eventCheck?.ticket_tiers?.events?.date;
     if (eventDate) {
       const eventEnd = new Date(eventDate);
       eventEnd.setHours(eventEnd.getHours() + 24);
@@ -140,68 +141,46 @@ serve(async (req) => {
       }
     }
 
-    // ── Check ticket status ──
-    if (ticket.status === 'scanned') {
-      const dupTicket: any = {
-        tier_name: ticket.ticket_tiers?.name,
-        attendee: ticket.profiles?.full_name,
-        scanned_at: ticket.scanned_at,
-      };
-      // Include seat location if present
-      if (qr_sec || qr_row || qr_seat) {
-        dupTicket.section = qr_sec || null;
-        dupTicket.row = qr_row || null;
-        dupTicket.seat = qr_seat || null;
-      }
-      return errorResponse(409, `Ticket already scanned at ${new Date(ticket.scanned_at).toLocaleString()}`, {
-        ticket: dupTicket,
+    // ── Execute scan via RPC (atomic, concurrency-safe) ──
+    const { data: scanResult, error: scanError } = await supabase
+      .rpc('scan_ticket', {
+        p_ticket_id: ticket_id,
+        p_scanned_by: user.id,
+        p_device_info: deviceInfo,
+        p_ip_address: ipAddress,
+      });
+
+    if (scanError) {
+      console.error('scan_ticket RPC error:', scanError.message);
+      return errorResponse(500, scanError.message || 'Scan failed');
+    }
+
+    if (!scanResult) {
+      return errorResponse(500, 'No response from scan engine');
+    }
+
+    // ── Build response based on RPC result ──
+    // Attach seat location from HMAC-verified QR payload
+    if (qr_sec || qr_row || qr_seat) {
+      scanResult.section = qr_sec || null;
+      scanResult.row = qr_row || null;
+      scanResult.seat = qr_seat || null;
+    }
+
+    // Map RPC result to HTTP status codes
+    if (scanResult.valid) {
+      return jsonResponse(scanResult);
+    } else {
+      // Determine appropriate HTTP status
+      const httpStatus = scanResult.scan_result === 'rejected' ? 409 : 400;
+      return new Response(JSON.stringify(scanResult), {
+        status: httpStatus,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
       });
     }
-
-    if (ticket.status === 'cancelled') {
-      return errorResponse(410, 'Ticket has been cancelled');
-    }
-
-    // ── Mark as scanned (optimistic lock — only update if still 'valid') ──
-    const { data: updatedRows, error: updateError } = await supabase
-      .from('tickets')
-      .update({
-        status: 'scanned',
-        scanned_at: new Date().toISOString(),
-        scanned_by: user.id,
-      })
-      .eq('id', ticket_id)
-      .eq('status', 'valid')
-      .select('id');
-
-    if (updateError) {
-      return errorResponse(500, 'Failed to update ticket status');
-    }
-
-    // If no rows updated, another scanner beat us (race condition)
-    if (!updatedRows || updatedRows.length === 0) {
-      return errorResponse(409, 'Ticket was just scanned by another device');
-    }
-
-    // ── Build response with seat location if present ──
-    const responseTicket: any = {
-      id: ticket.id,
-      tier_name: ticket.ticket_tiers?.name,
-      event_title: ticket.ticket_tiers?.events?.title,
-      attendee: ticket.profiles?.full_name,
-    };
-
-    // Attach seat location from the QR payload (already HMAC-verified)
-    if (qr_sec || qr_row || qr_seat) {
-      responseTicket.section = qr_sec || null;
-      responseTicket.row = qr_row || null;
-      responseTicket.seat = qr_seat || null;
-    }
-
-    return jsonResponse({
-      valid: true,
-      ticket: responseTicket,
-    });
 
   } catch (err) {
     console.error('Verify error:', err);
