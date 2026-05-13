@@ -142,11 +142,16 @@ CREATE TABLE tickets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   order_id UUID NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
   ticket_tier_id UUID NOT NULL REFERENCES ticket_tiers(id) ON DELETE CASCADE,
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,  -- Nullable for guest tickets (migration-v5)
   qr_hash TEXT NOT NULL UNIQUE,
   status ticket_status DEFAULT 'valid',
   scanned_at TIMESTAMPTZ,
   scanned_by UUID REFERENCES profiles(id),
+  scan_count INT DEFAULT 0,                    -- Multi-scan support (migration-v19)
+  max_scans_allowed INT DEFAULT 1,             -- Re-entry limit (migration-v19)
+  seat_label TEXT,                              -- Seated events (migration-v19)
+  attendee_name TEXT,                           -- Ticket transfer recipient (migration-v30)
+  attendee_email TEXT,                          -- Ticket transfer recipient (migration-v30)
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 CREATE INDEX idx_tickets_order ON tickets(order_id);

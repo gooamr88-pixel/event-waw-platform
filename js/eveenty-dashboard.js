@@ -56,6 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadPromoCodes();            // Initial load for promos
 
   setupGlobalKeyboardManager(); // H-3: Escape key handler
+  setupUserDropdownToggle();    // P3-2: Wire click-toggle + aria-expanded for user dropdown
 
   // Register actions on the event bus (replaces window.* globals)
   onDashboardAction('refreshDashboard', loadDashboard);

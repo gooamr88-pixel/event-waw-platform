@@ -30,7 +30,7 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { tier_id, quantity = 1, is_guest = false, seat_ids, promo_code } = body;
@@ -39,20 +39,20 @@ serve(async (req) => {
     const isSeatedCheckout = Array.isArray(seat_ids) && seat_ids.length > 0;
 
     if (!isValidUUID(tier_id)) {
-      return errorResponse(400, 'tier_id must be a valid UUID');
+      return errorResponse(400, 'tier_id must be a valid UUID', {}, req);
     }
 
     // For seated checkout, quantity is derived from seat_ids length
     const qty = isSeatedCheckout ? seat_ids.length : Number(quantity);
     if (!isValidQuantity(qty)) {
-      return errorResponse(400, 'Quantity must be an integer between 1 and 10');
+      return errorResponse(400, 'Quantity must be an integer between 1 and 10', {}, req);
     }
 
     // Validate each seat_id is a proper UUID
     if (isSeatedCheckout) {
       for (const sid of seat_ids) {
         if (!isValidUUID(sid)) {
-          return errorResponse(400, 'Each seat_id must be a valid UUID');
+          return errorResponse(400, 'Each seat_id must be a valid UUID', {}, req);
         }
       }
     }
@@ -83,7 +83,7 @@ serve(async (req) => {
 
     if (breakdownErr || !breakdown) {
       console.error('Breakdown error:', breakdownErr?.message);
-      return errorResponse(400, breakdownErr?.message || 'Failed to calculate pricing');
+      return errorResponse(400, breakdownErr?.message || 'Failed to calculate pricing', {}, req);
     }
 
     // Extract values from the server-calculated breakdown
@@ -102,7 +102,7 @@ serve(async (req) => {
 
     // Stripe minimum is $0.50 (50 cents)
     if (totalCents > 0 && totalCents < 50) {
-      return errorResponse(400, 'Order total is below minimum ($0.50)');
+      return errorResponse(400, 'Order total is below minimum ($0.50)', {}, req);
     }
 
     console.log(`💰 Breakdown: subtotal=$${breakdown.subtotal} tax=$${breakdown.tax_amount} fee=$${breakdown.platform_fee_total} total=$${breakdown.total}`);
@@ -115,22 +115,22 @@ serve(async (req) => {
 
       // ── Validate guest fields ──
       if (!guest_name || typeof guest_name !== 'string' || guest_name.trim().length < 2) {
-        return errorResponse(400, 'Full name is required (min 2 characters)');
+        return errorResponse(400, 'Full name is required (min 2 characters)', {}, req);
       }
       if (!guest_email || typeof guest_email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest_email)) {
-        return errorResponse(400, 'A valid email address is required');
+        return errorResponse(400, 'A valid email address is required', {}, req);
       }
       if (!guest_phone || typeof guest_phone !== 'string' || guest_phone.trim().length < 7) {
-        return errorResponse(400, 'A valid phone number is required');
+        return errorResponse(400, 'A valid phone number is required', {}, req);
       }
       if (!guest_national_id || typeof guest_national_id !== 'string' || guest_national_id.trim().length < 10) {
-        return errorResponse(400, 'A valid National ID is required (min 10 characters)');
+        return errorResponse(400, 'A valid National ID is required (min 10 characters)', {}, req);
       }
 
       // ── Rate Limit: 3 guest checkout attempts per minute per email ──
       const sanitizedEmail = guest_email.trim().toLowerCase();
       if (!rateLimit(`guest-checkout:${sanitizedEmail}`, 3, 60_000)) {
-        return errorResponse(429, 'Too many checkout attempts. Please wait a moment.');
+        return errorResponse(429, 'Too many checkout attempts. Please wait a moment.', {}, req);
       }
 
       // ── Create guest reservation ──
@@ -145,9 +145,9 @@ serve(async (req) => {
           });
         if (resError) {
           console.error('Guest seat reservation error:', resError.message);
-          return errorResponse(400, resError.message);
+          return errorResponse(400, resError.message, {}, req);
         }
-        if (!reservation) return errorResponse(400, 'Failed to reserve seats');
+        if (!reservation) return errorResponse(400, 'Failed to reserve seats', {}, req);
         res = reservation;
       } else {
         const { data: reservation, error: resError } = await adminClient
@@ -157,9 +157,9 @@ serve(async (req) => {
           });
         if (resError) {
           console.error('Guest reservation error:', resError.message);
-          return errorResponse(400, resError.message);
+          return errorResponse(400, resError.message, {}, req);
         }
-        if (!reservation) return errorResponse(400, 'Failed to create reservation');
+        if (!reservation) return errorResponse(400, 'Failed to create reservation', {}, req);
         res = reservation;
       }
 
@@ -238,11 +238,11 @@ serve(async (req) => {
     // AUTHENTICATED CHECKOUT PATH — Existing flow
     // ════════════════════════════════════════════════
     const { user, error: authError } = await authenticateRequest(req);
-    if (!user) return errorResponse(401, authError || 'Unauthorized');
+    if (!user) return errorResponse(401, authError || 'Unauthorized', {}, req);
 
     // ── Rate Limit: 5 checkout attempts per minute per user ──
     if (!rateLimit(`checkout:${user.id}`, 5, 60_000)) {
-      return errorResponse(429, 'Too many checkout attempts. Please wait a moment.');
+      return errorResponse(429, 'Too many checkout attempts. Please wait a moment.', {}, req);
     }
 
     // ── Create atomic reservation ──
@@ -259,9 +259,9 @@ serve(async (req) => {
         });
       if (resError) {
         console.error('Seat reservation error:', resError.message);
-        return errorResponse(400, resError.message);
+        return errorResponse(400, resError.message, {}, req);
       }
-      if (!reservation) return errorResponse(400, 'Failed to reserve seats');
+      if (!reservation) return errorResponse(400, 'Failed to reserve seats', {}, req);
       res = reservation;
     } else {
       const { data: reservation, error: resError } = await adminClient
@@ -272,10 +272,10 @@ serve(async (req) => {
         });
       if (resError) {
         console.error('Reservation error:', resError.message);
-        return errorResponse(400, resError.message);
+        return errorResponse(400, resError.message, {}, req);
       }
       if (!reservation || reservation.length === 0) {
-        return errorResponse(400, 'Failed to create reservation');
+        return errorResponse(400, 'Failed to create reservation', {}, req);
       }
       res = reservation[0];
     }
@@ -348,6 +348,6 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error('Checkout error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

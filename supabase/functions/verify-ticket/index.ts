@@ -21,11 +21,11 @@ serve(async (req) => {
   try {
     // ── Authenticate the scanner user ──
     const { user, error: authError } = await authenticateRequest(req);
-    if (!user) return errorResponse(401, authError || 'Unauthorized');
+    if (!user) return errorResponse(401, authError || 'Unauthorized', {}, req);
 
     // ── Rate Limit: 30 scans per minute per user ──
     if (!rateLimit(`verify:${user.id}`, 30, 60_000)) {
-      return errorResponse(429, 'Too many scan attempts. Please slow down.');
+      return errorResponse(429, 'Too many scan attempts. Please slow down.', {}, req);
     }
 
     // ── Parse request body ──
@@ -33,17 +33,17 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { qr_payload } = body;
     if (!qr_payload || typeof qr_payload !== 'string') {
-      return errorResponse(400, 'qr_payload is required and must be a string');
+      return errorResponse(400, 'qr_payload is required and must be a string', {}, req);
     }
 
     // Limit payload size to prevent abuse (max 2KB)
     if (qr_payload.length > 2048) {
-      return errorResponse(400, 'QR payload too large');
+      return errorResponse(400, 'QR payload too large', {}, req);
     }
 
     // ── Parse QR payload ──
@@ -51,17 +51,17 @@ serve(async (req) => {
     try {
       parsed = JSON.parse(qr_payload);
     } catch {
-      return errorResponse(400, 'Invalid QR code format');
+      return errorResponse(400, 'Invalid QR code format', {}, req);
     }
 
     const { ticket_id, order_id, tier_id, nonce, hash, v, event_id: qr_event_id, user_id: qr_user_id, iat, is_guest: qr_is_guest, sec: qr_sec, row: qr_row, seat: qr_seat } = parsed;
     if (!ticket_id || !order_id || !hash) {
-      return errorResponse(400, 'Malformed ticket data');
+      return errorResponse(400, 'Malformed ticket data', {}, req);
     }
 
     // ── Validate UUIDs ──
     if (!isValidUUID(ticket_id) || !isValidUUID(order_id)) {
-      return errorResponse(400, 'Invalid ticket identifiers');
+      return errorResponse(400, 'Invalid ticket identifiers', {}, req);
     }
 
     // ── Verify HMAC signature — support both v1 and v2 payload formats ──
@@ -90,7 +90,7 @@ serve(async (req) => {
 
     if (hash !== expectedHash) {
       console.warn(`⛔ Forgery attempt by user ${user.id} — hash mismatch`);
-      return errorResponse(403, 'Invalid ticket signature — possible forgery');
+      return errorResponse(403, 'Invalid ticket signature — possible forgery', {}, req);
     }
 
     // ── Call scan_ticket RPC (Phase 5: handles concurrency, limits, logging) ──
@@ -100,13 +100,13 @@ serve(async (req) => {
     const deviceInfo = req.headers.get('user-agent') || 'Unknown device';
     const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
 
-    // ── Verify scanner is authorized (organizer or admin) ──
-    // Quick lookup: get the event's organizer_id from the ticket
+    // ── Verify scanner is authorized (organizer or admin) + check event expiry ──
+    // Combined into single query (was 2 separate identical joins — PERF fix)
     const { data: ticketCheck } = await supabase
       .from('tickets')
       .select(`
         ticket_tiers (
-          events ( organizer_id )
+          events ( organizer_id, date )
         )
       `)
       .eq('id', ticket_id)
@@ -121,23 +121,17 @@ serve(async (req) => {
         .single();
 
       if (scannerProfile?.role !== 'admin') {
-        return errorResponse(403, 'You are not authorized to scan tickets for this event');
+        return errorResponse(403, 'You are not authorized to scan tickets for this event', {}, req);
       }
     }
 
     // ── Check if event has ended (24h grace period) ──
-    const { data: eventCheck } = await supabase
-      .from('tickets')
-      .select('ticket_tiers ( events ( date ) )')
-      .eq('id', ticket_id)
-      .single();
-
-    const eventDate = eventCheck?.ticket_tiers?.events?.date;
+    const eventDate = ticketCheck?.ticket_tiers?.events?.date;
     if (eventDate) {
       const eventEnd = new Date(eventDate);
       eventEnd.setHours(eventEnd.getHours() + 24);
       if (new Date() > eventEnd) {
-        return errorResponse(410, 'Event has ended. Ticket no longer valid for entry.');
+        return errorResponse(410, 'Event has ended. Ticket no longer valid for entry.', {}, req);
       }
     }
 
@@ -152,11 +146,11 @@ serve(async (req) => {
 
     if (scanError) {
       console.error('scan_ticket RPC error:', scanError.message);
-      return errorResponse(500, scanError.message || 'Scan failed');
+      return errorResponse(500, scanError.message || 'Scan failed', {}, req);
     }
 
     if (!scanResult) {
-      return errorResponse(500, 'No response from scan engine');
+      return errorResponse(500, 'No response from scan engine', {}, req);
     }
 
     // ── Build response based on RPC result ──
@@ -173,17 +167,11 @@ serve(async (req) => {
     } else {
       // Determine appropriate HTTP status
       const httpStatus = scanResult.scan_result === 'rejected' ? 409 : 400;
-      return new Response(JSON.stringify(scanResult), {
-        status: httpStatus,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      });
+      return errorResponse(httpStatus, scanResult.message || 'Scan rejected', scanResult, req);
     }
 
   } catch (err) {
     console.error('Verify error:', err);
-    return errorResponse(500, err.message || 'Verification failed');
+    return errorResponse(500, err.message || 'Verification failed', {}, req);
   }
 });
