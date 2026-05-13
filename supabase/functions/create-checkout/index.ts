@@ -226,7 +226,7 @@ serve(async (req) => {
         },
         success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&guest=true`,
         cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
-        expires_at: Math.floor(Date.now() / 1000) + 630,  // BRD: 10.5min — aligns with 10min DB reservation
+      expires_at: Math.floor(Date.now() / 1000) + 1830,  // Stripe minimum: 30min. DB reservation still 10min (webhook handles late-payment refund)
       };
 
       // ── Stripe Connect: Route payment to organizer ──
@@ -335,7 +335,7 @@ serve(async (req) => {
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}&tier=${tier_id}&qty=${qty}`,
-      expires_at: Math.floor(Date.now() / 1000) + 630,  // BRD: 10.5min — aligns with 10min DB reservation
+      expires_at: Math.floor(Date.now() / 1000) + 1830,  // Stripe minimum: 30min. DB reservation still 10min (webhook handles late-payment refund)
     };
 
     // ── Stripe Connect: Route payment to organizer ──

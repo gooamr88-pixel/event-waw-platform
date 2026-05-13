@@ -79,6 +79,121 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
+-- ════════════ FIX 1b: reserve_seats() ════════════
+-- Problem: array_agg() is an aggregate function. Using it with
+-- FOR UPDATE SKIP LOCKED triggers the same PostgreSQL error:
+-- "FOR UPDATE is not allowed with aggregate functions"
+--
+-- Fix: Wrap FOR UPDATE SKIP LOCKED in a subquery (locks individual rows),
+-- then array_agg in the outer query (no FOR UPDATE).
+
+DROP FUNCTION IF EXISTS reserve_seats(UUID, UUID[], UUID);
+
+CREATE OR REPLACE FUNCTION reserve_seats(
+  p_user_id  UUID,
+  p_seat_ids UUID[],
+  p_tier_id  UUID
+)
+RETURNS JSONB AS $func$
+DECLARE
+  v_seat_count    INT;
+  v_locked_ids    UUID[];
+  v_locked_count  INT;
+  v_tier          RECORD;
+  v_reservation_id UUID;
+  v_expires       TIMESTAMPTZ;
+  v_event_id      UUID;
+  v_event_title   TEXT;
+BEGIN
+  -- 1. Validate input
+  v_seat_count := array_length(p_seat_ids, 1);
+
+  IF v_seat_count IS NULL OR v_seat_count < 1 THEN
+    RAISE EXCEPTION 'At least 1 seat must be selected';
+  END IF;
+
+  IF v_seat_count > 10 THEN
+    RAISE EXCEPTION 'Cannot reserve more than 10 seats at once';
+  END IF;
+
+  -- 2. Verify the tier exists and fetch event info
+  SELECT tt.id, tt.name, tt.price, tt.event_id, e.title
+  INTO v_tier
+  FROM ticket_tiers tt
+  JOIN events e ON e.id = tt.event_id
+  WHERE tt.id = p_tier_id
+  FOR UPDATE OF tt;
+
+  IF v_tier IS NULL THEN
+    RAISE EXCEPTION 'Ticket tier not found';
+  END IF;
+
+  v_event_id    := v_tier.event_id;
+  v_event_title := v_tier.title;
+
+  -- 3. ATOMIC LOCK: subquery locks rows, outer query aggregates
+  --    FOR UPDATE SKIP LOCKED is in the subquery (no aggregates)
+  --    array_agg is in the outer query (no FOR UPDATE)
+  SELECT array_agg(locked.id)
+  INTO v_locked_ids
+  FROM (
+    SELECT s.id
+    FROM seats s
+    WHERE s.id = ANY(p_seat_ids)
+      AND s.status = 'available'
+      AND s.ticket_tier_id = p_tier_id
+    FOR UPDATE SKIP LOCKED
+  ) AS locked;
+
+  v_locked_count := COALESCE(array_length(v_locked_ids, 1), 0);
+
+  -- 4. All-or-nothing check
+  IF v_locked_count != v_seat_count THEN
+    RAISE EXCEPTION 'One or more selected seats are no longer available. Please refresh and try again.';
+  END IF;
+
+  -- 5. Create reservation row
+  v_expires := now() + INTERVAL '10 minutes';
+
+  INSERT INTO reservations (user_id, ticket_tier_id, quantity, expires_at, status)
+  VALUES (p_user_id, p_tier_id, v_seat_count, v_expires, 'active')
+  RETURNING id INTO v_reservation_id;
+
+  -- 6. Mark seats as reserved
+  UPDATE seats
+  SET status         = 'reserved',
+      reservation_id = v_reservation_id,
+      locked_until   = v_expires
+  WHERE id = ANY(v_locked_ids);
+
+  -- 7. Return reservation details
+  RETURN jsonb_build_object(
+    'reservation_id', v_reservation_id,
+    'expires_at',     v_expires,
+    'seats_locked',   v_locked_count,
+    'tier_name',      v_tier.name,
+    'tier_price',     v_tier.price,
+    'event_id',       v_event_id,
+    'event_title',    v_event_title
+  );
+END;
+$func$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
+-- FIX 1c: reserve_guest_seats() — delegates to fixed reserve_seats()
+DROP FUNCTION IF EXISTS reserve_guest_seats(UUID[], UUID);
+
+CREATE OR REPLACE FUNCTION reserve_guest_seats(
+  p_seat_ids UUID[],
+  p_tier_id  UUID
+)
+RETURNS JSONB AS $func$
+BEGIN
+  RETURN reserve_seats(NULL, p_seat_ids, p_tier_id);
+END;
+$func$ LANGUAGE plpgsql SECURITY DEFINER;
+
+
 -- ════════════ FIX 2: get_seat_map() ════════════
 -- Problem: Seats with ticket_tier_id = NULL produce NULL tier_price,
 -- which JavaScript coerces to 0 on the frontend.
@@ -124,6 +239,8 @@ $func$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ════════════ Grants (idempotent) ════════════
 GRANT EXECUTE ON FUNCTION create_reservation(UUID, UUID, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION reserve_seats(UUID, UUID[], UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION reserve_guest_seats(UUID[], UUID) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION get_seat_map(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION get_seat_map(UUID) TO anon;
 
