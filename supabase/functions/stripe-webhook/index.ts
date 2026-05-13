@@ -70,7 +70,7 @@ serve(async (req) => {
       guest_name,
       guest_email,
       guest_phone,
-      guest_national_id,
+
       // Financial snapshot from create-checkout (Phase 2)
       subtotal: metaSubtotal,
       tax_amount: metaTaxAmount,
@@ -150,7 +150,7 @@ serve(async (req) => {
       orderData.guest_email = guest_email || session.customer_email || '';
       orderData.guest_name = guest_name || '';
       orderData.guest_phone = guest_phone || '';
-      orderData.guest_national_id = guest_national_id || '';
+
     } else {
       orderData.user_id = user_id;
       orderData.is_guest = false;

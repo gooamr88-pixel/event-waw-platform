@@ -131,7 +131,7 @@ serve(async (req) => {
     // GUEST CHECKOUT PATH — No auth required
     // ════════════════════════════════════════════════
     if (is_guest) {
-      const { guest_name, guest_email, guest_phone, guest_national_id } = body;
+      const { guest_name, guest_email, guest_phone } = body;
 
       // ── Validate guest fields ──
       if (!guest_name || typeof guest_name !== 'string' || guest_name.trim().length < 2) {
@@ -143,9 +143,7 @@ serve(async (req) => {
       if (!guest_phone || typeof guest_phone !== 'string' || guest_phone.trim().length < 7) {
         return errorResponse(400, 'A valid phone number is required', {}, req);
       }
-      if (!guest_national_id || typeof guest_national_id !== 'string' || guest_national_id.trim().length < 10) {
-        return errorResponse(400, 'A valid National ID is required (min 10 characters)', {}, req);
-      }
+
 
       // ── Rate Limit: 3 guest checkout attempts per minute per email ──
       const sanitizedEmail = guest_email.trim().toLowerCase();
@@ -213,7 +211,7 @@ serve(async (req) => {
           guest_name: guest_name.trim(),
           guest_email: sanitizedEmail,
           guest_phone: guest_phone.trim(),
-          guest_national_id: guest_national_id.trim(),
+
           ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),
           ...(promoId ? { promo_id: promoId, promo_code: promo_code } : {}),
           // Financial snapshot for webhook to save to payments table

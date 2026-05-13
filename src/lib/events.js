@@ -110,7 +110,7 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
  * Sends guest info + tier selection to the Edge Function.
  * Returns { checkout_url, reservation_id }.
  */
-export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, guestNationalId, promoCode }) {
+export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, promoCode }) {
   const response = await fetch(
     'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
@@ -126,7 +126,7 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
         guest_name: guestName,
         guest_email: guestEmail,
         guest_phone: guestPhone,
-        guest_national_id: guestNationalId,
+
         promo_code: promoCode || undefined,
       }),
     }
@@ -235,7 +235,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
 /**
  * Create a seated guest checkout (no auth, with specific seat selections).
  */
-export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone, guestNationalId }) {
+export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone }) {
   const response = await fetch(
     'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
     {
@@ -251,7 +251,7 @@ export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, gu
         guest_name: guestName,
         guest_email: guestEmail,
         guest_phone: guestPhone,
-        guest_national_id: guestNationalId,
+
       }),
     }
   );
