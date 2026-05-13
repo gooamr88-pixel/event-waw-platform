@@ -577,6 +577,17 @@ serve(async (req) => {
       .update({ status: 'refunded' })
       .eq('id', order.id);
 
+    // BRD FIX: Update payments table status to 'refunded'
+    // Critical: get_organizer_financials() calculates refund amounts from
+    // payments.status IN ('refunded'). Without this, organizer's available
+    // balance stays inflated and they could withdraw refunded funds.
+    await supabase
+      .from('payments')
+      .update({ status: 'refunded', updated_at: new Date().toISOString() })
+      .eq('order_id', order.id);
+
+    console.log(`💰 Payment record updated to refunded for order ${order.id}`);
+
     // Cancel all associated tickets
     const { data: cancelledTickets } = await supabase
       .from('tickets')

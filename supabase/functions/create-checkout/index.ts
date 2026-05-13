@@ -108,6 +108,26 @@ serve(async (req) => {
     console.log(`💰 Breakdown: subtotal=$${breakdown.subtotal} tax=$${breakdown.tax_amount} fee=$${breakdown.platform_fee_total} total=$${breakdown.total}`);
 
     // ════════════════════════════════════════════════
+    // BRD RULE 4: STRIPE CONNECT GATE
+    // Block checkout if organizer hasn't completed Stripe Connect onboarding.
+    // Without this, payments go to the platform account instead of the organizer.
+    // ════════════════════════════════════════════════
+    let organizerStripe: any = null;
+    if (totalCents > 0 && breakdown.organizer_id) {
+      const { data: orgRow } = await adminClient
+        .from('organizers')
+        .select('stripe_account_id, stripe_onboarding_complete')
+        .eq('user_id', breakdown.organizer_id)
+        .maybeSingle();
+      organizerStripe = orgRow;
+
+      if (!orgRow?.stripe_account_id || !orgRow?.stripe_onboarding_complete) {
+        console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} has not completed Stripe Connect`);
+        return errorResponse(403, 'This event organizer has not completed their payment setup. Ticket purchases are temporarily unavailable.', {}, req);
+      }
+    }
+
+    // ════════════════════════════════════════════════
     // GUEST CHECKOUT PATH — No auth required
     // ════════════════════════════════════════════════
     if (is_guest) {
@@ -208,20 +228,15 @@ serve(async (req) => {
         },
         success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&guest=true`,
         cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
-        expires_at: Math.floor(Date.now() / 1000) + 660,
+        expires_at: Math.floor(Date.now() / 1000) + 630,  // BRD: 10.5min — aligns with 10min DB reservation
       };
 
       // ── Stripe Connect: Route payment to organizer ──
-      const { data: guestOrg } = await adminClient
-        .from('profiles')
-        .select('stripe_account_id, stripe_onboarding_complete')
-        .eq('id', breakdown.organizer_id)
-        .single();
-
-      if (guestOrg?.stripe_account_id && guestOrg.stripe_onboarding_complete && platformFeeCents > 0) {
+      // organizerStripe was pre-fetched and validated above (BRD Rule 4 gate)
+      if (organizerStripe?.stripe_account_id && organizerStripe.stripe_onboarding_complete && platformFeeCents > 0) {
         sessionConfig.payment_intent_data = {
           application_fee_amount: platformFeeCents,
-          transfer_data: { destination: guestOrg.stripe_account_id },
+          transfer_data: { destination: organizerStripe.stripe_account_id },
         };
       }
 
@@ -280,14 +295,8 @@ serve(async (req) => {
       res = reservation[0];
     }
 
-    // ── Check if organizer has Stripe Connect ──
-    const { data: organizer } = await adminClient
-      .from('profiles')
-      .select('stripe_account_id, stripe_onboarding_complete')
-      .eq('id', breakdown.organizer_id)
-      .single();
-
     // ── Create Stripe Checkout Session ──
+    // organizerStripe was pre-fetched and validated above (BRD Rule 4 gate)
     const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
 
     const sessionConfig: any = {
@@ -328,14 +337,14 @@ serve(async (req) => {
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}&tier=${tier_id}&qty=${qty}`,
-      expires_at: Math.floor(Date.now() / 1000) + 660,
+      expires_at: Math.floor(Date.now() / 1000) + 630,  // BRD: 10.5min — aligns with 10min DB reservation
     };
 
     // ── Stripe Connect: Route payment to organizer ──
-    if (organizer?.stripe_account_id && organizer.stripe_onboarding_complete && platformFeeCents > 0) {
+    if (organizerStripe?.stripe_account_id && organizerStripe.stripe_onboarding_complete && platformFeeCents > 0) {
       sessionConfig.payment_intent_data = {
         application_fee_amount: platformFeeCents,
-        transfer_data: { destination: organizer.stripe_account_id },
+        transfer_data: { destination: organizerStripe.stripe_account_id },
       };
     }
 

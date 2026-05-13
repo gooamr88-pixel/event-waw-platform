@@ -93,7 +93,7 @@ BEGIN
     RAISE EXCEPTION 'Not enough tickets. Only % remaining.', v_available;
   END IF;
 
-  v_expires := NOW() + INTERVAL '35 minutes';
+  v_expires := NOW() + INTERVAL '10 minutes';  -- BRD Rule 1: 10-minute cart lock
 
   EXECUTE 'INSERT INTO reservations (user_id, ticket_tier_id, quantity, expires_at, status)
     VALUES (NULL, $1, $2, $3, ''active'') RETURNING id'

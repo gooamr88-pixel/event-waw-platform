@@ -128,6 +128,36 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       const user = await getCurrentUser();
       if (!user) return;
 
+      // ════════════════════════════════════════════════
+      // BRD RULE 4: STRIPE CONNECT PUBLISHING GATE
+      // Block publishing ticketed events if organizer hasn't
+      // completed Stripe Connect onboarding. Without this,
+      // payments go to the platform instead of the organizer.
+      // ════════════════════════════════════════════════
+      if (listingType !== 'display_only') {
+        try {
+          const { data: orgProfile } = await supabase
+            .from('organizers')
+            .select('stripe_account_id, stripe_onboarding_complete')
+            .eq('user_id', user.id)
+            .maybeSingle();
+
+          if (!orgProfile?.stripe_account_id || !orgProfile?.stripe_onboarding_complete) {
+            // Check if any ticket has price > 0 (free events don't need Stripe)
+            const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
+            if (hasPaidTickets) {
+              showToast('⚠️ You must complete Stripe Connect setup before publishing paid events. Go to Settings → Payment Setup.', 'error');
+              if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : 'Publish Event'; }
+              isPublishing = false;
+              return;
+            }
+          }
+        } catch (stripeCheckErr) {
+          console.warn('Stripe onboarding check failed (non-blocking):', stripeCheckErr);
+          // Don't block for query errors — the Edge Function has a server-side gate too
+        }
+      }
+
       const socialLinks = [];
       document.querySelectorAll('#ce-social-links .ce-social-row').forEach(row => {
         const platform = row.querySelector('select')?.value;
