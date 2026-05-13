@@ -311,9 +311,145 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
     }
   });
 
-  document.getElementById('ce-complete-verify')?.addEventListener('click', () => {
-    showToast('Stripe verification flow will be integrated', 'info');
-  });
+  // ════════════════════════════════════════════════
+  // STRIPE CONNECT ONBOARDING — Full Integration
+  // Replaces placeholder. Calls stripe-onboarding Edge Function,
+  // redirects organizer to Stripe, and handles return.
+  // ════════════════════════════════════════════════
+
+  const SUPABASE_FUNCTIONS_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1';
+  const stripeBtn = document.getElementById('ce-complete-verify');
+  const stripeSection = document.getElementById('ce-stripe-section');
+  const stripeBadge = stripeSection?.querySelector('.ev-badge');
+  const stripeReqs = stripeSection?.querySelector('.ce-stripe-reqs');
+  const stripeDesc = stripeSection?.querySelector('.ce-stripe-header p');
+
+  /**
+   * Check Stripe onboarding status and update UI accordingly.
+   */
+  async function checkStripeStatus() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) return;
+
+      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/stripe-onboarding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ action: 'check-status' }),
+      });
+
+      if (!res.ok) return;
+      const data = await res.json();
+
+      if (data.onboarding_complete) {
+        // ── Stripe fully connected ──
+        if (stripeBadge) {
+          stripeBadge.textContent = 'Connected';
+          stripeBadge.className = 'ev-badge success';
+        }
+        if (stripeDesc) stripeDesc.textContent = 'Your Stripe account is verified and ready to accept payments.';
+        if (stripeReqs) stripeReqs.style.display = 'none';
+        if (stripeBtn) {
+          stripeBtn.textContent = '✅ Stripe Connected';
+          stripeBtn.disabled = true;
+          stripeBtn.style.opacity = '0.7';
+        }
+        // Hide the "missing requirements" text
+        const missingText = stripeSection?.querySelector('p[style*="missing"]');
+        if (missingText) missingText.style.display = 'none';
+        // Hide the "use different account" text
+        const diffText = stripeSection?.querySelectorAll('p');
+        diffText?.forEach(p => {
+          if (p.textContent.includes('different account')) p.style.display = 'none';
+        });
+      } else if (data.status === 'pending') {
+        // ── Stripe account created but onboarding incomplete ──
+        if (stripeBadge) {
+          stripeBadge.textContent = 'Pending';
+          stripeBadge.className = 'ev-badge pending';
+        }
+        if (stripeDesc) stripeDesc.textContent = 'Your Stripe account was created but onboarding is not complete. Click below to finish.';
+        if (stripeBtn) stripeBtn.textContent = 'Continue Verification';
+      }
+      // status === 'not_started' → leave defaults
+    } catch (err) {
+      console.warn('Stripe status check failed (non-blocking):', err);
+    }
+  }
+
+  /**
+   * Initiate Stripe onboarding — creates account if needed, redirects to Stripe.
+   */
+  if (stripeBtn) {
+    stripeBtn.addEventListener('click', async () => {
+      const originalText = stripeBtn.textContent;
+      stripeBtn.disabled = true;
+      stripeBtn.textContent = 'Connecting to Stripe…';
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          showToast('⚠️ Please sign in again to connect Stripe.', 'error');
+          return;
+        }
+
+        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/stripe-onboarding`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ action: 'onboard' }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Server error: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        if (data.url) {
+          showToast('🔗 Redirecting to Stripe…', 'info');
+          // Short delay so user sees the toast
+          setTimeout(() => { window.location.href = data.url; }, 400);
+        } else {
+          throw new Error('No onboarding URL returned from Stripe');
+        }
+      } catch (err) {
+        console.error('Stripe onboarding error:', err);
+        showToast(`❌ Stripe connection failed: ${err.message}`, 'error');
+        stripeBtn.disabled = false;
+        stripeBtn.textContent = originalText;
+      }
+    });
+  }
+
+  // ── Handle return from Stripe onboarding ──
+  const urlParams = new URLSearchParams(window.location.search);
+  const stripeReturn = urlParams.get('stripe');
+
+  if (stripeReturn === 'complete') {
+    // User returned from Stripe — check status
+    showToast('🔄 Checking your Stripe verification status…', 'info');
+    checkStripeStatus().then(() => {
+      showToast('✅ Stripe status updated!', 'success');
+    });
+    // Clean up the URL
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, '', cleanUrl);
+  } else if (stripeReturn === 'refresh') {
+    // User clicked "refresh" link on Stripe
+    showToast('⚠️ Stripe onboarding was interrupted. Click "Complete Verification" to continue.', 'error');
+    const cleanUrl = window.location.pathname + window.location.hash;
+    window.history.replaceState({}, '', cleanUrl);
+  }
+
+  // ── Auto-check status on Publishing tab load ──
+  checkStripeStatus();
 }
 
 export function updateCePreview() {
