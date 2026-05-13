@@ -245,6 +245,8 @@
                   <span id="discount-amount" style="font-size:1rem;font-weight:600;color:#22c55e;">-$0</span>
                 </div>
               </div>
+              <!-- Server-side price breakdown container -->
+              <div id="server-breakdown" style="margin-bottom:12px;"></div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
                 <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
                 <span id="total-price" style="font-size:1.3rem;font-weight:700;">$0</span>
@@ -511,6 +513,7 @@
   <script type="module">
     import { supabase, getCurrentUser, resolveImageUrl } from './src/lib/supabase.js';
     import { getEvent, createCheckout, createGuestCheckout, createSeatedCheckout, createGuestSeatedCheckout } from './src/lib/events.js';
+    import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from './src/lib/price-breakdown.js';
     import { initSeatingUI } from './src/lib/seating-ui.js?v=2';
     import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
@@ -1146,15 +1149,25 @@
       }
     });
 
+    // ── Cached server breakdown for use in confirm modals ──
+    let cachedBreakdown = null;
+    let breakdownDebounce = null;
+
     function updateTotal() {
       let subtotal = 0;
       let hasSelection = false;
+      let activeTierId = null;
+      let activeQty = 0;
       
       for (const [tierId, qty] of Object.entries(quantities)) {
         if (qty > 0) {
           hasSelection = true;
           const tier = eventData?.ticket_tiers?.find(t => t.id === tierId);
-          if (tier) subtotal += tier.price * qty;
+          if (tier) {
+            subtotal += tier.price * qty;
+            activeTierId = tierId;
+            activeQty = qty;
+          }
         }
       }
 
@@ -1179,10 +1192,37 @@
         document.getElementById('discount-row').style.display = 'none';
       }
 
-      const total = Math.max(0, subtotal - discount);
-      document.getElementById('total-price').textContent = `${total.toLocaleString()} ${cur}`;
+      // Instant local total (shown immediately)
+      const localTotal = Math.max(0, subtotal - discount);
+      document.getElementById('total-price').textContent = `${localTotal.toLocaleString()} ${cur}`;
       document.getElementById('checkout-btn').disabled = !hasSelection;
       document.getElementById('guest-checkout-btn').disabled = !hasSelection;
+
+      // ── BRD Fix: Fetch server-side breakdown (debounced) ──
+      const breakdownContainer = document.getElementById('server-breakdown');
+      if (hasSelection && activeTierId && activeQty > 0) {
+        clearTimeout(breakdownDebounce);
+        breakdownDebounce = setTimeout(async () => {
+          try {
+            injectBreakdownStyles();
+            if (breakdownContainer) breakdownContainer.innerHTML = '<div class="ev-breakdown ev-breakdown--loading">Calculating final price…</div>';
+            const breakdown = await getOrderBreakdown(activeTierId, activeQty, appliedPromo?.code || null);
+            cachedBreakdown = breakdown;
+            if (breakdownContainer) renderPriceBreakdown(breakdownContainer, breakdown, { compact: true });
+            // Update total to match server
+            if (breakdown?.total != null) {
+              document.getElementById('total-price').textContent = `${Number(breakdown.total).toLocaleString()} ${cur}`;
+            }
+          } catch (err) {
+            console.warn('Server breakdown fetch failed, using local total:', err);
+            cachedBreakdown = null;
+            if (breakdownContainer) breakdownContainer.innerHTML = '';
+          }
+        }, 400);
+      } else {
+        cachedBreakdown = null;
+        if (breakdownContainer) breakdownContainer.innerHTML = '';
+      }
     }
 
     // ── Helper: gather selected items ──
@@ -1343,8 +1383,14 @@
             ${tiersSummary}
             <div class="confirm-total">
               <span class="confirm-total-label">${totalQty} ticket${totalQty > 1 ? 's' : ''} · Total</span>
-              <span class="confirm-total-price">$${totalPrice.toLocaleString()}</span>
+              <span class="confirm-total-price">${cachedBreakdown ? Number(cachedBreakdown.total).toLocaleString() : totalPrice.toLocaleString()} ${event.currency || 'USD'}</span>
             </div>
+            ${cachedBreakdown && (cachedBreakdown.tax_amount > 0 || cachedBreakdown.platform_fee_total > 0) ? `
+              <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);line-height:1.6;">
+                ${cachedBreakdown.tax_amount > 0 ? `<div style="display:flex;justify-content:space-between;"><span>${cachedBreakdown.tax_label || 'VAT'} (${cachedBreakdown.tax_rate}%)</span><span>${Number(cachedBreakdown.tax_amount).toLocaleString()} ${event.currency || 'USD'}</span></div>` : ''}
+                ${cachedBreakdown.platform_fee_total > 0 ? `<div style="display:flex;justify-content:space-between;"><span>Service Fee</span><span>${Number(cachedBreakdown.platform_fee_total).toLocaleString()} ${event.currency || 'USD'}</span></div>` : ''}
+              </div>
+            ` : ''}
           </div>
 
           <div class="confirm-section">
@@ -1488,8 +1534,14 @@
             ${tiersSummary}
             <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1.5px solid var(--border-color);">
               <span style="font-size:0.9rem;color:var(--text-secondary);">${totalQty} ticket${totalQty > 1 ? 's' : ''} · Total</span>
-              <span style="font-size:1.3rem;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">$${totalPrice.toLocaleString()}</span>
+              <span style="font-size:1.3rem;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${cachedBreakdown ? Number(cachedBreakdown.total).toLocaleString() : totalPrice.toLocaleString()} ${event.currency || 'USD'}</span>
             </div>
+            ${cachedBreakdown && (cachedBreakdown.tax_amount > 0 || cachedBreakdown.platform_fee_total > 0) ? `
+              <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted);line-height:1.6;">
+                ${cachedBreakdown.tax_amount > 0 ? `<div style="display:flex;justify-content:space-between;"><span>${cachedBreakdown.tax_label || 'VAT'} (${cachedBreakdown.tax_rate}%)</span><span>${Number(cachedBreakdown.tax_amount).toLocaleString()} ${event.currency || 'USD'}</span></div>` : ''}
+                ${cachedBreakdown.platform_fee_total > 0 ? `<div style="display:flex;justify-content:space-between;"><span>Service Fee</span><span>${Number(cachedBreakdown.platform_fee_total).toLocaleString()} ${event.currency || 'USD'}</span></div>` : ''}
+              </div>
+            ` : ''}
           </div>
 
           <div class="confirm-section" style="margin-top:16px;padding:16px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;">

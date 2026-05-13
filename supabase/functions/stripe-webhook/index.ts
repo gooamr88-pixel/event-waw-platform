@@ -328,6 +328,12 @@ serve(async (req) => {
           hash,
         });
 
+        // ── BRD Fix: Populate seat_label for seated events ──
+        const seatInfo = seatId && seatLookup[seatId] ? seatLookup[seatId] : null;
+        const seatLabel = seatInfo
+          ? `Section ${seatInfo.section_key}, Row ${seatInfo.row_label}, Seat ${seatInfo.seat_number}`
+          : null;
+
         return {
           id: ticketId,
           order_id: order.id,
@@ -335,6 +341,7 @@ serve(async (req) => {
           user_id: isGuest ? null : user_id,
           qr_hash: qrData,
           status: 'valid',
+          ...(seatLabel ? { seat_label: seatLabel } : {}),
         };
       })
     );
