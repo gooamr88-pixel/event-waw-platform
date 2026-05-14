@@ -63,7 +63,142 @@ document.addEventListener('DOMContentLoaded', async () => {
   onDashboardAction('editEvent', loadEventForEditing);
 
   await loadDashboard();
+
+  // ── Stripe Connect banner (non-blocking) ──
+  setupStripeBanner(auth);
 });
+
+/* ==================================
+   STRIPE CONNECT ONBOARDING BANNER
+   Shows in main dashboard for organizers
+   who haven't connected their Stripe account.
+   ================================== */
+const SUPABASE_FUNCTIONS_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1';
+
+async function setupStripeBanner(auth) {
+  const banner = document.getElementById('stripe-connect-banner');
+  const btn = document.getElementById('stripe-banner-btn');
+  const title = document.getElementById('stripe-banner-title');
+  const badge = document.getElementById('stripe-banner-badge');
+  const desc = document.getElementById('stripe-banner-desc');
+  if (!banner || !btn) return;
+
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return;
+
+    const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/stripe-onboarding`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ action: 'check-status' }),
+    });
+
+    if (!res.ok) {
+      // If 403 (not an organizer), hide banner
+      banner.style.display = 'none';
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.onboarding_complete) {
+      // ── CONNECTED ──
+      banner.className = 'ev-stripe-banner stripe-connected';
+      title.textContent = 'Stripe Connected';
+      badge.textContent = 'Active';
+      desc.textContent = 'Your payment account is verified and ready to accept ticket sales. You\'re all set!';
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        Connected
+      `;
+      btn.disabled = true;
+      banner.style.display = 'block';
+
+      // Auto-hide connected banner after 8 seconds
+      setTimeout(() => {
+        banner.style.transition = 'opacity .5s, max-height .5s';
+        banner.style.opacity = '0';
+        banner.style.maxHeight = '0';
+        banner.style.overflow = 'hidden';
+        banner.style.marginBottom = '0';
+      }, 8000);
+
+    } else if (data.status === 'pending') {
+      // ── PENDING (account created, onboarding incomplete) ──
+      banner.className = 'ev-stripe-banner stripe-pending';
+      title.textContent = 'Stripe Setup Incomplete';
+      badge.textContent = 'Pending';
+      desc.textContent = 'Your Stripe account was created but setup isn\'t finished. Complete it to start selling tickets.';
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Continue Setup
+      `;
+      banner.style.display = 'block';
+
+    } else {
+      // ── NOT STARTED ──
+      banner.className = 'ev-stripe-banner';
+      title.textContent = 'Connect Your Stripe Account';
+      badge.textContent = 'Required';
+      desc.textContent = 'To sell tickets and receive payouts, you need to connect a Stripe account. This is a one-time setup.';
+      banner.style.display = 'block';
+    }
+
+  } catch (err) {
+    console.warn('Stripe banner check failed (non-blocking):', err);
+    // Show banner in default state anyway
+    banner.style.display = 'block';
+  }
+
+  // ── Click handler: initiate onboarding ──
+  btn.addEventListener('click', async () => {
+    if (btn.disabled) return;
+    const origText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `
+      <div style="width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:evSpin .7s linear infinite"></div>
+      Connecting…
+    `;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        showToast('⚠️ Please sign in again to connect Stripe.', 'error');
+        return;
+      }
+
+      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/stripe-onboarding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ action: 'onboard' }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || `Server error: ${res.status}`);
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        showToast('🔗 Redirecting to Stripe…', 'info');
+        setTimeout(() => { window.location.href = data.url; }, 400);
+      } else {
+        throw new Error('No onboarding URL returned');
+      }
+    } catch (err) {
+      console.error('Stripe onboarding error:', err);
+      showToast(`❌ Stripe connection failed: ${err.message}`, 'error');
+      btn.disabled = false;
+      btn.innerHTML = origText;
+    }
+  });
+}
 
 /* ==================================
    SIGN OUT

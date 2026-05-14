@@ -127,8 +127,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Reservation expired, refund issued' }), { status: 200 });
     }
 
-    // ── Build order row ──
-    const orderData: any = {
+    // ── Build order row (core fields that always exist) ──
+    const coreOrderData: any = {
       event_id,
       reservation_id,
       stripe_session_id: session.id,
@@ -136,35 +136,50 @@ serve(async (req) => {
       amount: (session.amount_total || 0) / 100,
       currency: session.currency || 'usd',
       status: 'paid',
-      // Financial snapshot (Phase 2)
+    };
+
+    // Financial snapshot fields (require migration-v19-task3 columns)
+    const financialSnapshot: any = {
       subtotal: parseFloat(metaSubtotal || '0'),
       tax_amount: parseFloat(metaTaxAmount || '0'),
-      // Safely fallback to the raw metadata fields if the mapped variables are missing
       tax_rate_snapshot: parseFloat(metaTaxRate || session.metadata?.tax_rate_snapshot || session.metadata?.tax_rate || '0'),
       platform_fee_amount: parseFloat(metaPlatformFee || session.metadata?.platform_fee_amount || session.metadata?.platform_fee || '0'),
     };
 
     if (isGuest) {
-      orderData.user_id = null;
-      orderData.is_guest = true;
-      orderData.guest_email = guest_email || session.customer_email || '';
-      orderData.guest_name = guest_name || '';
-      orderData.guest_phone = guest_phone || '';
-
+      coreOrderData.user_id = null;
+      coreOrderData.is_guest = true;
+      coreOrderData.guest_email = guest_email || session.customer_email || '';
+      coreOrderData.guest_name = guest_name || '';
+      coreOrderData.guest_phone = guest_phone || '';
     } else {
-      orderData.user_id = user_id;
-      orderData.is_guest = false;
+      coreOrderData.user_id = user_id;
+      coreOrderData.is_guest = false;
     }
 
-    // ── Create Order ──
-    const { data: order, error: orderError } = await supabase
+    // ── Create Order (with fallback for missing financial columns) ──
+    let order: any;
+    let orderError: any;
+
+    // First attempt: full insert with financial columns
+    ({ data: order, error: orderError } = await supabase
       .from('orders')
-      .insert(orderData)
+      .insert({ ...coreOrderData, ...financialSnapshot })
       .select()
-      .single();
+      .single());
+
+    // Fallback: if financial columns don't exist yet, retry with core fields only
+    if (orderError && (orderError.message?.includes('column') || orderError.code === '42703')) {
+      console.warn('⚠️ Financial columns missing on orders table — retrying insert without them. Run fix-webhook-crash.sql!');
+      ({ data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert(coreOrderData)
+        .select()
+        .single());
+    }
 
     if (orderError) {
-      console.error('Error creating order:', orderError);
+      console.error('CRITICAL: Order creation failed:', orderError);
       return new Response(JSON.stringify({ error: 'Failed to create order' }), { status: 500 });
     }
 

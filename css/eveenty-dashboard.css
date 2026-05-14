@@ -117,6 +117,42 @@ body.ev-dash[data-theme="dark"] .ev-social-prefix{background:var(--ev-border-lt)
 .ev-btn-create{background:#fff;color:#047857;padding:10px 22px;border-radius:10px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.1)}
 .ev-btn-create:hover{background:#fefefe;box-shadow:0 4px 18px rgba(0,0,0,.15);transform:translateY(-1px)}
 
+/* ══════ STRIPE CONNECT BANNER ══════ */
+.ev-stripe-banner{margin-bottom:20px;animation:evFadeIn .4s ease}
+.ev-stripe-banner-inner{display:flex;align-items:center;gap:18px;padding:20px 24px;border-radius:var(--ev-radius-lg);border:1.5px solid rgba(245,158,11,.25);background:linear-gradient(135deg,rgba(245,158,11,.04) 0%,rgba(251,191,36,.06) 100%);position:relative;overflow:hidden;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.ev-stripe-banner-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#f59e0b,#fbbf24,#f59e0b);background-size:200%;animation:ceGradientSlide 3s ease infinite}
+.ev-stripe-banner-icon{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.1),rgba(251,191,36,.15));color:#f59e0b;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .3s}
+.ev-stripe-banner-body{flex:1;min-width:0}
+.ev-stripe-banner-title{display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap}
+.ev-stripe-banner-title strong{font-size:.95rem;color:var(--ev-text)}
+.ev-stripe-badge{display:inline-flex;padding:3px 10px;border-radius:50px;font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;background:rgba(245,158,11,.12);color:#d97706;border:1px solid rgba(245,158,11,.2)}
+.ev-stripe-banner-body p{font-size:.82rem;color:var(--ev-text-sec);line-height:1.5;margin:0}
+.ev-stripe-banner-btn{background:linear-gradient(135deg,#f59e0b,#d97706)!important;color:#fff!important;padding:11px 24px!important;border-radius:10px!important;font-weight:700!important;font-size:.84rem!important;gap:8px!important;box-shadow:0 3px 12px rgba(245,158,11,.3);white-space:nowrap;flex-shrink:0;transition:all .25s!important}
+.ev-stripe-banner-btn:hover{box-shadow:0 6px 20px rgba(245,158,11,.4)!important;transform:translateY(-2px)!important}
+
+/* Stripe Banner — Pending state */
+.ev-stripe-banner.stripe-pending .ev-stripe-banner-inner{border-color:rgba(251,191,36,.3);background:linear-gradient(135deg,rgba(251,191,36,.05) 0%,rgba(245,158,11,.06) 100%)}
+.ev-stripe-banner.stripe-pending .ev-stripe-badge{background:rgba(251,191,36,.15);color:#b45309;border-color:rgba(251,191,36,.25)}
+
+/* Stripe Banner — Connected state */
+.ev-stripe-banner.stripe-connected .ev-stripe-banner-inner{border-color:rgba(22,163,74,.2);background:linear-gradient(135deg,rgba(22,163,74,.04) 0%,rgba(16,185,129,.05) 100%)}
+.ev-stripe-banner.stripe-connected .ev-stripe-banner-inner::before{background:linear-gradient(90deg,#16a34a,#34d399,#16a34a);background-size:200%;animation:none}
+.ev-stripe-banner.stripe-connected .ev-stripe-banner-icon{background:linear-gradient(135deg,rgba(22,163,74,.1),rgba(16,185,129,.15));color:#16a34a}
+.ev-stripe-banner.stripe-connected .ev-stripe-badge{background:rgba(22,163,74,.1);color:#16a34a;border-color:rgba(22,163,74,.2)}
+.ev-stripe-banner.stripe-connected .ev-stripe-banner-btn{background:linear-gradient(135deg,#16a34a,#059669)!important;box-shadow:0 3px 12px rgba(22,163,74,.3)!important;cursor:default!important;opacity:.8!important}
+.ev-stripe-banner.stripe-connected .ev-stripe-banner-btn:hover{transform:none!important;box-shadow:0 3px 12px rgba(22,163,74,.3)!important}
+
+/* Stripe Banner — Dark mode */
+body.ev-dash[data-theme="dark"] .ev-stripe-banner-inner{background:linear-gradient(135deg,rgba(245,158,11,.04) 0%,rgba(251,191,36,.03) 100%);border-color:rgba(245,158,11,.15)}
+body.ev-dash[data-theme="dark"] .ev-stripe-banner.stripe-connected .ev-stripe-banner-inner{background:linear-gradient(135deg,rgba(22,163,74,.06) 0%,rgba(16,185,129,.04) 100%);border-color:rgba(22,163,74,.15)}
+
+/* Stripe Banner — Responsive */
+@media(max-width:768px){
+  .ev-stripe-banner-inner{flex-direction:column;text-align:center;gap:14px;padding:18px}
+  .ev-stripe-banner-title{justify-content:center}
+  .ev-stripe-banner-btn{width:100%;justify-content:center}
+}
+
 /* ══════ STAT CARDS ══════ */
 .ev-stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;margin-bottom:28px}
 .ev-stat-card{background:var(--ev-white);border:1px solid var(--ev-border);border-radius:var(--ev-radius);padding:20px;display:flex;align-items:center;gap:14px;box-shadow:var(--ev-shadow);transition:all .25s ease;position:relative;overflow:hidden}
