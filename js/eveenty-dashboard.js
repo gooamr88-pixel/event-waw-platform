@@ -129,7 +129,7 @@ async function setupStripeBanner(auth) {
     } else if (data.status === 'pending') {
       // ── PENDING (account created, onboarding incomplete) ──
       banner.className = 'ev-stripe-banner stripe-pending';
-      title.textContent = 'Stripe Setup Incomplete';
+      title.innerHTML = 'Stripe Setup Incomplete <button id="stripe-dismiss-btn" style="float:right; background:transparent; border:none; color:inherit; font-size:1.2rem; cursor:pointer;">✕</button>';
       badge.textContent = 'Pending';
       desc.textContent = 'Your Stripe account was created but setup isn\'t finished. Complete it to start selling tickets.';
       btn.innerHTML = `
@@ -137,6 +137,17 @@ async function setupStripeBanner(auth) {
         Continue Setup
       `;
       banner.style.display = 'block';
+
+      // Allow user to dismiss
+      setTimeout(() => {
+        const dismissBtn = document.getElementById('stripe-dismiss-btn');
+        if (dismissBtn) {
+          dismissBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            banner.style.display = 'none';
+          });
+        }
+      }, 100);
 
     } else {
       // ── NOT STARTED ──
