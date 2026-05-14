@@ -63,12 +63,13 @@ export function renderCePromoTable() {
 export function renderCeTicketsTable() {
   const tbody = document.getElementById('ce-tickets-tbody');
   if (!ceTicketsList.length) {
-    setSafeHTML(tbody, '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>');
+    setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">No tickets added yet</td></tr>');
     return;
   }
   setSafeHTML(tbody, ceTicketsList.map((t, i) => {
     return `<tr>
       <td style="font-weight:600">${escapeHTML(t.name)}</td>
+      <td><span style="font-size:0.8rem;color:var(--ev-text-muted);display:block;max-width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${escapeHTML(t.desc)}">${escapeHTML(t.desc) || '—'}</span></td>
       <td>${formatCurrency(t.price, t.currency || 'USD')}</td>
       <td style="color:var(--ev-yellow);font-weight:600">${t.qty}</td>
       <td>${t.earlyEnd ? new Date(t.earlyEnd).toLocaleDateString() : 'Not Set'}</td>

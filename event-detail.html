@@ -538,7 +538,7 @@
     import { initSeatingUI } from './src/lib/seating-ui.js?v=2';
     import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
-    import { escapeHTML } from './src/lib/utils.js';
+    import { escapeHTML, formatCurrency } from './src/lib/utils.js';
     import { setSafeHTML } from './src/lib/dom.js';
 
     let eventData = null;
@@ -1035,7 +1035,7 @@
               <h3 class="tier-card-name">${escapeHTML(tier.name)}</h3>
               ${soldOut ? '<span class="tier-sold-badge">Sold</span>' : ''}
             </div>
-            <div class="tier-card-price">US$${Number(tier.price).toLocaleString()}</div>
+            <div class="tier-card-price">${formatCurrency(tier.price, tier.currency || eventData?.currency || 'USD')}</div>
             ${desc ? `
               <div class="tier-card-desc" id="desc-${tier.id}">
                 <div class="tier-card-desc-text">${escapeHTML(shortDesc).replace(/\n/g, '<br>')}</div>
@@ -1440,7 +1440,7 @@
           <div>
             <div style="font-weight:600;font-size:0.9rem;">${escapeHTML(i.tier.name)} × ${i.qty}</div>
           </div>
-          <div style="font-weight:700;color:var(--accent-primary);">$${(i.tier.price * i.qty).toLocaleString()}</div>
+          <div style="font-weight:700;color:var(--accent-primary);">${formatCurrency(i.tier.price * i.qty, i.tier.currency || eventData?.currency || 'USD')}</div>
         </div>
       `).join('');
 
