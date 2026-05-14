@@ -470,3 +470,75 @@ export function renderArchivesTable(events) {
     });
   });
 }
+
+/**
+ * Load drafted events from Supabase.
+ */
+export async function loadDraftEvents() {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('events')
+      .select(`id, title, status, created_at, updated_at`)
+      .eq('organizer_id', user.id)
+      .eq('status', 'draft')
+      .order('updated_at', { ascending: false });
+
+    if (error) {
+      console.error('loadDraftEvents error:', error);
+      return [];
+    }
+    return data || [];
+  } catch (err) {
+    console.error('loadDraftEvents unexpected error:', err);
+    return [];
+  }
+}
+
+/**
+ * Render the drafts table.
+ */
+export function renderDraftsTable(events) {
+  const tbody = document.getElementById('drafts-tbody');
+  if (!tbody) return;
+
+  if (!events.length) {
+    setSafeHTML(tbody, '<tr><td colspan="5" class="ev-table-empty">No drafts saved yet.</td></tr>');
+    return;
+  }
+
+  const htmlString = events.map((ev, i) => {
+    const created = new Date(ev.created_at);
+    const updated = new Date(ev.updated_at || ev.created_at);
+
+    return `<tr>
+      <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
+      <td>
+        <div style="font-weight:600;font-size:.88rem">${escapeHTML(ev.title || 'Untitled Event')}</div>
+        <div style="font-size:.72rem;color:var(--ev-text-muted)">Draft</div>
+      </td>
+      <td style="font-size:.8rem">${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+      <td style="font-size:.8rem">${updated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="ev-btn ev-btn-outline ev-btn-sm" data-action="edit" data-id="${ev.id}" style="font-size:.75rem;padding:6px 12px">
+            ✏️ Edit Draft
+          </button>
+          <button class="ev-btn-icon" title="Delete Draft" data-action="force-delete" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" style="color:#ef4444">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  setSafeHTML(tbody, htmlString);
+
+  // Use the shared handleTableAction for edit and delete
+  if (!tbody.dataset.listenerAttached) {
+    tbody.dataset.listenerAttached = 'true';
+    tbody.addEventListener('click', handleTableAction);
+  }
+}

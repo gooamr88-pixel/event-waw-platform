@@ -104,6 +104,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>
         Archives
       </button>
+      <button class="ev-nav-item" data-panel="drafts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Drafts
+      </button>
       <button class="ev-nav-item" data-panel="calendar">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5"/></svg>
         Calendar
@@ -472,6 +476,34 @@
 
             </div>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: DRAFTS ════ -->
+    <div class="ev-panel" id="panel-drafts">
+      <div class="ev-welcome" style="margin-bottom:24px">
+        <div>
+          <h2>Draft Events 📝</h2>
+          <p>Resume editing your unfinished events before publishing them.</p>
+        </div>
+      </div>
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table">
+            <thead>
+              <tr>
+                <th class="w-20">#</th>
+                <th class="w-60">Event Title</th>
+                <th class="w-40">Created At</th>
+                <th class="w-40">Last Updated</th>
+                <th class="w-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="drafts-tbody">
+              <tr><td colspan="5" class="ev-table-empty">Loading drafts...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -1539,7 +1571,10 @@
       <div class="ce-step" id="ce-step-publishing">
         <div class="ce-step-header">
           <h3>Publishing</h3>
-          <button class="ev-btn ev-btn-pink" id="ce-publish-btn" type="button">🚀 Publish Event</button>
+          <div style="display:flex;gap:12px">
+            <button class="ev-btn ev-btn-outline" id="ce-draft-btn" type="button" style="border-color: var(--ev-gray); color: var(--ev-text);">📝 Save as Draft</button>
+            <button class="ev-btn ev-btn-pink" id="ce-publish-btn" type="button">🚀 Publish Event</button>
+          </div>
         </div>
         <!-- Submit for approval (hidden for display_only) -->
         <div class="ev-card" id="ce-stripe-section" style="max-width:800px;margin:0 auto 24px">

@@ -37,10 +37,11 @@ function sanitizeDescriptionHTML(html) {
 }
 
 export function setupPublishing(getOrchestratorState, switchToPanel) {
-  document.getElementById('ce-publish-btn')?.addEventListener('click', async (e) => {
+  const submitHandler = async (e) => {
     if (isPublishing) return;
     isPublishing = true;
-    const btn = document.getElementById('ce-publish-btn');
+    const isDraft = e.currentTarget.id === 'ce-draft-btn';
+    const btn = e.currentTarget;
     const { ceEditingEventId, ceKeywords, getListingType } = getOrchestratorState();
 
     // ── VALIDATION ──
@@ -69,32 +70,37 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
 
     const name = document.getElementById('ce-name')?.value.trim();
     if (!name || name.length < 3) markError('ce-name', 'Event name is required (min 3 characters)');
+    
     const place = document.getElementById('ce-place')?.value.trim();
-    if (!place) markError('ce-place', 'Venue is required');
     const city = document.getElementById('ce-city')?.value.trim();
-    if (!city) markError('ce-city', 'City is required');
     const country = document.getElementById('ce-country')?.value;
-    if (!country) markError('ce-country', 'Country is required');
     const category = document.getElementById('ce-category')?.value;
-    if (!category) markError('ce-category', 'Category is required');
     const timezone = document.getElementById('ce-timezone')?.value;
-    if (!timezone) markError('ce-timezone', 'Time zone is required');
     const organizerName = document.getElementById('ce-organizer-name')?.value.trim();
-    if (!organizerName) markError('ce-organizer-name', 'Organizer name is required');
     const organizerEmail = document.getElementById('ce-organizer-email')?.value.trim();
-    if (!organizerEmail) markError('ce-organizer-email', 'Organizer email is required');
     const startDate = document.getElementById('ce-start-date')?.value;
-    if (!startDate) markError('ce-start-date', 'Start date is required');
     const endDate = document.getElementById('ce-end-date')?.value;
-    if (!endDate) markError('ce-end-date', 'End date is required');
-
+    const showEndTimeVal = document.querySelector('input[name="ce-show-end"]:checked')?.value;
     const listingType = getListingType() || 'display_and_sell';
     const currency = document.getElementById('ce-currency')?.value;
-    if (listingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
 
-    if (listingType !== 'display_only' && getTicketsList().length === 0) {
-      errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });
-      showToast('⚠️ You must add at least one ticket before publishing', 'error');
+    if (!isDraft) {
+      if (!place) markError('ce-place', 'Venue is required');
+      if (!city) markError('ce-city', 'City is required');
+      if (!country) markError('ce-country', 'Country is required');
+      if (!category) markError('ce-category', 'Category is required');
+      if (!timezone) markError('ce-timezone', 'Time zone is required');
+      if (!organizerName) markError('ce-organizer-name', 'Organizer name is required');
+      if (!organizerEmail) markError('ce-organizer-email', 'Organizer email is required');
+      if (!startDate) markError('ce-start-date', 'Start date is required');
+      if (showEndTimeVal !== 'no' && !endDate) markError('ce-end-date', 'End date is required');
+      
+      if (listingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
+
+      if (listingType !== 'display_only' && getTicketsList().length === 0) {
+        errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });
+        showToast('⚠️ You must add at least one ticket before publishing', 'error');
+      }
     }
 
     if (errors.length > 0) {
@@ -134,7 +140,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       // completed Stripe Connect onboarding. Without this,
       // payments go to the platform instead of the organizer.
       // ════════════════════════════════════════════════
-      if (listingType !== 'display_only') {
+      if (!isDraft && listingType !== 'display_only') {
         try {
           const { data: orgProfile } = await supabase
             .from('organizers')
@@ -189,7 +195,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         category: category || 'general',
         age_policy: document.getElementById('ce-age-policy')?.value || null,
         language: document.getElementById('ce-language')?.value || null,
-        status: 'published',
+        status: isDraft ? 'draft' : 'published',
         is_private: document.getElementById('ce-is-private')?.value === 'true',
         listing_type: listingType,
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
@@ -370,23 +376,36 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         await supabase.from('promo_codes').insert(promoPayloads);
       }
 
-      showToast(wasEditingForReset ? 'Event updated successfully!' : '🎉 Event submitted! It will appear publicly once approved by admin.', 'success');
+      if (isDraft) {
+        showToast('📝 Draft saved successfully!', 'success');
+      } else {
+        showToast(wasEditingForReset ? 'Event updated successfully!' : '🎉 Event submitted! It will appear publicly once approved by admin.', 'success');
+      }
       
       // Clear edit state in orchestrator (requires callback)
       getOrchestratorState().clearEditState();
-      switchToPanel('events');
+      
+      // Reset form so the wizard is clean next time
+      if (getOrchestratorState().resetForm) {
+        getOrchestratorState().resetForm();
+      }
+
+      switchToPanel(isDraft ? 'drafts' : 'events');
       await emitDashboardAction('refreshDashboard');
 
-      if (!wasEditingForReset) {
+      if (!wasEditingForReset && !isDraft) {
         setTimeout(() => { document.getElementById('services-modal')?.classList.add('active'); }, 600);
       }
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
     } finally {
-      if (btn) { btn.disabled = false; btn.textContent = wasEditingForReset ? 'Update Event' : 'Publish Event'; }
+      if (btn) { btn.disabled = false; btn.textContent = isDraft ? '📝 Save as Draft' : (wasEditingForReset ? 'Update Event' : '🚀 Publish Event'); }
       isPublishing = false;
     }
-  });
+  };
+
+  document.getElementById('ce-publish-btn')?.addEventListener('click', submitHandler);
+  document.getElementById('ce-draft-btn')?.addEventListener('click', submitHandler);
 
   // ════════════════════════════════════════════════
   // STRIPE CONNECT ONBOARDING — Full Integration

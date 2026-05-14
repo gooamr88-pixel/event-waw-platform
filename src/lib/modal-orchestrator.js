@@ -25,7 +25,8 @@ function getOrchestratorState() {
     ceKeywords,
     ceEditingEventId,
     getListingType: () => (ceListingTypeGetter ? ceListingTypeGetter() : ceListingType),
-    clearEditState: () => { ceEditingEventId = null; }
+    clearEditState: () => { ceEditingEventId = null; },
+    resetForm: resetCreateEventForm
   };
 }
 
@@ -36,7 +37,7 @@ function _mapsDeps() {
 export function initGooglePlacesAutocomplete() { return _initMaps(_mapsDeps()); }
 
 export function setupCreateModal() {
-  const openPanel = () => { resetCreateEventForm(); switchToPanel('create-event'); };
+  const openPanel = () => { switchToPanel('create-event'); };
 
   setupBasicTab(getOrchestratorState);
 

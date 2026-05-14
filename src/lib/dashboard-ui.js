@@ -91,6 +91,14 @@ export function switchToPanel(panelName) {
     }).catch(err => console.warn('Failed to load archives:', err));
   }
 
+  // ── Lazy-load drafts when panel is opened ──
+  if (panelName === 'drafts') {
+    import('./dashboard-events.js').then(async (mod) => {
+      const drafts = await mod.loadDraftEvents();
+      mod.renderDraftsTable(drafts);
+    }).catch(err => console.warn('Failed to load drafts:', err));
+  }
+
   // ── Lazy-load financial dashboard when panel is opened ──
   if (panelName === 'financial') {
     import('./dashboard-financial.js').then(async (mod) => {
