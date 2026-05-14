@@ -145,6 +145,25 @@ export function setupBasicTab(getOrchestratorState) {
     const delBtn = e.target.closest('.ce-performer-del');
     if (delBtn) delBtn.closest('.ce-performer-row')?.remove();
   });
+
+  // Show End Time Logic
+  const showEndRadios = document.querySelectorAll('input[name="ce-show-end"]');
+  const endDateGroup = document.getElementById('ce-end-date-group');
+  const endDateInput = document.getElementById('ce-end-date');
+  
+  if (showEndRadios.length && endDateGroup && endDateInput) {
+    showEndRadios.forEach(radio => {
+      radio.addEventListener('change', () => {
+        if (radio.value === 'no') {
+          endDateGroup.style.display = 'none';
+          endDateInput.required = false;
+        } else {
+          endDateGroup.style.display = '';
+          endDateInput.required = true;
+        }
+      });
+    });
+  }
 }
 
 export function renderGoogleKeywords(ceKeywords) {

@@ -63,12 +63,22 @@ serve(async (req) => {
         const account = await stripe.accounts.retrieve(profile.stripe_account_id);
         const isComplete = account.charges_enabled && account.details_submitted;
 
-        // Sync completion status to DB if changed
-        if (isComplete && !profile.stripe_onboarding_complete) {
-          await supabase
-            .from('profiles')
-            .update({ stripe_onboarding_complete: true })
-            .eq('id', user.id);
+        // Sync completion status to DB
+        // Always update both profiles and organizers to ensure consistency and fix legacy states
+        if (isComplete) {
+          await Promise.all([
+            supabase
+              .from('profiles')
+              .update({ stripe_onboarding_complete: true })
+              .eq('id', user.id),
+            supabase
+              .from('organizers')
+              .upsert({
+                user_id: user.id,
+                stripe_account_id: profile.stripe_account_id,
+                stripe_onboarding_complete: true
+              }, { onConflict: 'user_id' })
+          ]);
         }
 
         return jsonResponse({
@@ -107,11 +117,19 @@ serve(async (req) => {
 
       accountId = account.id;
 
-      // Save to profile
-      await supabase
-        .from('profiles')
-        .update({ stripe_account_id: accountId })
-        .eq('id', user.id);
+      // Save to profile and organizers
+      await Promise.all([
+        supabase
+          .from('profiles')
+          .update({ stripe_account_id: accountId })
+          .eq('id', user.id),
+        supabase
+          .from('organizers')
+          .upsert({
+            user_id: user.id,
+            stripe_account_id: accountId
+          }, { onConflict: 'user_id' })
+      ]);
 
       console.log(`🏦 Stripe Connect account created: ${accountId} for user ${user.id}`);
     }

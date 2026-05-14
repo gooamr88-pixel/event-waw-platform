@@ -21,11 +21,7 @@ const COUNTRY_TIMEZONE_MAP = {
   TN: 'Africa/Tunis', JP: 'Asia/Tokyo',
 };
 
-/** ISO country -> select option mapping */
-const ISO_TO_SELECT = {
-  EG: 'EG', SA: 'SA', AE: 'AE', US: 'US', CA: 'CA', GB: 'GB', DE: 'DE', FR: 'FR',
-  TR: 'TR', JO: 'JO', LB: 'LB', KW: 'KW', QA: 'QA', BH: 'BH', OM: 'OM', MA: 'MA', TN: 'TN',
-};
+
 
 /** Country code -> default currency */
 const COUNTRY_CURRENCY_MAP = {
@@ -129,8 +125,7 @@ export async function initGooglePlacesAutocomplete(deps) {
 
       if (city) setField('ce-city', city);
 
-      const selectCode = ISO_TO_SELECT[countryCode] || 'OTHER';
-      setSelect('ce-country', selectCode);
+      if (countryCode) setSelect('ce-country', countryCode);
 
       // Latitude & Longitude (new API: place.location is a LatLng)
       if (place.location) {

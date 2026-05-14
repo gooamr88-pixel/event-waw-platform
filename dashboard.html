@@ -16,6 +16,21 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" />
+  <style>
+    .ts-control { padding: 11px 16px; font-size: .86rem; border: 1px solid var(--ev-border); border-radius: 10px; background: var(--ev-bg); color: var(--ev-text); font-family: inherit; min-height: 44px; display: flex; align-items: center; transition: all .2s; }
+    .ts-control.focus { border-color: var(--ev-yellow); box-shadow: 0 0 0 3px rgba(245,197,24,.1); background: var(--ev-white); }
+    body.ev-dash[data-theme="dark"] .ts-control.focus { background: var(--ev-bg); color: var(--ev-text); }
+    body.ev-dash[data-theme="dark"] .ts-control { background: var(--ev-bg); color: var(--ev-text); border-color: var(--ev-border); }
+    .ts-dropdown { background: var(--ev-bg); color: var(--ev-text); border: 1px solid var(--ev-border); border-radius: 10px; font-size: .86rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 1000; }
+    .ts-dropdown .option { padding: 10px 16px; cursor: pointer; }
+    .ts-dropdown .active { background-color: rgba(245,197,24,0.1); color: var(--ev-text); }
+    .ts-dropdown .optgroup-header { font-weight: 700; color: var(--ev-text-muted); padding: 8px 16px; background: rgba(0,0,0,0.02); }
+    body.ev-dash[data-theme="dark"] .ts-dropdown { background: #1c1917; }
+    body.ev-dash[data-theme="dark"] .ts-dropdown .active { background-color: rgba(255,255,255,0.1); }
+    body.ev-dash[data-theme="dark"] .ts-dropdown .optgroup-header { background: rgba(255,255,255,0.05); }
+    .ts-control > input { color: var(--ev-text) !important; font-family: inherit; }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <!-- Google Maps Places API (New) -->
   <script>
@@ -935,10 +950,6 @@
               <input class="ev-form-input" type="text" id="ce-keywords" placeholder="Type a keyword and press Enter" />
               <div class="ce-tags-wrap" id="ce-keywords-tags"></div>
             </div>
-            <div class="ev-form-group">
-              <label>Pixel Code <span class="ce-info-icon" title="Facebook Pixel tracking code">ⓘ</span></label>
-              <input class="ev-form-input" type="text" id="ce-pixel" placeholder="e.g. 357950757988869" />
-            </div>
             <div class="ev-form-group" id="ce-currency-group">
               <label>Event Currency <span class="ce-req">*</span></label>
               <select class="ev-form-input" id="ce-currency">
@@ -1091,7 +1102,7 @@
               <label>Start Date <span class="ce-req">*</span></label>
               <input class="ev-form-input" type="datetime-local" id="ce-start-date" required />
             </div>
-            <div class="ev-form-group">
+            <div class="ev-form-group" id="ce-end-date-group">
               <label>End Date <span class="ce-req">*</span></label>
               <input class="ev-form-input" type="datetime-local" id="ce-end-date" required />
             </div>
@@ -1445,22 +1456,30 @@
                 </div>
               </div>
             </div>
+
+            <!-- Moved Early Bird Ticket from right col to here -->
+            <div class="ev-card" style="margin-top:24px; border-left: 4px solid var(--ev-yellow); background: linear-gradient(145deg, rgba(245,197,24,0.03), transparent);">
+              <h4 style="font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; color: var(--ev-text-primary);">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--ev-yellow)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Early Bird Ticket (Sale Time)
+              </h4>
+              <div class="ev-form-row">
+                <div class="ev-form-group">
+                  <label>Early Bird Price</label>
+                  <input class="ev-form-input" type="number" id="ce-early-price" placeholder="eg: 10" min="0" step="0.01" />
+                </div>
+                <div class="ev-form-group">
+                  <label>End Date</label>
+                  <input class="ev-form-input" type="datetime-local" id="ce-early-end" />
+                </div>
+              </div>
+            </div>
+
             <button type="button" class="ev-btn ev-btn-primary" id="ce-add-ticket-btn" style="margin-top:20px; width: 100%; justify-content: center; font-size: 1rem; padding: 14px;">+ Add Tickets Settings</button>
           </div>
           <div class="ce-col-right">
-            <div class="ev-card">
-              <h4 style="font-size:.92rem;margin-bottom:14px">Early Bird Ticket (Sale Time)</h4>
-              <div class="ev-form-group">
-                <label>Early Bird Price</label>
-                <input class="ev-form-input" type="number" id="ce-early-price" placeholder="eg: 10" min="0" step="0.01" />
-              </div>
-              <div class="ev-form-group">
-                <label>End Date</label>
-                <input class="ev-form-input" type="datetime-local" id="ce-early-end" />
-              </div>
-            </div>
             <!-- Tickets types table -->
-            <div class="ev-card" style="margin-top:20px">
+            <div class="ev-card">
               <h4 style="font-size:.92rem;margin-bottom:14px;display:flex;align-items:center;gap:6px">🎫 Tickets types</h4>
               <div class="ev-table-wrap">
                 <table class="ev-table" id="ce-tickets-table">
@@ -1750,6 +1769,14 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const tsSettings = { create: false, maxOptions: null };
+      if (document.getElementById('ce-currency')) new TomSelect('#ce-currency', tsSettings);
+      if (document.getElementById('ce-timezone')) new TomSelect('#ce-timezone', tsSettings);
+    });
+  </script>
   <script type="module" src="js/eveenty-dashboard.js?v=20260513_2"></script>
 </body>
 </html>

@@ -234,7 +234,6 @@ export async function loadEventForEditing(eventId) {
     setSelect('ce-category', ev.category);
     setSelect('ce-age-policy', ev.age_policy);
     setSelect('ce-language', ev.language);
-    setVal('ce-pixel', ev.pixel_code);
     setSelect('ce-currency', ev.currency);
     setSelect('ce-timezone', ev.timezone);
     setVal('ce-website', ev.website);
@@ -514,7 +513,7 @@ export function resetCreateEventForm() {
   const currencyGroup = document.getElementById('ce-currency-group');
   if (currencyGroup) currencyGroup.style.display = '';
 
-  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio','ce-short-desc','ce-policy-guests','ce-policy-refund','ce-policy-refund-deadline','ce-policy-cancellation','ce-policy-children','ce-policy-security','ce-policy-entry','ce-policy-parking','ce-policy-instructions'].forEach(id => {
+  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio','ce-short-desc','ce-policy-guests','ce-policy-refund','ce-policy-refund-deadline','ce-policy-cancellation','ce-policy-children','ce-policy-security','ce-policy-entry','ce-policy-parking','ce-policy-instructions'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });

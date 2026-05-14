@@ -189,6 +189,24 @@ body.ev-dash {
   color: var(--ev-text-muted, var(--text-muted, #71717a));
 }
 
+/* Force high visibility for inputs in Light Mode (fixes white-on-white issues) */
+body:not([data-theme="dark"]) .fi,
+body:not([data-theme="dark"]) .ev-form-input,
+body:not([data-theme="dark"]) .ev-input,
+body:not([data-theme="dark"]) .ev-select {
+  color: #0f172a !important; /* Force dark text */
+  background-color: #f8fafc; /* Distinct off-white bg */
+  border: 1px solid #cbd5e1 !important; /* Visible gray border */
+}
+body:not([data-theme="dark"]) .fi:focus,
+body:not([data-theme="dark"]) .ev-form-input:focus,
+body:not([data-theme="dark"]) .ev-input:focus,
+body:not([data-theme="dark"]) .ev-select:focus {
+  background-color: #ffffff;
+  border-color: var(--es-emerald-600) !important;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
+}
+
 
 /* ══════════════════════════════════
    4. UNIFIED CARD SYSTEM
