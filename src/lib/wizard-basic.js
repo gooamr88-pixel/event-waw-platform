@@ -91,6 +91,60 @@ export function setupBasicTab(getOrchestratorState) {
     const del = e.target.closest('.ce-social-del');
     if (del) del.closest('.ce-social-row')?.remove();
   });
+
+  // Short Description character counter
+  const shortDesc = document.getElementById('ce-short-desc');
+  const shortDescCount = document.getElementById('ce-short-desc-count');
+  if (shortDesc && shortDescCount) {
+    shortDesc.addEventListener('input', () => {
+      const len = shortDesc.value.length;
+      shortDescCount.textContent = `${len}/200`;
+      shortDescCount.style.color = len > 180 ? '#ef4444' : '';
+    });
+  }
+
+  // Performers Logic
+  document.getElementById('ce-add-performer')?.addEventListener('click', () => {
+    const container = document.getElementById('ce-performers-container');
+    const row = document.createElement('div');
+    row.className = 'ce-performer-row';
+    const id = Date.now() + Math.random().toString(36).substring(2, 5);
+    setSafeHTML(row, `
+      <div class="ce-performer-photo-area" id="perf-area-${id}">
+        <span style="font-size: 1.5rem; color: #9ca3af;">👤</span>
+        <input type="file" accept="image/jpeg,image/png" class="perf-upload" id="perf-input-${id}" />
+      </div>
+      <div class="ce-performer-inputs">
+        <input type="text" class="ev-form-input perf-name" placeholder="Name (e.g. DJ Snake)" required />
+        <input type="text" class="ev-form-input perf-role" placeholder="Role (e.g. DJ, Singer, Speaker)" />
+      </div>
+      <button type="button" class="ce-performer-del" title="Remove">✕</button>
+    `);
+    container.appendChild(row);
+
+    // Wire up image preview
+    const input = row.querySelector('.perf-upload');
+    const area = row.querySelector('.ce-performer-photo-area');
+    input.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (!file.type.startsWith('image/')) { showToast('Please select an image file', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        area.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = ev.target.result;
+        area.appendChild(img);
+        area.appendChild(input); // keep input
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  document.getElementById('ce-performers-container')?.addEventListener('click', (e) => {
+    const delBtn = e.target.closest('.ce-performer-del');
+    if (delBtn) delBtn.closest('.ce-performer-row')?.remove();
+  });
 }
 
 export function renderGoogleKeywords(ceKeywords) {

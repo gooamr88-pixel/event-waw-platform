@@ -232,6 +232,8 @@ export async function loadEventForEditing(eventId) {
     setVal('ce-longitude', ev.longitude);
     setVal('ce-latitude', ev.latitude);
     setSelect('ce-category', ev.category);
+    setSelect('ce-age-policy', ev.age_policy);
+    setSelect('ce-language', ev.language);
     setVal('ce-pixel', ev.pixel_code);
     setSelect('ce-currency', ev.currency);
     setSelect('ce-timezone', ev.timezone);
@@ -241,6 +243,11 @@ export async function loadEventForEditing(eventId) {
     setVal('ce-organizer-phone', ev.organizer_phone);
     setVal('ce-organizer-website', ev.organizer_website);
     setVal('ce-organizer-bio', ev.organizer_bio);
+    setVal('ce-short-desc', ev.short_description);
+    // Update short desc counter
+    const shortDescEl = document.getElementById('ce-short-desc');
+    const shortDescCounter = document.getElementById('ce-short-desc-count');
+    if (shortDescEl && shortDescCounter) shortDescCounter.textContent = `${(shortDescEl.value || '').length}/200`;
 
     const editor = document.getElementById('ce-overview');
     if (editor && ev.description) setSafeHTML(editor, ev.description);
@@ -283,6 +290,50 @@ export async function loadEventForEditing(eventId) {
             <button type="button" class="ce-social-del" title="Remove">x</button>
           </div>
         `).join(''));
+      }
+    }
+
+    if (ev.performers && Array.isArray(ev.performers) && ev.performers.length) {
+      const container = document.getElementById('ce-performers-container');
+      if (container) {
+        setSafeHTML(container, ev.performers.map((p, i) => {
+          const id = `perf-edit-${i}-${Date.now()}`;
+          return `
+            <div class="ce-performer-row" data-existing-url="${escapeHTML(p.image_url || '')}">
+              <div class="ce-performer-photo-area ${p.image_url ? 'has-image' : ''}" id="perf-area-${id}">
+                ${p.image_url ? `<img src="${escapeHTML(p.image_url)}" />` : '<span style="font-size: 1.5rem; color: #9ca3af;">👤</span>'}
+                <input type="file" accept="image/jpeg,image/png" class="perf-upload" id="perf-input-${id}" />
+              </div>
+              <div class="ce-performer-inputs">
+                <input type="text" class="ev-form-input perf-name" placeholder="Name (e.g. DJ Snake)" value="${escapeHTML(p.name || '')}" required />
+                <input type="text" class="ev-form-input perf-role" placeholder="Role (e.g. DJ, Singer, Speaker)" value="${escapeHTML(p.role || '')}" />
+              </div>
+              <button type="button" class="ce-performer-del" title="Remove">✕</button>
+            </div>
+          `;
+        }).join(''));
+
+        // Wire up image previews for loaded rows
+        container.querySelectorAll('.ce-performer-row').forEach(row => {
+          const input = row.querySelector('.perf-upload');
+          const area = row.querySelector('.ce-performer-photo-area');
+          if (input && area) {
+            input.addEventListener('change', (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                area.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = ev.target.result;
+                area.appendChild(img);
+                area.appendChild(input);
+                area.classList.add('has-image');
+              };
+              reader.readAsDataURL(file);
+            });
+          }
+        });
       }
     }
 
@@ -434,11 +485,11 @@ export function resetCreateEventForm() {
   const currencyGroup = document.getElementById('ce-currency-group');
   if (currencyGroup) currencyGroup.style.display = '';
 
-  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio'].forEach(id => {
+  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio','ce-short-desc'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  ['ce-category','ce-currency','ce-timezone','ce-country'].forEach(id => {
+  ['ce-category','ce-currency','ce-timezone','ce-country','ce-age-policy','ce-language'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.selectedIndex = 0;
   });
@@ -463,6 +514,8 @@ export function resetCreateEventForm() {
   if (socialLinks) setSafeHTML(socialLinks, `<div class="ce-social-row"><select class="ev-form-input ce-social-select"><option value="">Select Platform</option><option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="twitter">X (Twitter)</option><option value="tiktok">TikTok</option><option value="linkedin">LinkedIn</option><option value="youtube">YouTube</option></select><input class="ev-form-input" type="url" placeholder="https://..." /><button type="button" class="ce-social-del" title="Remove">x</button></div>`);
   const tagsWrap = document.getElementById('ce-keywords-tags');
   if (tagsWrap) tagsWrap.textContent = '';
+  const performersContainer = document.getElementById('ce-performers-container');
+  if (performersContainer) performersContainer.textContent = '';
   resetTicketState();
   setCeGalleryCount(1);
   ceKeywords = [];

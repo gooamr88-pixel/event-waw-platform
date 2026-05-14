@@ -114,7 +114,7 @@ function applyAndRender() {
     else if (dateFilter === 'month') { const end = new Date(today); end.setMonth(end.getMonth()+1); filtered = filtered.filter(e => { const d = new Date(e.date); return d >= today && d <= end; }); }
   }
   // Search
-  if (searchQuery.trim()) { const q = searchQuery.toLowerCase(); filtered = filtered.filter(e => (e.title||'').toLowerCase().includes(q) || (e.description||'').toLowerCase().includes(q) || (e.venue||'').toLowerCase().includes(q) || (e.city||'').toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q)); }
+  if (searchQuery.trim()) { const q = searchQuery.toLowerCase(); filtered = filtered.filter(e => (e.title||'').toLowerCase().includes(q) || (e.short_description||'').toLowerCase().includes(q) || (e.description||'').toLowerCase().includes(q) || (e.venue||'').toLowerCase().includes(q) || (e.city||'').toLowerCase().includes(q) || (e.category||'').toLowerCase().includes(q)); }
   // Proximity sort
   if (userLocation) filtered = sortByProximity(filtered, userLocation.lat, userLocation.lng);
   // Pagination
@@ -190,6 +190,7 @@ async function renderEvents(events) {
       <div class="ep-card-body">
         <div class="ep-card-date">${dateStr}</div>
         <h3>${escapeHTML(ev.title)}</h3>
+        ${ev.short_description ? `<p style="font-size:.82rem;color:var(--text-muted);line-height:1.5;margin:4px 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${escapeHTML(ev.short_description)}</p>` : ''}
         <div class="ep-card-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg>${escapeHTML(ev.venue || ev.city || 'TBA')}</div>
         <div class="ep-card-footer">
           <div class="ep-card-price">${isDisplayOnly ? 'Display Only' : (minPrice > 0 ? 'From ' + formatCurrency(minPrice, ev.ticket_tiers?.[0]?.currency || 'USD') : 'Free')}</div>

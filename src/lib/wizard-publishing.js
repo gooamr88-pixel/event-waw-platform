@@ -165,17 +165,30 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         if (platform && url) socialLinks.push({ platform, url });
       });
 
+      const performersData = [];
+      document.querySelectorAll('#ce-performers-container .ce-performer-row').forEach(row => {
+        const name = row.querySelector('.perf-name')?.value?.trim();
+        if (!name) return;
+        const role = row.querySelector('.perf-role')?.value?.trim() || '';
+        const fileInput = row.querySelector('.perf-upload');
+        const existingUrl = row.dataset.existingUrl || null;
+        performersData.push({ name, role, existingUrl, _fileInput: fileInput });
+      });
+
       const showEndTime = document.querySelector('input[name="ce-show-end"]:checked')?.value !== 'no';
 
       const eventData = {
         organizer_id: user.id,
         title: name,
+        short_description: document.getElementById('ce-short-desc')?.value.trim() || null,
         description: sanitizeDescriptionHTML(document.getElementById('ce-overview')?.innerHTML || ''),
         venue: place,
         venue_address: document.getElementById('ce-address')?.value.trim() || null,
         city: city,
         date: new Date(startDate).toISOString(),
         category: category || 'general',
+        age_policy: document.getElementById('ce-age-policy')?.value || null,
+        language: document.getElementById('ce-language')?.value || null,
         status: 'published',
         listing_type: listingType,
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
@@ -195,6 +208,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         organizer_phone: document.getElementById('ce-organizer-phone')?.value.trim() || null,
         organizer_website: document.getElementById('ce-organizer-website')?.value.trim() || null,
         organizer_bio: document.getElementById('ce-organizer-bio')?.value.trim() || null,
+        performers: performersData.map(p => ({ name: p.name, role: p.role, image_url: p.existingUrl }))
       };
 
       let event;
@@ -250,6 +264,24 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (orgLogoInput?.files?.[0]) {
         const orgLogoUrl = await uploadEventFile(event.id, orgLogoInput.files[0], 'organizer_logo');
         if (orgLogoUrl) imageUpdates.organizer_logo_url = orgLogoUrl;
+      }
+
+      // Upload performers images
+      let performersUpdated = false;
+      for (let i = 0; i < performersData.length; i++) {
+        const p = performersData[i];
+        if (p._fileInput && p._fileInput.files?.[0]) {
+          const url = await uploadEventFile(event.id, p._fileInput.files[0], `performer_${i}_${Date.now()}`);
+          if (url) {
+            p.image_url = url;
+            performersUpdated = true;
+          }
+        } else {
+          p.image_url = p.existingUrl; // keep existing if no new file
+        }
+      }
+      if (performersUpdated) {
+        imageUpdates.performers = performersData.map(p => ({ name: p.name, role: p.role, image_url: p.image_url }));
       }
 
       if (Object.keys(imageUpdates).length > 0) {

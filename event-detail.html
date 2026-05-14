@@ -144,15 +144,35 @@
                 <div class="ed-info-value" id="ed-organizer">Eventsli</div>
               </div>
             </div>
+            <div class="ed-info-item" id="ed-age-policy-card" style="display:none;">
+              <div class="ed-info-icon">🔞</div>
+              <div>
+                <div class="ed-info-label">Age Policy</div>
+                <div class="ed-info-value" id="ed-age-policy">—</div>
+              </div>
+            </div>
+            <div class="ed-info-item" id="ed-language-card" style="display:none;">
+              <div class="ed-info-icon">🗣️</div>
+              <div>
+                <div class="ed-info-label">Language</div>
+                <div class="ed-info-value" id="ed-language">—</div>
+              </div>
+            </div>
           </div>
 
-          <!-- Description with See More -->
-          <div class="event-detail-section">
-            <div id="event-description-wrap" class="ed-desc-wrap">
-              <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
-            </div>
-            <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
-          </div>
+          <!-- Short Description (blurb) -->
+          <div class="event-detail-section" id="ed-short-desc-section" style="display:none;">
+            <p id="event-short-description" style="font-size:1.05rem;line-height:1.7;color:var(--text-primary);font-weight:500;padding:20px 24px;background:rgba(5,150,105,.04);border-left:4px solid rgba(5,150,105,.4);border-radius:0 12px 12px 0;"></p>
+          </div>
+
+          <!-- Full Description with See More -->
+          <div class="event-detail-section" id="ed-full-desc-section">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📝 About This Event</h2>
+            <div id="event-description-wrap" class="ed-desc-wrap">
+              <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
+            </div>
+            <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
+          </div>
 
           <!-- Event Logo -->
           <div class="event-detail-section" id="ed-logo-section" style="display:none;">
@@ -169,6 +189,12 @@
           <div class="event-detail-section" id="ed-gallery-section" style="display:none;">
             <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📸 Gallery</h2>
             <div id="ed-gallery-grid" class="ed-gallery-grid"></div>
+          </div>
+
+          <!-- Performers -->
+          <div class="event-detail-section" id="ed-performers-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">🎤 Artists & Performers</h2>
+            <div id="ed-performers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px;"></div>
           </div>
 
           <!-- Sponsors -->
@@ -602,6 +628,26 @@
       };
       document.getElementById('event-title').textContent = event.title;
       document.getElementById('event-category').textContent = event.category || 'Event';
+      // Render short description blurb
+
+      if (event.short_description) {
+
+        const shortDescSection = document.getElementById('ed-short-desc-section');
+
+        const shortDescEl = document.getElementById('event-short-description');
+
+        if (shortDescSection && shortDescEl) {
+
+          shortDescEl.textContent = event.short_description;
+
+          shortDescSection.style.display = 'block';
+
+        }
+
+      }
+
+
+
       // Render rich HTML description securely (supports bold, italic, links from editor)
       const descEl = document.getElementById('event-description');
       if (event.description && /<[a-z][\s\S]*>/i.test(event.description)) {
@@ -621,7 +667,7 @@
       const ogDesc = document.getElementById('og-desc');
       const ogImage = document.getElementById('og-image');
       if (ogTitle) ogTitle.setAttribute('content', `${event.title} — Eventsli`);
-      if (ogDesc) ogDesc.setAttribute('content', event.description || `Book tickets for ${event.title} on Eventsli.`);
+      if (ogDesc) ogDesc.setAttribute('content', event.short_description || event.description || `Book tickets for ${event.title} on Eventsli.`);
       if (ogImage && event.cover_image) ogImage.setAttribute('content', event.cover_image);
 
       // Check if description needs "See more"
@@ -664,6 +710,24 @@
       // Organizer
       const orgName = event.profiles?.full_name || 'Eventsli';
       document.getElementById('ed-organizer').textContent = `By: ${orgName}`;
+
+      // Age Policy
+      if (event.age_policy) {
+        document.getElementById('ed-age-policy-card').style.display = 'flex';
+        let ageText = event.age_policy;
+        if (ageText === 'family') ageText = 'Family Friendly';
+        else if (ageText === 'adults_only') ageText = 'Adults Only';
+        else if (ageText.endsWith('+')) ageText = `${ageText} Years`;
+        document.getElementById('ed-age-policy').textContent = ageText;
+      }
+
+      // Language
+      if (event.language) {
+        document.getElementById('ed-language-card').style.display = 'flex';
+        let langText = event.language;
+        if (langText === 'Bilingual') langText = 'Bilingual (Ar/En)';
+        document.getElementById('ed-language').textContent = langText;
+      }
 
       // Hero bar
       const dateText = `${date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })} · ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
@@ -726,6 +790,65 @@
             img.addEventListener('click', () => window.openLightbox(img.src));
             galleryGrid.appendChild(img);
           }
+        }
+      }
+
+      // ── Performers ──
+      let performersArr = event.performers;
+      if (typeof performersArr === 'string') {
+        try { performersArr = JSON.parse(performersArr); } catch (_) { performersArr = null; }
+      }
+      if (Array.isArray(performersArr) && performersArr.length) {
+        const perfSection = document.getElementById('ed-performers-section');
+        const perfGrid = document.getElementById('ed-performers-grid');
+        perfGrid.textContent = '';
+        perfSection.style.display = 'block';
+        for (const p of performersArr) {
+          const card = document.createElement('div');
+          card.style.textAlign = 'center';
+          
+          const imgWrap = document.createElement('div');
+          imgWrap.style.width = '80px';
+          imgWrap.style.height = '80px';
+          imgWrap.style.margin = '0 auto 8px';
+          imgWrap.style.borderRadius = '50%';
+          imgWrap.style.overflow = 'hidden';
+          imgWrap.style.background = 'var(--ev-card)';
+          imgWrap.style.border = '1px solid var(--ev-border)';
+          imgWrap.style.display = 'flex';
+          imgWrap.style.alignItems = 'center';
+          imgWrap.style.justifyContent = 'center';
+
+          if (p.image_url) {
+            const resolved = await resolveImageUrl(p.image_url);
+            if (resolved) {
+              const img = document.createElement('img');
+              img.src = resolved;
+              img.style.width = '100%';
+              img.style.height = '100%';
+              img.style.objectFit = 'cover';
+              imgWrap.appendChild(img);
+            } else {
+              imgWrap.innerHTML = '<span style="font-size: 2rem;">👤</span>';
+            }
+          } else {
+            imgWrap.innerHTML = '<span style="font-size: 2rem;">👤</span>';
+          }
+
+          const name = document.createElement('div');
+          name.style.fontWeight = '700';
+          name.style.fontSize = '0.95rem';
+          name.textContent = p.name;
+
+          const role = document.createElement('div');
+          role.style.fontSize = '0.8rem';
+          role.style.color = 'var(--text-muted)';
+          role.textContent = p.role;
+
+          card.appendChild(imgWrap);
+          card.appendChild(name);
+          card.appendChild(role);
+          perfGrid.appendChild(card);
         }
       }
 

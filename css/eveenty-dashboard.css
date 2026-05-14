@@ -775,6 +775,17 @@ body.ev-dash[data-theme="dark"] .ce-map-open-btn{box-shadow:0 2px 8px rgba(66,13
 body.ev-dash[data-theme="dark"] .ce-section-divider-label{background:rgba(5, 150, 105,.08);border-color:rgba(5, 150, 105,.2)}
 body.ev-dash[data-theme="dark"] .ce-section-hint{background:rgba(5, 150, 105,.04);border-left-color:rgba(5, 150, 105,.3)}
 
+/* ── Performers ── */
+.ce-performer-row{display:flex;align-items:center;gap:12px;padding:12px;background:var(--ev-card);border:1px solid var(--ev-border);border-radius:12px;margin-bottom:12px;animation:ceFadeIn .3s ease;}
+.ce-performer-photo-area{position:relative;width:60px;height:60px;border-radius:50%;background:rgba(0,0,0,.03);border:1px dashed var(--ev-border);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0}
+.ce-performer-photo-area img{width:100%;height:100%;object-fit:cover;}
+.ce-performer-photo-area input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+.ce-performer-inputs{flex:1;display:flex;flex-direction:column;gap:8px;}
+.ce-performer-del{width:32px;height:32px;border-radius:50%;border:none;background:rgba(239,68,68,.1);color:#ef4444;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;}
+.ce-performer-del:hover{background:#ef4444;color:#fff}
+body.ev-dash[data-theme="dark"] .ce-performer-row{background:rgba(255,255,255,.02);}
+body.ev-dash[data-theme="dark"] .ce-performer-photo-area{background:rgba(255,255,255,.02);}
+
 /* ── Form Validation Errors ── */
 .ce-error-border{
   border-color:#ef4444 !important;
