@@ -38,15 +38,8 @@ const DARK = 'dark';
  */
 export function initThemeFromStorage() {
   const saved = localStorage.getItem(THEME_KEY);
-  const theme = saved || (matchDark() ? DARK : LIGHT);
+  const theme = saved || LIGHT;
   applyTheme(theme);
-
-  // Live OS preference listener (only when user hasn't manually chosen)
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!localStorage.getItem(THEME_KEY)) {
-      applyTheme(e.matches ? DARK : LIGHT);
-    }
-  });
 }
 
 /**

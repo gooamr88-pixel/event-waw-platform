@@ -24,7 +24,7 @@
     (function() {
       try {
         var saved = localStorage.getItem('theme');
-        var isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        var isDark = saved === 'dark';
         if (isDark) {
           // Set on <html> immediately (prevents white flash)
           document.documentElement.setAttribute('data-theme', 'dark');
