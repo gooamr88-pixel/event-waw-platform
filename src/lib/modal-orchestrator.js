@@ -10,7 +10,7 @@ import { setSafeHTML } from './dom.js';
 import { emitDashboardAction } from './dashboard-bus.js';
 import { initGooglePlacesAutocomplete as _initMaps, showGoogleMapPreview, isAutocompleteInitialized, resetMapState } from './wizard-maps.js';
 import { clearPendingCoverFile, handleCeFileUpload } from './wizard-uploads.js';
-import { setupTicketListeners, setTicketsList, resetTicketState, renderCeTicketsTable } from './wizard-tickets.js';
+import { setupTicketListeners, setTicketsList, resetTicketState, renderCeTicketsTable, setPromoCodesList, renderCePromoTable } from './wizard-tickets.js';
 import { setupBasicTab, renderGoogleKeywords } from './wizard-basic.js';
 import { setupSponsorsTab, setCeGalleryCount } from './wizard-sponsors.js';
 import { setupPublishing, updateCePreview } from './wizard-publishing.js';
@@ -203,7 +203,7 @@ export function setupCreateModal() {
 
 export async function loadEventForEditing(eventId) {
   try {
-    const { data: ev, error } = await supabase.from('events').select(`*, ticket_tiers(id, name, price, capacity, ticket_type, category, early_bird_price, early_bird_end, max_scans, currency)`).eq('id', eventId).single();
+    const { data: ev, error } = await supabase.from('events').select(`*, ticket_tiers(id, name, price, capacity, ticket_type, category, early_bird_price, early_bird_end, max_scans, currency, description, min_purchase, max_purchase, sales_start, sales_end, seating_type, is_hidden), promo_codes(id, code, discount_type, discount_value, max_uses)`).eq('id', eventId).single();
     if (error || !ev) { showToast('Failed to load event', 'error'); return; }
 
     resetCreateEventForm();
@@ -244,6 +244,23 @@ export async function loadEventForEditing(eventId) {
     setVal('ce-organizer-website', ev.organizer_website);
     setVal('ce-organizer-bio', ev.organizer_bio);
     setVal('ce-short-desc', ev.short_description);
+
+    setSelect('ce-is-private', ev.is_private ? 'true' : 'false');
+
+    if (ev.policies && typeof ev.policies === 'object') {
+      setVal('ce-policy-guests', ev.policies.guests_vips);
+      setVal('ce-policy-refund', ev.policies.refund_policy);
+      setVal('ce-policy-refund-deadline', ev.policies.refund_deadline);
+      setVal('ce-policy-cancellation', ev.policies.cancellation_policy);
+      setSelect('ce-policy-reentry', ev.policies.reentry_policy);
+      setSelect('ce-policy-seating', ev.policies.seating_type);
+      setVal('ce-policy-children', ev.policies.children_policy);
+      setVal('ce-policy-security', ev.policies.security_notes);
+      setVal('ce-policy-entry', ev.policies.entry_requirements);
+      setVal('ce-policy-parking', ev.policies.parking_info);
+      setVal('ce-policy-instructions', ev.policies.important_instructions);
+    }
+
     // Update short desc counter
     const shortDescEl = document.getElementById('ce-short-desc');
     const shortDescCounter = document.getElementById('ce-short-desc-count');
@@ -342,8 +359,20 @@ export async function loadEventForEditing(eventId) {
         id: t.id, name: t.name, qty: t.capacity, price: t.price,
         category: t.category || '', earlyPrice: t.early_bird_price || '',
         earlyEnd: t.early_bird_end || '', currency: t.currency || 'USD',
+        desc: t.description || '', minPurchase: t.min_purchase || 1,
+        maxPurchase: t.max_purchase || 10, salesStart: t.sales_start || '',
+        salesEnd: t.sales_end || '', seatingType: t.seating_type || 'general',
+        isHidden: t.is_hidden || false
       })));
       renderCeTicketsTable();
+    }
+
+    if (ev.promo_codes && ev.promo_codes.length) {
+      setPromoCodesList(ev.promo_codes.map(p => ({
+        id: p.id, code: p.code, type: p.discount_type, 
+        value: p.discount_value, maxUses: p.max_uses || null
+      })));
+      renderCePromoTable();
     }
 
     const coverSrc = ev.cover_image || ev.cover_url;
@@ -485,11 +514,11 @@ export function resetCreateEventForm() {
   const currencyGroup = document.getElementById('ce-currency-group');
   if (currencyGroup) currencyGroup.style.display = '';
 
-  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio','ce-short-desc'].forEach(id => {
+  ['ce-name','ce-place','ce-address','ce-city','ce-longitude','ce-latitude','ce-keywords','ce-pixel','ce-website','ce-doors','ce-start-date','ce-end-date','ce-ticket-name','ce-ticket-price','ce-early-price','ce-early-end','ce-max-scans-day','ce-google-search','ce-organizer-name','ce-organizer-email','ce-organizer-phone','ce-organizer-website','ce-organizer-bio','ce-short-desc','ce-policy-guests','ce-policy-refund','ce-policy-refund-deadline','ce-policy-cancellation','ce-policy-children','ce-policy-security','ce-policy-entry','ce-policy-parking','ce-policy-instructions'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
-  ['ce-category','ce-currency','ce-timezone','ce-country','ce-age-policy','ce-language'].forEach(id => {
+  ['ce-is-private','ce-category','ce-currency','ce-timezone','ce-country','ce-age-policy','ce-language','ce-policy-reentry','ce-policy-seating'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.selectedIndex = 0;
   });
@@ -528,6 +557,8 @@ export function resetCreateEventForm() {
   if (catSelect) setSafeHTML(catSelect, '<option value="">Select Category</option>');
   const ticketTbody = document.getElementById('ce-tickets-tbody');
   if (ticketTbody) setSafeHTML(ticketTbody, '<tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>');
+  const promoTbody = document.getElementById('ce-promo-tbody');
+  if (promoTbody) setSafeHTML(promoTbody, '<tr><td colspan="4" class="ev-table-empty">No promo codes added yet</td></tr>');
   document.querySelectorAll('.ce-ticket-card').forEach(c => c.classList.remove('selected'));
   const normalCard = document.querySelector('.ce-ticket-card:first-child');
   if (normalCard) { normalCard.classList.add('selected'); normalCard.querySelector('input').checked = true; }

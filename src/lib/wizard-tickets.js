@@ -20,7 +20,41 @@ export function getTicketCategories() { return ceTicketCategories; }
 export function resetTicketState() {
   ceTicketsList = [];
   ceTicketCategories = [];
+  cePromoCodesList = [];
   ceTicketTableListenerAttached = false;
+  cePromoTableListenerAttached = false;
+}
+
+let cePromoCodesList = [];
+let cePromoTableListenerAttached = false;
+
+export function getPromoCodesList() { return cePromoCodesList; }
+export function setPromoCodesList(list) { cePromoCodesList = list; }
+
+export function renderCePromoTable() {
+  const tbody = document.getElementById('ce-promo-tbody');
+  if (!tbody) return;
+  if (!cePromoCodesList.length) {
+    setSafeHTML(tbody, '<tr><td colspan="4" class="ev-table-empty">No promo codes added yet</td></tr>');
+    return;
+  }
+  setSafeHTML(tbody, cePromoCodesList.map((p, i) => {
+    const discountText = p.type === 'percentage' ? `${p.value}%` : `${p.value} fixed`;
+    const maxUsesText = p.maxUses ? p.maxUses : 'Unlimited';
+    return `<tr>
+      <td style="font-weight:600; color:var(--ev-pink);">${escapeHTML(p.code)}</td>
+      <td>${escapeHTML(discountText)}</td>
+      <td>${escapeHTML(maxUsesText.toString())}</td>
+      <td><button class="ev-btn-icon" title="Remove" data-del-promo="${i}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+    </tr>`;
+  }).join(''));
+  if (!cePromoTableListenerAttached) {
+    cePromoTableListenerAttached = true;
+    tbody.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-del-promo]');
+      if (btn) { cePromoCodesList.splice(Number(btn.dataset.delPromo), 1); renderCePromoTable(); }
+    });
+  }
 }
 
 /**
@@ -98,8 +132,18 @@ export function setupTicketListeners() {
     const category = document.getElementById('ce-ticket-category-select')?.value;
     const earlyPrice = document.getElementById('ce-early-price')?.value || '';
     const earlyEnd = document.getElementById('ce-early-end')?.value || '';
+    
+    // New Advanced Ticket Fields
+    const desc = document.getElementById('ce-ticket-desc')?.value.trim() || '';
+    const minPurchase = parseInt(document.getElementById('ce-ticket-min')?.value) || 1;
+    const maxPurchase = parseInt(document.getElementById('ce-ticket-max')?.value) || 10;
+    const salesStart = document.getElementById('ce-ticket-sales-start')?.value || null;
+    const salesEnd = document.getElementById('ce-ticket-sales-end')?.value || null;
+    const seatingType = document.getElementById('ce-ticket-seating-type')?.value || 'general';
+    const isHidden = document.getElementById('ce-ticket-hidden')?.checked || false;
+
     if (!name) { showToast('Ticket name is required', 'error'); return; }
-    if (!price && price !== 0) { showToast('Ticket price is required', 'error'); return; }
+    if (!price && price !== 0) { showToast('Ticket price is required (use 0 for free tickets)', 'error'); return; }
 
     // H-10: Early Bird Price Validation
     if (earlyPrice !== '') {
@@ -110,12 +154,58 @@ export function setupTicketListeners() {
       }
     }
     const currency = document.getElementById('ce-currency')?.value || 'USD';
-    ceTicketsList.push({ name, qty, price, category, earlyPrice, earlyEnd, currency });
+    
+    ceTicketsList.push({ 
+      name, qty, price, category, earlyPrice, earlyEnd, currency,
+      desc, minPurchase, maxPurchase, salesStart, salesEnd, seatingType, isHidden 
+    });
     renderCeTicketsTable();
-    // Reset
+    
+    // Reset basic fields
     document.getElementById('ce-ticket-name').value = '';
     document.getElementById('ce-ticket-qty').value = '1';
     document.getElementById('ce-ticket-price').value = '';
+    // Reset advanced fields
+    if (document.getElementById('ce-ticket-desc')) document.getElementById('ce-ticket-desc').value = '';
+    if (document.getElementById('ce-ticket-min')) document.getElementById('ce-ticket-min').value = '1';
+    if (document.getElementById('ce-ticket-max')) document.getElementById('ce-ticket-max').value = '10';
+    if (document.getElementById('ce-ticket-sales-start')) document.getElementById('ce-ticket-sales-start').value = '';
+    if (document.getElementById('ce-ticket-sales-end')) document.getElementById('ce-ticket-sales-end').value = '';
+    if (document.getElementById('ce-ticket-seating-type')) document.getElementById('ce-ticket-seating-type').value = 'general';
+    if (document.getElementById('ce-ticket-hidden')) document.getElementById('ce-ticket-hidden').checked = false;
+
     showToast('Ticket added!', 'success');
+  });
+
+  // ── Add Promo Code ──
+  document.getElementById('ce-add-promo-btn')?.addEventListener('click', () => {
+    const code = document.getElementById('ce-promo-code')?.value.trim();
+    const type = document.getElementById('ce-promo-type')?.value;
+    const value = parseFloat(document.getElementById('ce-promo-value')?.value) || 0;
+    const maxUses = parseInt(document.getElementById('ce-promo-max-uses')?.value) || null;
+
+    if (!code) { showToast('Promo code is required', 'error'); return; }
+    if (value <= 0) { showToast('Discount value must be greater than 0', 'error'); return; }
+    
+    // Check for duplicates
+    if (cePromoCodesList.some(p => p.code.toUpperCase() === code.toUpperCase())) {
+      showToast('Promo code already exists', 'error');
+      return;
+    }
+
+    cePromoCodesList.push({
+      code: code.toUpperCase(),
+      type,
+      value,
+      maxUses
+    });
+    renderCePromoTable();
+
+    // Reset fields
+    document.getElementById('ce-promo-code').value = '';
+    document.getElementById('ce-promo-value').value = '';
+    document.getElementById('ce-promo-max-uses').value = '';
+    
+    showToast('Promo code added!', 'success');
   });
 }

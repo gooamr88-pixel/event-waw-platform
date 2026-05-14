@@ -6,7 +6,7 @@ import { supabase, getCurrentUser } from './supabase.js';
 import { createEvent, updateEvent } from './events.js';
 import { showToast } from './dashboard-ui.js';
 import { emitDashboardAction } from './dashboard-bus.js';
-import { getTicketsList } from './wizard-tickets.js';
+import { getTicketsList, getPromoCodesList } from './wizard-tickets.js';
 import { uploadCoverImage, uploadEventFile, getPendingCoverFile } from './wizard-uploads.js';
 import DOMPurify from 'https://esm.sh/dompurify@3.2.4';
 
@@ -190,6 +190,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         age_policy: document.getElementById('ce-age-policy')?.value || null,
         language: document.getElementById('ce-language')?.value || null,
         status: 'published',
+        is_private: document.getElementById('ce-is-private')?.value === 'true',
         listing_type: listingType,
         longitude: parseFloat(document.getElementById('ce-longitude')?.value) || null,
         latitude: parseFloat(document.getElementById('ce-latitude')?.value) || null,
@@ -208,7 +209,20 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         organizer_phone: document.getElementById('ce-organizer-phone')?.value.trim() || null,
         organizer_website: document.getElementById('ce-organizer-website')?.value.trim() || null,
         organizer_bio: document.getElementById('ce-organizer-bio')?.value.trim() || null,
-        performers: performersData.map(p => ({ name: p.name, role: p.role, image_url: p.existingUrl }))
+        performers: performersData.map(p => ({ name: p.name, role: p.role, image_url: p.existingUrl })),
+        policies: {
+          guests_vips: document.getElementById('ce-policy-guests')?.value.trim() || null,
+          refund_policy: document.getElementById('ce-policy-refund')?.value.trim() || null,
+          refund_deadline: document.getElementById('ce-policy-refund-deadline')?.value || null,
+          cancellation_policy: document.getElementById('ce-policy-cancellation')?.value.trim() || null,
+          reentry_policy: document.getElementById('ce-policy-reentry')?.value || null,
+          seating_type: document.getElementById('ce-policy-seating')?.value || null,
+          children_policy: document.getElementById('ce-policy-children')?.value.trim() || null,
+          security_notes: document.getElementById('ce-policy-security')?.value.trim() || null,
+          entry_requirements: document.getElementById('ce-policy-entry')?.value.trim() || null,
+          parking_info: document.getElementById('ce-policy-parking')?.value.trim() || null,
+          important_instructions: document.getElementById('ce-policy-instructions')?.value.trim() || null
+        }
       };
 
       let event;
@@ -310,6 +324,13 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
             max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
             currency: t.currency || 'USD',
+            description: t.desc || null,
+            min_purchase: t.minPurchase || 1,
+            max_purchase: t.maxPurchase || 10,
+            sales_start: t.salesStart ? new Date(t.salesStart).toISOString() : null,
+            sales_end: t.salesEnd ? new Date(t.salesEnd).toISOString() : null,
+            is_hidden: t.isHidden || false,
+            seating_type: t.seatingType || 'general'
           }));
           await supabase.from('ticket_tiers').upsert(tierPayloads);
         } else {
@@ -320,9 +341,33 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
             max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
             currency: t.currency || 'USD',
+            description: t.desc || null,
+            min_purchase: t.minPurchase || 1,
+            max_purchase: t.maxPurchase || 10,
+            sales_start: t.salesStart ? new Date(t.salesStart).toISOString() : null,
+            sales_end: t.salesEnd ? new Date(t.salesEnd).toISOString() : null,
+            is_hidden: t.isHidden || false,
+            seating_type: t.seatingType || 'general'
           }));
           await supabase.from('ticket_tiers').insert(tierPayloads);
         }
+      }
+
+      // ── Promo Codes ──
+      const promoCodes = getPromoCodesList();
+      if (promoCodes.length > 0) {
+        if (ceEditingEventId) {
+          // Delete existing promo codes and recreate
+          await supabase.from('promo_codes').delete().eq('event_id', event.id);
+        }
+        const promoPayloads = promoCodes.map(p => ({
+          event_id: event.id,
+          code: p.code,
+          discount_type: p.type,
+          discount_value: p.value,
+          max_uses: p.maxUses || null
+        }));
+        await supabase.from('promo_codes').insert(promoPayloads);
       }
 
       showToast(wasEditingForReset ? 'Event updated successfully!' : '🎉 Event submitted! It will appear publicly once approved by admin.', 'success');

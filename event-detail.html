@@ -212,15 +212,10 @@
             </div>
           </div>
 
-          <!-- Terms & Conditions -->
-          <div class="event-detail-section" id="ed-terms-section" style="display:none;">
-            <button class="ed-terms-toggle" id="terms-toggle">
-              <span>📋 Terms & Conditions / Refund Policy</span>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-            <div id="terms-content" class="ed-terms-content" style="display:none;">
-              <p id="event-terms" style="color:var(--text-muted);font-size:0.88rem;line-height:1.7;white-space:pre-line;"></p>
-            </div>
+          <!-- Policies & Instructions -->
+          <div class="event-detail-section" id="ed-policies-section" style="display:none;">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📋 Policies & Rules</h2>
+            <div id="ed-policies-container" style="display:flex;flex-direction:column;gap:12px;"></div>
           </div>
 
           <!-- Hidden fields for backward compat -->
@@ -738,18 +733,49 @@
       venueEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"/></svg> `;
       venueEl.appendChild(document.createTextNode(event.venue));
 
-      // Terms & Conditions
-      if (event.terms_conditions) {
-        document.getElementById('ed-terms-section').style.display = 'block';
-        document.getElementById('event-terms').textContent = event.terms_conditions;
-        document.getElementById('terms-toggle').addEventListener('click', function() {
-          const content = document.getElementById('terms-content');
-          const open = content.style.display !== 'none';
-          content.style.display = open ? 'none' : 'block';
-          this.classList.toggle('open', !open);
-          if (!open) this.style.borderRadius = '12px 12px 0 0';
-          else this.style.borderRadius = '12px';
-        });
+      // Policies & Rules
+      let policiesObj = event.policies;
+      if (typeof policiesObj === 'string') {
+        try { policiesObj = JSON.parse(policiesObj); } catch (_) { policiesObj = null; }
+      }
+      if (policiesObj && typeof policiesObj === 'object' && Object.values(policiesObj).some(val => val && val.trim() !== '')) {
+        const policiesSection = document.getElementById('ed-policies-section');
+        const policiesContainer = document.getElementById('ed-policies-container');
+        policiesContainer.textContent = '';
+        policiesSection.style.display = 'block';
+
+        const addPolicy = (title, text, icon) => {
+          if (!text || text.trim() === '') return;
+          const div = document.createElement('div');
+          div.style.background = 'var(--ev-card)';
+          div.style.border = '1px solid var(--border-light)';
+          div.style.borderRadius = '12px';
+          div.style.padding = '14px 16px';
+          div.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95rem;margin-bottom:6px;color:var(--text-primary);">
+              <span style="font-size:1.1rem;">${icon}</span> ${title}
+            </div>
+            <div style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;white-space:pre-wrap;">${escapeHTML(text)}</div>
+          `;
+          policiesContainer.appendChild(div);
+        };
+
+        let refundText = policiesObj.refund_policy;
+        if (policiesObj.refund_deadline) {
+          const deadline = new Date(policiesObj.refund_deadline).toLocaleString();
+          refundText = refundText ? `${refundText}\nDeadline: ${deadline}` : `Deadline: ${deadline}`;
+        }
+        
+        addPolicy('Guests & VIPs', policiesObj.guests_vips, '✨');
+        addPolicy('Refund Policy', refundText, '💸');
+        addPolicy('Cancellation Policy', policiesObj.cancellation_policy, '❌');
+        addPolicy('Re-entry Policy', policiesObj.reentry_policy, '🚪');
+        addPolicy('Seating Type', policiesObj.seating_type, '🪑');
+        addPolicy('Children Policy', policiesObj.children_policy, '👶');
+        addPolicy('Security Notes', policiesObj.security_notes, '🛡️');
+        addPolicy('Entry Requirements', policiesObj.entry_requirements, '🎟️');
+        addPolicy('Parking Information', policiesObj.parking_info, '🅿️');
+        addPolicy('Important Instructions', policiesObj.important_instructions, 'ℹ️');
       }
 
       // ── Event Logo ──

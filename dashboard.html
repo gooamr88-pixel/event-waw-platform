@@ -891,6 +891,15 @@
               </select>
             </div>
             
+            <!-- ── Event Visibility ── -->
+            <div class="ev-form-group">
+              <label>Event Visibility <span class="ce-info-icon" title="Public events appear in search and discovery. Private events can only be accessed via direct link.">ⓘ</span></label>
+              <select class="ev-form-input" id="ce-is-private">
+                <option value="false">🌍 Public (Discoverable by everyone)</option>
+                <option value="true">🔒 Private (Only people with the link)</option>
+              </select>
+            </div>
+
             <!-- ── Age Policy & Language ── -->
             <div class="ev-form-row">
               <div class="ev-form-group">
@@ -1238,6 +1247,72 @@
               </div>
               <div class="ce-gallery-grid" id="ce-sponsors-grid"></div>
             </div>
+
+            <!-- ── Policies & Instructions ── -->
+            <div class="ce-organizer-section" style="margin-top: 32px; margin-bottom: 24px;">
+              <div class="ce-section-divider">
+                <div class="ce-section-divider-line"></div>
+                <span class="ce-section-divider-label">📋 Policies & Instructions</span>
+                <div class="ce-section-divider-line"></div>
+              </div>
+              <p class="ce-section-hint">Provide important rules and guidelines for your attendees. These will be clearly displayed on the event page.</p>
+
+              <div class="ev-form-group">
+                <label>Guests & VIPs <span class="ce-info-icon" title="Who are the special guests, VIPs, or prominent speakers?">ⓘ</span></label>
+                <textarea class="ev-form-input" id="ce-policy-guests" rows="2" placeholder="e.g. Special appearance by..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Refund Policy <span class="ce-info-icon" title="e.g. 'No refunds', 'Refunds up to 7 days before'">ⓘ</span></label>
+                <textarea class="ev-form-input" id="ce-policy-refund" rows="2" placeholder="e.g. No refunds under any circumstances..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Refund Deadline <span class="ce-info-icon" title="Last date and time to request a refund, if applicable">ⓘ</span></label>
+                <input class="ev-form-input" type="datetime-local" id="ce-policy-refund-deadline" />
+              </div>
+              <div class="ev-form-group">
+                <label>Cancellation Policy</label>
+                <textarea class="ev-form-input" id="ce-policy-cancellation" rows="2" placeholder="What happens if the event is cancelled..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Re-entry Policy <span class="ce-info-icon" title="Can attendees leave and come back?">ⓘ</span></label>
+                <select class="ev-form-input" id="ce-policy-reentry">
+                  <option value="">Select Re-entry Policy</option>
+                  <option value="No Re-entry">No Re-entry (Once you leave, you cannot return)</option>
+                  <option value="Re-entry Allowed">Re-entry Allowed (With valid wristband/stamp)</option>
+                  <option value="Conditional">Conditional (Ask staff for details)</option>
+                </select>
+              </div>
+              <div class="ev-form-group">
+                <label>Seating Type <span class="ce-info-icon" title="Are there specific seats/tables or is it general admission?">ⓘ</span></label>
+                <select class="ev-form-input" id="ce-policy-seating">
+                  <option value="">Select Seating Type</option>
+                  <option value="General Admission (No reserved seats)">General Admission (No reserved seats)</option>
+                  <option value="Assigned Seating (Specific seats)">Assigned Seating (Specific seats)</option>
+                  <option value="Reserved Tables">Reserved Tables</option>
+                  <option value="Mixed (General + VIP Tables)">Mixed (General + VIP Tables)</option>
+                </select>
+              </div>
+              <div class="ev-form-group">
+                <label>Children Policy</label>
+                <textarea class="ev-form-input" id="ce-policy-children" rows="2" placeholder="e.g. Children under 5 are not allowed..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Security Notes</label>
+                <textarea class="ev-form-input" id="ce-policy-security" rows="2" placeholder="e.g. Bags will be checked at the entrance..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Entry Requirements</label>
+                <textarea class="ev-form-input" id="ce-policy-entry" rows="2" placeholder="e.g. Original ID is required, dress code..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Parking Information</label>
+                <textarea class="ev-form-input" id="ce-policy-parking" rows="2" placeholder="e.g. Valet parking available, limited spots..." style="resize:vertical"></textarea>
+              </div>
+              <div class="ev-form-group">
+                <label>Other Important Instructions</label>
+                <textarea class="ev-form-input" id="ce-policy-instructions" rows="2" placeholder="Any other rules or notes for attendees..." style="resize:vertical"></textarea>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1305,6 +1380,51 @@
                 <input class="ev-form-input" type="number" id="ce-max-scans-day" placeholder="eg: 10" min="1" />
               </div>
             </div>
+
+            <!-- Advanced Ticket Settings -->
+            <div class="ev-form-group" style="margin-top: 12px;">
+              <label>Ticket Description</label>
+              <textarea class="ev-form-input" id="ce-ticket-desc" rows="2" placeholder="What does this ticket include?"></textarea>
+            </div>
+            
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Min Purchase / Order <span class="ce-info-icon" title="Minimum number of tickets a user can buy at once">ⓘ</span></label>
+                <input class="ev-form-input" type="number" id="ce-ticket-min" value="1" min="1" />
+              </div>
+              <div class="ev-form-group">
+                <label>Max Purchase / Order <span class="ce-info-icon" title="Maximum number of tickets a user can buy at once">ⓘ</span></label>
+                <input class="ev-form-input" type="number" id="ce-ticket-max" value="10" min="1" />
+              </div>
+            </div>
+
+            <div class="ev-form-row">
+              <div class="ev-form-group">
+                <label>Sales Start Date</label>
+                <input class="ev-form-input" type="datetime-local" id="ce-ticket-sales-start" />
+              </div>
+              <div class="ev-form-group">
+                <label>Sales End Date</label>
+                <input class="ev-form-input" type="datetime-local" id="ce-ticket-sales-end" />
+              </div>
+            </div>
+
+            <div class="ev-form-row" style="align-items: center;">
+              <div class="ev-form-group" style="flex: 1;">
+                <label>Seating/Entry Type</label>
+                <select class="ev-form-input" id="ce-ticket-seating-type">
+                  <option value="general">General Admission</option>
+                  <option value="reserved">Reserved Seating</option>
+                  <option value="tables">Reserved Tables</option>
+                </select>
+              </div>
+              <div class="ev-form-group" style="flex: 1; display: flex; align-items: center; padding-top: 24px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0;">
+                  <input type="checkbox" id="ce-ticket-hidden" style="width:18px;height:18px;">
+                  Hidden Ticket (Requires promo code/direct link)
+                </label>
+              </div>
+            </div>
             <button type="button" class="ev-btn ev-btn-primary" id="ce-add-ticket-btn" style="margin-top:8px">+ Add Tickets Settings</button>
           </div>
           <div class="ce-col-right">
@@ -1327,6 +1447,44 @@
                   <thead><tr><th>Ticket Type</th><th>Price</th><th>Quantity</th><th>Early Bird End Time</th><th>Early Bird Sale Price</th><th></th></tr></thead>
                   <tbody id="ce-tickets-tbody">
                     <tr><td colspan="6" class="ev-table-empty">No tickets added yet</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <!-- Promo Codes -->
+            <div class="ev-card" style="margin-top:20px">
+              <h4 style="font-size:.92rem;margin-bottom:14px;display:flex;align-items:center;gap:6px">🎟️ Promo Codes / Discounts</h4>
+              
+              <div class="ev-form-row">
+                <div class="ev-form-group">
+                  <label>Code</label>
+                  <input class="ev-form-input" type="text" id="ce-promo-code" placeholder="e.g. VIP2024" />
+                </div>
+                <div class="ev-form-group">
+                  <label>Type</label>
+                  <select class="ev-form-input" id="ce-promo-type">
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount</option>
+                  </select>
+                </div>
+              </div>
+              <div class="ev-form-row">
+                <div class="ev-form-group">
+                  <label>Discount Value</label>
+                  <input class="ev-form-input" type="number" id="ce-promo-value" placeholder="e.g. 20" min="0" step="0.01" />
+                </div>
+                <div class="ev-form-group">
+                  <label>Max Uses (Optional)</label>
+                  <input class="ev-form-input" type="number" id="ce-promo-max-uses" placeholder="e.g. 50" min="1" />
+                </div>
+              </div>
+              <button type="button" class="ev-btn ev-btn-primary" id="ce-add-promo-btn" style="margin-top:8px">+ Add Promo Code</button>
+
+              <div class="ev-table-wrap" style="margin-top: 16px;">
+                <table class="ev-table" id="ce-promo-table">
+                  <thead><tr><th>Code</th><th>Discount</th><th>Max Uses</th><th></th></tr></thead>
+                  <tbody id="ce-promo-tbody">
+                    <tr><td colspan="4" class="ev-table-empty">No promo codes added yet</td></tr>
                   </tbody>
                 </table>
               </div>
