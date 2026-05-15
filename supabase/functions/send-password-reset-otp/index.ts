@@ -21,7 +21,7 @@ serve(async (req) => {
 
   // Usage at top of handler:
   const ip = req.headers.get('x-forwarded-for') ?? 'unknown';
-  const limited = enforceRateLimit(ip);
+  const limited = enforceRateLimit(ip, req);
   if (limited) return limited;
 
   try {

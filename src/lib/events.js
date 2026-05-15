@@ -2,7 +2,7 @@
    EVENTSLI - Events API
    =================================== */
 
-import { supabase } from './supabase.js';
+import { supabase, SUPABASE_FUNCTIONS_URL } from './supabase.js';
 
 /**
  * Fetch all published AND admin-approved events with their ticket tiers.
@@ -83,7 +83,7 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
   }
 
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
+    `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
       method: 'POST',
       headers: {
@@ -366,16 +366,7 @@ export async function deleteEvent(eventId) {
       }
     }
 
-    // 3. Clean up storage files (best-effort, not handled by DB cascades)
-    try {
-      const { data: files } = await supabase.storage.from('event-covers').list(`events/${eventId}`);
-      if (files && files.length > 0) {
-        const paths = files.map(f => `events/${eventId}/${f.name}`);
-        await supabase.storage.from('event-covers').remove(paths);
-      }
-    } catch (_) { /* storage cleanup is best-effort */ }
-
-    // 4. ATOMIC: Set status to 'draft' so RLS delete policy accepts it
+    // 3. ATOMIC: Set status to 'draft' so RLS delete policy accepts it
     //    (events_delete_draft allows DELETE only for status='draft')
     if (originalStatus !== 'draft') {
       const { error: statusErr } = await supabase
@@ -388,7 +379,7 @@ export async function deleteEvent(eventId) {
       }
     }
 
-    // 5. Delete the event — ON DELETE CASCADE handles all child records
+    // 4. Delete the event — ON DELETE CASCADE handles all child records
     const { data: deleted, error: deleteErr } = await supabase
       .from('events')
       .delete()
@@ -408,6 +399,16 @@ export async function deleteEvent(eventId) {
         error: deleteErr?.message || 'Deletion was blocked — you may not have permission to delete this event.',
       };
     }
+
+    // 5. Clean up storage files AFTER successful delete (Q-3 FIX: was before delete,
+    //    causing permanent file loss if delete failed and status was rolled back)
+    try {
+      const { data: files } = await supabase.storage.from('event-covers').list(`events/${eventId}`);
+      if (files && files.length > 0) {
+        const paths = files.map(f => `events/${eventId}/${f.name}`);
+        await supabase.storage.from('event-covers').remove(paths);
+      }
+    } catch (_) { /* storage cleanup is best-effort */ }
 
     return { success: true };
   } catch (err) {

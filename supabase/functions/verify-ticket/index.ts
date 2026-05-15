@@ -120,7 +120,9 @@ serve(async (req) => {
         .eq('id', user.id)
         .single();
 
-      if (scannerProfile?.role !== 'admin') {
+      // S-2 FIX: Check all admin-level roles, not just 'admin'
+      const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
+      if (!scannerProfile || !ADMIN_ROLES.includes(scannerProfile.role)) {
         return errorResponse(403, 'You are not authorized to scan tickets for this event', {}, req);
       }
     }

@@ -8,6 +8,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 const supabaseUrl = 'https://bmtwdwoibvoewbesohpu.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdHdkd29pYnZvZXdiZXNvaHB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMzY0NjYsImV4cCI6MjA5MTkxMjQ2Nn0.YIuyd2y34UHkrAp9nZM_O2yVuaMAT-XWdSrex6eATjQ';
 
+// A-3 FIX: Single source of truth for Edge Function base URL
+export const SUPABASE_FUNCTIONS_URL = `${supabaseUrl}/functions/v1`;
+
 
 
 export const supabase = createClient(
@@ -72,7 +75,7 @@ export async function getCurrentProfile() {
     email: user.email,
     full_name: meta.full_name || meta.name || '',
     phone: meta.phone || null,
-    role: meta.role || 'attendee',
+    role: 'attendee', // SECURITY: Never trust meta.role — role elevation requires server-side RPC
     avatar_url: meta.avatar_url || null,
   };
 
@@ -169,7 +172,7 @@ async function getWorkingStorageUrl(storagePath, bucket = 'event-covers') {
   try {
     const { data, error } = await supabase.storage
       .from(bucket)
-      .createSignedUrl(storagePath, 60 * 60 * 24 * 365);
+      .createSignedUrl(storagePath, 60 * 60); // P-4 FIX: 1 hour (was 1 year — leaked URLs couldn't be revoked)
     if (!error && data?.signedUrl) {
       _evictStorageCache();
       _storageUrlCache.set(cacheKey, { url: data.signedUrl, ts: Date.now() });

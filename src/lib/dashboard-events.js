@@ -398,13 +398,18 @@ export function renderArchivesTable(events) {
   const tbody = document.getElementById('archives-tbody');
   if (!tbody) return;
 
-  if (!events.length) {
+  if (!events || !events.length) {
     setSafeHTML(tbody, '<tr><td colspan="6" class="ev-table-empty">No archived events</td></tr>');
     return;
   }
 
   const htmlString = events.map((ev, i) => {
-    const date = new Date(ev.date);
+    let dateStr = 'Unknown';
+    try {
+      if (ev.date) dateStr = new Date(ev.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch (e) {
+      console.warn('Invalid date in archive:', ev);
+    }
     const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
     const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
     const revenue = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0) || 0;
@@ -416,7 +421,7 @@ export function renderArchivesTable(events) {
         <div style="font-size:.72rem;color:var(--ev-text-muted)">${ev.category || 'No category'}</div>
       </td>
       <td><span style="font-weight:500">${sold}/${cap}</span> <span style="font-size:.75rem;color:var(--ev-text-muted)">sold</span></td>
-      <td style="font-size:.8rem">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+      <td style="font-size:.8rem">${dateStr}</td>
       <td style="font-weight:600">${revenue > 0 ? formatCurrency(revenue, ev.ticket_tiers?.[0]?.currency || ev.currency || 'USD') : '-'}</td>
       <td>
         <div style="display:flex;gap:6px">
@@ -504,14 +509,20 @@ export function renderDraftsTable(events) {
   const tbody = document.getElementById('drafts-tbody');
   if (!tbody) return;
 
-  if (!events.length) {
+  if (!events || !events.length) {
     setSafeHTML(tbody, '<tr><td colspan="5" class="ev-table-empty">No drafts saved yet.</td></tr>');
     return;
   }
 
   const htmlString = events.map((ev, i) => {
-    const created = new Date(ev.created_at);
-    const updated = new Date(ev.updated_at || ev.created_at);
+    let createdStr = 'Unknown';
+    let updatedStr = 'Unknown';
+    try {
+      if (ev.created_at) createdStr = new Date(ev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      if (ev.updated_at || ev.created_at) updatedStr = new Date(ev.updated_at || ev.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    } catch (e) {
+      console.warn('Invalid date in draft:', ev);
+    }
 
     return `<tr>
       <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
@@ -519,8 +530,8 @@ export function renderDraftsTable(events) {
         <div style="font-weight:600;font-size:.88rem">${escapeHTML(ev.title || 'Untitled Event')}</div>
         <div style="font-size:.72rem;color:var(--ev-text-muted)">Draft</div>
       </td>
-      <td style="font-size:.8rem">${created.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-      <td style="font-size:.8rem">${updated.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</td>
+      <td style="font-size:.8rem">${createdStr}</td>
+      <td style="font-size:.8rem">${updatedStr}</td>
       <td>
         <div style="display:flex;gap:6px">
           <button class="ev-btn ev-btn-outline ev-btn-sm" data-action="edit" data-id="${ev.id}" style="font-size:.75rem;padding:6px 12px">

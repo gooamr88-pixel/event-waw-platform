@@ -9,6 +9,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
 import { rateLimit } from '../_shared/rate-limit.ts';
+import { authenticateRequest } from '../_shared/auth.ts';
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
@@ -75,9 +76,12 @@ serve(async (req) => {
       return errorResponse(400, 'Message too long (max 500 chars)', {}, req);
     }
 
-    // Rate limit: 10 messages per minute per IP
-    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
-    if (!rateLimit(`gemini-chat:${clientIp}`, 10, 60_000)) {
+    // S-6 FIX: Require authentication to prevent anonymous API quota abuse
+    const { user, error: authError } = await authenticateRequest(req);
+    if (!user) return errorResponse(401, authError || 'Sign in to use the assistant', {}, req);
+
+    // Rate limit: 10 messages per minute per authenticated user
+    if (!rateLimit(`gemini-chat:${user.id}`, 10, 60_000)) {
       return errorResponse(429, 'Too many messages. Please wait a moment.', {}, req);
     }
 

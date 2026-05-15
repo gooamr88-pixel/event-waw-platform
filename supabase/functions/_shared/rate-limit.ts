@@ -8,6 +8,8 @@
 // For production at scale, consider Upstash Redis.
 // This is sufficient for MVP launch protection.
 
+import { errorResponse } from './cors.ts';
+
 interface RateLimitEntry {
   count: number;
   resetAt: number;
@@ -77,21 +79,13 @@ setInterval(() => {
   }
 }, 60_000);
 
-export function enforceRateLimit(ip: string) {
+export function enforceRateLimit(ip: string, req?: Request) {
   const now = Date.now();
   const entry = ipRateLimitMap.get(ip) ?? { count: 0, reset: now + WINDOW };
   if (now > entry.reset) { entry.count = 0; entry.reset = now + WINDOW; }
   if (++entry.count > MAX_REQ) {
-    return new Response(JSON.stringify({ error: 'Rate limit exceeded' }), {
-      status: 429,
-      headers: { 
-        'Retry-After': '60',
-        'Content-Type': 'application/json',
-        // Need to ensure CORS headers are present on the error response
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      },
-    });
+    // S-1 FIX: Use shared CORS helper instead of wildcard Access-Control-Allow-Origin
+    return errorResponse(429, 'Rate limit exceeded', {}, req);
   }
   ipRateLimitMap.set(ip, entry);
   return null; // OK

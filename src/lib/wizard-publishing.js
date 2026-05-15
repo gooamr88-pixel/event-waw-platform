@@ -2,7 +2,7 @@
    EVENTSLI — Wizard Publishing & Validation
    =================================== */
 
-import { supabase, getCurrentUser } from './supabase.js';
+import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL } from './supabase.js';
 import { createEvent, updateEvent } from './events.js';
 import { showToast } from './dashboard-ui.js';
 import { emitDashboardAction } from './dashboard-bus.js';
@@ -42,6 +42,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
     isPublishing = true;
     const isDraft = e.currentTarget.id === 'ce-draft-btn';
     const btn = e.currentTarget;
+    if (btn) btn.disabled = true; // Q-1 FIX: Disable immediately to prevent double-click race
     const { ceEditingEventId, ceKeywords, getListingType } = getOrchestratorState();
 
     // ── VALIDATION ──
@@ -413,7 +414,6 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
   // redirects organizer to Stripe, and handles return.
   // ════════════════════════════════════════════════
 
-  const SUPABASE_FUNCTIONS_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1';
   const stripeBtn = document.getElementById('ce-complete-verify');
   const stripeSection = document.getElementById('ce-stripe-section');
   const stripeBadge = stripeSection?.querySelector('.ev-badge');

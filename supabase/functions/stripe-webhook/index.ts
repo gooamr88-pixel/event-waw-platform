@@ -672,8 +672,33 @@ serve(async (req) => {
 
       if (order) {
         await supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id);
-        await supabase.from('tickets').update({ status: 'cancelled' }).eq('order_id', order.id);
+        const { data: disputedTickets } = await supabase
+          .from('tickets')
+          .update({ status: 'cancelled' })
+          .eq('order_id', order.id)
+          .eq('status', 'valid')
+          .select('id, ticket_tier_id');
         console.warn(`⚠️ DISPUTE: order ${order.id} — tickets cancelled pending resolution`);
+
+        // Decrement sold_count for cancelled tickets (was missing — Q-5 fix)
+        if (disputedTickets && disputedTickets.length > 0) {
+          const tierCounts: Record<string, number> = {};
+          for (const t of disputedTickets) {
+            tierCounts[t.ticket_tier_id] = (tierCounts[t.ticket_tier_id] || 0) + 1;
+          }
+          for (const [tierId, count] of Object.entries(tierCounts)) {
+            await supabase.rpc('increment_sold_count', {
+              p_tier_id: tierId,
+              p_amount: -count,
+            });
+          }
+        }
+
+        // Update payments table to 'disputed'
+        await supabase
+          .from('payments')
+          .update({ status: 'disputed', updated_at: new Date().toISOString() })
+          .eq('order_id', order.id);
 
         // Log for manual review
         try {

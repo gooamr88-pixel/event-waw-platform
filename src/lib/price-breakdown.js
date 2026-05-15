@@ -297,7 +297,9 @@ export async function fetchAndRenderBreakdown(container, tierId, quantity, promo
     return breakdown;
   } catch (err) {
     console.error('Breakdown fetch failed:', err);
-    container.innerHTML = `<div class="ev-breakdown ev-breakdown--error">${err.message || 'Failed to load pricing'}</div>`;
+    const safeMsg = (err.message || 'Failed to load pricing').replace(/[<>&"']/g, c => 
+      ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;'}[c]));
+    container.innerHTML = `<div class="ev-breakdown ev-breakdown--error">${safeMsg}</div>`;
     return null;
   }
 }
