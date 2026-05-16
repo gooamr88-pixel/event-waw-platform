@@ -222,8 +222,20 @@ serve(async (req) => {
         .insert(paymentData);
 
       if (paymentError) {
-        // Non-critical: log but don't fail the webhook
-        console.error('⚠️ Failed to create payment record:', paymentError.message);
+        // Q-3 FIX: Log to webhook_failures for manual recovery.
+        // Without a payment record, the organizer's financial dashboard
+        // won't show this order's revenue and they can never withdraw it.
+        console.error('CRITICAL: Payment record creation failed:', paymentError.message);
+        try {
+          await supabase.from('webhook_failures').insert({
+            stripe_session_id: session.id,
+            order_id: order.id,
+            error: 'PAYMENT_RECORD_FAILED: ' + JSON.stringify(paymentError),
+            payload: JSON.stringify(session.metadata),
+          });
+        } catch (dlErr) {
+          console.error('Failed to log payment record failure:', dlErr);
+        }
       } else {
         console.log(`💰 Payment record created for order ${order.id}`);
       }
@@ -423,7 +435,9 @@ serve(async (req) => {
         });
 
         const originUrl = Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
-        guestTicketUrl = `${originUrl}/my-tickets.html?guest_token=${rawToken}`;
+        // Q-6 FIX: Use hash fragment instead of query param to prevent
+        // guest token leaking via Referer header to external sites
+        guestTicketUrl = `${originUrl}/my-tickets.html#guest_token=${rawToken}`;
         console.log(`🔗 Guest ticket URL generated for ${userEmail}`);
       } catch (tokenErr) {
         console.error('Failed to create guest token:', tokenErr);
@@ -466,41 +480,9 @@ serve(async (req) => {
               ticketLink: `${Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com'}/my-tickets.html`,
             });
 
-        // ── Generate PDF for attachment ──
-        let pdfAttachment: any = null;
-        try {
-          const pdfResponse = await fetch(
-            `${supabaseUrl}/functions/v1/generate-ticket-pdf`,
-            {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${supabaseServiceKey}`,
-              },
-              body: JSON.stringify({ order_id: order.id }),
-            }
-          );
-
-          if (pdfResponse.ok && pdfResponse.headers.get('content-type')?.includes('pdf')) {
-            const pdfBuffer = await pdfResponse.arrayBuffer();
-            // Base64 encode for Brevo attachment
-            const pdfBase64 = btoa(
-              String.fromCharCode(...new Uint8Array(pdfBuffer))
-            );
-            pdfAttachment = {
-              content: pdfBase64,
-              name: `eventsli-tickets-${order.id.substring(0, 8)}.pdf`,
-            };
-            console.log(`📄 PDF generated for email attachment (${pdfBuffer.byteLength} bytes)`);
-          } else {
-            console.warn('⚠️ PDF generation returned non-PDF response, sending email without attachment');
-          }
-        } catch (pdfErr) {
-          console.error('⚠️ PDF generation failed (non-critical):', pdfErr);
-          // Continue sending email without PDF attachment
-        }
-
-        // ── Send via Brevo ──
+        // ── Send confirmation email IMMEDIATELY (no PDF — P-2 FIX) ──
+        // P-2 FIX: PDF generation was blocking the webhook (10s+ under load).
+        // Now we send the email first, then queue PDF generation fire-and-forget.
         const emailPayload: any = {
           sender: { name: BREVO_SENDER_NAME, email: BREVO_SENDER_EMAIL },
           to: [{ email: userEmail }],
@@ -509,11 +491,6 @@ serve(async (req) => {
             : `🎫 Your tickets for ${eventTitle} are confirmed!`,
           htmlContent: emailHtml,
         };
-
-        // Attach PDF if generated successfully
-        if (pdfAttachment) {
-          emailPayload.attachment = [pdfAttachment];
-        }
 
         await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
@@ -524,7 +501,29 @@ serve(async (req) => {
           },
           body: JSON.stringify(emailPayload),
         });
-        console.log(`✉️ Confirmation email ${pdfAttachment ? 'with PDF ' : ''}sent to ${userEmail} (guest=${isGuest})`);
+        console.log(`✉️ Confirmation email sent to ${userEmail} (guest=${isGuest})`);
+
+        // ── P-2 FIX: Queue PDF generation asynchronously (fire-and-forget) ──
+        // The PDF Edge Function will generate the PDF and send a follow-up
+        // email with the attachment. This prevents webhook timeout under load.
+        fetch(
+          `${supabaseUrl}/functions/v1/generate-ticket-pdf`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+            },
+            body: JSON.stringify({
+              order_id: order.id,
+              send_followup_email: true,
+              recipient_email: userEmail,
+              event_title: eventTitle,
+            }),
+          }
+        ).catch(pdfErr => {
+          console.warn('⚠️ PDF queue failed (non-blocking):', pdfErr);
+        });
       } catch (emailErr) {
         console.error('Failed to send confirmation email:', emailErr);
         // Don't fail the webhook — email is best-effort
@@ -673,7 +672,9 @@ serve(async (req) => {
         .maybeSingle();
 
       if (order) {
-        await supabase.from('orders').update({ status: 'refunded' }).eq('id', order.id);
+        // Q-4 FIX: Use 'disputed' not 'refunded' — disputes can be won
+        // and the order may need to be reinstated
+        await supabase.from('orders').update({ status: 'disputed' }).eq('id', order.id);
         const { data: disputedTickets } = await supabase
           .from('tickets')
           .update({ status: 'cancelled' })

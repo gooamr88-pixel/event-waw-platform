@@ -125,6 +125,9 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (firstField) firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
       
       isPublishing = false;
+      // Q-1 FIX: Re-enable button on validation failure
+      // (was left disabled, forcing page reload)
+      if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : 'Publish Event'; }
       return;
     }
 

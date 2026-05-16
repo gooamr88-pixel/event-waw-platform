@@ -112,7 +112,7 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
  */
 export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, promoCode }) {
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
+    `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
       method: 'POST',
       headers: {
@@ -209,7 +209,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
   }
 
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
+    `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
       method: 'POST',
       headers: {
@@ -237,7 +237,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
  */
 export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone }) {
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/create-checkout',
+    `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
       method: 'POST',
       headers: {
