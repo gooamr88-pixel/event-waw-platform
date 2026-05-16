@@ -36,6 +36,151 @@ function sanitizeDescriptionHTML(html) {
   });
 }
 
+/**
+ * Show an inline terms acceptance modal in the dashboard.
+ * Returns a Promise that resolves to true if the user accepts, false if they cancel.
+ * On accept, calls the accept_platform_terms RPC to record consent.
+ */
+function showTermsAcceptanceModal(requiredVersion) {
+  return new Promise((resolve) => {
+    // Remove any existing terms modal
+    document.getElementById('ev-terms-modal')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'ev-terms-modal';
+    overlay.className = 'ev-modal-overlay active';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', 'Platform Terms Acceptance');
+
+    overlay.innerHTML = `
+      <div class="ev-modal" style="max-width:600px; max-height:85vh; display:flex; flex-direction:column;">
+        <div class="ev-modal-header" style="flex-shrink:0;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #ec4899, #8b5cf6); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">📋</div>
+            <div>
+              <h2 style="margin:0; font-size:1.15rem;">Platform Terms & Conditions</h2>
+              <p style="margin:4px 0 0; font-size:0.8rem; color:var(--ev-text-sec);">Version ${requiredVersion} — Review required before publishing</p>
+            </div>
+          </div>
+          <button class="ev-modal-close" id="ev-terms-close">✕</button>
+        </div>
+
+        <div style="flex:1; overflow-y:auto; padding:20px; border-top:1px solid var(--ev-border); border-bottom:1px solid var(--ev-border);">
+          <div style="background:rgba(236,72,153,0.06); border:1px solid rgba(236,72,153,0.15); border-radius:12px; padding:16px; margin-bottom:16px;">
+            <p style="font-size:0.85rem; color:var(--ev-text-primary); margin:0 0 8px; font-weight:600;">⚠️ Action Required</p>
+            <p style="font-size:0.82rem; color:var(--ev-text-sec); margin:0; line-height:1.6;">
+              You must review and accept the current platform terms before publishing events. Your acceptance will be recorded for compliance purposes.
+            </p>
+          </div>
+
+          <div style="font-size:0.84rem; color:var(--ev-text-sec); line-height:1.8;">
+            <p style="font-weight:600; color:var(--ev-text-primary); margin-bottom:12px;">By accepting these terms, you agree to:</p>
+            <ul style="padding-left:20px; margin:0;">
+              <li>Provide accurate and complete event information</li>
+              <li>Honor all tickets, reservations, and commitments made through the platform</li>
+              <li>Respond to attendee inquiries within 48 hours</li>
+              <li>Comply with all applicable laws and regulations</li>
+              <li>Accept the platform service fee structure</li>
+              <li>Process refunds for cancelled events within 14 days</li>
+              <li>Not engage in misleading advertising or deceptive practices</li>
+              <li>Use the platform's QR code system for event check-in</li>
+              <li>Comply with data protection laws (GDPR, CCPA, etc.)</li>
+            </ul>
+            <p style="margin-top:16px;">
+              <a href="/merchant-agreement.html" target="_blank" rel="noopener" style="color:var(--ev-pink); text-decoration:underline; font-weight:500;">
+                Read the full Merchant Agreement →
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <div style="flex-shrink:0; padding:16px 20px;">
+          <label id="ev-terms-checkbox-label" style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; padding:12px 16px; border-radius:10px; border:1px solid var(--ev-border); background:rgba(0,0,0,0.15); margin-bottom:16px; transition:all 0.2s;">
+            <input type="checkbox" id="ev-terms-agree" style="width:20px; height:20px; margin-top:2px; accent-color:var(--ev-pink); flex-shrink:0;" />
+            <span style="font-size:0.84rem; color:var(--ev-text-primary); line-height:1.5;">
+              I have read and agree to the <strong>Eventsli Merchant Agreement</strong> (Version ${requiredVersion}). I understand that my acceptance is legally binding.
+            </span>
+          </label>
+
+          <div style="display:flex; gap:10px;">
+            <button class="ev-btn ev-btn-outline" id="ev-terms-cancel" style="flex:1; padding:12px; justify-content:center; border-color:var(--ev-gray); color:var(--ev-text);">Cancel</button>
+            <button class="ev-btn ev-btn-pink" id="ev-terms-accept" disabled style="flex:1; padding:12px; justify-content:center; opacity:0.5; cursor:not-allowed;">Accept & Continue Publishing</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    const checkbox = document.getElementById('ev-terms-agree');
+    const acceptBtn = document.getElementById('ev-terms-accept');
+    const cancelBtn = document.getElementById('ev-terms-cancel');
+    const closeBtn = document.getElementById('ev-terms-close');
+    const checkboxLabel = document.getElementById('ev-terms-checkbox-label');
+
+    // Toggle accept button based on checkbox
+    checkbox.addEventListener('change', () => {
+      if (checkbox.checked) {
+        acceptBtn.disabled = false;
+        acceptBtn.style.opacity = '1';
+        acceptBtn.style.cursor = 'pointer';
+        checkboxLabel.style.borderColor = 'var(--ev-pink)';
+        checkboxLabel.style.background = 'rgba(236,72,153,0.06)';
+      } else {
+        acceptBtn.disabled = true;
+        acceptBtn.style.opacity = '0.5';
+        acceptBtn.style.cursor = 'not-allowed';
+        checkboxLabel.style.borderColor = 'var(--ev-border)';
+        checkboxLabel.style.background = 'rgba(0,0,0,0.15)';
+      }
+    });
+
+    const cleanup = () => { overlay.remove(); };
+
+    // Cancel / Close
+    cancelBtn.addEventListener('click', () => { cleanup(); resolve(false); });
+    closeBtn.addEventListener('click', () => { cleanup(); resolve(false); });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) { cleanup(); resolve(false); } });
+
+    // Accept
+    acceptBtn.addEventListener('click', async () => {
+      if (!checkbox.checked) return;
+      acceptBtn.disabled = true;
+      acceptBtn.textContent = 'Accepting…';
+
+      try {
+        const { data, error } = await supabase.rpc('accept_platform_terms', {
+          p_version: requiredVersion,
+          p_ip_address: null,
+          p_user_agent: navigator.userAgent || null
+        });
+
+        if (error) {
+          showToast(`❌ Failed to accept terms: ${error.message}`, 'error');
+          acceptBtn.disabled = false;
+          acceptBtn.textContent = 'Accept & Continue Publishing';
+          return;
+        }
+
+        if (data?.error) {
+          showToast(`❌ ${data.error}`, 'error');
+          acceptBtn.disabled = false;
+          acceptBtn.textContent = 'Accept & Continue Publishing';
+          return;
+        }
+
+        cleanup();
+        resolve(true);
+      } catch (err) {
+        showToast(`❌ Failed to accept terms: ${err.message}`, 'error');
+        acceptBtn.disabled = false;
+        acceptBtn.textContent = 'Accept & Continue Publishing';
+      }
+    });
+  });
+}
+
 export function setupPublishing(getOrchestratorState, switchToPanel) {
   const submitHandler = async (e) => {
     if (isPublishing) return;
@@ -179,12 +324,17 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             .rpc('check_terms_compliance', { p_user_id: user.id });
 
           if (!compErr && compliance && compliance.compliant === false) {
-            showToast(`⚠️ ${compliance.reason || 'You must accept the current platform terms before publishing.'}`, 'error');
-            // Open terms page so organizer can accept
-            window.open('/merchant-agreement.html', '_blank');
-            if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : 'Publish Event'; }
-            isPublishing = false;
-            return;
+            const requiredVersion = compliance.required_version || 'latest';
+            // Show inline terms acceptance modal instead of navigating away
+            const accepted = await showTermsAcceptanceModal(requiredVersion);
+            if (!accepted) {
+              // User cancelled — stop publishing
+              if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : '🚀 Publish Event'; }
+              isPublishing = false;
+              return;
+            }
+            // User accepted — continue with publishing (no return needed)
+            showToast('✅ Terms accepted! Continuing to publish…', 'success');
           }
         } catch (termsCheckErr) {
           console.warn('Terms compliance check failed (non-blocking):', termsCheckErr);
