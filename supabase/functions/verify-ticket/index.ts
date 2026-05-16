@@ -114,16 +114,28 @@ serve(async (req) => {
 
     const eventOrganizerId = ticketCheck?.ticket_tiers?.events?.organizer_id;
     if (eventOrganizerId && eventOrganizerId !== user.id) {
-      const { data: scannerProfile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+      // Check gate_team first — organizer-invited scanners
+      const { data: gateTeamEntry } = await supabase
+        .from('gate_team')
+        .select('id')
+        .eq('organizer_id', eventOrganizerId)
+        .eq('staff_email', user.email)
+        .in('status', ['invited', 'active'])
+        .maybeSingle();
 
-      // S-2 FIX: Check all admin-level roles, not just 'admin'
-      const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
-      if (!scannerProfile || !ADMIN_ROLES.includes(scannerProfile.role)) {
-        return errorResponse(403, 'You are not authorized to scan tickets for this event', {}, req);
+      if (!gateTeamEntry) {
+        // Fallback: check if user is a platform admin
+        const { data: scannerProfile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        // S-2 FIX: Check all admin-level roles, not just 'admin'
+        const ADMIN_ROLES = ['super_admin', 'admin', 'moderator'];
+        if (!scannerProfile || !ADMIN_ROLES.includes(scannerProfile.role)) {
+          return errorResponse(403, 'You are not authorized to scan tickets for this event', {}, req);
+        }
       }
     }
 

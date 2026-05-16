@@ -124,7 +124,7 @@ export function setupTicketsPanel() {
               <td><strong>${escapeHTML(name)}</strong></td>
               <td>${escapeHTML(email)}</td>
               <td>${escapeHTML(tierName)}</td>
-              <td>${t.seat_label || '-'}</td>
+              <td>${escapeHTML(t.seat_label || '-')}</td>
               <td><span class="badge ${t.scanned_at ? 'badge-scanned' : 'badge-pending'}">${t.scanned_at ? '[OK] Scanned' : 'Pending'}</span></td>
               <td>${new Date(t.created_at).toLocaleDateString()}</td>
             </tr>`;
@@ -177,7 +177,7 @@ function renderTicketRows(tickets) {
       <td style="font-weight:600">${escapeHTML(name)}</td>
       <td>${escapeHTML(email)}</td>
       <td>${escapeHTML(tierName)}</td>
-      <td>${t.seat_label || '-'}</td>
+      <td>${escapeHTML(t.seat_label || '-')}</td>
       <td><span class="ev-badge ${t.scanned_at ? 'accepted' : 'pending'}">${t.scanned_at ? '[OK] Scanned' : 'Pending'}</span></td>
       <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(t.created_at).toLocaleDateString()}</td>
       <td>

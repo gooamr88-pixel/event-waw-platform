@@ -181,6 +181,17 @@ serve(async (req) => {
 
     if (orderError) {
       console.error('CRITICAL: Order creation failed:', orderError);
+      // Dead-letter: log for manual recovery
+      try {
+        await supabase.from('webhook_failures').insert({
+          stripe_session_id: session.id,
+          order_id: null,
+          error: 'ORDER_CREATION_FAILED: ' + JSON.stringify(orderError),
+          payload: JSON.stringify(session.metadata),
+        });
+      } catch (dlErr) {
+        console.error('Failed to log order creation failure:', dlErr);
+      }
       return new Response(JSON.stringify({ error: 'Failed to create order' }), { status: 500 });
     }
 
