@@ -56,6 +56,21 @@ export function renderCanvas(elements, container, state, ELEMENT_TYPES, SEAT_R, 
   bg2.setAttribute('fill', 'url(#vd-grid)');
   svg.appendChild(bg2);
 
+  // ── Background Image (floor plan) ──
+  if (state.bgImage) {
+    const bgImg = nsEl('image');
+    bgImg.setAttribute('href', state.bgImage);
+    bgImg.setAttribute('x', 0);
+    bgImg.setAttribute('y', 0);
+    bgImg.setAttribute('width', cw);
+    bgImg.setAttribute('height', ch);
+    bgImg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    bgImg.setAttribute('opacity', '0.35');
+    bgImg.style.pointerEvents = 'none';
+    svg.appendChild(bgImg);
+  }
+
+
   const spot = nsEl('ellipse');
   spot.setAttribute('cx', cw / 2); spot.setAttribute('cy', ch * .35);
   spot.setAttribute('rx', cw * .4); spot.setAttribute('ry', ch * .3);

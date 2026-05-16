@@ -172,6 +172,7 @@ export class VenueDesignerEngine {
     return {
       version: 2,
       canvas: { width: this.state.canvasW, height: this.state.canvasH },
+      bgImage: this.state.bgImage || null,
       elements: this.elements.map(e => ({ ...e })),
       stage: this.elements.find(e => e.type === 'stage') || null,
       sections: this.elements.filter(e => e.type === 'section').map(sec => {
@@ -194,6 +195,7 @@ export class VenueDesignerEngine {
     if (json.version === 2 && json.elements) {
       this.elements = json.elements;
       _idCounter = Math.max(_idCounter, this.elements.length + 10);
+      if (json.bgImage) this.state.bgImage = json.bgImage;
     } else {
       this.elements = [];
       if (json.stage) {

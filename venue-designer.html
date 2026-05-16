@@ -36,6 +36,9 @@
       </div>
       <div class="vd-topbar-right">
         <button class="vd-icon-btn" id="btn-snap" title="Toggle Grid Snap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></button>
+        <button class="vd-icon-btn" id="btn-bg" title="Upload Floor Plan / Background Image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></button>
+        <input type="file" id="bg-file-input" accept="image/*" style="display:none" />
+        <button class="vd-icon-btn" id="btn-bg-clear" title="Remove Background" style="display:none;color:#ef4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <button class="vd-icon-btn" id="btn-preview" title="Preview as Attendee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button class="vd-del-btn" id="btn-del-map" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete Map</button>
         <button class="vd-save-btn" id="btn-save" disabled>
@@ -133,6 +136,7 @@
       wireTemplates();
       wireSnap();
       wireContextMenu();
+      wireBgUpload();
 
       // Load existing
       try {
@@ -140,6 +144,7 @@
         if (existing) {
           engine.loadFromJSON(existing.layout_json);
           document.getElementById('btn-del-map').style.display = '';
+          if (engine.state.bgImage) document.getElementById('btn-bg-clear').style.display = '';
           toast('Editing v' + (existing.version || 1), 'info');
         } else {
           engine.addElement('stage', 400, 40);
@@ -486,6 +491,44 @@
         engine.snapToGrid = snapOn;
         btn.style.color = snapOn ? '#d4af37' : '#52525b';
         toast(snapOn ? 'Grid snap ON' : 'Grid snap OFF', 'info');
+      });
+    }
+
+    /* ── Background Image Upload ── */
+    function wireBgUpload() {
+      const btn = document.getElementById('btn-bg');
+      const input = document.getElementById('bg-file-input');
+      const clearBtn = document.getElementById('btn-bg-clear');
+
+      btn?.addEventListener('click', () => input?.click());
+
+      input?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+          toast('Image too large (max 5MB)', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          engine.state.bgImage = ev.target.result;
+          engine.render();
+          document.getElementById('btn-save').disabled = false;
+          clearBtn.style.display = '';
+          toast('📸 Background image set', 'success');
+        };
+        reader.readAsDataURL(file);
+        input.value = '';
+      });
+
+      clearBtn?.addEventListener('click', () => {
+        engine.state.bgImage = null;
+        engine.render();
+        document.getElementById('btn-save').disabled = false;
+        clearBtn.style.display = 'none';
+        toast('Background removed', 'info');
       });
     }
   </script>

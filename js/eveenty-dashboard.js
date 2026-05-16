@@ -24,6 +24,7 @@ import { renderEventsTable, populateEventSelects, showTableSkeleton } from '../s
 import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { onDashboardAction } from '../src/lib/dashboard-bus.js';
+import { setupGateTeamPanel } from '../src/lib/dashboard-gate-team.js';
 
 // H-5: Guard to prevent duplicate listener attachment on setupTicketsPanel
 let _ticketsPanelInitialized = false;
@@ -53,6 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupUserDropdown();
   setupProfilePanel();
   setupPromoForm();
+  setupGateTeamPanel();
   loadPromoCodes();            // Initial load for promos
 
   setupGlobalKeyboardManager(); // H-3: Escape key handler

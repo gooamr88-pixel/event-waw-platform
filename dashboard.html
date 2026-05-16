@@ -112,6 +112,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="8" y="14" width="3" height="3" rx=".5"/></svg>
         Calendar
       </button>
+      <button class="ev-nav-item" data-panel="gate-team">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        Gate Team
+      </button>
       <div style="height:1px;background:rgba(255,255,255,.12);margin:10px 14px"></div>
       <button class="ev-nav-item" data-panel="profile">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -276,7 +280,10 @@
 
     <!-- ════ PANEL: TICKETS ════ -->
     <div class="ev-panel" id="panel-tickets">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">🎫 Ticket Management</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <h2 style="font-size:1.15rem;font-weight:700;margin:0">🎫 Ticket Management</h2>
+        <div class="ev-search-bar" style="max-width:280px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="ticket-search-input" placeholder="Search by name, email, order, seat…" /></div>
+      </div>
       <div class="ev-stat-grid" style="margin-bottom:18px" id="ticket-stats-grid">
         <div class="ev-stat-card"><div class="ev-stat-icon orange">🎫</div><div><div class="ev-stat-value" id="tkt-stat-sold">0</div><div class="ev-stat-label">Tickets Sold</div></div></div>
         <div class="ev-stat-card"><div class="ev-stat-icon green">✅</div><div><div class="ev-stat-value" id="tkt-stat-scanned">0</div><div class="ev-stat-label">Scanned</div></div></div>
@@ -296,7 +303,7 @@
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Attendee</th><th>Email</th><th>Tier</th><th>Seat</th><th>Status</th><th>Date</th></tr></thead>
+            <thead><tr><th>#</th><th>Attendee</th><th>Email</th><th>Tier</th><th>Seat</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
             <tbody id="tickets-tbody">
               <tr><td colspan="7" class="ev-table-empty">Select an event to view tickets</td></tr>
             </tbody>
@@ -386,6 +393,65 @@
       </div>
     </div>
 
+
+    <!-- ════ PANEL: ORGANIZER PROFILE ════ -->
+    <!-- ════ PANEL: GATE TEAM ════ -->
+    <div class="ev-panel" id="panel-gate-team">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">👥 Gate Team</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Add staff members who can scan tickets at the door. They'll have scanner-only access.</p>
+        </div>
+        <button class="ev-btn ev-btn-primary" id="gate-team-add-btn" style="font-size:.85rem;padding:8px 16px">+ Add Staff</button>
+      </div>
+
+      <!-- Invite Form (hidden by default) -->
+      <div id="gate-team-invite-form" class="ev-card" style="display:none;margin-bottom:20px">
+        <div style="padding:20px">
+          <h3 style="font-size:.95rem;font-weight:700;margin-bottom:14px">Invite Scanner Staff</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div class="ev-form-group" style="flex:1;min-width:200px;margin-bottom:0">
+              <label for="gate-invite-email">Email Address</label>
+              <input class="ev-form-input" type="email" id="gate-invite-email" placeholder="staff@example.com" />
+            </div>
+            <div class="ev-form-group" style="flex:1;min-width:200px;margin-bottom:0">
+              <label for="gate-invite-name">Name (optional)</label>
+              <input class="ev-form-input" type="text" id="gate-invite-name" placeholder="Full name" />
+            </div>
+            <div class="ev-form-group" style="flex:1;min-width:180px;margin-bottom:0">
+              <label for="gate-invite-event">Assign to Event</label>
+              <select class="ev-form-input" id="gate-invite-event">
+                <option value="all">All My Events</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button class="ev-btn ev-btn-primary" id="gate-invite-submit" style="padding:8px 20px;font-size:.85rem">Send Invite</button>
+            <button class="ev-btn ev-btn-outline" id="gate-invite-cancel" style="padding:8px 16px;font-size:.85rem">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Staff Table -->
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table">
+            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Event</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
+            <tbody id="gate-team-tbody">
+              <tr><td colspan="7" class="ev-table-empty">
+                <div style="font-size:2.5rem;margin-bottom:12px">👥</div>
+                <p style="font-weight:600;margin-bottom:4px">No gate staff yet</p>
+                <p style="font-size:.84rem">Add your first scanner staff member to manage check-ins at your events.</p>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style="margin-top:14px;padding:14px;background:rgba(212,175,55,.05);border:1px solid rgba(212,175,55,.12);border-radius:10px;font-size:.8rem;color:var(--ev-text-muted)">
+        <strong>How it works:</strong> Invited staff will receive an email with a link to access the scanner page for your events. They can only scan tickets — they cannot view sales, revenue, or edit events.
+      </div>
+    </div>
 
     <!-- ════ PANEL: ORGANIZER PROFILE ════ -->
     <div class="ev-panel" id="panel-profile">
