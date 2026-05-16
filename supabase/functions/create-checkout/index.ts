@@ -128,6 +128,21 @@ serve(async (req) => {
     }
 
     // ════════════════════════════════════════════════
+    // BRD RULE: TERMS COMPLIANCE GATE
+    // Block checkout if organizer hasn't accepted current platform terms.
+    // BRD Rule 3: Only affects new transactions, not existing events.
+    // ════════════════════════════════════════════════
+    if (totalCents > 0 && breakdown.organizer_id) {
+      const { data: compliance, error: compErr } = await adminClient
+        .rpc('check_terms_compliance', { p_user_id: breakdown.organizer_id });
+
+      if (!compErr && compliance && compliance.compliant === false) {
+        console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} terms non-compliant: ${compliance.reason}`);
+        return errorResponse(403, 'This event organizer has not accepted the current platform terms. Ticket purchases are temporarily unavailable.', {}, req);
+      }
+    }
+
+    // ════════════════════════════════════════════════
     // GUEST CHECKOUT PATH — No auth required
     // ════════════════════════════════════════════════
     if (is_guest) {
@@ -223,6 +238,7 @@ serve(async (req) => {
           promo_discount: String(breakdown.promo_discount),
           organizer_net: String(breakdown.organizer_net),
           organizer_id: breakdown.organizer_id || '',
+          tax_inclusive: String(breakdown.tax_inclusive || false),
         },
         success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}&guest=true`,
         cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}`,
@@ -332,6 +348,7 @@ serve(async (req) => {
         promo_discount: String(breakdown.promo_discount),
         organizer_net: String(breakdown.organizer_net),
         organizer_id: breakdown.organizer_id || '',
+        tax_inclusive: String(breakdown.tax_inclusive || false),
       },
       success_url: `${originUrl}/checkout-success.html?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${originUrl}/event-detail.html?id=${res.event_id}&tier=${tier_id}&qty=${qty}`,

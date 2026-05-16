@@ -165,6 +165,30 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         }
       }
 
+      // ════════════════════════════════════════════════
+      // BRD RULE: TERMS COMPLIANCE PUBLISHING GATE
+      // Block publishing if organizer hasn't accepted current platform terms.
+      // BRD Rule 3: Only blocks NEW event publishing, not drafts or running events.
+      // ════════════════════════════════════════════════
+      if (!isDraft) {
+        try {
+          const { data: compliance, error: compErr } = await supabase
+            .rpc('check_terms_compliance', { p_user_id: user.id });
+
+          if (!compErr && compliance && compliance.compliant === false) {
+            showToast(`⚠️ ${compliance.reason || 'You must accept the current platform terms before publishing.'}`, 'error');
+            // Open terms page so organizer can accept
+            window.open('/merchant-agreement.html', '_blank');
+            if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : 'Publish Event'; }
+            isPublishing = false;
+            return;
+          }
+        } catch (termsCheckErr) {
+          console.warn('Terms compliance check failed (non-blocking):', termsCheckErr);
+          // Don't block for query errors — the Edge Function has a server-side gate too
+        }
+      }
+
       const socialLinks = [];
       document.querySelectorAll('#ce-social-links .ce-social-row').forEach(row => {
         const platform = row.querySelector('select')?.value;

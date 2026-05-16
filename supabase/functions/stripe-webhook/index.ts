@@ -82,6 +82,7 @@ serve(async (req) => {
       organizer_id: metaOrganizerId,
       promo_id: metaPromoId,
       promo_code: metaPromoCode,
+      tax_inclusive: metaTaxInclusive,
     } = session.metadata!;
 
     const qty = parseInt(quantity || '1');
@@ -201,6 +202,7 @@ serve(async (req) => {
         stripe_charge_id: '',  // Will be populated by charge events if needed
         promo_code: metaPromoCode || null,
         promo_discount: parseFloat(metaPromoDiscount || '0'),
+        tax_inclusive: metaTaxInclusive === 'true',
         status: 'paid',
         paid_at: new Date().toISOString(),
       };
