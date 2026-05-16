@@ -33,12 +33,15 @@ CREATE INDEX IF NOT EXISTS idx_webhook_failures_unresolved
 
 ALTER TABLE webhook_failures ENABLE ROW LEVEL SECURITY;
 
--- Only admins can read/update webhook failures
+-- Only admins can read/update webhook failures (idempotent)
+DROP POLICY IF EXISTS "webhook_failures_admin_select" ON webhook_failures;
 CREATE POLICY "webhook_failures_admin_select" ON webhook_failures
   FOR SELECT USING (is_admin());
+DROP POLICY IF EXISTS "webhook_failures_admin_update" ON webhook_failures;
 CREATE POLICY "webhook_failures_admin_update" ON webhook_failures
   FOR UPDATE USING (is_admin());
 -- Service role inserts (from webhook Edge Function)
+DROP POLICY IF EXISTS "webhook_failures_service_insert" ON webhook_failures;
 CREATE POLICY "webhook_failures_service_insert" ON webhook_failures
   FOR INSERT WITH CHECK (true);
 

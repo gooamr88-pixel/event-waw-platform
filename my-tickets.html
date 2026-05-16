@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Tickets — Eventsli</title>
+  <meta name="description" content="View your purchased tickets, download PDFs, and check event details." />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/bridge.css" />
+  <link rel="stylesheet" href="css/motion.css" />
+  <link rel="stylesheet" href="css/polish.css" />
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/light-theme.css" />
+  <link rel="stylesheet" href="css/mobile-ios.css" />
+  <link rel="icon" type="image/png" href="images/favicon-v2.png" />
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    .mt-page { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
+    .mt-header { margin-bottom: 32px; }
+    .mt-header h1 { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
+    .mt-header p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; }
+    .mt-stats { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+    .mt-stat { flex: 1; min-width: 120px; padding: 18px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; }
+    .mt-stat-value { font-size: 1.5rem; font-weight: 800; margin-bottom: 2px; }
+    .mt-stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+    .mt-empty { text-align: center; padding: 60px 20px; }
+    .mt-empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .mt-empty h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
+    .mt-empty p { color: var(--text-muted); font-size: 0.88rem; max-width: 360px; margin: 0 auto 20px; line-height: 1.6; }
+
+    /* Ticket Cards */
+    .mt-ticket-card {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 0; margin-bottom: 16px; overflow: hidden;
+      transition: all 0.2s; position: relative;
+    }
+    .mt-ticket-card:hover { border-color: rgba(212,175,55,.2); box-shadow: 0 4px 20px rgba(0,0,0,.1); }
+    .mt-ticket-top { display: flex; gap: 16px; padding: 20px; }
+    .mt-ticket-qr {
+      width: 90px; height: 90px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
+      background: #fff; display: flex; align-items: center; justify-content: center;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+    .mt-ticket-qr img { width: 100%; height: 100%; object-fit: contain; }
+    .mt-ticket-info { flex: 1; min-width: 0; }
+    .mt-ticket-event { font-weight: 700; font-size: 1rem; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .mt-ticket-meta { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; }
+    .mt-ticket-meta span { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; }
+    .mt-ticket-status {
+      display: inline-flex; padding: 3px 10px; border-radius: 20px;
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .mt-status-valid { background: rgba(34,197,94,.1); color: #22c55e; }
+    .mt-status-scanned { background: rgba(59,130,246,.1); color: #3b82f6; }
+    .mt-status-cancelled { background: rgba(239,68,68,.1); color: #ef4444; }
+    .mt-ticket-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 20px; border-top: 1px dashed var(--border-color);
+      background: rgba(255,255,255,.02);
+    }
+    .mt-ticket-id { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-muted); }
+    .mt-ticket-actions { display: flex; gap: 8px; }
+    .mt-btn-download {
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+      border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      border: 1px solid var(--border-color); background: transparent;
+      color: var(--text-primary); transition: all 0.2s;
+    }
+    .mt-btn-download:hover { border-color: rgba(212,175,55,.3); color: var(--accent-primary); background: rgba(212,175,55,.06); }
+    .mt-btn-download:disabled { opacity: 0.4; cursor: not-allowed; }
+    .mt-btn-view {
+      display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+      border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
+      border: none; background: linear-gradient(135deg, #d4af37, #b8962e);
+      color: #000; transition: all 0.2s;
+    }
+    .mt-btn-view:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,175,55,.3); }
+
+    /* Loading skeleton */
+    .mt-skeleton {
+      background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Guest banner */
+    .mt-guest-banner {
+      display: flex; align-items: center; gap: 12px; padding: 14px 20px;
+      background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.15);
+      border-radius: 12px; margin-bottom: 20px; font-size: 0.82rem; color: #f59e0b;
+    }
+
+    @media (max-width: 600px) {
+      .mt-ticket-top { flex-direction: column; align-items: center; text-align: center; }
+      .mt-ticket-event { white-space: normal; }
+      .mt-stats { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ====== NAVBAR ====== -->
+  <nav class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="index.html" class="nav-brand">
+        <img src="images/logo-dark-theme.png" alt="Eventsli" class="nav-logo" id="nav-logo" />
+      </a>
+      <div class="nav-links"><a href="events.html">Events</a><a href="my-tickets.html" class="active">My Tickets</a></div>
+      <div class="nav-actions" id="nav-actions"></div>
+    </div>
+  </nav>
+
+  <!-- ====== MAIN CONTENT ====== -->
+  <div class="mt-page">
+    <div class="mt-header">
+      <h1>🎫 My Tickets</h1>
+      <p id="mt-subtitle">View your purchased tickets, check event details, and download your PDFs.</p>
+    </div>
+
+    <div id="mt-guest-banner" style="display:none" class="mt-guest-banner">
+      ⚠️ <span>You're viewing tickets as a guest. <a href="login.html" style="color:#d4af37;font-weight:600;">Sign in</a> for full access.</span>
+    </div>
+
+    <div id="mt-stats" class="mt-stats" style="display:none">
+      <div class="mt-stat"><div class="mt-stat-value" id="mt-total-tickets">0</div><div class="mt-stat-label">Total Tickets</div></div>
+      <div class="mt-stat"><div class="mt-stat-value" id="mt-upcoming">0</div><div class="mt-stat-label">Upcoming</div></div>
+      <div class="mt-stat"><div class="mt-stat-value" id="mt-past">0</div><div class="mt-stat-label">Past Events</div></div>
+    </div>
+
+    <div id="mt-content">
+      <!-- Loading skeleton -->
+      <div class="mt-ticket-card">
+        <div class="mt-ticket-top">
+          <div class="mt-skeleton" style="width:90px;height:90px"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <div class="mt-skeleton" style="width:70%;height:20px"></div>
+            <div class="mt-skeleton" style="width:50%;height:14px"></div>
+            <div class="mt-skeleton" style="width:40%;height:14px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-ticket-card">
+        <div class="mt-ticket-top">
+          <div class="mt-skeleton" style="width:90px;height:90px"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
+            <div class="mt-skeleton" style="width:60%;height:20px"></div>
+            <div class="mt-skeleton" style="width:45%;height:14px"></div>
+            <div class="mt-skeleton" style="width:35%;height:14px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer" id="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <span>&copy; 2026 Eventsli. All rights reserved.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL } from './src/lib/supabase.js';
+    import { semiProtectPage, updateNavForAuth } from './src/lib/guard.js';
+    import { initUI } from './src/lib/ui.js';
+    import { escapeHTML } from './src/lib/utils.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initUI();
+
+      // Check for guest token in URL hash
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const guestToken = hashParams.get('guest_token');
+
+      if (guestToken) {
+        // Guest mode — fetch tickets by guest token
+        document.getElementById('mt-guest-banner').style.display = 'flex';
+        document.getElementById('mt-subtitle').textContent = 'Here are the tickets for your guest purchase.';
+        await loadGuestTickets(guestToken);
+      } else {
+        // Authenticated mode
+        const authState = await semiProtectPage();
+        updateNavForAuth(authState);
+
+        if (!authState?.user) {
+          window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
+          return;
+        }
+
+        await loadUserTickets(authState.user.id);
+      }
+    });
+
+    async function loadUserTickets(userId) {
+      try {
+        const { data: tickets, error } = await supabase
+          .from('tickets')
+          .select(`
+            id, qr_hash, status, seat_label, attendee_name, created_at,
+            ticket_tiers!inner ( name, price, currency ),
+            orders!inner ( id, event_id, amount, status,
+              events!inner ( id, title, date, end_date, venue, city, cover_image )
+            )
+          `)
+          .eq('user_id', userId)
+          .in('orders.status', ['paid'])
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        renderTickets(tickets || []);
+      } catch (err) {
+        console.error('Error loading tickets:', err);
+        renderError(err.message);
+      }
+    }
+
+    async function loadGuestTickets(token) {
+      try {
+        // Guest tickets are linked via guest_token stored in orders metadata
+        const { data: orders, error } = await supabase
+          .from('orders')
+          .select(`
+            id, event_id, amount, status, guest_token,
+            events!inner ( id, title, date, end_date, venue, city, cover_image )
+          `)
+          .eq('guest_token', token)
+          .eq('status', 'paid');
+
+        if (error) throw error;
+
+        if (!orders || orders.length === 0) {
+          renderEmpty('No tickets found for this guest link. The link may be invalid or expired.');
+          return;
+        }
+
+        // Now fetch tickets for those orders
+        const orderIds = orders.map(o => o.id);
+        const { data: tickets, error: tErr } = await supabase
+          .from('tickets')
+          .select(`
+            id, qr_hash, status, seat_label, attendee_name, created_at,
+            ticket_tiers!inner ( name, price, currency ),
+            orders!inner ( id, event_id, amount, status,
+              events!inner ( id, title, date, end_date, venue, city, cover_image )
+            )
+          `)
+          .in('order_id', orderIds)
+          .order('created_at', { ascending: false });
+
+        if (tErr) throw tErr;
+        renderTickets(tickets || []);
+      } catch (err) {
+        console.error('Error loading guest tickets:', err);
+        renderError(err.message);
+      }
+    }
+
+    function renderTickets(tickets) {
+      const content = document.getElementById('mt-content');
+      const statsEl = document.getElementById('mt-stats');
+
+      if (tickets.length === 0) {
+        renderEmpty();
+        return;
+      }
+
+      // Stats
+      const now = new Date();
+      const upcoming = tickets.filter(t => new Date(t.orders.events.date) > now).length;
+      const past = tickets.length - upcoming;
+
+      statsEl.style.display = 'flex';
+      document.getElementById('mt-total-tickets').textContent = tickets.length;
+      document.getElementById('mt-upcoming').textContent = upcoming;
+      document.getElementById('mt-past').textContent = past;
+
+      // Group by event
+      const grouped = {};
+      for (const t of tickets) {
+        const eventId = t.orders.events.id;
+        if (!grouped[eventId]) {
+          grouped[eventId] = { event: t.orders.events, orderId: t.orders.id, tickets: [] };
+        }
+        grouped[eventId].tickets.push(t);
+      }
+
+      let html = '';
+      for (const [eventId, group] of Object.entries(grouped)) {
+        const ev = group.event;
+        const eventDate = new Date(ev.date);
+        const isPast = eventDate < now;
+        const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+        for (const ticket of group.tickets) {
+          const tier = ticket.ticket_tiers;
+          const statusClass = ticket.status === 'valid' ? 'mt-status-valid'
+            : ticket.status === 'scanned' ? 'mt-status-scanned' : 'mt-status-cancelled';
+          const statusLabel = ticket.status === 'valid' ? '✓ Valid'
+            : ticket.status === 'scanned' ? '✓ Scanned' : '✗ Cancelled';
+
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(ticket.qr_hash)}`;
+          const shortId = ticket.id.slice(0, 8).toUpperCase();
+
+          html += `
+            <div class="mt-ticket-card" data-ticket-id="${ticket.id}">
+              <div class="mt-ticket-top">
+                <div class="mt-ticket-qr">
+                  <img src="${qrUrl}" alt="QR Code" loading="lazy" />
+                </div>
+                <div class="mt-ticket-info">
+                  <div class="mt-ticket-event">${escapeHTML(ev.title)}</div>
+                  <div class="mt-ticket-meta">
+                    <span>📅 ${dateStr} · ${timeStr}</span><br/>
+                    <span>📍 ${escapeHTML(ev.venue)}${ev.city ? ', ' + escapeHTML(ev.city) : ''}</span><br/>
+                    <span>🎫 ${escapeHTML(tier.name)}${ticket.seat_label ? ' · Seat ' + escapeHTML(ticket.seat_label) : ''}</span>
+                  </div>
+                  <div style="margin-top:6px">
+                    <span class="mt-ticket-status ${statusClass}">${statusLabel}</span>
+                    ${isPast ? '<span class="mt-ticket-status" style="background:rgba(113,113,122,.1);color:#71717a;margin-left:4px">Past Event</span>' : ''}
+                  </div>
+                </div>
+              </div>
+              <div class="mt-ticket-bottom">
+                <span class="mt-ticket-id">ID: ${shortId}</span>
+                <div class="mt-ticket-actions">
+                  <button class="mt-btn-download" data-ticket-id="${ticket.id}" title="Download PDF">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    PDF
+                  </button>
+                  <a href="event-detail.html?id=${eventId}" class="mt-btn-view">
+                    View Event
+                  </a>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      content.innerHTML = html;
+
+      // Wire up PDF download buttons
+      content.querySelectorAll('.mt-btn-download').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const ticketId = btn.dataset.ticketId;
+          btn.disabled = true;
+          btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--accent-primary);border-radius:50%;animation:spin 0.6s linear infinite"></span>';
+
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({ ticket_id: ticketId }),
+            });
+
+            if (!res.ok) throw new Error('Failed to generate PDF');
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ticket-${ticketId.slice(0,8)}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          } catch (err) {
+            console.error('PDF download failed:', err);
+            alert('Failed to download PDF. Please try again.');
+          } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF';
+          }
+        });
+      });
+    }
+
+    function renderEmpty(msg) {
+      document.getElementById('mt-content').innerHTML = `
+        <div class="mt-empty">
+          <div class="mt-empty-icon">🎫</div>
+          <h3>No Tickets Yet</h3>
+          <p>${msg || 'You haven\'t purchased any tickets yet. Browse events and get your first ticket!'}</p>
+          <a href="events.html" class="btn btn-primary" style="padding:12px 28px;font-size:0.9rem;">
+            Browse Events
+          </a>
+        </div>
+      `;
+    }
+
+    function renderError(msg) {
+      document.getElementById('mt-content').innerHTML = `
+        <div class="mt-empty">
+          <div class="mt-empty-icon">⚠️</div>
+          <h3>Something went wrong</h3>
+          <p>${escapeHTML(msg)}</p>
+          <button onclick="location.reload()" class="btn btn-outline" style="padding:10px 24px;font-size:0.88rem;">Try Again</button>
+        </div>
+      `;
+    }
+  </script>
+
+  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+</body>
+</html>

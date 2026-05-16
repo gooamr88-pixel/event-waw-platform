@@ -7,6 +7,15 @@ import { performSignOut } from './guard.js';
 export function setupProfilePanel() {
   loadProfileData();
 
+  // Tax toggle: show/hide detail fields
+  const taxToggle = document.getElementById('prof-tax-enabled');
+  const taxWrap = document.getElementById('tax-fields-wrap');
+  if (taxToggle && taxWrap) {
+    taxToggle.addEventListener('change', () => {
+      taxWrap.style.display = taxToggle.checked ? 'block' : 'none';
+    });
+  }
+
   document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('[type="submit"]');
@@ -44,6 +53,28 @@ export function setupProfilePanel() {
         .eq('id', user.id);
 
       if (error) throw error;
+
+      // Also save tax configuration to organizers table
+      const taxEnabled = document.getElementById('prof-tax-enabled')?.checked || false;
+      const taxRate = parseFloat(document.getElementById('prof-tax-rate')?.value) || 0;
+      const taxLabel = document.getElementById('prof-tax-label')?.value?.trim() || 'VAT';
+      const taxInclusive = document.getElementById('prof-tax-inclusive')?.checked || false;
+
+      const { error: taxErr } = await supabase
+        .from('organizers')
+        .update({
+          tax_enabled: taxEnabled,
+          tax_rate: taxRate,
+          tax_label: taxLabel,
+          tax_inclusive: taxInclusive,
+        })
+        .eq('user_id', user.id);
+
+      if (taxErr) {
+        console.warn('Tax config save warning:', taxErr.message);
+        // Non-fatal: organizers row may not exist yet
+      }
+
       showToast('Profile saved successfully!', 'success');
     } catch (err) {
       showToast('Error: ' + err.message, 'error');
@@ -80,6 +111,32 @@ async function loadProfileData() {
         if (p.social.x) setVal('prof-x', p.social.x);
         if (p.social.linkedin) setVal('prof-linkedin', p.social.linkedin);
       }
+    }
+
+    // Load tax config from organizers table
+    const { data: org } = await supabase
+      .from('organizers')
+      .select('tax_enabled, tax_rate, tax_label, tax_inclusive')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (org) {
+      const taxToggle = document.getElementById('prof-tax-enabled');
+      const taxWrap = document.getElementById('tax-fields-wrap');
+      if (taxToggle) {
+        taxToggle.checked = org.tax_enabled || false;
+        if (taxWrap) taxWrap.style.display = org.tax_enabled ? 'block' : 'none';
+      }
+      if (org.tax_rate) {
+        const rateEl = document.getElementById('prof-tax-rate');
+        if (rateEl) rateEl.value = org.tax_rate;
+      }
+      if (org.tax_label) {
+        const labelEl = document.getElementById('prof-tax-label');
+        if (labelEl) labelEl.value = org.tax_label;
+      }
+      const inclEl = document.getElementById('prof-tax-inclusive');
+      if (inclEl) inclEl.checked = org.tax_inclusive || false;
     }
   } catch (err) {
     // H-5: Proper error logging instead of silent swallow

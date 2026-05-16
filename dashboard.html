@@ -476,6 +476,40 @@
 
             </div>
           </div>
+          <!-- Tax Configuration -->
+          <div class="ev-card" style="margin-top:20px">
+            <div class="ev-card-header"><span class="ev-card-title">🏛️ Tax Configuration</span></div>
+            <div style="padding:20px">
+              <div class="ev-form-group" style="margin-bottom:16px">
+                <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:.88rem">
+                  <input type="checkbox" id="prof-tax-enabled" style="width:18px;height:18px;accent-color:#d4af37;cursor:pointer" />
+                  Enable Tax Collection
+                </label>
+                <p style="font-size:.75rem;color:var(--ev-text-muted);margin-top:4px;line-height:1.5">
+                  When enabled, tax will be calculated on all ticket sales based on your configured rate.
+                </p>
+              </div>
+              <div id="tax-fields-wrap" style="display:none">
+                <div class="ev-form-group" style="margin-bottom:14px">
+                  <label for="prof-tax-rate">Tax Rate (%)</label>
+                  <input class="ev-form-input" type="number" id="prof-tax-rate" placeholder="e.g. 14" min="0" max="100" step="0.01" />
+                </div>
+                <div class="ev-form-group" style="margin-bottom:14px">
+                  <label for="prof-tax-label">Tax Label</label>
+                  <input class="ev-form-input" type="text" id="prof-tax-label" placeholder="e.g. VAT, Sales Tax, GST" />
+                </div>
+                <div class="ev-form-group">
+                  <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;font-size:.88rem">
+                    <input type="checkbox" id="prof-tax-inclusive" style="width:18px;height:18px;accent-color:#d4af37;cursor:pointer" />
+                    Price is tax-inclusive
+                  </label>
+                  <p style="font-size:.75rem;color:var(--ev-text-muted);margin-top:4px;line-height:1.5">
+                    If checked, the ticket price already includes tax. Otherwise tax is added on top.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
