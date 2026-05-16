@@ -5,6 +5,7 @@
 
 import { SeatingChart } from './seating-chart.js?v=2';
 import { createSeatedCheckout, createGuestSeatedCheckout } from './events.js';
+import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from './price-breakdown.js';
 import { setSafeHTML } from './dom.js';
 import { showAlertModal } from './ui-modals.js';
 
@@ -41,6 +42,8 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
           <div class="seating-selection-count" id="selection-count-text">No seats selected</div>
           <div class="seating-selection-total" id="selection-total-text">$0</div>
         </div>
+        <!-- BRD: Server-side price breakdown (tax + service fee + total) -->
+        <div id="seat-price-breakdown" style="width:100%;margin-top:8px;"></div>
         <div class="seating-selection-actions">
           <button class="btn btn-outline btn-sm" id="clear-seats-btn">Clear</button>
           <button class="btn btn-primary btn-sm btn-pulse" id="checkout-seats-btn" disabled>
@@ -163,14 +166,27 @@ function renderLegend(chart) {
   });
 }
 
+// Debounce timer + cached breakdown for seated checkout
+let seatBreakdownDebounce = null;
+let cachedSeatBreakdown = null;
+
+/**
+ * Export cached breakdown so event-detail.html can read it for the guest modal.
+ */
+export function getCachedSeatBreakdown() {
+  return cachedSeatBreakdown;
+}
+
 /**
  * Update the selection summary bar when seats are clicked.
+ * BRD: Must show ticket price + tax + service fee + total before payment.
  */
 function updateSelectionBar(seats, chart) {
   const bar = document.getElementById('seating-selection-bar');
   const countText = document.getElementById('selection-count-text');
   const totalText = document.getElementById('selection-total-text');
   const checkoutBtn = document.getElementById('checkout-seats-btn');
+  const breakdownContainer = document.getElementById('seat-price-breakdown');
 
   if (!bar || !countText || !totalText || !checkoutBtn) return;
 
@@ -178,6 +194,9 @@ function updateSelectionBar(seats, chart) {
     bar.style.display = 'none';
     bar.classList.remove('has-selection');
     checkoutBtn.disabled = true;
+    cachedSeatBreakdown = null;
+    if (breakdownContainer) breakdownContainer.innerHTML = '';
+    clearTimeout(seatBreakdownDebounce);
     return;
   }
 
@@ -190,6 +209,32 @@ function updateSelectionBar(seats, chart) {
 
   setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''}  ${escapeHTML(tierName)}`);
   totalText.textContent = `$${total.toLocaleString()}`;
+
+  // ── BRD: Fetch server-side breakdown with tax + service fee (debounced) ──
+  if (breakdownContainer) {
+    clearTimeout(seatBreakdownDebounce);
+    seatBreakdownDebounce = setTimeout(async () => {
+      try {
+        injectBreakdownStyles();
+        breakdownContainer.innerHTML = '<div class="ev-breakdown ev-breakdown--loading">Calculating fees…</div>';
+
+        const tierId = chart.getSelectedTierId();
+        const breakdown = await getOrderBreakdown(tierId, seats.length, null);
+        cachedSeatBreakdown = breakdown;
+
+        renderPriceBreakdown(breakdownContainer, breakdown, { compact: true });
+
+        // Update the header total to match server total (includes tax + fees)
+        if (breakdown?.total != null) {
+          totalText.textContent = `$${Number(breakdown.total).toLocaleString()}`;
+        }
+      } catch (err) {
+        console.warn('Seat breakdown fetch failed, using local total:', err);
+        cachedSeatBreakdown = null;
+        breakdownContainer.innerHTML = '';
+      }
+    }, 400);
+  }
 
   // Also update legend availability counts
   renderLegendCounts(chart);

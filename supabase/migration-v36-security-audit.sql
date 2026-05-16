@@ -46,11 +46,14 @@ GRANT SELECT, UPDATE ON webhook_failures TO authenticated;
 GRANT INSERT ON webhook_failures TO authenticated;
 
 
--- ════════════ S-1: REVOKE ANON ACCESS TO PRICING RPC ════════════
--- The checkout Edge Function calls this with service_role anyway.
--- Anon access allows anyone to enumerate tier pricing and org tax config.
-
-REVOKE EXECUTE ON FUNCTION calculate_order_breakdown(UUID, INT, TEXT) FROM anon;
+-- ════════════ S-1: PRICING RPC ACCESS — ANON RETAINED ════════════
+-- DECISION: Keep anon access on calculate_order_breakdown.
+-- Rationale: The RPC returns unit price (already visible on tier cards),
+-- tax rate (public info), and platform fee. Revoking anon would break the
+-- price breakdown for guest users browsing without login — BRD requires
+-- "يجب إظهار تفصيل السعر للمشتري قبل الدفع".
+-- The checkout Edge Function also calls this with service_role.
+-- RISK ACCEPTED: tier pricing is intentionally public.
 
 
 -- ════════════ Q-2: EXTEND RESERVATION TTL TO 35 MINUTES ════════════
@@ -270,7 +273,7 @@ GRANT EXECUTE ON FUNCTION create_reservation(UUID, UUID, INT) TO authenticated;
 GRANT EXECUTE ON FUNCTION reserve_seats(UUID, UUID[], UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION reserve_guest_seats(UUID[], UUID) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION create_guest_reservation(UUID, INT) TO authenticated, anon;
-GRANT EXECUTE ON FUNCTION calculate_order_breakdown(UUID, INT, TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION calculate_order_breakdown(UUID, INT, TEXT) TO authenticated, anon;
 
 
 -- ════════════ ✅ MIGRATION v36 COMPLETE ════════════
