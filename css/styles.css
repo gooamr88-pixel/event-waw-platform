@@ -68,38 +68,36 @@ body {
    ══════════════════════════════════ */
 [data-theme="light"] {
   /* ── Backgrounds ── */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
+  --bg-primary: #f8f7f4;
+  --bg-secondary: #f0efe9;
   --bg-card: #ffffff;
-  --bg-glass: rgba(255, 255, 255, 0.6);
+  --bg-glass: rgba(255, 255, 255, 0.7);
   --bg-glass-border: rgba(0, 0, 0, 0.06);
 
   /* ── Text ── */
-  --text-primary: #1a1a1f;
-  --text-secondary: #3d3d45;
-  --text-muted: #6b6b78;
+  --text-primary: #111118;
+  --text-secondary: #2d2d3a;
+  --text-muted: #555568;
 
   /* ── Borders ── */
   --border-color: rgba(0, 0, 0, 0.08);
   --border-light: rgba(0, 0, 0, 0.04);
 
   /* ── Shadows (richer for light mode) ── */
-  --shadow-glow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 60px rgba(184, 150, 46, 0.06);
+  --shadow-glow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 
-  /* ── Accent adjustments ── */
-  --accent-primary: #a88825;
-  --accent-light: #059669;
+  /* ── Accent (emerald — matches brand identity) ── */
+  --accent-primary: #059669;
+  --accent-light: #34D399;
   --accent-dark: #047857;
 }
 
-/* ── Light Mode: Ambient Glow (warm tint) ── */
+/* ── Light Mode: Ambient Glow (disabled — clean white bg) ── */
 [data-theme="light"] body::before {
-  background: linear-gradient(180deg, rgba(184,150,46,.04) 0%, transparent 40%);
-  opacity: .6;
+  opacity: 0;
 }
 [data-theme="light"] body::after {
-  background: linear-gradient(180deg, transparent 0%, rgba(184,150,46,.03) 30%, transparent 70%);
-  opacity: .6;
+  opacity: 0;
 }
 
 /* ── Light Mode: Hero (text stays white on dark image overlay) ── */
@@ -329,7 +327,7 @@ img { max-width: 100%; display: block; }
 /* FIX: Removed 'outline: none' — it was killing ALL keyboard focus indicators,
    violating WCAG 2.4.7 (Focus Visible). Focus rings are now handled by
    :focus-visible in tokens.css, which only fires on keyboard navigation. */
-button, input, select, textarea { font-family: inherit; border: none; background: none; }
+button, input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-family: inherit; border: none; background: none; }
 button { cursor: pointer; }
 
 /* ── Container ── */
