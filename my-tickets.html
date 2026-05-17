@@ -232,18 +232,119 @@
         document.getElementById('mt-subtitle').textContent = 'Here are the tickets for your guest purchase.';
         await loadGuestTickets(guestToken);
       } else {
-        // Authenticated mode
+        // Check auth state
         const authState = await semiProtectPage();
         updateNavForAuth(authState);
 
-        if (!authState?.user) {
-          window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
-          return;
+        if (authState?.user) {
+          // Authenticated — load their tickets
+          await loadUserTickets(authState.user.id);
+        } else {
+          // Not authenticated — show guest lookup + login option
+          showGuestLookup();
         }
-
-        await loadUserTickets(authState.user.id);
       }
     });
+
+    function showGuestLookup() {
+      document.getElementById('mt-content').innerHTML = `
+        <div style="max-width:480px;margin:0 auto;">
+          <!-- Option 1: Sign In -->
+          <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:28px;margin-bottom:16px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.12);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤</div>
+              <div>
+                <h3 style="font-size:1rem;font-weight:700;margin:0 0 2px;">Have an account?</h3>
+                <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">Sign in to view all your purchased tickets.</p>
+              </div>
+            </div>
+            <a href="login.html?redirect=${encodeURIComponent(window.location.href)}" class="btn btn-primary" style="width:100%;padding:12px;font-size:0.9rem;">
+              Sign In
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </a>
+          </div>
+
+          <!-- Divider -->
+          <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
+            <div style="flex:1;height:1px;background:var(--border-color);"></div>
+            <span style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">or</span>
+            <div style="flex:1;height:1px;background:var(--border-color);"></div>
+          </div>
+
+          <!-- Option 2: Guest Lookup -->
+          <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:28px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">📧</div>
+              <div>
+                <h3 style="font-size:1rem;font-weight:700;margin:0 0 2px;">Purchased as a guest?</h3>
+                <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">Enter the email you used when buying tickets.</p>
+              </div>
+            </div>
+            <form id="guest-lookup-form" onsubmit="return false;" style="display:flex;flex-direction:column;gap:12px;">
+              <div style="position:relative;">
+                <input type="email" id="guest-email-input" placeholder="your@email.com" required
+                  style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:0.9rem;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                  onfocus="this.style.borderColor='rgba(5,150,105,.4)'"
+                  onblur="this.style.borderColor='var(--border-color)'" />
+              </div>
+              <button type="submit" id="guest-lookup-btn" class="btn btn-outline" style="width:100%;padding:12px;font-size:0.9rem;border-color:rgba(245,158,11,.25);color:#f59e0b;">
+                🔍 Find My Tickets
+              </button>
+            </form>
+            <div id="guest-lookup-result" style="display:none;margin-top:14px;padding:14px;border-radius:12px;font-size:0.85rem;line-height:1.6;"></div>
+          </div>
+        </div>
+      `;
+
+      // Wire up guest lookup form
+      const form = document.getElementById('guest-lookup-form');
+      const btn = document.getElementById('guest-lookup-btn');
+      const input = document.getElementById('guest-email-input');
+      const result = document.getElementById('guest-lookup-result');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = input.value.trim();
+        if (!email || !email.includes('@')) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(245,158,11,.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 0.6s linear infinite"></span> Sending access link...';
+        result.style.display = 'none';
+
+        try {
+          const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/resend-guest-link`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+
+          const data = await res.json();
+
+          if (res.ok) {
+            result.style.display = 'block';
+            result.style.background = 'rgba(34,197,94,.06)';
+            result.style.border = '1px solid rgba(34,197,94,.15)';
+            result.style.color = '#22c55e';
+            result.innerHTML = '✅ <strong>Check your email!</strong> If tickets exist for this email, we\'ve sent a secure access link. Check your inbox and spam folder.';
+          } else {
+            result.style.display = 'block';
+            result.style.background = 'rgba(239,68,68,.06)';
+            result.style.border = '1px solid rgba(239,68,68,.15)';
+            result.style.color = '#ef4444';
+            result.innerHTML = '⚠️ ' + escapeHTML(data.error || 'Something went wrong. Please try again.');
+          }
+        } catch (err) {
+          result.style.display = 'block';
+          result.style.background = 'rgba(239,68,68,.06)';
+          result.style.border = '1px solid rgba(239,68,68,.15)';
+          result.style.color = '#ef4444';
+          result.innerHTML = '⚠️ Network error. Please check your connection and try again.';
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '🔍 Find My Tickets';
+        }
+      });
+    }
 
     async function loadUserTickets(userId) {
       try {
