@@ -73,9 +73,9 @@ serve(async (req) => {
 
     const checkoutCurrency = (tierLookup?.currency || 'usd').toLowerCase();
 
-    // Call calculate_order_breakdown — single source of truth for all pricing
+    // Call calculate_order_breakdown_v3 — returns cents fields for safe integer math
     const { data: breakdown, error: breakdownErr } = await adminClient
-      .rpc('calculate_order_breakdown', {
+      .rpc('calculate_order_breakdown_v3', {
         p_tier_id: tier_id,
         p_quantity: qty,
         p_promo_code: promo_code || null,
@@ -88,8 +88,10 @@ serve(async (req) => {
 
     // Extract values from the server-calculated breakdown
     const promoId = breakdown.promo_id || null;
-    const totalCents = Math.round(breakdown.total * 100);
-    const platformFeeCents = Math.round(breakdown.platform_fee_total * 100);
+    // FIX 1.2: Use integer cents from the RPC to avoid JS float precision issues.
+    // The RPC computes ROUND(value * 100)::INT in Postgres with exact DECIMAL math.
+    const totalCents = breakdown.total_cents ?? Math.round(Number(Number(breakdown.total).toFixed(2)) * 100);
+    const platformFeeCents = breakdown.platform_fee_cents ?? Math.round(Number(Number(breakdown.platform_fee_total).toFixed(2)) * 100);
 
     // Ensure organizer row exists (auto-heal) so they can request payouts later
     if (breakdown.organizer_id) {

@@ -18,31 +18,16 @@ import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1?t
 import { handleCORS, errorResponse } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
+import qrcode from 'https://esm.sh/qrcode-generator@1.4.4?target=deno';
 
 // ═══════════════════════════════════
 // QR Code Generator (pure JS, no deps)
 // Generates a boolean matrix from a string
 // ═══════════════════════════════════
 
-/**
- * Minimal QR Code encoder for alphanumeric/byte data.
- * Uses error correction level M.
- * Returns a 2D boolean array (true = dark cell).
- */
-function generateQRMatrix(data: string): boolean[][] {
-  // We use a compact QR implementation based on the algorithm.
-  // For production reliability, we encode via the proven qrcode-generator lib.
-  // Loaded inline to avoid Deno import issues.
-
-  // Fallback: use an external micro-library
-  const qr = createQR(data);
-  return qr;
-}
-
-// ── Self-contained QR PNG encoder (no external API dependency) ──
-// Replaces deprecated Google Charts API.
-// Generates a minimal PNG with QR code rendered as black/white pixels.
-// Uses a simplified QR encoding approach for the data sizes we need (< 300 bytes).
+// ── Self-contained QR PNG generator (FIX 4.1: zero external API calls) ──
+// Previously called api.qrserver.com / quickchart.io which could timeout,
+// producing blank gray rectangles. Now generates QR entirely in-process.
 
 // CRC32 table for PNG chunks
 const _crcTable: number[] = [];
@@ -56,7 +41,6 @@ function _crc32(buf: Uint8Array): number {
   for (let i = 0; i < buf.length; i++) crc = _crcTable[(crc ^ buf[i]) & 0xff] ^ (crc >>> 8);
   return (crc ^ 0xffffffff) >>> 0;
 }
-
 function _pngChunk(type: string, data: Uint8Array): Uint8Array {
   const typeBytes = new TextEncoder().encode(type);
   const len = new DataView(new ArrayBuffer(4));
@@ -74,61 +58,48 @@ function _pngChunk(type: string, data: Uint8Array): Uint8Array {
   return chunk;
 }
 
-/**
- * Generate a QR code as PNG bytes entirely in-process (zero external calls).
- * Falls back to a simple 2D barcode if the data is too large for inline encoding.
- */
 async function generateQRPng(data: string): Promise<Uint8Array> {
-  // Use the QR encoding via the quickchart.io API as a reliable, maintained alternative
-  // to the deprecated Google Charts API. This service is specifically designed for QR codes.
-  const encoded = encodeURIComponent(data);
-  const size = 300;
+  // Generate QR matrix using local library
+  const qr = qrcode(0, 'M');  // Auto version, Medium error correction
+  qr.addData(data);
+  qr.make();
 
-  // Try multiple QR API endpoints for resilience
-  const endpoints = [
-    `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}&format=png&ecc=M`,
-    `https://quickchart.io/qr?text=${encoded}&size=${size}&ecLevel=M&format=png`,
-  ];
+  const moduleCount = qr.getModuleCount();
+  const cellSize = Math.max(2, Math.floor(280 / moduleCount));
+  const margin = cellSize * 2;
+  const totalSize = moduleCount * cellSize + margin * 2;
 
-  for (const url of endpoints) {
-    try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
-      if (response.ok && response.headers.get('content-type')?.includes('image')) {
-        return new Uint8Array(await response.arrayBuffer());
-      }
-    } catch (e) {
-      console.warn(`QR endpoint failed: ${url}`, e);
+  // Build raw RGB pixel data for PNG
+  const rowBytes = totalSize * 3 + 1; // +1 for PNG filter byte
+  const raw = new Uint8Array(totalSize * rowBytes);
+
+  for (let y = 0; y < totalSize; y++) {
+    raw[y * rowBytes] = 0; // PNG filter: none
+    for (let x = 0; x < totalSize; x++) {
+      const idx = y * rowBytes + 1 + x * 3;
+      const mx = Math.floor((x - margin) / cellSize);
+      const my = Math.floor((y - margin) / cellSize);
+      const isDark = mx >= 0 && mx < moduleCount && my >= 0 && my < moduleCount && qr.isDark(my, mx);
+      const val = isDark ? 0 : 255;
+      raw[idx] = val;
+      raw[idx + 1] = val;
+      raw[idx + 2] = val;
     }
   }
 
-  // ── Ultimate fallback: generate a minimal valid PNG with text-as-image ──
-  // This ensures the PDF always generates even if all QR APIs are down.
-  // The ticket can still be verified by its ticket ID shown in text.
-  console.error('All QR endpoints failed — generating fallback placeholder PNG');
-  const s = 300;
-  const raw = new Uint8Array(s * (s * 3 + 1)); // RGB rows with filter byte
-  for (let y = 0; y < s; y++) {
-    raw[y * (s * 3 + 1)] = 0; // filter: none
-    for (let x = 0; x < s; x++) {
-      const idx = y * (s * 3 + 1) + 1 + x * 3;
-      // Draw a simple border pattern as a visual indicator
-      const isBorder = x < 4 || x >= s - 4 || y < 4 || y >= s - 4;
-      const isInner = (x > 30 && x < s - 30 && y > 30 && y < s - 30);
-      const val = isBorder ? 0 : (isInner ? 200 : 255);
-      raw[idx] = val; raw[idx + 1] = val; raw[idx + 2] = val;
-    }
-  }
-
-  // Deflate the raw pixel data (use DecompressionStream workaround for compression)
+  // Compress pixel data
   const deflated = await new Response(
     new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'))
   ).arrayBuffer();
 
+  // Build minimal valid PNG
   const sig = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
   const ihdr = new Uint8Array(13);
-  new DataView(ihdr.buffer).setUint32(0, s);
-  new DataView(ihdr.buffer).setUint32(4, s);
-  ihdr[8] = 8; ihdr[9] = 2; // 8-bit RGB
+  const ihdrView = new DataView(ihdr.buffer);
+  ihdrView.setUint32(0, totalSize);  // width
+  ihdrView.setUint32(4, totalSize);  // height
+  ihdr[8] = 8;  // bit depth
+  ihdr[9] = 2;  // color type: RGB
 
   const parts = [
     sig,
@@ -542,6 +513,18 @@ serve(async (req) => {
           upsert: true,
         });
       console.log(`📄 PDF uploaded: ${storageKey}`);
+
+      // FIX 4.3: Track PDF generation status for retry mechanism
+      if (order_id) {
+        try {
+          await supabase
+            .from('orders')
+            .update({ pdf_status: 'completed' })
+            .eq('id', order_id);
+        } catch (statusErr) {
+          console.warn('Failed to update pdf_status:', statusErr);
+        }
+      }
     } catch (uploadErr) {
       console.error('⚠️ PDF upload failed (non-critical):', uploadErr);
     }
@@ -563,6 +546,17 @@ serve(async (req) => {
     });
   } catch (err) {
     console.error('PDF generation error:', err);
+    // FIX 4.3: Mark PDF as failed for retry
+    try {
+      const failClient = createAdminClient();
+      const failBody = await req.clone().json().catch(() => ({}));
+      if (failBody?.order_id) {
+        await failClient
+          .from('orders')
+          .update({ pdf_status: 'failed' })
+          .eq('id', failBody.order_id);
+      }
+    } catch (_) { /* best effort */ }
     return errorResponse(500, err.message || 'Failed to generate PDF');
   }
 });

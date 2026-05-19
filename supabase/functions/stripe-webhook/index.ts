@@ -27,6 +27,7 @@ const HANDLED_EVENTS = new Set([
   'checkout.session.expired',
   'charge.refunded',
   'charge.dispute.created',
+  'account.application.deauthorized',  // FIX 3.2: Detect disconnected Stripe accounts
 ]);
 
 serve(async (req) => {
@@ -128,172 +129,6 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Reservation expired, refund issued' }), { status: 200 });
     }
 
-    // ── Build order row (core fields that always exist) ──
-    const coreOrderData: any = {
-      event_id,
-      reservation_id,
-      stripe_session_id: session.id,
-      stripe_payment_intent: session.payment_intent,
-      amount: (session.amount_total || 0) / 100,
-      currency: session.currency || 'usd',
-      status: 'paid',
-    };
-
-    // Financial snapshot fields (require migration-v19-task3 columns)
-    const financialSnapshot: any = {
-      subtotal: parseFloat(metaSubtotal || '0'),
-      tax_amount: parseFloat(metaTaxAmount || '0'),
-      tax_rate_snapshot: parseFloat(metaTaxRate || session.metadata?.tax_rate_snapshot || session.metadata?.tax_rate || '0'),
-      platform_fee_amount: parseFloat(metaPlatformFee || session.metadata?.platform_fee_amount || session.metadata?.platform_fee || '0'),
-    };
-
-    if (isGuest) {
-      coreOrderData.user_id = null;
-      coreOrderData.is_guest = true;
-      coreOrderData.guest_email = guest_email || session.customer_email || '';
-      coreOrderData.guest_name = guest_name || '';
-      coreOrderData.guest_phone = guest_phone || '';
-    } else {
-      coreOrderData.user_id = user_id;
-      coreOrderData.is_guest = false;
-    }
-
-    // ── Create Order (with fallback for missing financial columns) ──
-    let order: any;
-    let orderError: any;
-
-    // First attempt: full insert with financial columns
-    ({ data: order, error: orderError } = await supabase
-      .from('orders')
-      .insert({ ...coreOrderData, ...financialSnapshot })
-      .select()
-      .single());
-
-    // Fallback: if financial columns don't exist yet, retry with core fields only
-    if (orderError && (orderError.message?.includes('column') || orderError.code === '42703')) {
-      console.warn('⚠️ Financial columns missing on orders table — retrying insert without them. Run fix-webhook-crash.sql!');
-      ({ data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert(coreOrderData)
-        .select()
-        .single());
-    }
-
-    if (orderError) {
-      console.error('CRITICAL: Order creation failed:', orderError);
-      // Dead-letter: log for manual recovery
-      try {
-        await supabase.from('webhook_failures').insert({
-          stripe_session_id: session.id,
-          order_id: null,
-          error: 'ORDER_CREATION_FAILED: ' + JSON.stringify(orderError),
-          payload: JSON.stringify(session.metadata),
-        });
-      } catch (dlErr) {
-        console.error('Failed to log order creation failure:', dlErr);
-      }
-      return new Response(JSON.stringify({ error: 'Failed to create order' }), { status: 500 });
-    }
-
-    // ── Create Payment Record (Phase 2: Financial Ledger) ──
-    // BRD: "حفظ كل الرسوم والضرائب داخل الطلب حتى لا تتغير"
-    try {
-      const paymentData: any = {
-        order_id: order.id,
-        event_id: event_id,
-        subtotal: parseFloat(metaSubtotal || '0'),
-        tax_rate_snapshot: parseFloat(metaTaxRate || '0'),
-        tax_amount: parseFloat(metaTaxAmount || '0'),
-        platform_fee_pct: parseFloat(metaPlatformFeePct || '0'),
-        platform_fee_total: parseFloat(metaPlatformFee || '0'),
-        total_amount: (session.amount_total || 0) / 100,
-        currency: session.currency || 'usd',
-        organizer_net: parseFloat(metaOrganizerNet || '0'),
-        stripe_payment_intent: session.payment_intent || '',
-        stripe_charge_id: '',  // Will be populated by charge events if needed
-        promo_code: metaPromoCode || null,
-        promo_discount: parseFloat(metaPromoDiscount || '0'),
-        tax_inclusive: metaTaxInclusive === 'true',
-        status: 'paid',
-        paid_at: new Date().toISOString(),
-      };
-
-      // Link to organizers table if organizer_id exists
-      if (metaOrganizerId) {
-        const { data: orgRow } = await supabase
-          .from('organizers')
-          .select('id')
-          .eq('user_id', metaOrganizerId)
-          .maybeSingle();
-        if (orgRow) paymentData.organizer_id = orgRow.id;
-      }
-
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .insert(paymentData);
-
-      if (paymentError) {
-        // Q-3 FIX: Log to webhook_failures for manual recovery.
-        // Without a payment record, the organizer's financial dashboard
-        // won't show this order's revenue and they can never withdraw it.
-        console.error('CRITICAL: Payment record creation failed:', paymentError.message);
-        try {
-          await supabase.from('webhook_failures').insert({
-            stripe_session_id: session.id,
-            order_id: order.id,
-            error: 'PAYMENT_RECORD_FAILED: ' + JSON.stringify(paymentError),
-            payload: JSON.stringify(session.metadata),
-          });
-        } catch (dlErr) {
-          console.error('Failed to log payment record failure:', dlErr);
-        }
-      } else {
-        console.log(`💰 Payment record created for order ${order.id}`);
-      }
-    } catch (payErr) {
-      console.error('⚠️ Payment record error:', payErr);
-    }
-
-    // ── Increment promo code usage if applicable ──
-    if (metaPromoId) {
-      try {
-        await supabase.rpc('increment_promo_usage', { p_promo_id: metaPromoId });
-        console.log(`🏷️ Promo ${metaPromoCode} usage incremented`);
-      } catch (promoErr) {
-        console.error('⚠️ Failed to increment promo usage:', promoErr);
-      }
-    }
-
-    // ── Fetch event + tier details for ticket/email ──
-    const { data: tierInfo } = await supabase
-      .from('ticket_tiers')
-      .select('name, price, events(id, title, venue, date, cover_image)')
-      .eq('id', tier_id)
-      .single();
-
-    const eventTitle = tierInfo?.events?.title || 'Event';
-    const tierName = tierInfo?.name || 'General';
-    const eventVenue = tierInfo?.events?.venue || '';
-    const eventDate = tierInfo?.events?.date || '';
-
-    // ── Resolve user info (auth user OR guest metadata) ──
-    let userEmail = '';
-    let userName = '';
-
-    if (isGuest) {
-      userEmail = guest_email || session.customer_email || '';
-      userName = guest_name || '';
-    } else {
-      const { data: { user: userRecord } } = await supabase.auth.admin.getUserById(user_id);
-      userEmail = userRecord?.email || session.customer_email || '';
-      userName = userRecord?.user_metadata?.full_name || '';
-    }
-
-    // ── Generate Tickets with HMAC-SHA256 Signed QR ──
-    // IMPORTANT: QR generation is identical for both guest and auth users.
-    // The QR payload contains all data needed for verification.
-    // For seated events, we inject seat location into the signed payload.
-
     // ── Pre-fetch seat location data if this is a seated checkout ──
     const seatIdsRaw = session.metadata?.seat_ids;
     let seatLookup: Record<string, { section_key: string; row_label: string; seat_number: string }> = {};
@@ -331,6 +166,9 @@ serve(async (req) => {
       ['sign']
     );
 
+    // ── Generate ticket data with HMAC-SHA256 signed QR codes ──
+    // NOTE: order_id is set to '__PENDING__' here — the fulfill_checkout RPC
+    // will assign the real order_id when it creates the tickets.
     const tickets = await Promise.all(
       Array.from({ length: qty }, async (_, i) => {
         const ticketId = crypto.randomUUID();
@@ -339,7 +177,6 @@ serve(async (req) => {
         const payloadObj: any = {
           v: 2,
           ticket_id: ticketId,
-          order_id: order.id,
           event_id,
           user_id: isGuest ? null : user_id,
           tier_id,
@@ -376,62 +213,106 @@ serve(async (req) => {
 
         return {
           id: ticketId,
-          order_id: order.id,
-          ticket_tier_id: tier_id,
-          user_id: isGuest ? null : user_id,
           qr_hash: qrData,
-          status: 'valid',
           ...(seatLabel ? { seat_label: seatLabel } : {}),
         };
       })
     );
 
-    const { error: ticketError } = await supabase
-      .from('tickets')
-      .insert(tickets);
+    // ═══════════════════════════════════════════════════════════
+    // FIX 2.1: ATOMIC FULFILLMENT via Postgres RPC
+    // All order/ticket/payment/reservation operations in a SINGLE
+    // Postgres transaction. If ANY step fails, EVERYTHING rolls back.
+    // No more ghost money (paid but no tickets).
+    // ═══════════════════════════════════════════════════════════
+    const financialSnapshot = {
+      subtotal: metaSubtotal || '0',
+      tax_amount: metaTaxAmount || '0',
+      tax_rate: metaTaxRate || '0',
+      platform_fee_total: metaPlatformFee || '0',
+      platform_fee_pct: metaPlatformFeePct || '0',
+      promo_discount: metaPromoDiscount || '0',
+      organizer_net: metaOrganizerNet || '0',
+      organizer_id: metaOrganizerId || '',
+      promo_code: metaPromoCode || '',
+      tax_inclusive: metaTaxInclusive || 'false',
+    };
 
-    if (ticketError) {
-      console.error('CRITICAL: Ticket creation failed:', ticketError);
-      // ── Dead-letter: log failure for manual recovery ──
+    const { data: fulfillResult, error: fulfillError } = await supabase
+      .rpc('fulfill_checkout', {
+        p_session_id: session.id,
+        p_payment_intent: session.payment_intent || '',
+        p_amount_total_cents: session.amount_total || 0,
+        p_currency: session.currency || 'usd',
+        p_reservation_id: reservation_id,
+        p_event_id: event_id,
+        p_tier_id: tier_id,
+        p_user_id: isGuest ? null : user_id,
+        p_is_guest: isGuest,
+        p_guest_name: isGuest ? (guest_name || '') : '',
+        p_guest_email: isGuest ? (guest_email || session.customer_email || '') : '',
+        p_guest_phone: isGuest ? (guest_phone || '') : '',
+        p_tickets: tickets,
+        p_financial: financialSnapshot,
+        p_promo_id: metaPromoId || null,
+        p_seat_ids: orderedSeatIds.length > 0 ? orderedSeatIds : null,
+      });
+
+    if (fulfillError) {
+      console.error('CRITICAL: fulfill_checkout RPC failed:', fulfillError);
+      // Log to dead-letter queue for manual recovery
       try {
         await supabase.from('webhook_failures').insert({
           stripe_session_id: session.id,
-          order_id: order.id,
-          error: JSON.stringify(ticketError),
+          order_id: null,
+          error: 'FULFILL_CHECKOUT_FAILED: ' + JSON.stringify(fulfillError),
           payload: JSON.stringify(session.metadata),
         });
       } catch (dlErr) {
-        console.error('Failed to log webhook failure:', dlErr);
+        console.error('Failed to log fulfillment failure:', dlErr);
       }
-      // Don't return 500 — return 200 so Stripe doesn't keep retrying
+      // FIX 2.3: Return 500 so Stripe retries. Safe because of idempotency guard
+      // in the RPC (checks orders.stripe_session_id before inserting).
+      return new Response(JSON.stringify({ error: 'Fulfillment failed' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
-    // ── Mark reservation as converted ──
-    await supabase
-      .from('reservations')
-      .update({ status: 'converted' })
-      .eq('id', reservation_id);
+    if (fulfillResult?.duplicate) {
+      console.log(`Order already exists for session ${session.id}, skipping duplicate`);
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
-    // ── Update sold_count (denormalized cache) ──
-    await supabase.rpc('increment_sold_count', {
-      p_tier_id: tier_id,
-      p_amount: qty,
-    });
+    const order = { id: fulfillResult.order_id };
+    console.log(`✅ Atomic fulfillment complete: order ${order.id}, ${fulfillResult.ticket_count} tickets`);
 
-    // ── Seated checkout: mark seats as permanently sold ──
-    if (seatIdsRaw) {
-      try {
-        const seatIds = JSON.parse(seatIdsRaw);
-        const ticketIds = tickets.map((t: any) => t.id);
-        await supabase.rpc('confirm_seats_sold', {
-          p_reservation_id: reservation_id,
-          p_ticket_ids: ticketIds,
-        });
-        console.log(`💺 ${seatIds.length} seats marked as sold for reservation ${reservation_id}`);
-      } catch (seatErr) {
-        console.error('Failed to confirm seats sold (non-critical):', seatErr);
-        // Non-critical — seats will remain 'reserved' and can be reconciled
-      }
+    // ── Fetch event + tier details for email ──
+    const { data: tierInfo } = await supabase
+      .from('ticket_tiers')
+      .select('name, price, events(id, title, venue, date, cover_image)')
+      .eq('id', tier_id)
+      .single();
+
+    const eventTitle = tierInfo?.events?.title || 'Event';
+    const tierName = tierInfo?.name || 'General';
+    const eventVenue = tierInfo?.events?.venue || '';
+    const eventDate = tierInfo?.events?.date || '';
+
+    // ── Resolve user info (auth user OR guest metadata) ──
+    let userEmail = '';
+    let userName = '';
+
+    if (isGuest) {
+      userEmail = guest_email || session.customer_email || '';
+      userName = guest_name || '';
+    } else {
+      const { data: { user: userRecord } } = await supabase.auth.admin.getUserById(user_id);
+      userEmail = userRecord?.email || session.customer_email || '';
+      userName = userRecord?.user_metadata?.full_name || '';
     }
 
     // ── Guest: Generate secure retrieval token ──
@@ -725,6 +606,50 @@ serve(async (req) => {
         } catch (e) {
           console.error('Failed to log dispute:', e);
         }
+      }
+    }
+  }
+
+  // ════════════════════════════════════════════════
+  // HANDLER: account.application.deauthorized
+  // Organizer disconnected their Stripe account from the platform
+  // FIX 3.2: Detect and flag disconnected accounts
+  // ════════════════════════════════════════════════
+  if (event.type === 'account.application.deauthorized') {
+    const account = event.data.object;
+    const accountId = account.id;
+
+    if (accountId) {
+      // Flag the organizer as disconnected
+      const { error: orgErr } = await supabase
+        .from('organizers')
+        .update({
+          stripe_onboarding_complete: false,
+        })
+        .eq('stripe_account_id', accountId);
+
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update({
+          stripe_onboarding_complete: false,
+        })
+        .eq('stripe_account_id', accountId);
+
+      if (orgErr) console.error('Failed to update organizer on deauth:', orgErr);
+      if (profErr) console.error('Failed to update profile on deauth:', profErr);
+
+      console.warn(`⛔ Stripe account ${accountId} deauthorized from platform`);
+
+      // Log for admin review
+      try {
+        await supabase.from('webhook_failures').insert({
+          stripe_session_id: accountId,
+          order_id: null,
+          error: `STRIPE_DEAUTHORIZED: Account ${accountId} disconnected`,
+          payload: JSON.stringify({ account_id: accountId }),
+        });
+      } catch (e) {
+        console.error('Failed to log deauthorization:', e);
       }
     }
   }
