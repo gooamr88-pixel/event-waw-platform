@@ -101,10 +101,16 @@ serve(async (req) => {
     let accountId = profile.stripe_account_id;
 
     if (!accountId) {
-      // Create a new Standard connected account
+      // FIX 3.1: Create an Express connected account (was 'standard').
+      // Standard accounts control their own payouts — breaking our 3-day
+      // escrow hold. Express accounts let the PLATFORM control payout timing.
       const account = await stripe.accounts.create({
-        type: 'standard',
+        type: 'express',
         email: user.email,
+        capabilities: {
+          card_payments: { requested: true },
+          transfers: { requested: true },
+        },
         metadata: {
           user_id: user.id,
           platform: 'eventsli',
@@ -112,6 +118,16 @@ serve(async (req) => {
         business_profile: {
           mcc: '7922', // Theatrical Producers & Ticket Agencies
           url: `https://eventsli.com`,
+        },
+        settings: {
+          payouts: {
+            // Manual payout schedule: the platform controls when money is paid out.
+            // This is what enforces the escrow — funds stay in the connected account
+            // until the platform explicitly creates a payout (after event + 3 days).
+            schedule: {
+              interval: 'manual',
+            },
+          },
         },
       });
 

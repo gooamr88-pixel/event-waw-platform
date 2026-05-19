@@ -6,7 +6,7 @@
    view all payout requests, approve, reject,
    add transaction references.
    =================================== */
-import { supabase } from '../src/lib/supabase.js';
+import { supabase, SUPABASE_FUNCTIONS_URL } from '../src/lib/supabase.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 
 /**
@@ -152,9 +152,9 @@ function showProcessModal(payoutId, action, parentContainer) {
   document.getElementById('apo-process-modal')?.remove();
 
   const isApprove = action === 'completed';
-  const title = isApprove ? '✓ Approve Payout' : '✗ Reject Payout';
+  const title = isApprove ? '✓ Approve & Execute Payout' : '✗ Reject Payout';
   const btnColor = isApprove ? '#22c55e' : '#ef4444';
-  const btnLabel = isApprove ? 'Confirm Approval' : 'Confirm Rejection';
+  const btnLabel = isApprove ? 'Execute Stripe Payout' : 'Confirm Rejection';
 
   const modal = document.createElement('div');
   modal.id = 'apo-process-modal';
@@ -167,9 +167,8 @@ function showProcessModal(payoutId, action, parentContainer) {
       </div>
       <div class="apo-modal-body">
         ${isApprove ? `
-          <div class="ev-form-group" style="margin-bottom:14px">
-            <label style="font-size:.85rem;font-weight:600">Transaction Reference</label>
-            <input type="text" class="ev-form-input" id="apo-ext-ref" placeholder="e.g. TXN_12345, Bank transfer ID" />
+          <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:.85rem;color:var(--ev-text-sec)">
+            ⚠️ This will <strong>immediately transfer funds</strong> from the organizer's Stripe account to their bank. This action cannot be undone.
           </div>
         ` : `
           <div class="ev-form-group" style="margin-bottom:14px">
@@ -195,37 +194,121 @@ function showProcessModal(payoutId, action, parentContainer) {
 
   document.getElementById('apo-submit').addEventListener('click', async () => {
     const btn = document.getElementById('apo-submit');
-    btn.disabled = true;
-    btn.textContent = 'Processing...';
 
-    const params = {
-      p_payout_id: payoutId,
-      p_action: action,
-      p_external_ref: document.getElementById('apo-ext-ref')?.value || null,
-      p_notes: document.getElementById('apo-notes')?.value || null,
-      p_failure_reason: document.getElementById('apo-reason')?.value || null,
-    };
+    if (isApprove) {
+      // ═══════════════════════════════════════════════════
+      // APPROVE PATH: Call execute-payout Edge Function
+      // This triggers the actual Stripe payout to the
+      // organizer's bank account.
+      // ═══════════════════════════════════════════════════
 
-    try {
-      const { data, error } = await supabase.rpc('admin_process_payout', params);
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      // Extra confirmation for irreversible financial action
+      if (!confirm('FINAL CONFIRMATION: Execute this Stripe payout now? Funds will be transferred to the organizer\'s bank account.')) {
+        return;
+      }
 
-      modal.remove();
+      btn.disabled = true;
+      btn.textContent = 'Executing Stripe Payout...';
 
-      // Show toast via CMS event pattern
-      window.dispatchEvent(new CustomEvent('cms-saved', {
-        detail: { label: `Payout ${action} successfully` }
-      }));
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session?.access_token) {
+          throw new Error('Session expired. Please sign in again.');
+        }
 
-      // Refresh the table
-      renderAdminPayouts(parentContainer);
-    } catch (err) {
-      window.dispatchEvent(new CustomEvent('cms-error', {
-        detail: { message: 'Failed: ' + err.message }
-      }));
-      btn.disabled = false;
-      btn.textContent = btnLabel;
+        const response = await fetch(
+          `${SUPABASE_FUNCTIONS_URL}/execute-payout`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`,
+            },
+            body: JSON.stringify({ payout_id: payoutId }),
+          }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || `HTTP ${response.status}`);
+        }
+
+        if (result.duplicate) {
+          // Idempotent — already processed
+          window.dispatchEvent(new CustomEvent('cms-saved', {
+            detail: { label: `Payout was already completed (${result.external_ref})` }
+          }));
+        } else if (result.success) {
+          window.dispatchEvent(new CustomEvent('cms-saved', {
+            detail: { label: `Payout executed! Stripe ID: ${result.stripe_payout_id}` }
+          }));
+          if (result.warning) {
+            alert('⚠️ ' + result.warning);
+          }
+        } else {
+          throw new Error(result.error || 'Unknown error');
+        }
+
+        // Save optional admin notes via the existing RPC
+        const notes = document.getElementById('apo-notes')?.value;
+        if (notes) {
+          await supabase.rpc('admin_process_payout', {
+            p_payout_id: payoutId,
+            p_action: 'completed',
+            p_external_ref: result.stripe_payout_id || null,
+            p_notes: notes,
+            p_failure_reason: null,
+          }).catch(() => {}); // Best-effort — payout already executed
+        }
+
+        modal.remove();
+        renderAdminPayouts(parentContainer);
+
+      } catch (err) {
+        window.dispatchEvent(new CustomEvent('cms-error', {
+          detail: { message: 'Payout failed: ' + err.message }
+        }));
+        btn.disabled = false;
+        btn.textContent = btnLabel;
+      }
+
+    } else {
+      // ═══════════════════════════════════════════════════
+      // REJECT PATH: DB-only via admin_process_payout RPC
+      // No Stripe action needed for rejections.
+      // ═══════════════════════════════════════════════════
+
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+
+      const params = {
+        p_payout_id: payoutId,
+        p_action: action,
+        p_external_ref: null,
+        p_notes: document.getElementById('apo-notes')?.value || null,
+        p_failure_reason: document.getElementById('apo-reason')?.value || null,
+      };
+
+      try {
+        const { data, error } = await supabase.rpc('admin_process_payout', params);
+        if (error) throw error;
+        if (data?.error) throw new Error(data.error);
+
+        modal.remove();
+
+        window.dispatchEvent(new CustomEvent('cms-saved', {
+          detail: { label: `Payout rejected` }
+        }));
+
+        renderAdminPayouts(parentContainer);
+      } catch (err) {
+        window.dispatchEvent(new CustomEvent('cms-error', {
+          detail: { message: 'Failed: ' + err.message }
+        }));
+        btn.disabled = false;
+        btn.textContent = btnLabel;
+      }
     }
   });
 }
