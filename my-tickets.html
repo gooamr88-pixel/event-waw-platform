@@ -351,7 +351,7 @@
         const { data: tickets, error } = await supabase
           .from('tickets')
           .select(`
-            id, qr_hash, status, seat_label, attendee_name, created_at,
+            id, qr_hash, status, seat_label, created_at,
             ticket_tiers!inner ( name, price, currency ),
             orders!inner ( id, event_id, amount, status,
               events!inner ( id, title, date, end_date, venue, city, cover_image )
@@ -393,7 +393,7 @@
         const { data: tickets, error: tErr } = await supabase
           .from('tickets')
           .select(`
-            id, qr_hash, status, seat_label, attendee_name, created_at,
+            id, qr_hash, status, seat_label, created_at,
             ticket_tiers!inner ( name, price, currency ),
             orders!inner ( id, event_id, amount, status,
               events!inner ( id, title, date, end_date, venue, city, cover_image )
