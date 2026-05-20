@@ -88,10 +88,16 @@ serve(async (req) => {
 
     // Extract values from the server-calculated breakdown
     const promoId = breakdown.promo_id || null;
-    // FIX 1.2: Use integer cents from the RPC to avoid JS float precision issues.
-    // The RPC computes ROUND(value * 100)::INT in Postgres with exact DECIMAL math.
-    const totalCents = breakdown.total_cents ?? Math.round(Number(Number(breakdown.total).toFixed(2)) * 100);
-    const platformFeeCents = breakdown.platform_fee_cents ?? Math.round(Number(Number(breakdown.platform_fee_total).toFixed(2)) * 100);
+    // FIX 1.2: Use integer cents from the RPC. calculate_order_breakdown_v3
+    // computes ROUND(value * 100)::INT in Postgres with exact DECIMAL math.
+    // NO JS float fallback — if the RPC doesn't return cents, fail loud.
+    const totalCents = breakdown.total_cents;
+    const platformFeeCents = breakdown.platform_fee_cents;
+
+    if (totalCents == null || platformFeeCents == null) {
+      console.error('CRITICAL: calculate_order_breakdown_v3 did not return cents fields', breakdown);
+      return errorResponse(500, 'Pricing calculation error. Please try again.', {}, req);
+    }
 
     // Ensure organizer row exists (auto-heal) so they can request payouts later
     if (breakdown.organizer_id) {
