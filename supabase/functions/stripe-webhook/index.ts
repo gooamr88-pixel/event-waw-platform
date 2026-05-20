@@ -395,27 +395,31 @@ serve(async (req) => {
         });
         console.log(`✉️ Confirmation email sent to ${userEmail} (guest=${isGuest})`);
 
-        // ── P-2 FIX: Queue PDF generation asynchronously (fire-and-forget) ──
-        // The PDF Edge Function will generate the PDF and send a follow-up
-        // email with the attachment. This prevents webhook timeout under load.
-        fetch(
-          `${supabaseUrl}/functions/v1/generate-ticket-pdf`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseServiceKey}`,
-            },
-            body: JSON.stringify({
-              order_id: order.id,
-              send_followup_email: true,
-              recipient_email: userEmail,
-              event_title: eventTitle,
-            }),
+        // ── PDF generation: AWAITED to prevent Deno isolate crash ──
+        // Must await so the isolate stays alive. PDF failure is non-blocking
+        // (payment is already secured in the database).
+        try {
+          const pdfRes = await fetch(
+            `${supabaseUrl}/functions/v1/generate-ticket-pdf`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+              },
+              body: JSON.stringify({
+                order_id: order.id,
+              }),
+            }
+          );
+          if (!pdfRes.ok) {
+            console.warn(`⚠️ PDF generation returned ${pdfRes.status} (non-blocking)`);
+          } else {
+            console.log(`📄 PDF generated for order ${order.id}`);
           }
-        ).catch(pdfErr => {
-          console.warn('⚠️ PDF queue failed (non-blocking):', pdfErr);
-        });
+        } catch (pdfErr) {
+          console.warn('⚠️ PDF generation failed (non-blocking):', pdfErr);
+        }
       } catch (emailErr) {
         console.error('Failed to send confirmation email:', emailErr);
         // Don't fail the webhook — email is best-effort
