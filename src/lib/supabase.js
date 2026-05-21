@@ -10,6 +10,7 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 // A-3 FIX: Single source of truth for Edge Function base URL
 export const SUPABASE_FUNCTIONS_URL = `${supabaseUrl}/functions/v1`;
+export const SUPABASE_ANON_KEY = supabaseAnonKey;
 
 
 

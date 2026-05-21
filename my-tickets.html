@@ -795,7 +795,7 @@
   </div></footer>
 
   <script type="module">
-    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL } from './src/lib/supabase.js';
+    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from './src/lib/supabase.js';
     import { semiProtectPage, updateNavForAuth } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
@@ -866,7 +866,7 @@
       try {
         const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify-guest-ticket`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
           body: JSON.stringify({ guest_token: token }),
         });
 
@@ -1069,15 +1069,27 @@
       btn.innerHTML = '<span class="mt-spinner"></span>';
 
       try {
-        const headers = { 'Content-Type': 'application/json' };
+        // Always include apikey header — Supabase API gateway requires it
+        // even for Edge Functions deployed with --no-verify-jwt
+        const headers = {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON_KEY,
+        };
         const body = { ticket_id: ticketId };
 
-        // For authenticated users, send the auth token
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          headers['Authorization'] = `Bearer ${session.access_token}`;
-        } else if (currentGuestToken) {
-          // For guests, include the guest token so the Edge Function can verify access
+        // For authenticated users, also send the auth token
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            headers['Authorization'] = `Bearer ${session.access_token}`;
+          }
+        } catch (authErr) {
+          // Guest mode — no auth session available, that's fine
+          console.log('No auth session (guest mode):', authErr?.message);
+        }
+
+        // For guests, include the guest token so the Edge Function can verify access
+        if (currentGuestToken) {
           body.guest_token = currentGuestToken;
         }
 
@@ -1087,7 +1099,17 @@
           body: JSON.stringify(body),
         });
 
-        if (!res.ok) throw new Error('Failed to generate PDF');
+        if (!res.ok) {
+          // Try to extract the actual error message from the response
+          let errMsg = 'Failed to generate PDF';
+          try {
+            const errData = await res.json();
+            errMsg = errData.error || errMsg;
+          } catch (_) {
+            errMsg = `PDF generation failed (HTTP ${res.status})`;
+          }
+          throw new Error(errMsg);
+        }
 
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
@@ -1187,7 +1209,7 @@
         try {
           const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/resend-guest-link`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
             body: JSON.stringify({ email }),
           });
 
