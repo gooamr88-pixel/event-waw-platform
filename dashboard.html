@@ -467,7 +467,7 @@
             </div>
             <div class="ev-form-group">
               <label for="prof-address">Address *</label>
-              <input class="ev-form-input" type="text" id="prof-address" placeholder="e.g. Cairo, Egypt" required />
+              <input class="ev-form-input" type="text" id="prof-address" placeholder="e.g. New York, USA" required />
             </div>
             <div class="ev-form-group">
               <label for="prof-bio">Write about your Brand *</label>
@@ -475,7 +475,7 @@
             </div>
             <div class="ev-form-group">
               <label for="prof-phone">Phone Number</label>
-              <input class="ev-form-input" type="tel" id="prof-phone" placeholder="+20 xxx xxx xxxx" />
+              <input class="ev-form-input" type="tel" id="prof-phone" placeholder="+1 (555) 123-4567" />
             </div>
             <div class="ev-form-group">
               <label for="prof-website">Website</label>
@@ -773,21 +773,26 @@
             <!-- ── Location Details ── -->
             <div class="ev-form-group">
               <label>Venue / Place Name <span class="ce-req">*</span></label>
-              <input class="ev-form-input" type="text" id="ce-place" placeholder="e.g. Cairo International Convention Center" />
+              <input class="ev-form-input" type="text" id="ce-place" placeholder="e.g. Madison Square Garden" />
             </div>
             <div class="ev-form-group">
               <label>Full Address</label>
-              <input class="ev-form-input" type="text" id="ce-address" placeholder="e.g. El Nasr Road, Nasr City" />
+              <input class="ev-form-input" type="text" id="ce-address" placeholder="e.g. 4 Pennsylvania Plaza, Manhattan" />
             </div>
             <div class="ev-form-row">
               <div class="ev-form-group">
                 <label>City <span class="ce-req">*</span></label>
-                <input class="ev-form-input" type="text" id="ce-city" placeholder="e.g. Cairo" />
+                <input class="ev-form-input" type="text" id="ce-city" placeholder="e.g. New York" />
               </div>
               <div class="ev-form-group">
                 <label>Country <span class="ce-req">*</span></label>
                 <select class="ev-form-input" id="ce-country">
                   <option value="">Select Country</option>
+                  <optgroup label="── Popular ──">
+                    <option value="US" selected>🇺🇸 United States</option>
+                    <option value="CA">🇨🇦 Canada</option>
+                    <option value="GB">🇬🇧 United Kingdom</option>
+                  </optgroup>
                   <optgroup label="── Middle East & North Africa ──">
                     <option value="EG">🇪🇬 Egypt</option>
                     <option value="SA">🇸🇦 Saudi Arabia</option>
@@ -863,6 +868,7 @@
                   <optgroup label="── Americas ──">
                     <option value="US">🇺🇸 United States</option>
                     <option value="CA">🇨🇦 Canada</option>
+                    <!-- US/CA also listed in Popular group above -->
                     <option value="MX">🇲🇽 Mexico</option>
                     <option value="BR">🇧🇷 Brazil</option>
                     <option value="AR">🇦🇷 Argentina</option>
@@ -985,11 +991,11 @@
             <div class="ev-form-row">
               <div class="ev-form-group">
                 <label>Longitude</label>
-                <input class="ev-form-input" type="number" step="any" id="ce-longitude" placeholder="e.g. 31.3547" />
+                <input class="ev-form-input" type="number" step="any" id="ce-longitude" placeholder="e.g. -73.9857" />
               </div>
               <div class="ev-form-group">
                 <label>Latitude</label>
-                <input class="ev-form-input" type="number" step="any" id="ce-latitude" placeholder="e.g. 30.0595" />
+                <input class="ev-form-input" type="number" step="any" id="ce-latitude" placeholder="e.g. 40.7484" />
               </div>
             </div>
 
@@ -1068,8 +1074,8 @@
                 <label>Event Language <span class="ce-info-icon" title="Primary language spoken at the event">ⓘ</span></label>
                 <select class="ev-form-input" id="ce-language">
                   <option value="">Not Specified</option>
+                  <option value="English" selected>English</option>
                   <option value="Arabic">Arabic</option>
-                  <option value="English">English</option>
                   <option value="Bilingual">Bilingual (Ar/En)</option>
                   <option value="French">French</option>
                   <option value="Spanish">Spanish</option>
@@ -1087,7 +1093,7 @@
               <select class="ev-form-input" id="ce-currency">
                 <option value="">Select Currency</option>
                 <optgroup label="── Popular ──">
-                  <option value="USD">USD — US Dollar ($)</option>
+                  <option value="USD" selected>USD — US Dollar ($)</option>
                   <option value="EUR">EUR — Euro (€)</option>
                   <option value="GBP">GBP — British Pound (£)</option>
                   <option value="EGP">EGP — Egyptian Pound (E£)</option>
@@ -1217,7 +1223,7 @@
                   <option value="America/Denver">Mountain Time (MT) - Denver</option>
                   <option value="America/Chicago">Central Time (CT) - Chicago</option>
                   <option value="America/Mexico_City">Central Time (CT) - Mexico City</option>
-                  <option value="America/New_York">Eastern Time (ET) - New York</option>
+                  <option value="America/New_York" selected>Eastern Time (ET) - New York</option>
                   <option value="America/Toronto">Eastern Time (ET) - Toronto</option>
                   <option value="America/Halifax">Atlantic Time (AST) - Halifax</option>
                   <option value="America/St_Johns">Newfoundland Time (NST)</option>
@@ -1382,7 +1388,7 @@
                 </div>
                 <div class="ev-form-group">
                   <label>Organizer Phone</label>
-                  <input class="ev-form-input" type="tel" id="ce-organizer-phone" placeholder="e.g. +20 100 123 4567" />
+                  <input class="ev-form-input" type="tel" id="ce-organizer-phone" placeholder="e.g. +1 (555) 123-4567" />
                 </div>
               </div>
               <div class="ev-form-group">

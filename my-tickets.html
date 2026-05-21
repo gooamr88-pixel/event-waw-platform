@@ -26,87 +26,665 @@
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
   <script src="js/csp.js"></script>
   <style>
-    .mt-page { max-width: 900px; margin: 0 auto; padding: 32px 20px 60px; }
-    .mt-header { margin-bottom: 32px; }
-    .mt-header h1 { font-family: var(--font-serif); font-size: 1.6rem; font-weight: 800; margin-bottom: 6px; }
-    .mt-header p { color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; }
-    .mt-stats { display: flex; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
-    .mt-stat { flex: 1; min-width: 120px; padding: 18px 20px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 14px; }
-    .mt-stat-value { font-size: 1.5rem; font-weight: 800; margin-bottom: 2px; }
-    .mt-stat-label { font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
-    .mt-empty { text-align: center; padding: 60px 20px; }
-    .mt-empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
-    .mt-empty h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; }
-    .mt-empty p { color: var(--text-muted); font-size: 0.88rem; max-width: 360px; margin: 0 auto 20px; line-height: 1.6; }
+    /* ═══════════════════════════════════════════════════
+       MY TICKETS PAGE — Premium Design
+       All colors via CSS variables from theme.css
+       ═══════════════════════════════════════════════════ */
 
-    /* Ticket Cards */
+    .mt-page {
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 32px 20px 80px;
+    }
+
+    /* ── Header ── */
+    .mt-header {
+      margin-bottom: 32px;
+      animation: mt-fadeInUp 0.6s var(--es-ease-out) forwards;
+    }
+    .mt-header h1 {
+      font-family: var(--font-serif);
+      font-size: 1.7rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .mt-header p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    /* ── Stats Row ── */
+    .mt-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+      animation: mt-fadeInUp 0.6s var(--es-ease-out) 0.1s both;
+    }
+    .mt-stat {
+      padding: 20px 22px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s var(--es-ease-default), box-shadow 0.3s var(--es-ease-default);
+    }
+    .mt-stat::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
+      opacity: 0.5;
+      border-radius: 16px 16px 0 0;
+    }
+    .mt-stat:hover {
+      border-color: var(--hover-border);
+      box-shadow: var(--shadow-md);
+    }
+    .mt-stat-value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      letter-spacing: -0.02em;
+    }
+    .mt-stat-label {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    /* ── Guest Banner ── */
+    .mt-guest-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-subtle-border);
+      border-radius: 14px;
+      margin-bottom: 24px;
+      font-size: 0.84rem;
+      color: var(--text-secondary);
+      animation: mt-fadeInUp 0.6s var(--es-ease-out) 0.05s both;
+    }
+    .mt-guest-banner svg {
+      flex-shrink: 0;
+      color: var(--accent-primary);
+    }
+    .mt-guest-banner a {
+      color: var(--accent-primary);
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .mt-guest-banner a:hover {
+      opacity: 0.8;
+    }
+
+    /* ── Event Group Header ── */
+    .mt-event-group {
+      margin-bottom: 28px;
+    }
+    .mt-event-group-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .mt-event-cover {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      object-fit: cover;
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+      background: var(--bg-secondary);
+    }
+    .mt-event-group-info h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 3px;
+      line-height: 1.3;
+    }
+    .mt-event-group-meta {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+    }
+    .mt-event-group-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── Ticket Cards ── */
     .mt-ticket-card {
-      background: var(--bg-card); border: 1px solid var(--border-color);
-      border-radius: 16px; padding: 0; margin-bottom: 16px; overflow: hidden;
-      transition: all 0.2s; position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      margin-bottom: 14px;
+      overflow: hidden;
+      transition: border-color 0.3s var(--es-ease-default),
+                  box-shadow 0.3s var(--es-ease-default),
+                  transform 0.3s var(--es-ease-spring);
+      position: relative;
+      box-shadow: var(--shadow-sm);
     }
-    .mt-ticket-card:hover { border-color: rgba(212,175,55,.2); box-shadow: 0 4px 20px rgba(0,0,0,.1); }
-    .mt-ticket-top { display: flex; gap: 16px; padding: 20px; }
-    .mt-ticket-qr {
-      width: 90px; height: 90px; border-radius: 10px; overflow: hidden; flex-shrink: 0;
-      background: #fff; display: flex; align-items: center; justify-content: center;
-      border: 1px solid rgba(0,0,0,.08);
+    .mt-ticket-card:hover {
+      border-color: var(--hover-border);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
     }
-    .mt-ticket-qr img { width: 100%; height: 100%; object-fit: contain; }
-    .mt-ticket-info { flex: 1; min-width: 0; }
-    .mt-ticket-event { font-weight: 700; font-size: 1rem; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .mt-ticket-meta { font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; }
-    .mt-ticket-meta span { display: inline-flex; align-items: center; gap: 4px; margin-right: 12px; }
-    .mt-ticket-status {
-      display: inline-flex; padding: 3px 10px; border-radius: 20px;
-      font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
-    }
-    .mt-status-valid { background: rgba(34,197,94,.1); color: #22c55e; }
-    .mt-status-scanned { background: rgba(59,130,246,.1); color: #3b82f6; }
-    .mt-status-cancelled { background: rgba(239,68,68,.1); color: #ef4444; }
-    .mt-ticket-bottom {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 12px 20px; border-top: 1px dashed var(--border-color);
-      background: rgba(255,255,255,.02);
-    }
-    .mt-ticket-id { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: var(--text-muted); }
-    .mt-ticket-actions { display: flex; gap: 8px; }
-    .mt-btn-download {
-      display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
-      border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
-      border: 1px solid var(--border-color); background: transparent;
-      color: var(--text-primary); transition: all 0.2s;
-    }
-    .mt-btn-download:hover { border-color: rgba(212,175,55,.3); color: var(--accent-primary); background: rgba(212,175,55,.06); }
-    .mt-btn-download:disabled { opacity: 0.4; cursor: not-allowed; }
-    .mt-btn-view {
-      display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
-      border-radius: 8px; font-size: 0.78rem; font-weight: 600; cursor: pointer;
-      border: none; background: linear-gradient(135deg, #d4af37, #b8962e);
-      color: #000; transition: all 0.2s;
-    }
-    .mt-btn-view:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(212,175,55,.3); }
 
-    /* Loading skeleton */
+    .mt-ticket-top {
+      display: flex;
+      gap: 18px;
+      padding: 22px 22px 18px;
+    }
+
+    /* QR Code */
+    .mt-ticket-qr {
+      width: 96px;
+      height: 96px;
+      border-radius: 14px;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-xs);
+    }
+    .mt-ticket-qr img {
+      width: 84px;
+      height: 84px;
+      object-fit: contain;
+    }
+
+    /* Info */
+    .mt-ticket-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .mt-ticket-tier {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mt-ticket-tier-price {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--accent-primary);
+      background: var(--accent-subtle);
+      padding: 2px 9px;
+      border-radius: 20px;
+    }
+    .mt-ticket-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+    .mt-ticket-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      margin-right: 14px;
+    }
+    .mt-ticket-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    /* Status Badges */
+    .mt-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border: 1px solid transparent;
+    }
+    .mt-badge-valid {
+      background: rgba(16, 185, 129, 0.08);
+      color: var(--es-color-success);
+      border-color: rgba(16, 185, 129, 0.15);
+    }
+    .mt-badge-valid::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--es-color-success);
+      animation: mt-pulse 2s ease-in-out infinite;
+    }
+    .mt-badge-scanned {
+      background: rgba(59, 130, 246, 0.08);
+      color: var(--es-color-info);
+      border-color: rgba(59, 130, 246, 0.15);
+    }
+    .mt-badge-cancelled {
+      background: rgba(239, 68, 68, 0.08);
+      color: var(--es-color-danger);
+      border-color: rgba(239, 68, 68, 0.15);
+    }
+    .mt-badge-past {
+      background: var(--hover-bg);
+      color: var(--text-faint);
+      border-color: var(--border-color);
+    }
+    .mt-badge-seat {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+      border-color: var(--accent-subtle-border);
+      font-family: var(--es-font-mono);
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 600;
+    }
+
+    /* ── Ticket Perforation Divider ── */
+    .mt-ticket-divider {
+      position: relative;
+      height: 1px;
+      margin: 0 22px;
+      border: none;
+      background: none;
+    }
+    .mt-ticket-divider::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      border-top: 2px dashed var(--border-color);
+    }
+    /* Perforation circles */
+    .mt-ticket-divider::after {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: -30px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--bg-primary);
+      box-shadow: calc(100% + 920px + 28px) 0 0 0 var(--bg-primary);
+    }
+
+    /* ── Ticket Footer ── */
+    .mt-ticket-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 22px 18px;
+    }
+    .mt-ticket-id {
+      font-family: var(--es-font-mono);
+      font-size: 0.72rem;
+      color: var(--text-faint);
+      letter-spacing: 0.03em;
+    }
+    .mt-ticket-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Buttons */
+    .mt-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s var(--es-ease-default);
+      font-family: var(--font-sans);
+      text-decoration: none;
+      line-height: 1;
+    }
+    .mt-btn-ghost {
+      border: 1px solid var(--border-color);
+      background: transparent;
+      color: var(--text-secondary);
+    }
+    .mt-btn-ghost:hover {
+      border-color: var(--hover-border);
+      color: var(--accent-primary);
+      background: var(--accent-subtle);
+    }
+    .mt-btn-ghost:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .mt-btn-accent {
+      border: none;
+      background: var(--accent-gradient);
+      color: var(--text-on-accent);
+      box-shadow: var(--shadow-xs);
+    }
+    .mt-btn-accent:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-accent);
+    }
+
+    /* ── Loading Skeleton ── */
     .mt-skeleton {
-      background: linear-gradient(90deg, rgba(255,255,255,.04) 25%, rgba(255,255,255,.08) 50%, rgba(255,255,255,.04) 75%);
+      background: var(--skeleton-bg);
+      background-image: linear-gradient(
+        90deg,
+        var(--skeleton-bg) 0%,
+        var(--hover-bg) 40%,
+        var(--skeleton-bg) 80%
+      );
       background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
+      animation: mt-shimmer 1.5s ease-in-out infinite;
       border-radius: 8px;
     }
-    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-    /* Guest banner */
-    .mt-guest-banner {
-      display: flex; align-items: center; gap: 12px; padding: 14px 20px;
-      background: rgba(245,158,11,.06); border: 1px solid rgba(245,158,11,.15);
-      border-radius: 12px; margin-bottom: 20px; font-size: 0.82rem; color: #f59e0b;
+    /* ── Empty State ── */
+    .mt-empty {
+      text-align: center;
+      padding: 60px 24px;
+      animation: mt-fadeInUp 0.6s var(--es-ease-out) forwards;
+    }
+    .mt-empty-icon {
+      width: 88px;
+      height: 88px;
+      margin: 0 auto 24px;
+      border-radius: 50%;
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-subtle-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.4rem;
+      animation: mt-float 4s ease-in-out infinite;
+    }
+    .mt-empty h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .mt-empty p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      max-width: 380px;
+      margin: 0 auto 24px;
+      line-height: 1.65;
     }
 
-    @media (max-width: 600px) {
-      .mt-ticket-top { flex-direction: column; align-items: center; text-align: center; }
-      .mt-ticket-event { white-space: normal; }
-      .mt-stats { flex-direction: column; }
+    /* ── Error State ── */
+    .mt-error-card {
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 32px;
+      background: var(--bg-card);
+      border: 1px solid rgba(239, 68, 68, 0.12);
+      border-radius: 18px;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+      animation: mt-fadeInUp 0.5s var(--es-ease-out);
+    }
+    .mt-error-icon {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 18px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+    }
+    .mt-error-card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .mt-error-card p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    /* ── Guest Lookup Section ── */
+    .mt-guest-section {
+      max-width: 500px;
+      margin: 0 auto;
+      animation: mt-fadeInUp 0.6s var(--es-ease-out) forwards;
+    }
+    .mt-guest-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 28px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-sm);
+      transition: border-color 0.3s;
+    }
+    .mt-guest-card:hover {
+      border-color: var(--hover-border);
+    }
+    .mt-guest-card-head {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .mt-guest-card-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .mt-guest-card-icon--auth {
+      background: var(--accent-subtle);
+      border: 1px solid var(--accent-subtle-border);
+    }
+    .mt-guest-card-icon--email {
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.12);
+    }
+    .mt-guest-card h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 3px;
+    }
+    .mt-guest-card p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.5;
+    }
+    .mt-guest-input {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      background: var(--bg-input);
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      font-family: var(--font-sans);
+      outline: none;
+      transition: border-color 0.2s var(--es-ease-default),
+                  box-shadow 0.2s var(--es-ease-default),
+                  background 0.2s var(--es-ease-default);
+      box-sizing: border-box;
+    }
+    .mt-guest-input::placeholder {
+      color: var(--text-faint);
+    }
+    .mt-guest-input:focus {
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow-focus);
+      background: var(--bg-input-focus);
+    }
+    .mt-guest-result {
+      display: none;
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+    }
+    .mt-guest-result--success {
+      background: rgba(16, 185, 129, 0.06);
+      border: 1px solid rgba(16, 185, 129, 0.12);
+      color: var(--es-color-success);
+    }
+    .mt-guest-result--error {
+      background: rgba(239, 68, 68, 0.06);
+      border: 1px solid rgba(239, 68, 68, 0.12);
+      color: var(--es-color-danger);
+    }
+
+    /* ── Divider ── */
+    .mt-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 22px 0;
+    }
+    .mt-divider-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+    .mt-divider-text {
+      font-size: 0.76rem;
+      color: var(--text-faint);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Animations ── */
+    @keyframes mt-fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes mt-shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    @keyframes mt-pulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.4; }
+    }
+    @keyframes mt-float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-6px); }
+    }
+    @keyframes mt-spin {
+      to { transform: rotate(360deg); }
+    }
+    .mt-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-primary);
+      border-radius: 50%;
+      animation: mt-spin 0.6s linear infinite;
+    }
+
+    /* Card entrance stagger */
+    .mt-card-enter {
+      opacity: 0;
+      transform: translateY(12px);
+      animation: mt-fadeInUp 0.5s var(--es-ease-out) forwards;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .mt-stats {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .mt-ticket-top {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 14px;
+      }
+      .mt-ticket-tier {
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .mt-ticket-meta span {
+        margin-right: 0;
+      }
+      .mt-ticket-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .mt-ticket-badges {
+        justify-content: center;
+      }
+      .mt-ticket-bottom {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+      }
+      .mt-ticket-id {
+        text-align: center;
+      }
+      .mt-ticket-actions {
+        justify-content: center;
+      }
+      .mt-event-group-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+      }
+      .mt-event-group-meta {
+        justify-content: center;
+      }
+      .mt-page {
+        padding: 24px 16px 60px;
+      }
+      .mt-header h1 {
+        font-size: 1.4rem;
+      }
     }
   </style>
 </head>
@@ -166,7 +744,8 @@
     </div>
 
     <div id="mt-guest-banner" style="display:none" class="mt-guest-banner">
-      ⚠️ <span>You're viewing tickets as a guest. <a href="login.html" style="color:#d4af37;font-weight:600;">Sign in</a> for full access.</span>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>You're viewing tickets as a guest. <a href="login.html">Sign in</a> to access all your tickets in one place.</span>
     </div>
 
     <div id="mt-stats" class="mt-stats" style="display:none">
@@ -179,21 +758,23 @@
       <!-- Loading skeleton -->
       <div class="mt-ticket-card">
         <div class="mt-ticket-top">
-          <div class="mt-skeleton" style="width:90px;height:90px"></div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-            <div class="mt-skeleton" style="width:70%;height:20px"></div>
+          <div class="mt-skeleton" style="width:96px;height:96px;border-radius:14px"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+            <div class="mt-skeleton" style="width:65%;height:20px"></div>
             <div class="mt-skeleton" style="width:50%;height:14px"></div>
             <div class="mt-skeleton" style="width:40%;height:14px"></div>
+            <div class="mt-skeleton" style="width:30%;height:24px;border-radius:20px"></div>
           </div>
         </div>
       </div>
       <div class="mt-ticket-card">
         <div class="mt-ticket-top">
-          <div class="mt-skeleton" style="width:90px;height:90px"></div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:8px">
-            <div class="mt-skeleton" style="width:60%;height:20px"></div>
+          <div class="mt-skeleton" style="width:96px;height:96px;border-radius:14px"></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+            <div class="mt-skeleton" style="width:55%;height:20px"></div>
             <div class="mt-skeleton" style="width:45%;height:14px"></div>
             <div class="mt-skeleton" style="width:35%;height:14px"></div>
+            <div class="mt-skeleton" style="width:28%;height:24px;border-radius:20px"></div>
           </div>
         </div>
       </div>
@@ -219,15 +800,19 @@
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
 
+    // ── Page State ──
+    let currentGuestToken = null;
+
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
 
-      // Check for guest token in URL hash
+      // Check for guest token in URL hash (security: hash fragment is never sent to server)
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
       const guestToken = hashParams.get('guest_token');
 
       if (guestToken) {
-        // Guest mode — fetch tickets by guest token
+        // Guest mode — fetch tickets via secure Edge Function
+        currentGuestToken = guestToken;
         document.getElementById('mt-guest-banner').style.display = 'flex';
         document.getElementById('mt-subtitle').textContent = 'Here are the tickets for your guest purchase.';
         await loadGuestTickets(guestToken);
@@ -246,106 +831,9 @@
       }
     });
 
-    function showGuestLookup() {
-      document.getElementById('mt-content').innerHTML = `
-        <div style="max-width:480px;margin:0 auto;">
-          <!-- Option 1: Sign In -->
-          <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:28px;margin-bottom:16px;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
-              <div style="width:44px;height:44px;border-radius:12px;background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.12);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">👤</div>
-              <div>
-                <h3 style="font-size:1rem;font-weight:700;margin:0 0 2px;">Have an account?</h3>
-                <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">Sign in to view all your purchased tickets.</p>
-              </div>
-            </div>
-            <a href="login.html?redirect=${encodeURIComponent(window.location.href)}" class="btn btn-primary" style="width:100%;padding:12px;font-size:0.9rem;">
-              Sign In
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:6px;"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-            </a>
-          </div>
-
-          <!-- Divider -->
-          <div style="display:flex;align-items:center;gap:16px;margin:20px 0;">
-            <div style="flex:1;height:1px;background:var(--border-color);"></div>
-            <span style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.08em;">or</span>
-            <div style="flex:1;height:1px;background:var(--border-color);"></div>
-          </div>
-
-          <!-- Option 2: Guest Lookup -->
-          <div style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:16px;padding:28px;">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-              <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.12);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">📧</div>
-              <div>
-                <h3 style="font-size:1rem;font-weight:700;margin:0 0 2px;">Purchased as a guest?</h3>
-                <p style="font-size:0.82rem;color:var(--text-muted);margin:0;">Enter the email you used when buying tickets.</p>
-              </div>
-            </div>
-            <form id="guest-lookup-form" onsubmit="return false;" style="display:flex;flex-direction:column;gap:12px;">
-              <div style="position:relative;">
-                <input type="email" id="guest-email-input" placeholder="your@email.com" required
-                  style="width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--border-color);background:var(--bg-primary);color:var(--text-primary);font-size:0.9rem;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
-                  onfocus="this.style.borderColor='rgba(5,150,105,.4)'"
-                  onblur="this.style.borderColor='var(--border-color)'" />
-              </div>
-              <button type="submit" id="guest-lookup-btn" class="btn btn-outline" style="width:100%;padding:12px;font-size:0.9rem;border-color:rgba(245,158,11,.25);color:#f59e0b;">
-                🔍 Find My Tickets
-              </button>
-            </form>
-            <div id="guest-lookup-result" style="display:none;margin-top:14px;padding:14px;border-radius:12px;font-size:0.85rem;line-height:1.6;"></div>
-          </div>
-        </div>
-      `;
-
-      // Wire up guest lookup form
-      const form = document.getElementById('guest-lookup-form');
-      const btn = document.getElementById('guest-lookup-btn');
-      const input = document.getElementById('guest-email-input');
-      const result = document.getElementById('guest-lookup-result');
-
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = input.value.trim();
-        if (!email || !email.includes('@')) return;
-
-        btn.disabled = true;
-        btn.innerHTML = '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(245,158,11,.2);border-top-color:#f59e0b;border-radius:50%;animation:spin 0.6s linear infinite"></span> Sending access link...';
-        result.style.display = 'none';
-
-        try {
-          const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/resend-guest-link`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-          });
-
-          const data = await res.json();
-
-          if (res.ok) {
-            result.style.display = 'block';
-            result.style.background = 'rgba(34,197,94,.06)';
-            result.style.border = '1px solid rgba(34,197,94,.15)';
-            result.style.color = '#22c55e';
-            result.innerHTML = '✅ <strong>Check your email!</strong> If tickets exist for this email, we\'ve sent a secure access link. Check your inbox and spam folder.';
-          } else {
-            result.style.display = 'block';
-            result.style.background = 'rgba(239,68,68,.06)';
-            result.style.border = '1px solid rgba(239,68,68,.15)';
-            result.style.color = '#ef4444';
-            result.innerHTML = '⚠️ ' + escapeHTML(data.error || 'Something went wrong. Please try again.');
-          }
-        } catch (err) {
-          result.style.display = 'block';
-          result.style.background = 'rgba(239,68,68,.06)';
-          result.style.border = '1px solid rgba(239,68,68,.15)';
-          result.style.color = '#ef4444';
-          result.innerHTML = '⚠️ Network error. Please check your connection and try again.';
-        } finally {
-          btn.disabled = false;
-          btn.innerHTML = '🔍 Find My Tickets';
-        }
-      });
-    }
-
+    // ════════════════════════════════════════════════════
+    // LOAD USER TICKETS (authenticated)
+    // ════════════════════════════════════════════════════
     async function loadUserTickets(userId) {
       try {
         const { data: tickets, error } = await supabase
@@ -362,55 +850,84 @@
           .order('created_at', { ascending: false });
 
         if (error) throw error;
-        renderTickets(tickets || []);
+        renderTickets(tickets || [], false);
       } catch (err) {
         console.error('Error loading tickets:', err);
         renderError(err.message);
       }
     }
 
+    // ════════════════════════════════════════════════════
+    // LOAD GUEST TICKETS (via secure Edge Function)
+    // FIX: Calls verify-guest-ticket instead of querying
+    //      non-existent orders.guest_token column directly
+    // ════════════════════════════════════════════════════
     async function loadGuestTickets(token) {
       try {
-        // Guest tickets are linked via guest_token stored in orders metadata
-        const { data: orders, error } = await supabase
-          .from('orders')
-          .select(`
-            id, event_id, amount, status, guest_token,
-            events!inner ( id, title, date, end_date, venue, city, cover_image )
-          `)
-          .eq('guest_token', token)
-          .eq('status', 'paid');
+        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify-guest-ticket`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guest_token: token }),
+        });
 
-        if (error) throw error;
+        const data = await res.json();
 
-        if (!orders || orders.length === 0) {
+        if (!res.ok) {
+          if (res.status === 403) {
+            renderError('This access link is invalid or has expired. Please check your email for the correct link, or use the guest lookup below.');
+          } else if (res.status === 429) {
+            renderError('Too many requests. Please wait a moment and try again.');
+          } else {
+            renderError(data.error || 'Failed to verify your access link. Please try again.');
+          }
+          return;
+        }
+
+        // Transform Edge Function response into the format renderTickets expects
+        const tickets = (data.tickets || []).map(t => ({
+          id: t.id,
+          qr_hash: t.qr_hash,
+          status: t.status,
+          seat_label: t.seat_label || null,
+          created_at: data.order?.created_at,
+          ticket_tiers: {
+            name: t.tier_name,
+            price: t.tier_price,
+            currency: data.order?.currency || 'egp',
+          },
+          orders: {
+            id: data.order?.id,
+            event_id: t.event?.id,
+            amount: data.order?.amount,
+            status: data.order?.status,
+            events: t.event ? {
+              id: t.event.id,
+              title: t.event.title,
+              date: t.event.date,
+              end_date: null,
+              venue: t.event.venue,
+              city: null,
+              cover_image: t.event.cover_image,
+            } : null,
+          },
+        }));
+
+        if (tickets.length === 0) {
           renderEmpty('No tickets found for this guest link. The link may be invalid or expired.');
           return;
         }
 
-        // Now fetch tickets for those orders
-        const orderIds = orders.map(o => o.id);
-        const { data: tickets, error: tErr } = await supabase
-          .from('tickets')
-          .select(`
-            id, qr_hash, status, seat_label, created_at,
-            ticket_tiers!inner ( name, price, currency ),
-            orders!inner ( id, event_id, amount, status,
-              events!inner ( id, title, date, end_date, venue, city, cover_image )
-            )
-          `)
-          .in('order_id', orderIds)
-          .order('created_at', { ascending: false });
-
-        if (tErr) throw tErr;
-        renderTickets(tickets || []);
+        renderTickets(tickets, true);
       } catch (err) {
         console.error('Error loading guest tickets:', err);
-        renderError(err.message);
+        renderError('Network error. Please check your connection and try again.');
       }
     }
 
-    function renderTickets(tickets) {
+    // ════════════════════════════════════════════════════
+    // RENDER TICKETS
+    // ════════════════════════════════════════════════════
+    function renderTickets(tickets, isGuest) {
       const content = document.getElementById('mt-content');
       const statsEl = document.getElementById('mt-stats');
 
@@ -421,10 +938,10 @@
 
       // Stats
       const now = new Date();
-      const upcoming = tickets.filter(t => new Date(t.orders.events.date) > now).length;
+      const upcoming = tickets.filter(t => t.orders?.events && new Date(t.orders.events.date) > now).length;
       const past = tickets.length - upcoming;
 
-      statsEl.style.display = 'flex';
+      statsEl.style.display = 'grid';
       document.getElementById('mt-total-tickets').textContent = tickets.length;
       document.getElementById('mt-upcoming').textContent = upcoming;
       document.getElementById('mt-past').textContent = past;
@@ -432,14 +949,18 @@
       // Group by event
       const grouped = {};
       for (const t of tickets) {
-        const eventId = t.orders.events.id;
+        const ev = t.orders?.events;
+        if (!ev) continue;
+        const eventId = ev.id;
         if (!grouped[eventId]) {
-          grouped[eventId] = { event: t.orders.events, orderId: t.orders.id, tickets: [] };
+          grouped[eventId] = { event: ev, orderId: t.orders.id, tickets: [] };
         }
         grouped[eventId].tickets.push(t);
       }
 
       let html = '';
+      let cardIndex = 0;
+
       for (const [eventId, group] of Object.entries(grouped)) {
         const ev = group.event;
         const eventDate = new Date(ev.date);
@@ -447,121 +968,290 @@
         const dateStr = eventDate.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
         const timeStr = eventDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
-        for (const ticket of group.tickets) {
-          const tier = ticket.ticket_tiers;
-          const statusClass = ticket.status === 'valid' ? 'mt-status-valid'
-            : ticket.status === 'scanned' ? 'mt-status-scanned' : 'mt-status-cancelled';
-          const statusLabel = ticket.status === 'valid' ? '✓ Valid'
-            : ticket.status === 'scanned' ? '✓ Scanned' : '✗ Cancelled';
+        // Event group header
+        const coverUrl = ev.cover_image
+          ? ev.cover_image
+          : `https://ui-avatars.com/api/?name=${encodeURIComponent(ev.title)}&background=059669&color=fff&size=104&font-size=0.4&bold=true`;
 
-          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(ticket.qr_hash)}`;
+        html += `
+          <div class="mt-event-group">
+            <div class="mt-event-group-header mt-card-enter" style="animation-delay: ${cardIndex * 0.06}s">
+              <img class="mt-event-cover" src="${coverUrl}" alt="" loading="lazy" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(ev.title)}&background=059669&color=fff&size=104&font-size=0.4&bold=true'" />
+              <div class="mt-event-group-info">
+                <h2>${escapeHTML(ev.title)}</h2>
+                <div class="mt-event-group-meta">
+                  <span>📅 ${dateStr} · ${timeStr}</span>
+                  <span>📍 ${escapeHTML(ev.venue)}${ev.city ? ', ' + escapeHTML(ev.city) : ''}</span>
+                </div>
+              </div>
+            </div>`;
+
+        for (const ticket of group.tickets) {
+          cardIndex++;
+          const tier = ticket.ticket_tiers;
+          const statusClass =
+            ticket.status === 'valid' ? 'mt-badge-valid' :
+            ticket.status === 'scanned' ? 'mt-badge-scanned' :
+            'mt-badge-cancelled';
+          const statusLabel =
+            ticket.status === 'valid' ? 'Valid' :
+            ticket.status === 'scanned' ? 'Scanned' :
+            'Cancelled';
+          const statusIcon =
+            ticket.status === 'valid' ? '' :
+            ticket.status === 'scanned' ? '✓ ' :
+            '✗ ';
+
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(ticket.qr_hash)}`;
           const shortId = ticket.id.slice(0, 8).toUpperCase();
 
+          // Price formatting
+          const currency = (tier.currency || 'egp').toUpperCase();
+          const priceDisplay = tier.price > 0 ? `${tier.price} ${currency}` : 'Free';
+
           html += `
-            <div class="mt-ticket-card" data-ticket-id="${ticket.id}">
+            <div class="mt-ticket-card mt-card-enter" style="animation-delay: ${cardIndex * 0.06}s" data-ticket-id="${ticket.id}">
               <div class="mt-ticket-top">
                 <div class="mt-ticket-qr">
                   <img src="${qrUrl}" alt="QR Code" loading="lazy" />
                 </div>
                 <div class="mt-ticket-info">
-                  <div class="mt-ticket-event">${escapeHTML(ev.title)}</div>
-                  <div class="mt-ticket-meta">
-                    <span>📅 ${dateStr} · ${timeStr}</span><br/>
-                    <span>📍 ${escapeHTML(ev.venue)}${ev.city ? ', ' + escapeHTML(ev.city) : ''}</span><br/>
-                    <span>🎫 ${escapeHTML(tier.name)}${ticket.seat_label ? ' · Seat ' + escapeHTML(ticket.seat_label) : ''}</span>
+                  <div class="mt-ticket-tier">
+                    ${escapeHTML(tier.name)}
+                    <span class="mt-ticket-tier-price">${priceDisplay}</span>
                   </div>
-                  <div style="margin-top:6px">
-                    <span class="mt-ticket-status ${statusClass}">${statusLabel}</span>
-                    ${isPast ? '<span class="mt-ticket-status" style="background:rgba(113,113,122,.1);color:#71717a;margin-left:4px">Past Event</span>' : ''}
+                  <div class="mt-ticket-meta">
+                    ${ticket.seat_label ? `<span>💺 ${escapeHTML(ticket.seat_label)}</span>` : ''}
+                    <span>🎫 Order #${shortId}</span>
+                  </div>
+                  <div class="mt-ticket-badges">
+                    <span class="mt-badge ${statusClass}">${statusIcon}${statusLabel}</span>
+                    ${isPast ? '<span class="mt-badge mt-badge-past">Past Event</span>' : ''}
+                    ${ticket.seat_label ? `<span class="mt-badge mt-badge-seat">${escapeHTML(ticket.seat_label)}</span>` : ''}
                   </div>
                 </div>
               </div>
+              <div class="mt-ticket-divider"></div>
               <div class="mt-ticket-bottom">
-                <span class="mt-ticket-id">ID: ${shortId}</span>
+                <span class="mt-ticket-id">TKT-${shortId}</span>
                 <div class="mt-ticket-actions">
-                  <button class="mt-btn-download" data-ticket-id="${ticket.id}" title="Download PDF">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <button class="mt-btn mt-btn-ghost" data-action="download-pdf" data-ticket-id="${ticket.id}" title="Download PDF">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     PDF
                   </button>
-                  <a href="event-detail.html?id=${eventId}" class="mt-btn-view">
+                  <a href="event-detail.html?id=${eventId}" class="mt-btn mt-btn-accent">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     View Event
                   </a>
                 </div>
               </div>
-            </div>
-          `;
+            </div>`;
         }
+
+        html += `</div><!-- end mt-event-group -->`;
       }
 
       content.innerHTML = html;
 
       // Wire up PDF download buttons
-      content.querySelectorAll('.mt-btn-download').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const ticketId = btn.dataset.ticketId;
-          btn.disabled = true;
-          btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(0,0,0,.2);border-top-color:var(--accent-primary);border-radius:50%;animation:spin 0.6s linear infinite"></span>';
-
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
-            const token = session?.access_token;
-
-            const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-              },
-              body: JSON.stringify({ ticket_id: ticketId }),
-            });
-
-            if (!res.ok) throw new Error('Failed to generate PDF');
-
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `ticket-${ticketId.slice(0,8)}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-          } catch (err) {
-            console.error('PDF download failed:', err);
-            alert('Failed to download PDF. Please try again.');
-          } finally {
-            btn.disabled = false;
-            btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> PDF';
-          }
-        });
+      content.querySelectorAll('[data-action="download-pdf"]').forEach(btn => {
+        btn.addEventListener('click', () => handlePdfDownload(btn));
       });
     }
 
+    // ════════════════════════════════════════════════════
+    // PDF DOWNLOAD (supports both auth and guest tokens)
+    // ════════════════════════════════════════════════════
+    async function handlePdfDownload(btn) {
+      const ticketId = btn.dataset.ticketId;
+      btn.disabled = true;
+      const originalContent = btn.innerHTML;
+      btn.innerHTML = '<span class="mt-spinner"></span>';
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        const body = { ticket_id: ticketId };
+
+        // For authenticated users, send the auth token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        } else if (currentGuestToken) {
+          // For guests, include the guest token so the Edge Function can verify access
+          body.guest_token = currentGuestToken;
+        }
+
+        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(body),
+        });
+
+        if (!res.ok) throw new Error('Failed to generate PDF');
+
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ticket-${ticketId.slice(0, 8)}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error('PDF download failed:', err);
+        // Show a brief inline error
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg> Failed';
+        btn.style.color = 'var(--es-color-danger)';
+        btn.style.borderColor = 'rgba(239,68,68,0.2)';
+        setTimeout(() => {
+          btn.innerHTML = originalContent;
+          btn.style.color = '';
+          btn.style.borderColor = '';
+          btn.disabled = false;
+        }, 2500);
+        return;
+      }
+
+      btn.innerHTML = originalContent;
+      btn.disabled = false;
+    }
+
+    // ════════════════════════════════════════════════════
+    // GUEST LOOKUP (email-based ticket retrieval)
+    // ════════════════════════════════════════════════════
+    function showGuestLookup() {
+      const content = document.getElementById('mt-content');
+      document.getElementById('mt-stats').style.display = 'none';
+
+      content.innerHTML = `
+        <div class="mt-guest-section">
+          <!-- Option 1: Sign In -->
+          <div class="mt-guest-card">
+            <div class="mt-guest-card-head">
+              <div class="mt-guest-card-icon mt-guest-card-icon--auth">👤</div>
+              <div>
+                <h3>Have an account?</h3>
+                <p>Sign in to view all your purchased tickets.</p>
+              </div>
+            </div>
+            <a href="login.html?redirect=${encodeURIComponent(window.location.href)}" class="btn btn-primary" style="width:100%;padding:13px;font-size:0.9rem;display:flex;align-items:center;justify-content:center;gap:8px;">
+              Sign In
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </a>
+          </div>
+
+          <!-- Divider -->
+          <div class="mt-divider">
+            <div class="mt-divider-line"></div>
+            <span class="mt-divider-text">or</span>
+            <div class="mt-divider-line"></div>
+          </div>
+
+          <!-- Option 2: Guest Lookup -->
+          <div class="mt-guest-card">
+            <div class="mt-guest-card-head">
+              <div class="mt-guest-card-icon mt-guest-card-icon--email">📧</div>
+              <div>
+                <h3>Purchased as a guest?</h3>
+                <p>Enter the email you used when buying tickets.</p>
+              </div>
+            </div>
+            <form id="guest-lookup-form" onsubmit="return false;" style="display:flex;flex-direction:column;gap:12px;">
+              <input type="email" id="guest-email-input" placeholder="your@email.com" required
+                class="mt-guest-input" autocomplete="email" />
+              <button type="submit" id="guest-lookup-btn" class="mt-btn mt-btn-ghost" style="width:100%;padding:13px;font-size:0.88rem;justify-content:center;border-color:rgba(245,158,11,0.2);color:var(--es-color-warning);">
+                🔍 Find My Tickets
+              </button>
+            </form>
+            <div id="guest-lookup-result" class="mt-guest-result"></div>
+          </div>
+        </div>
+      `;
+
+      // Wire up guest lookup form
+      const form = document.getElementById('guest-lookup-form');
+      const btn = document.getElementById('guest-lookup-btn');
+      const input = document.getElementById('guest-email-input');
+      const result = document.getElementById('guest-lookup-result');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = input.value.trim();
+        if (!email || !email.includes('@')) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<span class="mt-spinner"></span> Sending access link...';
+        result.style.display = 'none';
+
+        try {
+          const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/resend-guest-link`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+
+          const data = await res.json();
+
+          result.style.display = 'block';
+          if (res.ok) {
+            result.className = 'mt-guest-result mt-guest-result--success';
+            result.innerHTML = '✅ <strong>Check your email!</strong> If tickets exist for this email, we\'ve sent a secure access link. Check your inbox and spam folder.';
+          } else {
+            result.className = 'mt-guest-result mt-guest-result--error';
+            result.innerHTML = '⚠️ ' + escapeHTML(data.error || 'Something went wrong. Please try again.');
+          }
+        } catch (err) {
+          result.style.display = 'block';
+          result.className = 'mt-guest-result mt-guest-result--error';
+          result.innerHTML = '⚠️ Network error. Please check your connection and try again.';
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '🔍 Find My Tickets';
+        }
+      });
+    }
+
+    // ════════════════════════════════════════════════════
+    // EMPTY STATE
+    // ════════════════════════════════════════════════════
     function renderEmpty(msg) {
+      document.getElementById('mt-stats').style.display = 'none';
       document.getElementById('mt-content').innerHTML = `
         <div class="mt-empty">
           <div class="mt-empty-icon">🎫</div>
           <h3>No Tickets Yet</h3>
-          <p>${msg || 'You haven\'t purchased any tickets yet. Browse events and get your first ticket!'}</p>
-          <a href="events.html" class="btn btn-primary" style="padding:12px 28px;font-size:0.9rem;">
+          <p>${msg || 'You haven\'t purchased any tickets yet. Browse events and grab your first ticket!'}</p>
+          <a href="events.html" class="btn btn-primary" style="padding:13px 32px;font-size:0.9rem;display:inline-flex;align-items:center;gap:8px;">
             Browse Events
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
           </a>
         </div>
       `;
     }
 
+    // ════════════════════════════════════════════════════
+    // ERROR STATE
+    // ════════════════════════════════════════════════════
     function renderError(msg) {
+      document.getElementById('mt-stats').style.display = 'none';
       document.getElementById('mt-content').innerHTML = `
-        <div class="mt-empty">
-          <div class="mt-empty-icon">⚠️</div>
+        <div class="mt-error-card">
+          <div class="mt-error-icon">⚠️</div>
           <h3>Something went wrong</h3>
           <p>${escapeHTML(msg)}</p>
-          <button onclick="location.reload()" class="btn btn-outline" style="padding:10px 24px;font-size:0.88rem;">Try Again</button>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button onclick="location.reload()" class="mt-btn mt-btn-ghost" style="padding:11px 24px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+              Try Again
+            </button>
+            <a href="events.html" class="mt-btn mt-btn-accent" style="padding:11px 24px;">
+              Browse Events
+            </a>
+          </div>
         </div>
       `;
     }
   </script>
-
-  <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
 </body>
 </html>

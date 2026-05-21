@@ -584,6 +584,98 @@ body.eveenty-auth {
 .ev-link-btn:hover { color: #34D399; }
 .ev-link-btn:disabled { color: #888; cursor: default; }
 
+/* ═══════════════════════════════════════════════
+   LIGHT THEME OVERRIDES — Auth Pages
+   Makes the dark form box readable in light mode
+   ═══════════════════════════════════════════════ */
+
+/* The form box becomes a white card with subtle border */
+body.eveenty-auth .ev-form-box {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  color: #1a1a1f;
+}
+
+/* Labels: white → dark */
+body.eveenty-auth .ev-label {
+  color: #374151;
+}
+
+/* Radio labels */
+body.eveenty-auth .ev-radio-label {
+  color: #374151;
+}
+
+/* Input border refinement */
+body.eveenty-auth .ev-input {
+  border-color: #d1d5db;
+  background: #f9fafb;
+  color: #1a1a1f;
+}
+body.eveenty-auth .ev-input:focus {
+  background: #fff;
+}
+
+/* Select */
+body.eveenty-auth .ev-select {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+  color: #1a1a1f;
+}
+body.eveenty-auth .ev-select:focus {
+  color: #1a1a1f;
+}
+
+/* Remember me text: #ccc → dark */
+body.eveenty-auth .ev-remember {
+  color: #4b5563;
+}
+
+/* Terms label text: #ccc → dark */
+body.eveenty-auth .ev-terms-label {
+  color: #4b5563;
+}
+
+/* Divider line and text */
+body.eveenty-auth .ev-divider::before,
+body.eveenty-auth .ev-divider::after {
+  background: #d1d5db;
+}
+body.eveenty-auth .ev-divider span {
+  color: #6b7280;
+}
+
+/* Password toggle */
+body.eveenty-auth .ev-pass-toggle {
+  color: #9ca3af;
+}
+body.eveenty-auth .ev-pass-toggle:hover {
+  color: #4b5563;
+}
+
+/* Password strength bar background */
+body.eveenty-auth .ev-pass-bar {
+  background: #e5e7eb;
+}
+
+/* OTP dash */
+body.eveenty-auth .ev-otp-dash {
+  color: #6b7280;
+}
+
+/* Legal dot */
+body.eveenty-auth .ev-legal-dot {
+  background: #9ca3af;
+}
+
+/* Phone country selector */
+body.eveenty-auth .ev-fg .iti__country-list {
+  background: #fff;
+  border-color: #e2e8f0;
+}
+
+
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 1024px) {
   .ev-auth-left { flex: 0 0 380px; padding: 30px 30px 30px 40px; }
