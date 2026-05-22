@@ -403,21 +403,8 @@ select {
   }
 
   /* ── 2e. VISUAL HIERARCHY & SPACING ── */
-  .section {
-    padding: 48px 0;
-  }
-  .container {
-    padding: 0 16px;
-  }
-  .section-header {
-    margin-bottom: 28px;
-  }
-  .section-header h2 {
-    font-size: clamp(1.35rem, 5vw, 1.75rem);
-  }
-  .section-desc {
-    font-size: 0.88rem;
-  }
+  /* Section padding, container padding, section-header h2/desc sizing
+     are now fluid via clamp() in page CSS — no static overrides needed */
 
   /* Hero content spacing */
   .hero-content h1 {
@@ -467,23 +454,8 @@ select {
     padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Contact form */
-  .ev-contact-grid {
-    grid-template-columns: 1fr;
-  }
-  .ev-contact-info-panel,
-  .ev-contact-form-wrap {
-    padding: 28px 20px;
-  }
-  .ev-form-row {
-    grid-template-columns: 1fr;
-  }
-
-  /* Stats bar */
-  .ev-stats-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
+  /* Contact grid stacking, panel padding, form-row stacking, and
+     stats-grid are now handled by landing-eveenty.css at 768px */
 
   /* Slider arrows — larger on mobile for touch */
   .ev-slider-arrow {
@@ -616,12 +588,6 @@ select {
     gap: 14px;
   }
 
-  /* Steps grid */
-  .steps-grid {
-    grid-template-columns: 1fr !important;
-    gap: 14px;
-  }
-
   /* Security grid */
   .security-grid {
     grid-template-columns: 1fr;
@@ -640,11 +606,8 @@ select {
     padding: 12px 8px 20px;
   }
 
-  /* Trust badges */
-  .trust-badges {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px;
-  }
+  /* Steps-grid and trust-badges are now handled
+     by landing-eveenty.css at 768px/480px */
 
 
   /* Seating chart */
@@ -665,18 +628,8 @@ select {
   }
 
   /* ── 3e. VISUAL HIERARCHY & SPACING ── */
-  .section {
-    padding: 36px 0;
-  }
-  .container {
-    padding: 0 14px;
-  }
-  .section-header {
-    margin-bottom: 22px;
-  }
-  .section-header h2 {
-    font-size: clamp(1.2rem, 5vw, 1.5rem);
-  }
+  /* Section/container padding and section-header sizing
+     are now fluid via clamp() in page CSS */
 
 
   /* Hero */
@@ -812,14 +765,7 @@ select {
     bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Contact */
-  .ev-contact-section {
-    padding: 36px 0 48px;
-  }
-  .ev-contact-info-panel,
-  .ev-contact-form-wrap {
-    padding: 24px 16px;
-  }
+  /* Contact panel padding is now fluid in landing-eveenty.css */
   .ev-form-submit {
     width: 100%;
     justify-content: center;
