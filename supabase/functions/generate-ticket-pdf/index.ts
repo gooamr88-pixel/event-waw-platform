@@ -15,7 +15,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1?target=deno';
-import { handleCORS, errorResponse } from '../_shared/cors.ts';
+import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
 import qrcode from 'https://esm.sh/qrcode-generator@1.4.4?target=deno';
@@ -146,33 +146,51 @@ serve(async (req) => {
 
   try {
     let body: any;
-    try { body = await req.json(); } catch { return errorResponse(400, 'Invalid JSON'); }
+    try { body = await req.json(); } catch { return errorResponse(400, 'Invalid JSON', {}, req); }
 
-    const { ticket_id, order_id } = body;
+    const { ticket_id, order_id, guest_token } = body;
 
     if (!ticket_id && !order_id) {
-      return errorResponse(400, 'Either ticket_id or order_id is required');
+      return errorResponse(400, 'Either ticket_id or order_id is required', {}, req);
     }
 
     const adminClient = createAdminClient();
 
     // ── Auth: verify the requester owns these tickets ──
-    // Allow both authenticated users and guest token-based access
+    // C-4 FIX: Require either valid JWT or verified guest_token
     let requesterId: string | null = null;
     let isAdmin = false;
+    let guestVerifiedOrderId: string | null = null;
 
-    try {
-      const { user } = await authenticateRequest(req);
-      if (user) {
-        requesterId = user.id;
-        const { data: profile } = await adminClient
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        isAdmin = profile?.role === 'admin';
+    // Try JWT auth first
+    const { user } = await authenticateRequest(req);
+    if (user) {
+      requesterId = user.id;
+      const { data: profile } = await adminClient
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      isAdmin = profile?.role === 'admin';
+    } else if (guest_token && typeof guest_token === 'string') {
+      // C-4 FIX: Hash the guest_token with SHA-256 and verify via RPC
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(guest_token));
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const tokenHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const { data: rpcResult, error: rpcError } = await adminClient
+        .rpc('verify_guest_token', { p_token_hash: tokenHash });
+
+      if (rpcError || !rpcResult || rpcResult.length === 0 || !rpcResult[0]?.order_id) {
+        return errorResponse(401, 'Invalid or expired guest token', {}, req);
       }
-    } catch { /* guest access — will verify via order ownership below */ }
+
+      guestVerifiedOrderId = rpcResult[0].order_id;
+    } else {
+      // C-4 FIX: Neither JWT nor guest_token — reject
+      return errorResponse(401, 'Authentication required', {}, req);
+    }
 
     // ── Fetch ticket(s) ──
     let tickets: any[] = [];
@@ -230,13 +248,19 @@ serve(async (req) => {
     if (!isAdmin) {
       const firstTicket = tickets[0];
       const orderUserId = firstTicket.orders?.user_id;
-      const isGuest = firstTicket.orders?.is_guest;
+      const ticketOrderId = firstTicket.order_id;
 
-      if (!isGuest && requesterId && orderUserId !== requesterId) {
-        return errorResponse(403, 'You do not own these tickets');
+      if (guestVerifiedOrderId) {
+        // C-4 FIX: Guest token was verified — ensure ticket belongs to the verified order
+        if (ticketOrderId !== guestVerifiedOrderId) {
+          return errorResponse(403, 'Ticket does not belong to your order', {}, req);
+        }
+      } else if (requesterId) {
+        // Authenticated user — verify they own the tickets
+        if (orderUserId !== requesterId) {
+          return errorResponse(403, 'You do not own these tickets', {}, req);
+        }
       }
-      // For guest tickets, we allow access if they have the order_id
-      // (which is only shared via email confirmation)
     }
 
     // ── Generate multi-page PDF ──
@@ -534,15 +558,19 @@ serve(async (req) => {
       ? `eventsli-ticket-${ticket_id.substring(0, 8)}.pdf`
       : `eventsli-tickets-${order_id?.substring(0, 8)}.pdf`;
 
+    // Build response headers with proper CORS (no wildcard)
+    const pdfHeaders = {
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+      'Content-Length': String(pdfBytes.length),
+      'Cache-Control': 'private, max-age=3600',
+      'Referrer-Policy': 'no-referrer',
+      'X-Content-Type-Options': 'nosniff',
+    };
+
     return new Response(pdfBytes, {
       status: 200,
-      headers: {
-        'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="${fileName}"`,
-        'Content-Length': String(pdfBytes.length),
-        'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'private, max-age=3600',
-      },
+      headers: pdfHeaders,
     });
   } catch (err) {
     console.error('PDF generation error:', err);

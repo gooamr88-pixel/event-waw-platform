@@ -156,7 +156,7 @@
       pointer-events: none; z-index: 2;
     }
     .scanner-frame {
-      width: 200px; height: 200px;
+      width: clamp(160px, 45vw, 200px); height: clamp(160px, 45vw, 200px);
       border: 2px solid var(--accent-primary);
       border-radius: 16px;
       box-shadow: 0 0 0 9999px rgba(0,0,0,.4);
@@ -177,7 +177,7 @@
     .scanner-result {
       position: fixed; inset: 0; z-index: 1000;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center; padding: 24px;
+      text-align: center; padding: clamp(16px, 3vw, 24px);
       animation: resultIn 0.3s ease;
     }
     .scanner-result.valid { background: rgba(16, 80, 30, 0.97); }
@@ -219,7 +219,7 @@
       text-align: center;
     }
     .result-scan-counter {
-      font-size: 1.8rem;
+      font-size: clamp(1.4rem, 4vw, 1.8rem);
       font-weight: 800;
       color: #fff;
       font-family: var(--font-serif);
@@ -232,13 +232,13 @@
       margin-top: 4px;
     }
 
-    .scanner-result h2 { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; color: #fff; }
+    .scanner-result h2 { font-family: var(--font-serif); font-size: clamp(1.4rem, 4vw, 1.8rem); font-weight: 700; margin-bottom: 8px; color: #fff; }
     .scanner-result p { color: rgba(255,255,255,.7); font-size: 0.95rem; }
 
     /* Seat location box — prominent green display */
     .result-seat-box {
       margin-top: 20px;
-      padding: 20px;
+      padding: clamp(14px, 3vw, 20px);
       background: rgba(34,197,94,.12);
       border: 2px solid rgba(34,197,94,.4);
       border-radius: 16px;
@@ -277,7 +277,7 @@
       letter-spacing: 0.06em;
     }
     .result-seat-val {
-      font-size: 1.4rem;
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
       font-weight: 800;
       color: #ffffff;
       font-family: var(--font-serif);

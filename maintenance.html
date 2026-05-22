@@ -22,9 +22,9 @@
     body { display: flex; flex-direction: column; min-height: 100vh; justify-content: center; align-items: center; text-align: center; background: var(--bg-primary); color: var(--text-primary); padding: 20px; }
     .m-icon { width: 80px; height: 80px; margin-bottom: 24px; color: #f59e0b; animation: float 3s ease-in-out infinite; }
     @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
-    h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
-    p { font-size: 1.1rem; color: var(--text-muted); max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
-    .m-brand { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 1.2rem; color: var(--text-primary); text-decoration: none; position: absolute; top: 30px; left: 30px; }
+    h1 { font-size: clamp(1.6rem, 4vw + 0.5rem, 2.5rem); font-weight: 800; margin-bottom: 16px; letter-spacing: -0.5px; }
+    p { font-size: clamp(0.9rem, 1vw + 0.6rem, 1.1rem); color: var(--text-muted); max-width: 500px; margin: 0 auto 32px; line-height: 1.6; }
+    .m-brand { display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 1.2rem; color: var(--text-primary); text-decoration: none; position: absolute; top: clamp(16px, 3vw, 30px); left: clamp(16px, 3vw, 30px); }
     .m-brand svg { width: 32px; height: 32px; color: var(--accent-primary); }
     .btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 28px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s; background: var(--accent-primary); color: #fff; box-shadow: 0 4px 14px rgba(5, 150, 105,0.3); border: none; cursor: pointer; }
     .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(5, 150, 105,0.4); }

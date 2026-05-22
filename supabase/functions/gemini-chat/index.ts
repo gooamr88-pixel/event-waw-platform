@@ -58,6 +58,27 @@ serve(async (req) => {
     return errorResponse(500, 'Chat service not configured — API key missing', {}, req);
   }
 
+  // C-7 FIX: Require admin role — non-admin users must not access this endpoint
+  const { user, error: authError } = await authenticateRequest(req);
+  if (!user) return errorResponse(401, authError || 'Sign in to use the assistant', {}, req);
+
+  // Check admin role in profiles table
+  const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+  const adminClient = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  );
+  const { data: profile } = await adminClient
+    .from('profiles')
+    .select('user_role')
+    .eq('id', user.id)
+    .single();
+
+  const userRole = profile?.user_role;
+  if (userRole !== 'admin' && userRole !== 'super_admin') {
+    return errorResponse(403, 'Forbidden', {}, req);
+  }
+
   try {
     let body;
     try {
@@ -75,10 +96,6 @@ serve(async (req) => {
     if (message.trim().length > 500) {
       return errorResponse(400, 'Message too long (max 500 chars)', {}, req);
     }
-
-    // S-6 FIX: Require authentication to prevent anonymous API quota abuse
-    const { user, error: authError } = await authenticateRequest(req);
-    if (!user) return errorResponse(401, authError || 'Sign in to use the assistant', {}, req);
 
     // Rate limit: 10 messages per minute per authenticated user
     if (!rateLimit(`gemini-chat:${user.id}`, 10, 60_000)) {

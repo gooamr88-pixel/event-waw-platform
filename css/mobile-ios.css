@@ -335,6 +335,7 @@ select {
   .adv-filters-inline,
   .ep-filters-row {
     gap: 10px;
+    flex-wrap: wrap;
   }
   .ev-quick-replies {
     gap: 8px;
@@ -416,12 +417,6 @@ select {
   }
   .section-desc {
     font-size: 0.88rem;
-  }
-  .events-page-hero {
-    padding: 90px 0 32px;
-  }
-  .events-hero-content h1 {
-    font-size: clamp(1.5rem, 5.5vw, 2rem) !important;
   }
 
   /* Hero content spacing */
@@ -645,37 +640,12 @@ select {
     padding: 12px 8px 20px;
   }
 
-  /* List view cards — stack vertically */
-  .ep-events-grid.list-view .ep-event-card {
-    grid-template-columns: 1fr;
-  }
-  .ep-events-grid.list-view .ep-card-image {
-    height: 180px;
-  }
-
-  /* Roles grid */
-  .ev-roles-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
   /* Trust badges */
   .trust-badges {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 8px;
   }
 
-  /* Chart grid */
-  .ev-chart-grid {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  /* Stat grid */
-  .ev-stat-grid {
-    grid-template-columns: 1fr !important;
-    gap: 10px;
-  }
 
   /* Seating chart */
   .seating-chart-container {
@@ -708,19 +678,6 @@ select {
     font-size: clamp(1.2rem, 5vw, 1.5rem);
   }
 
-  .events-page-hero {
-    padding: 80px 0 24px;
-  }
-  .events-hero-content h1 {
-    font-size: clamp(1.3rem, 6vw, 1.6rem) !important;
-  }
-  .events-stats-strip {
-    gap: 8px;
-  }
-  .events-stat-chip {
-    padding: 6px 12px;
-    font-size: 0.75rem;
-  }
 
   /* Hero */
   .hero-content h1 {
@@ -749,28 +706,6 @@ select {
   }
   .hero-stat .label {
     font-size: 0.72rem;
-  }
-
-  /* Landing hero */
-  .ev-hero-text h1 {
-    font-size: clamp(1.4rem, 6vw, 1.65rem) !important;
-    line-height: 1.25 !important;
-  }
-  .ev-hero-desc {
-    font-size: 0.85rem;
-  }
-  .ev-btn-create,
-  .ev-btn-explore {
-    padding: 14px 24px;
-    font-size: 0.9rem;
-    min-height: 48px;
-    width: 100%;
-    text-align: center;
-    justify-content: center;
-  }
-  .ev-hero-buttons {
-    flex-direction: column;
-    width: 100%;
   }
 
   /* Card images */
@@ -875,26 +810,6 @@ select {
   /* Scroll hint */
   .scroll-hint {
     bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
-  }
-
-  /* Partners */
-  .ev-partners-track {
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  .ev-partner-logo {
-    height: 26px;
-  }
-
-  /* Trusted pills */
-  .ev-trusted-track {
-    gap: 6px;
-  }
-  .ev-trusted-pill {
-    padding: 6px 10px;
-    min-height: 34px;
-    border-radius: 8px;
   }
 
   /* Contact */

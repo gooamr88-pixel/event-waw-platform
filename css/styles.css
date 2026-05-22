@@ -2573,7 +2573,7 @@ button { cursor: pointer; }
   box-shadow: 0 8px 32px rgba(0,0,0,.1);
 }
 .ed-map-preview {
-  height: 280px;
+  height: clamp(200px, 30vw, 280px);
   width: 100%;
   background: linear-gradient(135deg, #e8eaf6 0%, #f3e5f5 50%, #e0f2f1 100%);
 }
@@ -2617,7 +2617,7 @@ button { cursor: pointer; }
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 10px 20px;
+  padding: 10px 20px; min-height: 44px;
   background: linear-gradient(135deg, #4285F4, #34A853);
   color: #fff;
   border-radius: 50px;
@@ -2633,7 +2633,6 @@ button { cursor: pointer; }
   box-shadow: 0 6px 20px rgba(66,133,244,.4);
 }
 @media (max-width: 600px) {
-  .ed-map-preview { height: 220px; }
   .ed-map-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
   .ed-map-directions-btn { width: 100%; justify-content: center; }
 }

@@ -72,7 +72,9 @@ serve(async (req) => {
 
     // 4. Build email content based on type
     const isRegistration = type === 'register';
-    const subject = `${code} — ${isRegistration ? 'Verify your' : 'Your'} Eventsli ${isRegistration ? 'account' : 'verification code'}`;
+    const subject = isRegistration
+      ? 'Verify your Eventsli account'
+      : 'Your Eventsli verification code';
 
     const htmlContent = isRegistration
       ? otpRegisterEmail(code, safeName)

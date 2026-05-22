@@ -34,7 +34,7 @@
     .mt-page {
       max-width: 920px;
       margin: 0 auto;
-      padding: 32px 20px 80px;
+      padding: clamp(24px, 3vw, 32px) clamp(16px, 2vw, 20px) 80px;
     }
 
     /* ── Header ── */
@@ -44,7 +44,7 @@
     }
     .mt-header h1 {
       font-family: var(--font-serif);
-      font-size: 1.7rem;
+      font-size: clamp(1.4rem, 3vw + 0.5rem, 1.7rem);
       font-weight: 800;
       color: var(--text-primary);
       margin-bottom: 6px;
@@ -59,13 +59,13 @@
     /* ── Stats Row ── */
     .mt-stats {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 14px;
       margin-bottom: 28px;
       animation: mt-fadeInUp 0.6s var(--es-ease-out) 0.1s both;
     }
     .mt-stat {
-      padding: 20px 22px;
+      padding: clamp(14px, 2vw, 20px) clamp(16px, 2.5vw, 22px);
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 16px;
@@ -90,7 +90,7 @@
       box-shadow: var(--shadow-md);
     }
     .mt-stat-value {
-      font-size: 1.6rem;
+      font-size: clamp(1.3rem, 2vw + 0.5rem, 1.6rem);
       font-weight: 800;
       color: var(--text-primary);
       margin-bottom: 2px;
@@ -195,7 +195,7 @@
     .mt-ticket-top {
       display: flex;
       gap: 18px;
-      padding: 22px 22px 18px;
+      padding: clamp(16px, 2.5vw, 22px) clamp(16px, 2.5vw, 22px) clamp(14px, 2vw, 18px);
     }
 
     /* QR Code */
@@ -490,7 +490,7 @@
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 18px;
-      padding: 28px;
+      padding: clamp(20px, 3vw, 28px);
       margin-bottom: 16px;
       box-shadow: var(--shadow-sm);
       transition: border-color 0.3s;
@@ -635,10 +635,6 @@
 
     /* ── Responsive ── */
     @media (max-width: 640px) {
-      .mt-stats {
-        grid-template-columns: 1fr;
-        gap: 10px;
-      }
       .mt-ticket-top {
         flex-direction: column;
         align-items: center;
@@ -678,12 +674,6 @@
       }
       .mt-event-group-meta {
         justify-content: center;
-      }
-      .mt-page {
-        padding: 24px 16px 60px;
-      }
-      .mt-header h1 {
-        font-size: 1.4rem;
       }
     }
   </style>
@@ -791,11 +781,11 @@
       <div><h4>Company</h4><ul class="footer-links"><li><a href="why-us.html">Why Us?</a></li><li><a href="trust.html">Trust</a></li><li><a href="contact.html">Support</a></li></ul></div>
       <div><h4>Legal</h4><ul class="footer-links"><li><a href="privacy.html">Privacy</a></li><li><a href="terms.html">Terms</a></li><li><a href="merchant-agreement.html">Merchant Agreement</a></li></ul></div>
     </div>
-    <div class="footer-bottom"><span>&copy; 2026 Eventsli. All rights reserved.</span><span style="color:#777;">Made by <a href="tel:+201108607033" style="color:#059669;text-decoration:none;font-weight:600;">Yousef Amr</a></span></div>
+    <div class="footer-bottom"><span>&copy; 2026 Eventsli. All rights reserved.</span><span style="color:#777;">Made by <a href="https://eventsli.com" style="color:#059669;text-decoration:none;font-weight:600;">Yousef Amr</a></span></div>
   </div></footer>
 
   <script type="module">
-    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL, SUPABASE_ANON_KEY } from './src/lib/supabase.js';
+    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL } from './src/lib/supabase.js';
     import { semiProtectPage, updateNavForAuth } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
@@ -866,7 +856,7 @@
       try {
         const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify-guest-ticket`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ guest_token: token }),
         });
 
@@ -1069,27 +1059,15 @@
       btn.innerHTML = '<span class="mt-spinner"></span>';
 
       try {
-        // Always include apikey header — Supabase API gateway requires it
-        // even for Edge Functions deployed with --no-verify-jwt
-        const headers = {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-        };
+        const headers = { 'Content-Type': 'application/json' };
         const body = { ticket_id: ticketId };
 
-        // For authenticated users, also send the auth token
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.access_token) {
-            headers['Authorization'] = `Bearer ${session.access_token}`;
-          }
-        } catch (authErr) {
-          // Guest mode — no auth session available, that's fine
-          console.log('No auth session (guest mode):', authErr?.message);
-        }
-
-        // For guests, include the guest token so the Edge Function can verify access
-        if (currentGuestToken) {
+        // For authenticated users, send the auth token
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`;
+        } else if (currentGuestToken) {
+          // For guests, include the guest token so the Edge Function can verify access
           body.guest_token = currentGuestToken;
         }
 
@@ -1099,17 +1077,7 @@
           body: JSON.stringify(body),
         });
 
-        if (!res.ok) {
-          // Try to extract the actual error message from the response
-          let errMsg = 'Failed to generate PDF';
-          try {
-            const errData = await res.json();
-            errMsg = errData.error || errMsg;
-          } catch (_) {
-            errMsg = `PDF generation failed (HTTP ${res.status})`;
-          }
-          throw new Error(errMsg);
-        }
+        if (!res.ok) throw new Error('Failed to generate PDF');
 
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
@@ -1209,7 +1177,7 @@
         try {
           const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/resend-guest-link`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_ANON_KEY },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
           });
 

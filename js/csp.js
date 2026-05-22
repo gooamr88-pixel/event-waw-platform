@@ -23,7 +23,23 @@
     "default-src 'self'",
     
     // Scripts: self + inline + Stripe + Cloudflare analytics + esm.sh CDN + Google Maps
-    // NOTE: 'unsafe-inline' kept temporarily — requires nonce migration to remove (Phase 3)
+    //
+    // ⚠️  SECURITY WARNING (H-5): 'unsafe-inline' weakens XSS protection
+    // ──────────────────────────────────────────────────────────────────
+    // 'unsafe-inline' allows ANY inline <script> to execute. If an attacker
+    // injects HTML (e.g., via a stored XSS in event descriptions), they can
+    // execute arbitrary JavaScript despite CSP being enabled.
+    //
+    // WHY IT'S HERE: The codebase uses inline <script type="module"> tags in
+    // every HTML page. Removing 'unsafe-inline' requires migrating ALL inline
+    // scripts to external .js files — a substantial refactor (Phase 3).
+    //
+    // MITIGATION: All user-facing HTML uses escapeHTML() and setSafeHTML()
+    // (see src/lib/dom.js, src/lib/utils.js) to prevent injection.
+    //
+    // TODO (Phase 3): Migrate inline scripts → external files, add nonce-based
+    // CSP, remove 'unsafe-inline', then consider adding 'strict-dynamic'.
+    // ──────────────────────────────────────────────────────────────────
     "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.google.com https://maps.googleusercontent.com https://maps.gstatic.com",
     
     // Styles: self + inline (needed for our inline <style> blocks) + Google

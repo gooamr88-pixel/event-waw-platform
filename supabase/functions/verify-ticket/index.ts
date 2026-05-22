@@ -55,12 +55,15 @@ serve(async (req) => {
     }
 
     const { ticket_id, order_id, tier_id, nonce, hash, v, event_id: qr_event_id, user_id: qr_user_id, iat, is_guest: qr_is_guest, sec: qr_sec, row: qr_row, seat: qr_seat } = parsed;
-    if (!ticket_id || !order_id || !hash) {
+    if (!ticket_id || !hash) {
       return errorResponse(400, 'Malformed ticket data', {}, req);
     }
 
     // ── Validate UUIDs ──
-    if (!isValidUUID(ticket_id) || !isValidUUID(order_id)) {
+    if (!isValidUUID(ticket_id)) {
+      return errorResponse(400, 'Invalid ticket identifiers', {}, req);
+    }
+    if (order_id && !isValidUUID(order_id)) {
       return errorResponse(400, 'Invalid ticket identifiers', {}, req);
     }
 
@@ -68,14 +71,25 @@ serve(async (req) => {
     let payload: string;
     if (v === 2) {
       // Build the payload object in the same order as the webhook generated it
-      const payloadObj: any = { v: 2, ticket_id, order_id, event_id: qr_event_id, user_id: qr_user_id, tier_id, nonce, is_guest: qr_is_guest, iat };
+      const payloadObj: any = { v: 2, ticket_id };
+      if (order_id) payloadObj.order_id = order_id;
+      payloadObj.event_id = qr_event_id;
+      payloadObj.user_id = qr_user_id;
+      payloadObj.tier_id = tier_id;
+      payloadObj.nonce = nonce;
+      payloadObj.is_guest = qr_is_guest;
+      payloadObj.iat = iat;
       // Seat fields are only present for seated tickets
       if (qr_sec !== undefined) payloadObj.sec = qr_sec;
       if (qr_row !== undefined) payloadObj.row = qr_row;
       if (qr_seat !== undefined) payloadObj.seat = qr_seat;
       payload = JSON.stringify(payloadObj);
     } else {
-      payload = JSON.stringify({ ticket_id, order_id, tier_id, nonce });
+      const v1Obj: any = { ticket_id };
+      if (order_id) v1Obj.order_id = order_id;
+      if (tier_id) v1Obj.tier_id = tier_id;
+      if (nonce) v1Obj.nonce = nonce;
+      payload = JSON.stringify(v1Obj);
     }
 
     const key = await crypto.subtle.importKey(

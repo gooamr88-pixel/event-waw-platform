@@ -30,9 +30,9 @@
 /* ══════ TOP BAR ══════ */
 .vd-topbar {
   position: relative; z-index: 10;
-  height: 52px; min-height: 52px;
+  height: clamp(46px, 5vw, 52px); min-height: clamp(46px, 5vw, 52px);
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 20px; gap: 12px;
+  padding: 0 clamp(12px, 2vw, 20px); gap: 12px;
   background: rgba(12,12,18,.85);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,.06);
@@ -499,7 +499,7 @@ svg.vd-canvas {
 /* ── Stats Bar ── */
 .vd-stats {
   position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 16px; padding: 6px 18px;
+  display: flex; gap: clamp(8px, 1.5vw, 16px); padding: 6px clamp(12px, 2vw, 18px);
   background: rgba(0,0,0,.7);
   backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,.06);
@@ -582,7 +582,6 @@ svg.vd-canvas {
   .vd-toolbox { width: 64px; min-width: 64px; }
   .vd-tb-grid { grid-template-columns: 1fr; }
   .vd-tb-label { display: none; }
-  .vd-topbar { padding: 0 12px; height: 46px; }
   .vd-subtitle { display: none; }
   .vd-shortcuts { display: none; }
 }

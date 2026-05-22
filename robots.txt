@@ -2,9 +2,11 @@
 User-agent: *
 Allow: /
 Disallow: /dashboard.html
+Disallow: /admin.html
 Disallow: /scanner.html
 Disallow: /venue-designer.html
 Disallow: /checkout-success.html
+Disallow: /my-tickets.html
 
 # Sitemaps
 # Sitemap: https://eventsli.com/sitemap.xml

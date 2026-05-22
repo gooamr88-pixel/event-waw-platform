@@ -101,7 +101,7 @@ body.ev-dash[data-theme="dark"] .admin-clock {
   align-items: center;
   justify-content: center;
   gap: 14px;
-  padding: 48px 20px;
+  padding: clamp(32px, 5vw, 48px) 20px;
   color: var(--ev-text-muted);
   font-size: .88rem;
 }
@@ -118,8 +118,8 @@ body.ev-dash[data-theme="dark"] .admin-clock {
 /* ── Toast Notifications ── */
 .ev-toast-container {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: clamp(12px, 2vw, 20px);
+  right: clamp(12px, 2vw, 20px);
   z-index: 99999;
   display: flex;
   flex-direction: column;
@@ -141,7 +141,7 @@ body.ev-dash[data-theme="dark"] .admin-clock {
   box-shadow: 0 8px 30px rgba(0,0,0,.12);
   pointer-events: auto;
   animation: toastIn .35s cubic-bezier(.21,1.02,.73,1) forwards;
-  max-width: 400px;
+  max-width: min(400px, calc(100vw - 24px));
 }
 .ev-toast.success {
   border-left: 4px solid #16a34a;

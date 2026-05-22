@@ -133,6 +133,24 @@ serve(async (req) => {
         console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} has not completed Stripe Connect`);
         return errorResponse(403, 'This event organizer has not completed their payment setup. Ticket purchases are temporarily unavailable.', {}, req);
       }
+
+      // ── H-14 FIX: Live Stripe API verification ──
+      // The DB flag may be stale — verify the account can actually receive payments
+      try {
+        const account = await stripe.accounts.retrieve(orgRow.stripe_account_id);
+        const canReceivePayments = account.charges_enabled && account.payouts_enabled;
+        if (!canReceivePayments) {
+          console.warn(`⛔ Stripe live check failed: organizer ${breakdown.organizer_id} account ${orgRow.stripe_account_id} charges_enabled=${account.charges_enabled} payouts_enabled=${account.payouts_enabled}`);
+          // Auto-correct stale DB flag
+          await adminClient.from('organizers')
+            .update({ stripe_onboarding_complete: false })
+            .eq('user_id', breakdown.organizer_id);
+          return errorResponse(403, 'This event organizer\'s payment account is not yet active. Ticket purchases are temporarily unavailable.', {}, req);
+        }
+      } catch (stripeErr) {
+        console.error(`⚠️ Stripe account verification failed for ${orgRow.stripe_account_id}:`, stripeErr.message);
+        // Fail open for transient Stripe API errors — the DB flag was already checked
+      }
     }
 
     // ════════════════════════════════════════════════

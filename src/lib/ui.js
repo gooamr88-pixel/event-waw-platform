@@ -38,7 +38,8 @@ const DARK = 'dark';
  */
 export function initThemeFromStorage() {
   const saved = localStorage.getItem(THEME_KEY);
-  const theme = saved || LIGHT;
+  // L-1 FIX: Respect OS prefers-color-scheme when no manual choice is saved
+  const theme = saved || (matchDark() ? DARK : LIGHT);
   applyTheme(theme);
 }
 

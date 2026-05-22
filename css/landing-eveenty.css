@@ -70,23 +70,25 @@
 
 /* ── 3. HERO ── */
 .eveenty-landing .hero-wrapper {
-  background: var(--bg-primary) !important; padding: 100px 0 60px !important;
-  min-height: auto !important;
+  background: var(--bg-primary); padding: clamp(70px, 10vw, 100px) 0 clamp(32px, 5vw, 60px);
+  min-height: auto;
 }
 .ev-hero-split {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
-  align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 24px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(20px, 4vw, 60px);
+  align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 clamp(16px, 3vw, 24px);
 }
 .ev-hero-text h1 {
-  font-size: 3.2rem !important; font-weight: 900 !important;
-  line-height: 1.15 !important; letter-spacing: -1px !important;
-  color: var(--text-primary) !important;
+  font-size: clamp(1.5rem, 4vw + 0.5rem, 3.2rem);
+  font-weight: 900; line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
 }
 .ev-ampersand { color: #059669 !important; font-style: italic; }
 .ev-highlight { color: #059669 !important; font-style: italic; }
 .ev-hero-desc {
-  font-size: 1rem; line-height: 1.8; color: var(--text-muted) !important;
-  margin: 20px 0 32px; max-width: 480px;
+  font-size: clamp(0.85rem, 0.5vw + 0.75rem, 1rem);
+  line-height: 1.8; color: var(--text-muted);
+  margin: clamp(14px, 2vw, 20px) 0 clamp(24px, 3vw, 32px); max-width: 480px;
 }
 .ev-brand { font-weight: 700; color: var(--text-primary) !important; }
 .ev-clicks { color: #059669; font-weight: 700; }
@@ -95,13 +97,17 @@
 .ev-btn-create {
   padding: 14px 28px; background: #059669; color: #fff;
   border-radius: 10px; font-weight: 700; font-size: 0.95rem;
-  text-decoration: none; transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  text-decoration: none; min-height: 48px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 .ev-btn-create:hover { background: #047857; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(5, 150, 105,0.3); }
 .ev-btn-explore {
   padding: 14px 28px; background: transparent; color: var(--text-secondary);
   border: 1.5px solid var(--border-heavy); border-radius: 10px;
-  font-weight: 600; font-size: 0.95rem; text-decoration: none; transition: border-color 0.3s, color 0.3s;
+  font-weight: 600; font-size: 0.95rem; text-decoration: none; min-height: 48px;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: border-color 0.3s, color 0.3s;
 }
 .ev-btn-explore:hover { border-color: #059669; color: #059669; }
 .ev-hero-image { display: flex; justify-content: center; margin-top: 0; align-items: center; }
@@ -181,9 +187,9 @@
 }
 
 /* ── 4. STATS BAR ── */
-.ev-stats-bar { background: #1a1a22; padding: 40px 0; }
-.ev-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
-.ev-stat-number { font-size: 2.2rem; font-weight: 900; color: #059669; margin-bottom: 6px; }
+.ev-stats-bar { background: #1a1a22; padding: clamp(24px, 4vw, 40px) 0; }
+.ev-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(16px, 3vw, 40px); text-align: center; }
+.ev-stat-number { font-size: clamp(1.5rem, 2vw + 1rem, 2.2rem); font-weight: 900; color: #059669; margin-bottom: 6px; }
 .ev-stat-label {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   color: #ccc; font-size: 0.85rem; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;
@@ -192,11 +198,11 @@
 
 /* ── 5. ROLES ── */
 .ev-roles-section {
-  padding: 80px 0; background: var(--bg-primary) !important; text-align: center;
+  padding: clamp(40px, 7vw, 80px) 0; background: var(--bg-primary); text-align: center;
 }
-.ev-roles-section h2 { font-size: 2rem; font-weight: 800; color: var(--text-primary) !important; margin-bottom: 12px; }
-.ev-roles-subtitle { color: var(--text-muted) !important; font-size: 0.95rem; max-width: 600px; margin: 0 auto 48px; }
-.ev-roles-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+.ev-roles-section h2 { font-size: clamp(1.4rem, 3vw + 0.3rem, 2rem); font-weight: 800; color: var(--text-primary); margin-bottom: 12px; }
+.ev-roles-subtitle { color: var(--text-muted); font-size: clamp(0.85rem, 0.3vw + 0.8rem, 0.95rem); max-width: 600px; margin: 0 auto clamp(28px, 5vw, 48px); }
+.ev-roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: clamp(10px, 2vw, 20px); }
 .ev-role-card {
   position: relative; border-radius: 16px; overflow: hidden;
   aspect-ratio: 3/4; cursor: pointer; transition: transform 0.3s;
@@ -213,8 +219,8 @@
 
 /* ── 6. PARTNERS ── */
 .ev-partners-section {
-  padding: 40px 0 32px;
-  background: var(--bg-primary) !important;
+  padding: clamp(24px, 4vw, 40px) 0 clamp(20px, 3vw, 32px);
+  background: var(--bg-primary);
   border-top: none;
   border-bottom: none;
   overflow: hidden;
@@ -222,9 +228,10 @@
 .ev-partners-track {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
+  justify-content: center;
+  gap: clamp(10px, 2vw, 20px);
   padding: 0 8px;
+  flex-wrap: wrap;
 }
 .ev-sponsor-item {
   flex-shrink: 0;
@@ -233,7 +240,7 @@
   justify-content: center;
 }
 .ev-partner-logo {
-  height: 48px;
+  height: clamp(28px, 4vw + 12px, 48px);
   width: auto;
   object-fit: contain;
   display: block;
@@ -246,8 +253,8 @@
 
 /* ── 6b. TRUSTED PARTNERS ── */
 .ev-trusted-section {
-  padding: 48px 0 52px;
-  background: var(--bg-secondary) !important;
+  padding: clamp(24px, 4vw, 48px) 0 clamp(28px, 4vw, 52px);
+  background: var(--bg-secondary);
   border-top: 1px solid var(--border-light);
   overflow: hidden;
 }
@@ -255,7 +262,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: clamp(6px, 1.5vw, 16px);
   flex-wrap: wrap;
   padding: 0 8px;
 }
@@ -265,10 +272,10 @@
   justify-content: center;
   background: #fff;
   border-radius: 12px;
-  padding: 10px 20px;
+  padding: clamp(6px, 1vw, 10px) clamp(10px, 2vw, 20px);
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   border: 1px solid rgba(0,0,0,0.05);
-  min-height: 48px;
+  min-height: 44px;
   transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 .ev-trusted-pill:hover {
@@ -368,7 +375,7 @@
 
 /* ── 10. CONTACT US ── */
 .ev-contact-section {
-  background: var(--bg-primary) !important; padding: 80px 0 100px;
+  background: var(--bg-primary); padding: clamp(50px, 7vw, 80px) 0 clamp(60px, 8vw, 100px);
 }
 .ev-contact-grid {
   display: grid; grid-template-columns: 1fr 1.3fr; gap: 0;
@@ -377,21 +384,21 @@
 }
 .ev-contact-info-panel {
   background: linear-gradient(135deg, #059669, #047857, #065F46);
-  padding: 48px 40px; position: relative; overflow: hidden;
+  padding: clamp(32px, 5vw, 48px) clamp(24px, 4vw, 40px); position: relative; overflow: hidden;
   display: flex; flex-direction: column;
 }
 .ev-info-panel-content { position: relative; z-index: 2; }
 .ev-info-panel-content h3 {
-  font-size: 1.5rem; font-weight: 800; color: #fff !important;
+  font-size: clamp(1.2rem, 2vw + 0.5rem, 1.5rem); font-weight: 800; color: #fff;
   margin-bottom: 10px; letter-spacing: -0.3px;
 }
-.ev-info-sub { font-size: 0.88rem; color: rgba(255,255,255,0.7) !important; line-height: 1.7; margin-bottom: 40px; }
+.ev-info-sub { font-size: 0.88rem; color: rgba(255,255,255,0.7); line-height: 1.7; margin-bottom: clamp(24px, 4vw, 40px); }
 .ev-contact-details { display: flex; flex-direction: column; gap: 28px; margin-bottom: 48px; }
 .ev-contact-item {
   display: flex; align-items: center; gap: 14px;
-  color: rgba(255,255,255,0.9) !important; font-size: 0.9rem; transition: color 0.3s;
+  color: rgba(255,255,255,0.9); font-size: 0.9rem; transition: color 0.3s;
 }
-.ev-contact-item:hover { color: #fff !important; }
+.ev-contact-item:hover { color: #fff; }
 .ev-contact-item svg { flex-shrink: 0; opacity: 0.8; }
 .ev-contact-social { display: flex; gap: 10px; margin-top: auto; }
 .ev-social-link {
@@ -410,26 +417,26 @@
 .ev-info-decor-sm { width: 120px; height: 120px; bottom: 60px; right: 40px; background: rgba(255,255,255,0.05); }
 
 /* Contact Form */
-.ev-contact-form-wrap { background: var(--bg-card) !important; padding: 48px 40px; }
+.ev-contact-form-wrap { background: var(--bg-card); padding: clamp(32px, 5vw, 48px) clamp(24px, 4vw, 40px); }
 .ev-contact-form { display: flex; flex-direction: column; gap: 18px; }
 .ev-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .ev-form-group { display: flex; flex-direction: column; gap: 6px; }
 .ev-form-group label {
-  font-size: 0.8rem; font-weight: 600; color: var(--text-secondary) !important;
+  font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 .ev-form-group input,
 .ev-form-group select,
 .ev-form-group textarea {
   padding: 12px 14px; border: 1.5px solid var(--border-heavy); border-radius: 8px;
-  background: var(--bg-input) !important; font-size: 0.9rem; font-family: inherit;
-  color: var(--text-primary) !important; outline: none;
+  background: var(--bg-input); font-size: 0.9rem; font-family: inherit;
+  color: var(--text-primary); outline: none;
   transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
 }
 .ev-form-group input:focus,
 .ev-form-group select:focus,
 .ev-form-group textarea:focus {
-  border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105,0.06); background: var(--bg-input-focus) !important;
+  border-color: #059669; box-shadow: 0 0 0 3px rgba(5, 150, 105,0.06); background: var(--bg-input-focus);
 }
 .ev-form-group input::placeholder,
 .ev-form-group textarea::placeholder { color: var(--text-faint); }
@@ -441,7 +448,7 @@
 }
 .ev-form-submit {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 14px 32px; background: #059669; color: #fff !important;
+  padding: 14px 32px; background: #059669; color: #fff;
   border: none; border-radius: 8px; font-size: 0.92rem; font-weight: 700;
   font-family: inherit; cursor: pointer; transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s; align-self: flex-start;
 }
@@ -451,7 +458,7 @@
 .ev-form-success {
   display: flex; align-items: center; gap: 10px; padding: 16px;
   background: rgba(34,197,94,0.06); border: 1px solid rgba(34,197,94,0.15);
-  border-radius: 8px; color: #22c55e !important; font-weight: 600; font-size: 0.88rem;
+  border-radius: 8px; color: #22c55e; font-weight: 600; font-size: 0.88rem;
 }
 .ev-form-success svg { width: 20px; height: 20px; flex-shrink: 0; }
 
@@ -471,7 +478,7 @@
 /* Chatbox Container */
 .ev-chatbox {
   position: fixed !important; bottom: 100px; right: 28px;
-  width: 380px; max-height: 520px; height: 520px;
+  width: clamp(300px, calc(100vw - 24px), 380px); max-height: 520px; height: 520px;
   background: #1a1a22 !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
   border-radius: 20px;
@@ -698,52 +705,30 @@
 /* ── Tablet & Small Desktop (≤1024px) ── */
 @media (max-width: 1024px) {
   .ev-hero-split { gap: 40px; }
-  .ev-hero-text h1 { font-size: 2.6rem !important; }
-  .ev-roles-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
 }
 
 /* ── Mobile (≤768px) ── */
 @media (max-width: 768px) {
   /* Hero */
-  .ev-hero-split { grid-template-columns: 1fr; gap: 20px; text-align: center; }
-  .ev-hero-text h1 { font-size: 2rem !important; letter-spacing: -0.5px !important; }
-  .ev-hero-desc { margin: 14px auto 24px; font-size: 0.9rem; }
+  .ev-hero-split { grid-template-columns: 1fr; text-align: center; gap: 20px; }
+  .ev-hero-desc { margin-left: auto; margin-right: auto; }
   .ev-hero-buttons { justify-content: center; }
   .ev-hero-image { margin-top: 0; }
   .ev-hero-image > img { max-width: 80%; margin: 0 auto; }
-  .eveenty-landing .hero-wrapper { padding: 80px 0 40px !important; }
 
-  /* Stats */
-  .ev-stats-bar { padding: 28px 0; }
-  .ev-stats-grid { grid-template-columns: 1fr; gap: 20px; }
-  .ev-stat-number { font-size: 1.8rem; }
-  .ev-stat-label { font-size: 0.75rem; }
-
-  /* Roles */
-  .ev-roles-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-  .ev-roles-section { padding: 50px 0; }
-  .ev-roles-section h2 { font-size: 1.6rem; }
-
-  /* Sponsors */
-  .ev-partners-section { padding: 32px 0 24px; }
-  .ev-partners-track { gap: 14px; flex-wrap: wrap; justify-content: center; }
-  .ev-partner-logo { height: 36px; }
 
   /* Trusted Partners */
-  .ev-trusted-section { padding: 32px 0 36px; }
-  .ev-trusted-track { gap: 10px; }
-  .ev-trusted-pill { padding: 8px 14px; min-height: 40px; }
   .ev-trusted-pill svg { transform: scale(0.8); }
 
   /* Events section */
-  .eveenty-landing #events .section-header h2 { font-size: 1.6rem; }
   .ev-slider-wrapper { padding: 0; }
 
   /* Steps / How it works */
-  .steps-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+  .steps-grid { grid-template-columns: 1fr; gap: 16px; }
 
   /* Trust badges */
-  .trust-badges { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+  .trust-badges { grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
   /* Contact */
   .ev-contact-section { padding: 50px 0 60px; }
@@ -753,61 +738,43 @@
   .ev-form-row { grid-template-columns: 1fr; gap: 16px; }
   .ev-info-panel-content h3 { font-size: 1.3rem; }
 
-  /* Section headers */
-  .section-header h2 { font-size: 1.5rem !important; }
-  .section-desc { font-size: 0.88rem !important; }
-  .section-label { font-size: 0.65rem !important; padding: 5px 14px !important; }
-
-  /* General section padding */
-  .section { padding: 50px 0 !important; }
+  /* Section label */
+  .section-label { font-size: 0.65rem; padding: 5px 14px; }
   .container { padding: 0 16px; }
 
   /* Chatbox */
   .ev-chatbox {
-    width: calc(100vw - 24px); right: 12px; bottom: 92px;
+    right: 12px; bottom: 92px;
     max-height: calc(100vh - 120px);
   }
 }
 
 /* ── Small Mobile (≤480px) ── */
 @media (max-width: 480px) {
-  /* Hero */
-  .ev-hero-text h1 { font-size: 1.65rem !important; line-height: 1.25 !important; }
-  .ev-hero-desc { font-size: 0.85rem; }
-  .ev-btn-create, .ev-btn-explore { padding: 12px 22px; font-size: 0.88rem; }
-  .eveenty-landing .hero-wrapper { padding: 70px 0 32px !important; }
-
-  /* Stats */
-  .ev-stats-bar { padding: 24px 0; }
-  .ev-stat-number { font-size: 1.5rem; }
+  /* Hero buttons — stack vertically */
+  .ev-hero-buttons { flex-direction: column; width: 100%; }
+  .ev-btn-create, .ev-btn-explore {
+    padding: 12px 22px; font-size: 0.88rem;
+    width: 100%; text-align: center;
+  }
 
   /* Roles */
-  .ev-roles-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
   .ev-role-card { aspect-ratio: 1/1.2; }
   .ev-role-label { font-size: 0.8rem; padding: 12px; }
-  .ev-roles-section { padding: 40px 0; }
-
-  /* Sponsors */
-  .ev-partners-section { padding: 24px 0 20px; }
-  .ev-partner-logo { height: 28px; }
 
   /* Trusted Partners */
-  .ev-trusted-section { padding: 24px 0 28px; }
-  .ev-trusted-track { gap: 8px; }
-  .ev-trusted-pill { padding: 6px 10px; min-height: 34px; border-radius: 10px; }
   .ev-trusted-pill svg { transform: scale(0.65); }
 
-  /* Section headers */
-  .section-header h2 { font-size: 1.3rem !important; }
+  /* Section header */
   .section-header { margin-bottom: 24px; }
 
   /* Steps */
-  .step-card { padding: 20px !important; }
-  .step-card h3 { font-size: 1rem !important; }
-  .step-card p { font-size: 0.82rem !important; }
+  .step-card { padding: 20px; }
+  .step-card h3 { font-size: 1rem; }
+  .step-card p { font-size: 0.82rem; }
 
   /* Trust badges */
-  .trust-badges { grid-template-columns: repeat(2, 1fr) !important; }
+  .trust-badges { grid-template-columns: repeat(2, 1fr); }
   .trust-badge { padding: 14px 8px; }
   .trust-badge-label { font-size: 0.72rem; }
 
@@ -817,13 +784,12 @@
   .ev-info-panel-content h3 { font-size: 1.15rem; }
   .ev-form-submit { width: 100%; justify-content: center; }
 
-  /* General */
-  .section { padding: 40px 0 !important; }
+  /* Container */
   .container { padding: 0 14px; }
 
   /* Chatbox */
   .ev-chatbox {
-    width: calc(100vw - 16px); right: 8px; bottom: 88px;
+    right: 8px; bottom: 88px;
     height: calc(100vh - 110px); max-height: none;
     border-radius: 16px;
   }

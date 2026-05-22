@@ -69,7 +69,7 @@ serve(async (req) => {
     const userEmail = normalizedEmail;
 
     // 3. Build email content
-    const subject = `${code} — Reset your Eventsli password`;
+    const subject = 'Reset your Eventsli password';
     const htmlContent = otpPasswordResetEmail(code);
 
     // 4. Send via Brevo

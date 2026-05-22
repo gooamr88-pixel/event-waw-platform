@@ -26,13 +26,13 @@ body.eveenty-auth {
 
 /* ═══ LEFT PANEL — Branding ═══ */
 .ev-auth-left {
-  flex: 0 0 480px;
+  flex: 0 0 clamp(340px, 35vw, 480px);
   background: #f8fafc;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  padding: 48px 40px 40px 50px;
+  padding: clamp(30px, 4vw, 48px) clamp(20px, 3vw, 40px) clamp(30px, 3vw, 40px) clamp(30px, 4vw, 50px);
   position: relative;
 }
 
@@ -183,7 +183,7 @@ body.eveenty-auth {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 40px 60px 40px;
+  padding: clamp(16px, 3vw, 40px) clamp(16px, 4vw, 60px) clamp(16px, 3vw, 40px);
   overflow-y: auto;
   background: #f8fafc;
 }
@@ -195,7 +195,7 @@ body.eveenty-auth {
 /* Page Title */
 .ev-page-title {
   font-family: 'DM Sans', sans-serif;
-  font-size: 1.65rem;
+  font-size: clamp(1.35rem, 2vw + 0.5rem, 1.65rem);
   font-weight: 800;
   color: #1a1a1f;
   margin-bottom: 24px;
@@ -206,7 +206,7 @@ body.eveenty-auth {
 .ev-form-box {
   background: #2a2a2a;
   border-radius: 16px;
-  padding: 32px 32px 28px;
+  padding: clamp(24px, 3vw, 32px) clamp(20px, 2.5vw, 32px) clamp(22px, 2.5vw, 28px);
   color: #fff;
 }
 
@@ -563,7 +563,7 @@ body.eveenty-auth {
 }
 .ev-otp-inputs { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 24px; }
 .ev-otp-digit {
-  width: 48px; height: 56px; text-align: center; font-size: 1.4rem; font-weight: 700;
+  width: clamp(40px, 8vw, 48px); height: clamp(48px, 9vw, 56px); text-align: center; font-size: clamp(1.2rem, 2vw, 1.4rem); font-weight: 700;
   font-family: 'DM Sans', sans-serif; color: #333; background: #fff;
   border: 1.5px solid #ddd; border-radius: 10px; transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
   caret-color: #059669; outline: none;
@@ -677,12 +677,6 @@ body.eveenty-auth .ev-fg .iti__country-list {
 
 
 /* ═══ RESPONSIVE ═══ */
-@media (max-width: 1024px) {
-  .ev-auth-left { flex: 0 0 380px; padding: 30px 30px 30px 40px; }
-  .ev-cards-area { max-width: 320px; }
-  .ev-auth-right { padding: 30px 40px; }
-}
-
 @media (max-width: 860px) {
   .ev-auth-container { flex-direction: column; }
   .ev-auth-left { flex: none; padding: 30px 20px; align-items: center; }
@@ -692,13 +686,10 @@ body.eveenty-auth .ev-fg .iti__country-list {
 }
 
 @media (max-width: 480px) {
-  .ev-auth-right { padding: 16px 16px 40px; }
-  .ev-form-box { padding: 24px 20px 22px; }
   .ev-fg-row { flex-direction: column; gap: 0; }
   .ev-fg-row .ev-fg { margin-bottom: 18px; }
   .ev-phone-row { flex-direction: column; gap: 0; }
   .ev-phone-row .ev-fg { margin-bottom: 18px; }
   .ev-phone-row .ev-fg:first-child { flex: none; }
   .ev-submit-btn { width: 100%; }
-  .ev-otp-digit { width: 40px; height: 48px; font-size: 1.2rem; }
 }

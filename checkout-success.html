@@ -26,7 +26,7 @@
     .confetti-piece{position:fixed;width:10px;height:10px;top:-20px;z-index:9999;animation:confettiFall 3s ease-in forwards;pointer-events:none;border-radius:2px}
 
     /* Ticket Card */
-    .ticket-card{max-width:380px;margin:0 auto;border-radius:24px;overflow:visible;animation:ticketReveal .8s cubic-bezier(.16,1,.3,1) forwards;position:relative}
+    .ticket-card{max-width:380px;width:100%;margin:0 auto;border-radius:24px;overflow:visible;animation:ticketReveal .8s cubic-bezier(.16,1,.3,1) forwards;position:relative}
     .ticket-inner{background:linear-gradient(165deg,#1a1a1f 0%,#111114 50%,#0d0d10 100%);border:1px solid rgba(212,175,55,.12);border-radius:24px;overflow:hidden;position:relative}
     .ticket-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(212,175,55,.03),transparent 60%);pointer-events:none;z-index:1}
 
@@ -35,14 +35,14 @@
     .ticket-brand{font-size:.7rem;font-weight:800;letter-spacing:.18em;color:#09090b;text-transform:uppercase}
     .ticket-id-label{font-size:.6rem;font-weight:700;color:rgba(9,9,11,.45);letter-spacing:.08em;font-family:monospace}
 
-    .ticket-event{padding:20px 20px 16px;position:relative;z-index:2}
+    .ticket-event{padding:clamp(14px,3vw,20px) clamp(14px,3vw,20px) clamp(12px,2vw,16px);position:relative;z-index:2}
     .ticket-tier-badge{display:inline-block;font-size:.65rem;font-weight:700;color:#D4AF37;text-transform:uppercase;letter-spacing:.12em;padding:4px 12px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.12);border-radius:50px;margin-bottom:10px}
     .ticket-event h3{font-family:var(--font-serif);font-size:1.15rem;font-weight:700;color:#f4f4f5;margin-bottom:12px;line-height:1.3}
     .ticket-meta{display:flex;flex-direction:column;gap:6px}
     .ticket-meta-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#a1a1aa}
     .ticket-meta-row svg{width:14px;height:14px;color:#D4AF37;flex-shrink:0}
 
-    .ticket-attendee{padding:0 20px 16px;position:relative;z-index:2}
+    .ticket-attendee{padding:0 clamp(14px,3vw,20px) clamp(12px,2vw,16px);position:relative;z-index:2}
     .ticket-attendee-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:10px}
     .ticket-attendee-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
     .ticket-attendee-value{font-size:.82rem;font-weight:600;color:var(--text-primary)}
@@ -54,7 +54,7 @@
     .ticket-tear .notch-l{left:-13px}.ticket-tear .notch-r{right:-13px}
 
     /* QR Section */
-    .ticket-qr{padding:16px 20px 20px;text-align:center;position:relative;z-index:2}
+    .ticket-qr{padding:clamp(12px,2vw,16px) clamp(14px,3vw,20px) clamp(14px,3vw,20px);text-align:center;position:relative;z-index:2}
     .ticket-qr-wrap{display:inline-block;background:#fff;padding:14px;border-radius:14px;animation:qrGlow 4s ease-in-out infinite}
     .ticket-qr-wrap canvas{display:block}
     .ticket-status{margin-top:12px;display:flex;justify-content:center;gap:8px;align-items:center}
@@ -63,7 +63,7 @@
     .ticket-amount{font-size:.8rem;font-weight:700;color:var(--accent-primary)}
 
     /* Guest Notice */
-    .guest-notice{margin:20px auto 0;max-width:380px;padding:16px;background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.1);border-radius:14px;text-align:center}
+    .guest-notice{margin:20px auto 0;max-width:380px;width:100%;padding:clamp(12px,2vw,16px);background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.1);border-radius:14px;text-align:center}
     .guest-notice p{color:var(--text-secondary);font-size:.85rem;line-height:1.6;margin:0}
     .guest-notice strong{color:#22c55e}
 
@@ -163,6 +163,14 @@
         return;
       }
 
+      // ── H-2 FIX: Guest checkout — skip DB polling (RLS blocks it) ──
+      if (isGuest) {
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.style.width = '100%';
+        setTimeout(() => showGuestSuccess(), 400);
+        return;
+      }
+
       // Animate progress bar
       const progressBar = document.getElementById('progress-bar');
       let progress = 0;
@@ -191,6 +199,25 @@
     function showError() {
       document.getElementById('loading-view').style.display = 'none';
       document.getElementById('error-view').style.display = 'block';
+    }
+
+    // H-2: Static success page for guest checkouts (no DB query needed)
+    function showGuestSuccess() {
+      document.getElementById('loading-view').style.display = 'none';
+      document.getElementById('ticket-view').style.display = 'block';
+      launchConfetti();
+      const container = document.getElementById('tickets-container');
+      container.innerHTML = `
+        <div style="text-align:center;padding:32px 20px;">
+          <div style="width:72px;height:72px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;font-size:2rem;">✅</div>
+          <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;margin-bottom:10px;color:var(--text-primary);">Your tickets have been confirmed!</h3>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;max-width:340px;margin:0 auto;">Check your email for your ticket access link. You can view and download your tickets anytime — no account needed.</p>
+        </div>
+      `;
+      document.getElementById('guest-notice').style.display = 'block';
+      const btn = document.getElementById('btn-my-tickets');
+      btn.textContent = 'Create an Account';
+      btn.href = 'register.html';
     }
 
     async function showTickets(order, isGuest) {
