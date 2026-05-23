@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets Confirmed — Your Event Awaits</title>
+    <meta name="description" content="Your tickets have been confirmed. Check your email for your secure ticket access link.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Animated background particles -->
+    <canvas id="particles"></canvas>
+
+    <!-- Confetti canvas -->
+    <canvas id="confetti"></canvas>
+
+    <!-- Glow orbs -->
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+    <div class="glow-orb glow-orb-3"></div>
+
+    <main class="container" id="mainContainer">
+        <!-- Top badge -->
+        <div class="event-badge" id="eventBadge">
+            <span class="badge-dot"></span>
+            <span>Booking Confirmed</span>
+        </div>
+
+        <!-- Animated checkmark -->
+        <div class="checkmark-wrapper" id="checkmarkWrapper">
+            <div class="checkmark-ring"></div>
+            <div class="checkmark-ring checkmark-ring-2"></div>
+            <svg class="checkmark-svg" viewBox="0 0 100 100" id="checkmarkSvg">
+                <circle class="checkmark-circle" cx="50" cy="50" r="45" />
+                <path class="checkmark-check" d="M30 52 L44 66 L70 36" />
+            </svg>
+            <div class="checkmark-pulse"></div>
+        </div>
+
+        <!-- Main heading -->
+        <h1 class="title" id="title">
+            <span class="title-line">Your tickets have been</span>
+            <span class="title-highlight">confirmed!</span>
+        </h1>
+
+        <!-- Subtitle -->
+        <p class="subtitle" id="subtitle">
+            Check your email for your ticket access link. You can view and download your tickets anytime — no account needed.
+        </p>
+
+        <!-- Ticket preview card -->
+        <div class="ticket-card" id="ticketCard">
+            <div class="ticket-card-inner">
+                <div class="ticket-left">
+                    <div class="ticket-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+                            <path d="M13 5v2"/>
+                            <path d="M13 17v2"/>
+                            <path d="M13 11v2"/>
+                        </svg>
+                    </div>
+                    <div class="ticket-details">
+                        <span class="ticket-label">Your Ticket</span>
+                        <span class="ticket-id">#TKT-2026-84F3</span>
+                    </div>
+                </div>
+                <div class="ticket-right">
+                    <span class="ticket-status">
+                        <span class="status-dot"></span>
+                        Active
+                    </span>
+                </div>
+            </div>
+            <div class="ticket-divider">
+                <div class="ticket-notch ticket-notch-left"></div>
+                <div class="ticket-dash"></div>
+                <div class="ticket-notch ticket-notch-right"></div>
+            </div>
+            <div class="ticket-footer">
+                <div class="ticket-qr">
+                    <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                        <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <rect x="5" y="5" width="6" height="6" rx="1" fill="currentColor"/>
+                        <rect x="26" y="2" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <rect x="29" y="5" width="6" height="6" rx="1" fill="currentColor"/>
+                        <rect x="2" y="26" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                        <rect x="5" y="29" width="6" height="6" rx="1" fill="currentColor"/>
+                        <rect x="18" y="2" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="18" y="18" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="26" y="18" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="34" y="18" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="18" y="26" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="26" y="26" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="34" y="26" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="26" y="34" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                        <rect x="34" y="34" width="4" height="4" rx="1" fill="currentColor" opacity="0.5"/>
+                    </svg>
+                </div>
+                <span class="ticket-footer-text">Present this ticket at the entrance</span>
+            </div>
+        </div>
+
+        <!-- Email CTA -->
+        <a href="#" class="email-cta" id="emailCta">
+            <div class="email-icon-wrapper">
+                <svg class="email-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="16" x="2" y="4" rx="2"/>
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+                </svg>
+                <div class="email-notification-dot"></div>
+            </div>
+            <div class="email-text">
+                <span class="email-cta-title">Check your email</span>
+                <span class="email-cta-sub">We sent a secure link so you can access your tickets anytime</span>
+            </div>
+            <svg class="email-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"/>
+                <path d="m12 5 7 7-7 7"/>
+            </svg>
+        </a>
+
+        <!-- Secondary actions -->
+        <div class="actions" id="actions">
+            <button class="action-btn" id="downloadBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" x2="12" y1="15" y2="3"/>
+                </svg>
+                Download PDF
+            </button>
+            <button class="action-btn action-btn-secondary" id="calendarBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M8 2v4"/>
+                    <path d="M16 2v4"/>
+                    <rect width="18" height="18" x="3" y="4" rx="2"/>
+                    <path d="M3 10h18"/>
+                </svg>
+                Add to Calendar
+            </button>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
