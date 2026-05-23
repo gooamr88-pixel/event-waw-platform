@@ -31,6 +31,13 @@
       position: relative;
       overflow-x: hidden;
     }
+    @media (max-width: 768px) {
+      .auth-page {
+        justify-content: flex-start !important;
+        padding-top: calc(40px + env(safe-area-inset-top, 0px)) !important;
+        padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px)) !important;
+      }
+    }
     .auth-bg-ov {
       background: transparent !important;
     }
