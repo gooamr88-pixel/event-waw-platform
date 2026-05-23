@@ -16,127 +16,580 @@
   <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
   <script src="js/csp.js"></script>
   <style>
-    .spinner{width:32px;height:32px;border:3px solid #e5e5e5;border-top-color:var(--accent-primary);border-radius:50%;animation:spin .8s linear infinite}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    @keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
-    @keyframes ticketReveal{from{opacity:0;transform:translateY(40px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
-    @keyframes badgePop{0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
-    @keyframes qrGlow{0%,100%{box-shadow:0 4px 24px rgba(0,0,0,.3)}50%{box-shadow:0 4px 32px rgba(212,175,55,.2),0 0 60px rgba(212,175,55,.08)}}
+    /* Premium Clean Light Theme Overrides */
+    body {
+      background: #f8f9fc !important;
+      color: #111827 !important;
+    }
+    .auth-page {
+      background: #f8f9fc !important;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .auth-bg-ov {
+      background: transparent !important;
+    }
+    
+    /* Background Elements */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb-1 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%);
+      top: -150px;
+      right: -150px;
+      animation: orbFloat1 8s ease-in-out infinite;
+    }
+    .glow-orb-2 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+      bottom: -120px;
+      left: -120px;
+      animation: orbFloat2 10s ease-in-out infinite;
+    }
+    @keyframes orbFloat1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(-30px, 40px) scale(1.1); }
+      66% { transform: translate(20px, -20px) scale(0.95); }
+    }
+    @keyframes orbFloat2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(40px, -30px) scale(1.05); }
+      66% { transform: translate(-20px, 20px) scale(1.1); }
+    }
+    
+    #particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+    #confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 9999;
+      pointer-events: none;
+    }
 
-    .confetti-piece{position:fixed;width:10px;height:10px;top:-20px;z-index:9999;animation:confettiFall 3s ease-in forwards;pointer-events:none;border-radius:2px}
+    /* Spinner & Loading */
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #e5e7eb;
+      border-top-color: #10b981;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-dots::after {
+      content: '';
+      animation: dots 1.5s steps(4,end) infinite;
+    }
+    @keyframes dots {
+      0% { content: ''; }
+      25% { content: '.'; }
+      50% { content: '..'; }
+      75% { content: '...'; }
+    }
 
-    /* Ticket Card */
-    .ticket-card{max-width:380px;width:100%;margin:0 auto;border-radius:24px;overflow:visible;animation:ticketReveal .8s cubic-bezier(.16,1,.3,1) forwards;position:relative}
-    .ticket-inner{background:linear-gradient(165deg,#1a1a1f 0%,#111114 50%,#0d0d10 100%);border:1px solid rgba(212,175,55,.12);border-radius:24px;overflow:hidden;position:relative}
-    .ticket-inner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(212,175,55,.03),transparent 60%);pointer-events:none;z-index:1}
+    /* Checkmark & Badge */
+    .auth-ok-ic {
+      position: relative;
+      width: 90px !important;
+      height: 90px !important;
+      margin: 0 auto 20px !important;
+      border-radius: 50% !important;
+      border: none !important;
+      background: transparent !important;
+    }
+    .checkmark-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid #d1fae5;
+      animation: ringExpand 2s ease-out 1s infinite;
+    }
+    .checkmark-ring-2 {
+      animation-delay: 1.5s;
+    }
+    @keyframes ringExpand {
+      0% { transform: scale(1); opacity: 0.6; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+    .checkmark-circle {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 2.5;
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      animation: circleStroke 1s ease-out 0.6s forwards;
+      transform-origin: center;
+    }
+    @keyframes circleStroke {
+      0% { stroke-dashoffset: 283; }
+      100% { stroke-dashoffset: 0; }
+    }
+    .checkmark-check {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 80;
+      stroke-dashoffset: 80;
+      animation: checkStroke 0.5s ease-out 1.4s forwards;
+    }
+    @keyframes checkStroke {
+      0% { stroke-dashoffset: 80; }
+      100% { stroke-dashoffset: 0; }
+    }
 
-    .ticket-header{background:linear-gradient(135deg,#D4AF37,#b8941f,#D4AF37);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden}
-    .ticket-header::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);background-size:200% 100%;animation:shimmer 3s linear infinite}
-    .ticket-brand{font-size:.7rem;font-weight:800;letter-spacing:.18em;color:#09090b;text-transform:uppercase}
-    .ticket-id-label{font-size:.6rem;font-weight:700;color:rgba(9,9,11,.45);letter-spacing:.08em;font-family:monospace}
+    .event-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: #ecfdf5;
+      border: 1px solid #d1fae5;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #059669;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .badge-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: badgePulse 2s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+      0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.2); }
+      50% { opacity: 0.6; box-shadow: 0 0 0 6px transparent; }
+    }
 
-    .ticket-event{padding:clamp(14px,3vw,20px) clamp(14px,3vw,20px) clamp(12px,2vw,16px);position:relative;z-index:2}
-    .ticket-tier-badge{display:inline-block;font-size:.65rem;font-weight:700;color:#D4AF37;text-transform:uppercase;letter-spacing:.12em;padding:4px 12px;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.12);border-radius:50px;margin-bottom:10px}
-    .ticket-event h3{font-family:var(--font-serif);font-size:1.15rem;font-weight:700;color:#f4f4f5;margin-bottom:12px;line-height:1.3}
-    .ticket-meta{display:flex;flex-direction:column;gap:6px}
-    .ticket-meta-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:#a1a1aa}
-    .ticket-meta-row svg{width:14px;height:14px;color:#D4AF37;flex-shrink:0}
+    /* Title & Text */
+    .auth-box-title {
+      font-size: 1.6rem !important;
+      font-weight: 800 !important;
+      color: #111827 !important;
+      margin-bottom: 8px !important;
+      background: linear-gradient(135deg, #10b981, #059669, #0d9488);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s ease-in-out infinite;
+    }
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .auth-box-sub {
+      font-size: 0.9rem !important;
+      color: #6b7280 !important;
+      line-height: 1.6 !important;
+      margin-bottom: 24px !important;
+    }
 
-    .ticket-attendee{padding:0 clamp(14px,3vw,20px) clamp(12px,2vw,16px);position:relative;z-index:2}
-    .ticket-attendee-row{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);border-radius:10px}
-    .ticket-attendee-label{font-size:.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em}
-    .ticket-attendee-value{font-size:.82rem;font-weight:600;color:var(--text-primary)}
+    /* Ticket Card Grid */
+    .ticket-card {
+      max-width: 380px;
+      width: 100%;
+      margin: 0 auto 20px;
+      border-radius: 20px;
+      overflow: hidden;
+      background: #ffffff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+      border: 1px solid #e5e7eb !important;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .ticket-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+      border-color: rgba(16, 185, 129, 0.3) !important;
+    }
+    .ticket-inner {
+      background: #ffffff !important;
+      border: none !important;
+    }
+    .ticket-inner::before {
+      display: none !important;
+    }
+    .ticket-header {
+      background: #ffffff !important;
+      border-bottom: 1px solid #e5e7eb;
+      padding: 14px 20px;
+    }
+    .ticket-header::after {
+      display: none !important;
+    }
+    .ticket-brand {
+      font-size: 0.72rem !important;
+      font-weight: 700 !important;
+      color: #059669 !important;
+      letter-spacing: 1px;
+    }
+    .ticket-id-label {
+      font-size: 0.75rem !important;
+      color: #9ca3af !important;
+    }
+    .ticket-event {
+      padding: 20px;
+    }
+    .ticket-tier-badge {
+      color: #059669 !important;
+      background: #ecfdf5 !important;
+      border: 1px solid #d1fae5 !important;
+      font-size: 0.7rem !important;
+      padding: 4px 12px !important;
+      border-radius: 50px;
+      display: inline-block;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+    }
+    .ticket-event h3 {
+      color: #111827 !important;
+      font-size: 1.15rem !important;
+      margin-top: 10px;
+      margin-bottom: 12px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .ticket-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .ticket-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .78rem;
+      color: #6b7280 !important;
+    }
+    .ticket-meta-row svg {
+      width: 14px;
+      height: 14px;
+      color: #10b981 !important;
+      flex-shrink: 0;
+    }
+    .ticket-attendee {
+      padding: 0 20px 20px;
+    }
+    .ticket-attendee-row {
+      background: #f8f9fc !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 12px !important;
+      padding: 12px 16px !important;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ticket-attendee-label {
+      color: #9ca3af !important;
+      font-size: 0.65rem !important;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+    .ticket-attendee-value {
+      color: #111827 !important;
+      font-size: 0.85rem !important;
+      font-weight: 600;
+    }
+    .assigned-seat-section {
+      margin: 0 20px 16px;
+      padding: 12px 14px;
+      background: #ecfdf5;
+      border: 1px solid #d1fae5;
+      border-radius: 12px;
+    }
+    .assigned-seat-section .seat-badge {
+      background: #ffffff !important;
+      border: 1px solid #e5e7eb !important;
+    }
+    .assigned-seat-section .seat-title {
+      color: #111827 !important;
+    }
 
-    /* Tear-off */
-    .ticket-tear{position:relative;height:2px;margin:0 -1px;z-index:3}
-    .ticket-tear::before{content:'';position:absolute;left:20px;right:20px;top:0;border-top:2px dashed rgba(255,255,255,.06)}
-    .ticket-tear .notch{position:absolute;width:24px;height:24px;border-radius:50%;background:#09090b;top:-12px;border:1px solid rgba(212,175,55,.08)}
-    .ticket-tear .notch-l{left:-13px}.ticket-tear .notch-r{right:-13px}
+    /* Tear-off Edge */
+    .ticket-tear {
+      position: relative;
+      height: 24px !important;
+      margin: 0 !important;
+      z-index: 3;
+    }
+    .ticket-tear::before {
+      content: '' !important;
+      position: absolute;
+      left: 20px;
+      right: 20px;
+      top: 12px !important;
+      border-top: 1px dashed #e5e7eb !important;
+    }
+    .ticket-tear .notch {
+      position: absolute;
+      width: 14px !important;
+      height: 24px !important;
+      background: #f8f9fc !important;
+      border: 1px solid #e5e7eb !important;
+      top: 0 !important;
+    }
+    .ticket-tear .notch-l {
+      left: -1px !important;
+      border-radius: 0 14px 14px 0 !important;
+      border-left: none !important;
+    }
+    .ticket-tear .notch-r {
+      right: -1px !important;
+      border-radius: 14px 0 0 14px !important;
+      border-right: none !important;
+    }
 
-    /* QR Section */
-    .ticket-qr{padding:clamp(12px,2vw,16px) clamp(14px,3vw,20px) clamp(14px,3vw,20px);text-align:center;position:relative;z-index:2}
-    .ticket-qr-wrap{display:inline-block;background:#fff;padding:14px;border-radius:14px;animation:qrGlow 4s ease-in-out infinite}
-    .ticket-qr-wrap canvas{display:block}
-    .ticket-status{margin-top:12px;display:flex;justify-content:center;gap:8px;align-items:center}
-    .ticket-status-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 14px;border-radius:50px;font-size:.72rem;font-weight:700;animation:badgePop .5s cubic-bezier(.16,1,.3,1) .6s both}
-    .badge-valid{background:rgba(34,197,94,.08);color:#22c55e;border:1px solid rgba(34,197,94,.15)}
-    .ticket-amount{font-size:.8rem;font-weight:700;color:var(--accent-primary)}
+    /* QR Code and Status */
+    .ticket-qr {
+      padding: 16px 20px 24px !important;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    .ticket-qr-wrap {
+      display: inline-block;
+      padding: 12px !important;
+      border-radius: 14px !important;
+      border: 1px solid #e5e7eb !important;
+      background: #ffffff !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+      animation: none !important;
+    }
+    .ticket-qr-wrap canvas {
+      display: block;
+    }
+    .ticket-status {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      align-items: center;
+    }
+    .ticket-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 14px !important;
+      border-radius: 50px;
+      font-size: .75rem !important;
+      font-weight: 700;
+      animation: none !important;
+    }
+    .badge-valid {
+      background: #ecfdf5 !important;
+      color: #059669 !important;
+      border: 1px solid #d1fae5 !important;
+    }
+    .ticket-amount {
+      font-size: .85rem !important;
+      font-weight: 700;
+      color: #059669 !important;
+    }
+    .ticket-transfer-btn {
+      border-radius: 8px !important;
+      font-weight: 600 !important;
+      font-size: .78rem;
+      padding: 8px 18px;
+      transition: all 0.3s !important;
+      border-color: #d1fae5 !important;
+      background: #ffffff !important;
+      color: #059669 !important;
+    }
+    .ticket-transfer-btn:hover {
+      background: #ecfdf5 !important;
+      border-color: #10b981 !important;
+    }
 
-    /* Guest Notice */
-    .guest-notice{margin:20px auto 0;max-width:380px;width:100%;padding:clamp(12px,2vw,16px);background:rgba(34,197,94,.04);border:1px solid rgba(34,197,94,.1);border-radius:14px;text-align:center}
-    .guest-notice p{color:var(--text-secondary);font-size:.85rem;line-height:1.6;margin:0}
-    .guest-notice strong{color:#22c55e}
+    /* Guest Checkouts & Email CTA */
+    .guest-notice {
+      margin: 20px auto 0 !important;
+      max-width: 380px !important;
+      width: 100% !important;
+      padding: 18px 22px !important;
+      background: #ffffff !important;
+      border: 1px solid #e5e7eb !important;
+      border-radius: 16px !important;
+      text-align: left !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03) !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 16px !important;
+      text-decoration: none !important;
+      color: inherit !important;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      position: relative;
+      overflow: hidden;
+    }
+    .guest-notice::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #ecfdf5, transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    .guest-notice:hover::before {
+      opacity: 1;
+    }
+    .guest-notice:hover {
+      border-color: #10b981 !important;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.08) !important;
+      transform: translateY(-1px);
+    }
+    .guest-notice-icon {
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ecfdf5;
+      border-radius: 12px;
+      color: #10b981;
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .guest-notice-text {
+      flex: 1;
+      z-index: 1;
+    }
+    .guest-notice h4 {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: #059669;
+      margin: 0 0 2px 0;
+    }
+    .guest-notice p {
+      color: #6b7280 !important;
+      font-size: .78rem !important;
+      line-height: 1.4 !important;
+      margin: 0 !important;
+    }
 
-    /* Loading State */
-    .loading-state{text-align:center;padding:60px 0}
-    .loading-state p{color:var(--text-muted);font-size:.9rem;margin-top:16px}
-    .loading-dots::after{content:'';animation:dots 1.5s steps(4,end) infinite}
-    @keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
-
-    /* Multi-ticket nav */
-    .ticket-nav{display:flex;justify-content:center;gap:8px;margin-top:16px}
-    .ticket-nav-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .3s}
-    .ticket-nav-dot.active{background:var(--accent-primary);border-color:var(--accent-primary);box-shadow:0 0 10px rgba(212,175,55,.3)}
+    /* Multi-ticket dots navigation */
+    .ticket-nav {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .ticket-nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      transition: all .3s;
+    }
+    .ticket-nav-dot.active {
+      background: #10b981;
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    }
   </style>
 </head>
 <body>
-  <div class="auth-page">
-    <div class="auth-bg"><div class="auth-bg-ov" style="background:rgba(9,9,11,.95);"></div></div>
-    <div class="particles"></div>
-    <div id="confetti-container"></div>
+  <!-- Animated background particles & confetti -->
+  <canvas id="particles"></canvas>
+  <canvas id="confetti-canvas"></canvas>
 
-    <div class="auth-wrap" style="max-width:30rem;">
-      <div class="auth-head">
+  <!-- Glowing background orbs -->
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+
+  <div class="auth-page">
+    <div class="auth-wrap" style="max-width:30rem; z-index: 5; position: relative;">
+      <div class="auth-head" style="margin-bottom: 24px; text-align: center;">
         <a href="index.html" class="nav-logo" id="nav-logo">
-  <img src="images/logo-light-theme.png?v=1778305500" alt="Eventsli" class="logo-light-theme" />
-  <img src="images/logo-dark-theme.png?v=1778305500" alt="Eventsli" class="logo-dark-theme" />
-</a>
+          <img src="images/logo-light-theme.png?v=1778305500" alt="Eventsli" class="logo-light-theme" style="max-height: 36px;" />
+          <img src="images/logo-dark-theme.png?v=1778305500" alt="Eventsli" class="logo-dark-theme" style="max-height: 36px; display: none;" />
+        </a>
       </div>
 
       <!-- Loading State -->
-      <div id="loading-view" class="auth-box ani-up d2" style="text-align:center;">
-        <div class="auth-ok-ic" style="width:70px;height:70px;margin-bottom:20px;">
+      <div id="loading-view" class="auth-box ani-up d2" style="text-align:center; background: #ffffff !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; padding: 32px 24px !important;">
+        <div class="auth-ok-ic" style="width:70px;height:70px;margin-bottom:20px; display: flex; align-items: center; justify-content: center;">
           <div class="spinner"></div>
         </div>
         <h2 class="auth-box-title" style="font-size:1.3rem;">Confirming Payment<span class="loading-dots"></span></h2>
         <p class="auth-box-sub">Please wait while we prepare your ticket. This usually takes a few seconds.</p>
-        <div style="width:100%;height:4px;background:rgba(255,255,255,.04);border-radius:4px;overflow:hidden;margin-top:8px;">
-          <div id="progress-bar" style="height:100%;background:var(--accent-gradient);border-radius:4px;width:0%;transition:width .5s ease;"></div>
+        <div style="width:100%;height:4px;background:#f3f4f6;border-radius:4px;overflow:hidden;margin-top:8px;">
+          <div id="progress-bar" style="height:100%;background:linear-gradient(135deg, #10b981, #059669);border-radius:4px;width:0%;transition:width .5s ease;"></div>
         </div>
       </div>
 
       <!-- Ticket View (hidden initially) -->
       <div id="ticket-view" style="display:none;">
         <div style="text-align:center;margin-bottom:20px;">
-          <div class="auth-ok-ic ani-scale" style="width:60px;height:60px;margin-bottom:14px;">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>
+          <!-- Premium Badge -->
+          <div class="event-badge">
+            <span class="badge-dot"></span>
+            <span>Booking Confirmed</span>
           </div>
-          <h2 class="auth-box-title ani-up" style="font-size:1.3rem;">Payment Successful!</h2>
-          <p class="auth-box-sub ani-up d1" style="margin-bottom:0;">Present this ticket at the entrance</p>
+
+          <!-- Animated checkmark -->
+          <div class="auth-ok-ic ani-scale" style="width:90px; height:90px; margin: 0 auto 20px;">
+            <div class="checkmark-ring"></div>
+            <div class="checkmark-ring checkmark-ring-2"></div>
+            <svg style="width: 100%; height: 100%; position: relative; z-index: 2;" viewBox="0 0 100 100">
+              <circle class="checkmark-circle" cx="50" cy="50" r="45" />
+              <path class="checkmark-check" d="M30 52 L44 66 L70 36" />
+            </svg>
+          </div>
+          
+          <h2 class="auth-box-title ani-up">Payment Successful!</h2>
+          <p class="auth-box-sub ani-up d1">Present this ticket at the entrance</p>
         </div>
 
         <div id="tickets-container"></div>
         <div id="ticket-nav" class="ticket-nav" style="display:none;"></div>
 
-        <div id="guest-notice" style="display:none;" class="guest-notice ani-up d3">
-          <p>📧 <strong>Check your email</strong> — we sent a secure link so you can access your tickets anytime. No account needed!</p>
-        </div>
+        <!-- Dynamic Guest Notice / Email CTA wrapper -->
+        <div id="guest-notice" style="display:none;"></div>
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;" class="ani-up d4">
-          <a id="btn-my-tickets" href="my-tickets.html" class="btn btn-primary btn-full">View All My Tickets</a>
-          <a href="my-tickets.html" class="btn btn-outline btn-full">Browse More Events</a>
+          <a id="btn-my-tickets" href="my-tickets.html" class="btn btn-primary btn-full" style="border-radius: 12px; font-weight: 600;">View All My Tickets</a>
+          <a href="my-tickets.html" class="btn btn-outline btn-full" style="border-radius: 12px; font-weight: 600;">Browse More Events</a>
         </div>
       </div>
 
       <!-- Error View -->
-      <div id="error-view" style="display:none;" class="auth-box" style="text-align:center;">
+      <div id="error-view" style="display:none;" class="auth-box" style="text-align:center; background: #ffffff !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; padding: 32px 24px !important;">
         <div style="text-align:center;">
-          <div class="auth-ok-ic" style="width:60px;height:60px;margin-bottom:14px;border-color:rgba(239,68,68,.15);background:rgba(239,68,68,.05);">
+          <div class="auth-ok-ic" style="width:60px;height:60px;margin-bottom:14px;border:1px solid rgba(239,68,68,.15) !important;background:rgba(239,68,68,.05); display: flex; align-items: center; justify-content: center;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
           </div>
-          <h2 class="auth-box-title" style="font-size:1.2rem;">Payment Received</h2>
+          <h2 class="auth-box-title" style="font-size:1.2rem; background: none; -webkit-text-fill-color: initial; color: #ef4444 !important;">Payment Received</h2>
           <p class="auth-box-sub">Your payment was successful but your ticket is still being prepared. It will appear on the <strong>My Tickets</strong> page shortly.</p>
-          <a href="my-tickets.html" class="btn btn-primary btn-full" style="margin-top:12px;">Go to My Tickets</a>
+          <a href="my-tickets.html" class="btn btn-primary btn-full" style="margin-top:12px; border-radius: 12px; font-weight: 600;">Go to My Tickets</a>
         </div>
       </div>
     </div>
@@ -145,14 +598,204 @@
   <script type="module">
     import { supabase } from './src/lib/supabase.js';
     import { getOrderBySessionPublic } from './src/lib/tickets.js';
-    import { initUI, initParticles } from './src/lib/ui.js';
+    import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
     import { showTransferModal } from './src/lib/ticket-transfer.js';
     import QRCode from 'https://esm.sh/qrcode@1';
 
+    // ========================================
+    // Particle Background System
+    // ========================================
+    class ParticleSystem {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.particles = [];
+        this.mouse = { x: 0, y: 0 };
+        this.resize();
+        this.init();
+        window.addEventListener('resize', () => this.resize());
+        window.addEventListener('mousemove', (e) => {
+          this.mouse.x = e.clientX;
+          this.mouse.y = e.clientY;
+        });
+      }
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+      init() {
+        const count = Math.min(60, Math.floor((window.innerWidth * window.innerHeight) / 15000));
+        for (let i = 0; i < count; i++) {
+          this.particles.push({
+            x: Math.random() * this.canvas.width,
+            y: Math.random() * this.canvas.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            size: Math.random() * 2 + 0.5,
+            opacity: Math.random() * 0.15 + 0.05,
+            pulse: Math.random() * Math.PI * 2,
+          });
+        }
+      }
+      update() {
+        this.particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.pulse += 0.01;
+          if (p.x < 0) p.x = this.canvas.width;
+          if (p.x > this.canvas.width) p.x = 0;
+          if (p.y < 0) p.y = this.canvas.height;
+          if (p.y > this.canvas.height) p.y = 0;
+          const dx = this.mouse.x - p.x;
+          const dy = this.mouse.y - p.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 150) {
+            p.vx -= dx * 0.00005;
+            p.vy -= dy * 0.00005;
+          }
+        });
+      }
+      draw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.particles.forEach(p => {
+          const alpha = p.opacity + Math.sin(p.pulse) * 0.1;
+          this.ctx.beginPath();
+          this.ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          this.ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
+          this.ctx.fill();
+        });
+        for (let i = 0; i < this.particles.length; i++) {
+          for (let j = i + 1; j < this.particles.length; j++) {
+            const a = this.particles[i];
+            const b = this.particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+              const alpha = (1 - dist / 120) * 0.05;
+              this.ctx.beginPath();
+              this.ctx.moveTo(a.x, a.y);
+              this.ctx.lineTo(b.x, b.y);
+              this.ctx.strokeStyle = `rgba(16, 185, 129, ${alpha})`;
+              this.ctx.lineWidth = 0.5;
+              this.ctx.stroke();
+            }
+          }
+        }
+      }
+      animate() {
+        this.update();
+        this.draw();
+        requestAnimationFrame(() => this.animate());
+      }
+    }
+
+    // ========================================
+    // Confetti Celebration System
+    // ========================================
+    class ConfettiSystem {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.pieces = [];
+        this.gravity = 0.15;
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+      }
+      resize() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+      launch() {
+        const colors = [
+          '#10b981', '#34d399', '#059669',
+          '#06b6d4', '#67e8f9', '#a5f3fc',
+          '#a3e635', '#bef264',
+          '#fbbf24', '#f59e0b',
+          '#f472b6', '#c084fc',
+        ];
+        for (let i = 0; i < 80; i++) {
+          const angle = (Math.random() * Math.PI * 2);
+          const velocity = Math.random() * 8 + 4;
+          this.pieces.push({
+            x: this.canvas.width / 2,
+            y: this.canvas.height / 2 - 50,
+            vx: Math.cos(angle) * velocity,
+            vy: Math.sin(angle) * velocity - 3,
+            width: Math.random() * 8 + 4,
+            height: Math.random() * 5 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            rotation: Math.random() * 360,
+            rotationSpeed: (Math.random() - 0.5) * 8,
+            opacity: 1,
+            decay: Math.random() * 0.008 + 0.003,
+          });
+        }
+      }
+      update() {
+        this.pieces.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += this.gravity;
+          p.vx *= 0.99;
+          p.rotation += p.rotationSpeed;
+          p.opacity -= p.decay;
+        });
+        this.pieces = this.pieces.filter(p => p.opacity > 0);
+      }
+      draw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.pieces.forEach(p => {
+          this.ctx.save();
+          this.ctx.translate(p.x, p.y);
+          this.ctx.rotate((p.rotation * Math.PI) / 180);
+          this.ctx.globalAlpha = p.opacity;
+          this.ctx.fillStyle = p.color;
+          this.ctx.fillRect(-p.width / 2, -p.height / 2, p.width, p.height);
+          this.ctx.restore();
+        });
+      }
+      animate() {
+        this.update();
+        this.draw();
+        if (this.pieces.length > 0) {
+          requestAnimationFrame(() => this.animate());
+        }
+      }
+    }
+
+    let confettiSystem = null;
+    function launchConfetti() {
+      try {
+        if (!confettiSystem) {
+          const confettiCanvas = document.getElementById('confetti-canvas');
+          confettiSystem = new ConfettiSystem(confettiCanvas);
+        }
+        confettiSystem.launch();
+        confettiSystem.animate();
+        
+        // Second celebration burst
+        setTimeout(() => {
+          confettiSystem.launch();
+          confettiSystem.animate();
+        }, 600);
+      } catch (err) {
+        console.error('Confetti burst error:', err);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
-      initParticles();
+
+      // Initialize Particles
+      try {
+        const particleCanvas = document.getElementById('particles');
+        const particleSystem = new ParticleSystem(particleCanvas);
+        particleSystem.animate();
+      } catch (err) {
+        console.error('Error starting particles:', err);
+      }
 
       const params = new URLSearchParams(window.location.search);
       const sessionId = params.get('session_id');
@@ -209,10 +852,25 @@
       const container = document.getElementById('tickets-container');
       container.innerHTML = `
         <div style="text-align:center;padding:32px 20px;">
-          <div style="width:72px;height:72px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.15);display:flex;align-items:center;justify-content:center;font-size:2rem;">✅</div>
           <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;margin-bottom:10px;color:var(--text-primary);">Your tickets have been confirmed!</h3>
           <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;max-width:340px;margin:0 auto;">Check your email for your ticket access link. You can view and download your tickets anytime — no account needed.</p>
         </div>
+      `;
+      
+      // Inject Premium Email CTA
+      document.getElementById('guest-notice').innerHTML = `
+        <a href="#" class="guest-notice">
+          <div class="guest-notice-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="16" x="2" y="4" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+          </div>
+          <div class="guest-notice-text">
+            <h4>Check your email</h4>
+            <p>We sent a secure link so you can access your tickets anytime. No account needed!</p>
+          </div>
+        </a>
       `;
       document.getElementById('guest-notice').style.display = 'block';
       const btn = document.getElementById('btn-my-tickets');
@@ -278,20 +936,20 @@
                   const qr = JSON.parse(t.qr_hash);
                   if (qr.sec && qr.row && qr.seat) {
                     return `
-                    <div style="margin:0 20px;padding:12px 14px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.12);border-radius:10px;">
-                      <div style="font-size:0.6rem;color:#D4AF37;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:8px;">💺 Your Assigned Seat</div>
+                    <div class="assigned-seat-section">
+                      <div style="font-size:0.6rem;color:#059669;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:8px;">💺 Your Assigned Seat</div>
                       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center;">
-                        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                        <div class="seat-badge" style="border-radius:8px;padding:8px 4px;">
                           <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Section</div>
-                          <div style="font-size:1.1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(qr.sec)}</div>
+                          <div class="seat-title" style="font-size:1.1rem;font-weight:800;font-family:var(--font-serif);">${escapeHTML(qr.sec)}</div>
                         </div>
-                        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                        <div class="seat-badge" style="border-radius:8px;padding:8px 4px;">
                           <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Row</div>
-                          <div style="font-size:1.1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(qr.row)}</div>
+                          <div class="seat-title" style="font-size:1.1rem;font-weight:800;font-family:var(--font-serif);">${escapeHTML(qr.row)}</div>
                         </div>
-                        <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:8px 4px;">
+                        <div class="seat-badge" style="border-radius:8px;padding:8px 4px;">
                           <div style="font-size:0.6rem;color:#71717a;text-transform:uppercase;">Seat</div>
-                          <div style="font-size:1.1rem;font-weight:800;color:#f4f4f5;font-family:var(--font-serif);">${escapeHTML(qr.seat)}</div>
+                          <div class="seat-title" style="font-size:1.1rem;font-weight:800;font-family:var(--font-serif);">${escapeHTML(qr.seat)}</div>
                         </div>
                       </div>
                     </div>`;
@@ -309,7 +967,7 @@
                 </div>
                 <div style="text-align:right;">
                   <div class="ticket-attendee-label">Amount</div>
-                  <div class="ticket-attendee-value" style="color:var(--accent-primary);">$${Number(t.tier_price).toLocaleString()}</div>
+                  <div class="ticket-attendee-value" style="color:#059669;">$${Number(t.tier_price).toLocaleString()}</div>
                 </div>
               </div>
             </div>
@@ -327,7 +985,7 @@
                 <span class="ticket-status-badge badge-valid">✦ Valid</span>
                 <span class="ticket-amount">$${Number(order.amount).toLocaleString()}</span>
               </div>
-              <button class="btn btn-outline btn-sm ticket-transfer-btn" data-ticket-id="${t.id}" data-event-title="${escapeHTML(t.event_title)}" data-tier-name="${escapeHTML(t.tier_name)}" style="margin-top:14px;font-size:.78rem;padding:8px 18px;border-color:rgba(212,175,55,.25);color:#D4AF37">
+              <button class="btn btn-outline btn-sm ticket-transfer-btn" data-ticket-id="${t.id}" data-event-title="${escapeHTML(t.event_title)}" data-tier-name="${escapeHTML(t.tier_name)}" style="margin-top:14px;">
                 🔄 Transfer Ticket
               </button>
             </div>
@@ -387,29 +1045,26 @@
 
       // Guest-specific UI
       if (isGuest) {
+        // Inject Premium Email CTA
+        document.getElementById('guest-notice').innerHTML = `
+          <a href="#" class="guest-notice">
+            <div class="guest-notice-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="16" x="2" y="4" rx="2"/>
+                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+              </svg>
+            </div>
+            <div class="guest-notice-text">
+              <h4>Check your email</h4>
+              <p>We sent a secure link so you can access your tickets anytime. No account needed!</p>
+            </div>
+          </a>
+        `;
         document.getElementById('guest-notice').style.display = 'block';
         const btn = document.getElementById('btn-my-tickets');
         btn.textContent = 'Create an Account';
         btn.href = 'register.html';
       }
-    }
-
-    function launchConfetti() {
-      const colors = ['#D4AF37', '#22c55e', '#10B981', '#f59e0b', '#ec4899', '#8b5cf6'];
-      const container = document.getElementById('confetti-container');
-      for (let i = 0; i < 50; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.left = Math.random() * 100 + 'vw';
-        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.animationDelay = Math.random() * 2 + 's';
-        piece.style.animationDuration = (2 + Math.random() * 2) + 's';
-        piece.style.width = (6 + Math.random() * 8) + 'px';
-        piece.style.height = (6 + Math.random() * 8) + 'px';
-        piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-        container.appendChild(piece);
-      }
-      setTimeout(() => container.innerHTML = '', 5000);
     }
   </script>
 </body>
