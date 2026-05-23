@@ -134,31 +134,42 @@
       0% { transform: scale(1); opacity: 0.6; }
       100% { transform: scale(1.8); opacity: 0; }
     }
-    .checkmark-circle {
+    .ticket-path {
       fill: none;
       stroke: #10b981;
-      stroke-width: 2.5;
-      stroke-dasharray: 283;
-      stroke-dashoffset: 283;
-      animation: circleStroke 1s ease-out 0.6s forwards;
-      transform-origin: center;
-    }
-    @keyframes circleStroke {
-      0% { stroke-dashoffset: 283; }
-      100% { stroke-dashoffset: 0; }
-    }
-    .checkmark-check {
-      fill: none;
-      stroke: #10b981;
-      stroke-width: 4;
+      stroke-width: 3;
       stroke-linecap: round;
       stroke-linejoin: round;
-      stroke-dasharray: 80;
-      stroke-dashoffset: 80;
-      animation: checkStroke 0.5s ease-out 1.4s forwards;
+      stroke-dasharray: 260;
+      stroke-dashoffset: 260;
+      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+    }
+    @keyframes ticketOutline {
+      to { stroke-dashoffset: 0; }
+    }
+    .ticket-dash-line {
+      stroke: #a7f3d0;
+      stroke-width: 2;
+      stroke-dasharray: 4, 4;
+      opacity: 0;
+      animation: fadeIn 0.4s ease-out 1.6s forwards;
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    .ticket-check {
+      fill: none;
+      stroke: #10b981;
+      stroke-width: 4.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 40;
+      stroke-dashoffset: 40;
+      animation: checkStroke 0.6s ease-out 1.8s forwards;
     }
     @keyframes checkStroke {
-      0% { stroke-dashoffset: 80; }
+      0% { stroke-dashoffset: 40; }
       100% { stroke-dashoffset: 0; }
     }
 
@@ -556,12 +567,14 @@
           </div>
 
           <!-- Animated checkmark -->
-          <div class="auth-ok-ic ani-scale" style="width:90px; height:90px; margin: 0 auto 20px;">
+          <!-- Animated ticket icon -->
+          <div class="auth-ok-ic ani-scale" style="width:100px; height:100px; margin: 0 auto 20px;">
             <div class="checkmark-ring"></div>
             <div class="checkmark-ring checkmark-ring-2"></div>
-            <svg style="width: 100%; height: 100%; position: relative; z-index: 2;" viewBox="0 0 100 100">
-              <circle class="checkmark-circle" cx="50" cy="50" r="45" />
-              <path class="checkmark-check" d="M30 52 L44 66 L70 36" />
+            <svg style="width: 100%; height: 100%; position: relative; z-index: 2; overflow: visible;" viewBox="0 0 100 100">
+              <path class="ticket-path" d="M22,32 H78 C80,32 80,34 80,36 V44 A6,6 0 0,0 80,56 V64 C80,66 80,68 78,68 H22 C20,68 20,66 20,64 V56 A6,6 0 0,0 20,44 V36 C20,34 20,32 22,32 Z" />
+              <line class="ticket-dash-line" x1="44" y1="32" x2="44" y2="68" />
+              <path class="ticket-check" d="M52,50 L58,56 L70,42" />
             </svg>
           </div>
           
