@@ -140,10 +140,12 @@
       stroke-width: 3;
       stroke-linecap: round;
       stroke-linejoin: round;
+      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+    }
+    .animate-icon .ticket-path {
       stroke-dasharray: 260;
       stroke-dashoffset: 260;
-      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
-      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
     }
     @keyframes ticketOutline {
       to { stroke-dashoffset: 0; }
@@ -152,8 +154,10 @@
       stroke: #a7f3d0;
       stroke-width: 2;
       stroke-dasharray: 4, 4;
+    }
+    .animate-icon .ticket-dash-line {
       opacity: 0;
-      animation: fadeIn 0.4s ease-out 1.6s forwards;
+      animation: fadeIn 0.4s ease-out 1.2s forwards;
     }
     @keyframes fadeIn {
       to { opacity: 1; }
@@ -164,9 +168,11 @@
       stroke-width: 4.5;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+    .animate-icon .ticket-check {
       stroke-dasharray: 40;
       stroke-dashoffset: 40;
-      animation: checkStroke 0.6s ease-out 1.8s forwards;
+      animation: checkStroke 0.6s ease-out 1.4s forwards;
     }
     @keyframes checkStroke {
       0% { stroke-dashoffset: 40; }
@@ -868,6 +874,10 @@
     function showGuestSuccess(email) {
       document.getElementById('loading-view').style.display = 'none';
       document.getElementById('ticket-view').style.display = 'block';
+      
+      // Trigger ticket icon animation
+      document.querySelectorAll('#ticket-view .auth-ok-ic').forEach(el => el.classList.add('animate-icon'));
+      
       launchConfetti();
       const container = document.getElementById('tickets-container');
       const emailDisplay = email ? `<strong style="color:#059669">${escapeHTML(email)}</strong>` : 'your email';
@@ -902,6 +912,9 @@
     async function showTickets(order, isGuest) {
       document.getElementById('loading-view').style.display = 'none';
       document.getElementById('ticket-view').style.display = 'block';
+
+      // Trigger ticket icon animation
+      document.querySelectorAll('#ticket-view .auth-ok-ic').forEach(el => el.classList.add('animate-icon'));
 
       // Confetti celebration
       launchConfetti();
