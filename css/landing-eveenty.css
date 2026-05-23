@@ -39,34 +39,7 @@
 .eveenty-landing .section-label::before { background: #059669 !important; }
 
 /* ── 2. NAVBAR ── */
-.eveenty-landing .navbar {
-  background: var(--nav-bg) !important;
-  border-bottom: 1px solid var(--border-light) !important;
-  box-shadow: var(--nav-shadow) !important;
-}
-.eveenty-landing .nav-logo-text { color: var(--text-primary) !important; font-weight: 800 !important; }
-.eveenty-landing .nav-logo-icon { color: #059669 !important; }
-.eveenty-landing .nav-links { margin: 0 auto !important; }
-.eveenty-landing .nav-links a {
-  color: var(--nav-link) !important; font-weight: 500 !important;
-  font-size: 0.9rem; padding: 8px 16px;
-  transition: color 0.3s !important;
-}
-.eveenty-landing .nav-links a:hover { color: #059669 !important; }
-.eveenty-landing .btn-outline {
-  color: var(--text-secondary) !important; border-color: var(--border-heavy) !important;
-  background: transparent !important;
-}
-.eveenty-landing .btn-outline:hover {
-  border-color: #059669 !important; color: #059669 !important;
-}
-.eveenty-landing .btn-primary {
-  background: #059669 !important; color: #fff !important;
-  border-color: #059669 !important;
-}
-.eveenty-landing .btn-primary:hover {
-  background: #047857 !important; border-color: #047857 !important;
-}
+/* Custom overrides removed to fallback to premium translucent green glass navbar, shadow states, and shimmer buttons from theme.css and styles.css */
 
 /* ── 3. HERO ── */
 .eveenty-landing .hero-wrapper {
@@ -463,15 +436,7 @@
 .ev-form-success svg { width: 20px; height: 20px; flex-shrink: 0; }
 
 /* ── 11. FOOTER ── */
-.eveenty-landing .footer {
-  background: #1a1a22 !important; color: #ccc !important;
-}
-.eveenty-landing .footer h4 { color: #fff !important; }
-.eveenty-landing .footer p { color: #999 !important; }
-.eveenty-landing .footer a { color: #aaa !important; }
-.eveenty-landing .footer a:hover { color: #059669 !important; }
-.eveenty-landing .footer-bottom { border-color: rgba(255,255,255,0.1) !important; }
-.eveenty-landing .footer-bottom span { color: #777 !important; }
+/* Custom overrides removed to fallback to premium deep forest-green gradient and glowing interactions from theme.css */
 
 /* ── 12. CHAT WIDGET ── */
 
