@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="css/styles.css?v=1778306045" />
   <link rel="stylesheet" href="css/light-theme.css?v=1778303702" />
   <link rel="stylesheet" href="css/theme.css" />
+  <link rel="stylesheet" href="css/landing-eveenty.css" />
   <link rel="stylesheet" href="css/seating-chart.css" />
   <link rel="stylesheet" href="css/mobile-ios.css?v=1778308816" />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
@@ -33,30 +34,63 @@
 </head>
 <body>
 
-  <!-- ══════ NAVBAR ══════ -->
+  <!-- ═══════ NAVBAR ═══════ -->
   <nav class="navbar" id="main-nav">
     <div class="container">
       <a href="index.html" class="nav-logo" id="nav-logo">
   <img src="images/logo-light-theme.png?v=1778305500" alt="Eventsli" class="logo-light-theme" />
   <img src="images/logo-dark-theme.png?v=1778305500" alt="Eventsli" class="logo-dark-theme" />
 </a>
-      <div class="nav-links"><a href="events.html">Events</a><a href="my-tickets.html">My Tickets</a></div>
+
+      <div class="nav-links" id="nav-links">
+        <a href="index.html">Home</a>
+        <a href="events.html">Events</a>
+        
+        <a href="how-it-works.html">How It Works</a>
+        <a href="why-us.html">Why Us?</a>
+        <a href="contact.html">Contact Us</a>
+      </div>
+
       <div class="nav-actions">
         <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
-        <a href="login.html" class="btn btn-outline btn-sm" id="nav-signin">Sign In</a>
+        <div class="nav-role-wrap">
+          <a href="login.html" class="btn btn-outline" id="nav-signin">Log In</a>
+          <div class="nav-role-dropdown">
+            <div class="nav-role-title">Choose your role:</div>
+            <a href="login.html" class="nav-role-item">
+              <span>User</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </a>
+            <a href="login.html" class="nav-role-item">
+              <span>Vendor</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </a>
+            <a href="login.html" class="nav-role-item">
+              <span>Organizer</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+            </a>
+          </div>
+        </div>
+        <a href="register.html" class="btn btn-primary" id="nav-signup">Create Event</a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       </div>
     </div>
   </nav>
 
+  <!-- Mobile Menu -->
   <div class="mobile-menu" id="mobile-menu">
     <button class="close-btn" id="mobile-close">✕</button>
+    <a href="index.html">Home</a>
     <a href="events.html">Events</a>
-    <a href="my-tickets.html">My Tickets</a>
-    <a href="login.html">Sign In</a>
+    
+    <a href="how-it-works.html">How It Works</a>
+    <a href="why-us.html">Why Us?</a>
+    <a href="contact.html">Contact Us</a>
+    <a href="login.html">Log In</a>
+    <a href="register.html">Create Event</a>
     <button class="mobile-theme-toggle theme-toggle" aria-label="Toggle theme">
       <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -303,8 +337,8 @@
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="footer-logo" style="margin-bottom:12px; display:inline-block;">
-            <img src="images/logo-dark-theme.png?v=1778305500" alt="Eventsli" class="footer-logo-img" />
-          </a>
+  <img src="images/logo-dark-theme.png?v=1778305500" alt="Eventsli" class="footer-logo-img" />
+</a>
           <p>Premium event ticketing platform. Discover, book, and attend world-class experiences with a single QR scan.</p>
         </div>
         <div>
@@ -320,6 +354,7 @@
           <ul class="footer-links">
             <li><a href="contact.html">Help Center</a></li>
             <li><a href="contact.html">Contact</a></li>
+            <li><a href="#ev-chat-fab" onclick="const f=document.getElementById('ev-chat-fab');if(f)f.click();else window.location.href='index.html#ev-chat-fab';">FAQ</a></li>
           </ul>
         </div>
         <div>
@@ -533,7 +568,7 @@
     import { getEvent, createCheckout, createGuestCheckout, createSeatedCheckout, createGuestSeatedCheckout } from './src/lib/events.js';
     import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from './src/lib/price-breakdown.js';
     import { initSeatingUI, getCachedSeatBreakdown } from './src/lib/seating-ui.js?v=2';
-    import { semiProtectPage, updateNavForAuth, isOTPVerified } from './src/lib/guard.js';
+    import { semiProtectPage, updateNavForAuth, isOTPVerified, performSignOut } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML, formatCurrency } from './src/lib/utils.js';
     import { setSafeHTML } from './src/lib/dom.js';
@@ -575,6 +610,19 @@
 
       authState = await semiProtectPage();
       updateNavForAuth(authState);
+
+      if (authState.user && authState.isFullyAuth) {
+        const dashHref = authState.profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        const dashLabel = authState.profile?.role === 'admin' ? 'Admin Panel' : 'Dashboard';
+        const signinBtn = document.getElementById('nav-signin');
+        const signupBtn = document.getElementById('nav-signup');
+        if (signinBtn) { signinBtn.textContent = dashLabel; signinBtn.href = dashHref; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); const roleDropdown = document.querySelector('.nav-role-dropdown'); if (roleDropdown) roleDropdown.remove(); }
+        if (signupBtn) { signupBtn.textContent = 'Sign Out'; signupBtn.href = '#'; signupBtn.classList.remove('btn-primary'); signupBtn.classList.add('btn-outline'); signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
+        const navLinks = document.getElementById('nav-links');
+        if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = dashLabel; el.href = dashHref; } }
+        const mm = document.getElementById('mobile-menu');
+        if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = dashLabel; a.href = dashHref; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
+      }
       
       const params = new URLSearchParams(window.location.search);
       const eventId = params.get('id');
