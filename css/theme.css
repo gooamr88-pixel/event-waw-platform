@@ -70,14 +70,14 @@
   --hover-card:        0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 8px 10px -6px rgba(15, 23, 42, 0.05);
 
   /* ── Navbar ── */
-  --nav-bg:            rgba(255, 255, 255, 0.82);
-  --nav-bg-scrolled:   rgba(255, 255, 255, 0.95);
-  --nav-shadow:        0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 20px rgba(0, 0, 0, 0.03);
-  --nav-shadow-scrolled: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 32px rgba(0, 0, 0, 0.06);
-  --nav-link:          #4a4a52;
+  --nav-bg:            rgba(236, 253, 245, 0.82);
+  --nav-bg-scrolled:   rgba(209, 250, 229, 0.95);
+  --nav-shadow:        0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 20px rgba(4, 120, 87, 0.05);
+  --nav-shadow-scrolled: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(4, 120, 87, 0.08);
+  --nav-link:          #064e3b;
   --nav-link-hover:    #059669;
-  --nav-pill-bg:       rgba(0, 0, 0, 0.03);
-  --nav-pill-border:   rgba(0, 0, 0, 0.04);
+  --nav-pill-bg:       rgba(16, 185, 129, 0.05);
+  --nav-pill-border:   rgba(16, 185, 129, 0.1);
 
   /* ── Scrollbar ── */
   --scrollbar-track:   #f8fafc;
@@ -164,14 +164,14 @@
   --hover-card:        0 8px 32px rgba(0, 0, 0, 0.4), 0 0 40px rgba(52, 211, 153, 0.06);
 
   /* ── Navbar ── */
-  --nav-bg:            rgba(15, 15, 20, 0.4);
-  --nav-bg-scrolled:   rgba(8, 8, 12, 0.95);
-  --nav-shadow:        0 4px 30px rgba(0, 0, 0, 0.1);
-  --nav-shadow-scrolled: 0 10px 40px rgba(0, 0, 0, 0.4);
-  --nav-link:          rgba(255, 255, 255, 0.85);
+  --nav-bg:            rgba(4, 30, 22, 0.72);
+  --nav-bg-scrolled:   rgba(3, 20, 15, 0.94);
+  --nav-shadow:        0 4px 30px rgba(0, 0, 0, 0.2);
+  --nav-shadow-scrolled: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(16, 185, 129, 0.05);
+  --nav-link:          rgba(209, 250, 229, 0.85);
   --nav-link-hover:    #ffffff;
-  --nav-pill-bg:       rgba(255, 255, 255, 0.03);
-  --nav-pill-border:   rgba(255, 255, 255, 0.05);
+  --nav-pill-bg:       rgba(52, 211, 153, 0.05);
+  --nav-pill-border:   rgba(52, 211, 153, 0.1);
 
   /* ── Scrollbar ── */
   --scrollbar-track:   #09090b;
@@ -476,14 +476,49 @@ input[type="tel"], select, textarea {
 
 /* ── Footer (always dark) ── */
 .footer, footer {
-  background: #1a1a22;
-  color: #d4d4d8;
+  background: linear-gradient(135deg, #022c22 0%, #064e3b 50%, #022c22 100%) !important;
+  color: #d1fae5 !important;
+  border-top: 1px solid rgba(52, 211, 153, 0.15) !important;
 }
-.footer h4 { color: #f4f4f5; }
-.footer-links a { color: #a1a1aa; }
-.footer-links a:hover { color: var(--accent-primary); }
-.footer-bottom { border-top-color: rgba(255, 255, 255, 0.06); color: #71717a; }
-footer .text-muted { color: #a1a1aa; }
+.footer h4 {
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.footer-links a {
+  color: #a7f3d0 !important;
+  transition: all 0.3s ease;
+}
+.footer-links a:hover {
+  color: #34d399 !important;
+  padding-left: 6px;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
+}
+.footer p, .footer-brand p {
+  color: #88b39d !important;
+}
+.footer-social a {
+  background: rgba(52, 211, 153, 0.08) !important;
+  border: 1px solid rgba(52, 211, 153, 0.15) !important;
+  color: #a7f3d0 !important;
+}
+.footer-social a:hover {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  color: #ffffff !important;
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+.footer-bottom {
+  border-top: 1px solid rgba(52, 211, 153, 0.12) !important;
+  color: #6ee7b7 !important;
+}
+.footer-bottom a {
+  color: #34d399 !important;
+}
+footer .text-muted {
+  color: #88b39d !important;
+}
 
 /* ── Auth Pages ── */
 [data-theme="light"] .auth-bg-ov {
