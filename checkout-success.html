@@ -806,11 +806,18 @@
         return;
       }
 
-      // ── H-2 FIX: Guest checkout — skip DB polling (RLS blocks it) ──
+      // Try to fetch guest order to show their purchased email address
       if (isGuest) {
         const progressBar = document.getElementById('progress-bar');
-        progressBar.style.width = '100%';
-        setTimeout(() => showGuestSuccess(), 400);
+        progressBar.style.width = '80%';
+        getOrderBySessionPublic(sessionId).then(order => {
+          progressBar.style.width = '100%';
+          setTimeout(() => showGuestSuccess(order?.guest_email || null), 400);
+        }).catch(err => {
+          console.warn('Error pre-fetching order for guest email:', err);
+          progressBar.style.width = '100%';
+          setTimeout(() => showGuestSuccess(null), 400);
+        });
         return;
       }
 
@@ -845,15 +852,16 @@
     }
 
     // H-2: Static success page for guest checkouts (no DB query needed)
-    function showGuestSuccess() {
+    function showGuestSuccess(email) {
       document.getElementById('loading-view').style.display = 'none';
       document.getElementById('ticket-view').style.display = 'block';
       launchConfetti();
       const container = document.getElementById('tickets-container');
+      const emailDisplay = email ? `<strong style="color:#059669">${escapeHTML(email)}</strong>` : 'your email';
       container.innerHTML = `
         <div style="text-align:center;padding:32px 20px;">
           <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;margin-bottom:10px;color:var(--text-primary);">Your tickets have been confirmed!</h3>
-          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;max-width:340px;margin:0 auto;">Check your email for your ticket access link. You can view and download your tickets anytime — no account needed.</p>
+          <p style="color:var(--text-secondary);font-size:0.9rem;line-height:1.7;max-width:340px;margin:0 auto;">We sent your ticket access link to ${emailDisplay}. You can view and download your tickets anytime — no account needed.</p>
         </div>
       `;
       
@@ -868,7 +876,7 @@
           </div>
           <div class="guest-notice-text">
             <h4>Check your email</h4>
-            <p>We sent a secure link so you can access your tickets anytime. No account needed!</p>
+            <p>We sent a secure link to ${emailDisplay} so you can access your tickets anytime. No account needed!</p>
           </div>
         </a>
       `;
@@ -884,6 +892,22 @@
 
       // Confetti celebration
       launchConfetti();
+
+      // Retrieve customer's purchase email
+      let userEmail = order.guest_email;
+      if (!userEmail) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          userEmail = user?.email;
+        } catch (e) {}
+      }
+      const emailDisplay = userEmail ? `<strong style="color:#059669">${escapeHTML(userEmail)}</strong>` : 'your email';
+
+      // Display purchaser email on screen under subtitle
+      const subTitleEl = document.querySelector('.auth-box-sub');
+      if (subTitleEl && userEmail) {
+        subTitleEl.innerHTML = `Present this ticket at the entrance.<br><span style="font-size: 0.78rem; color: #059669; font-weight: 600; margin-top: 8px; display: inline-block; background: #ecfdf5; padding: 4px 12px; border-radius: 50px; border: 1px solid #d1fae5;">Sent to: ${escapeHTML(userEmail)}</span>`;
+      }
 
       const container = document.getElementById('tickets-container');
       const tickets = order.tickets;
@@ -1056,7 +1080,7 @@
             </div>
             <div class="guest-notice-text">
               <h4>Check your email</h4>
-              <p>We sent a secure link so you can access your tickets anytime. No account needed!</p>
+              <p>We sent a secure link to ${emailDisplay} so you can access your tickets anytime. No account needed!</p>
             </div>
           </a>
         `;
