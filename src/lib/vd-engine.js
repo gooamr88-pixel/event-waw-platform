@@ -191,6 +191,45 @@ export class VenueDesignerEngine {
     };
   }
 
+  /**
+   * Export layout as a reusable template blueprint.
+   * Strips all tier_id references and adds tier_slot identifiers.
+   * Background images are flagged but not included (stored separately).
+   * @returns {object} Sanitized template layout JSON
+   */
+  toTemplateJSON() {
+    const layout = this.toLayoutJSON();
+    layout.template = true;
+
+    // Strip tier_ids and assign slot identifiers
+    let sectionSlot = 0;
+    let tableSlot = 0;
+    layout.elements = layout.elements.map(el => {
+      const copy = { ...el };
+      if (copy.type === 'section') {
+        copy.tier_id = null;
+        copy.tier_slot = `section-${sectionSlot++}`;
+      } else if (copy.type === 'table') {
+        copy.tier_id = null;
+        copy.tier_slot = `table-${tableSlot++}`;
+      }
+      return copy;
+    });
+
+    // Strip tier_ids from computed sections
+    layout.sections = layout.sections.map(sec => ({
+      ...sec, tier_id: null,
+    }));
+
+    // Flag background image for separate storage
+    if (layout.bgImage) {
+      layout.bgImageRef = true;
+      layout.bgImage = null;
+    }
+
+    return layout;
+  }
+
   loadFromJSON(json) {
     if (json.version === 2 && json.elements) {
       this.elements = json.elements;
@@ -219,6 +258,34 @@ export class VenueDesignerEngine {
     }
     this.state.selectedId = null;
     this.render();
+  }
+
+  /**
+   * Load a template blueprint into the engine, optionally applying tier mappings.
+   * Deep clones the template to ensure immutability of the original blueprint.
+   * @param {object} json - Template layout_json from venue_templates
+   * @param {object} tierMap - { tier_slot: tier_id } mapping from the Tier Assignment UI
+   */
+  loadFromTemplate(json, tierMap = {}) {
+    // Deep clone to avoid mutating the source template
+    const layout = JSON.parse(JSON.stringify(json));
+
+    // Inject tier mappings into elements
+    if (layout.elements) {
+      layout.elements = layout.elements.map(el => {
+        if (el.tier_slot && tierMap[el.tier_slot]) {
+          el.tier_id = tierMap[el.tier_slot];
+        }
+        return el;
+      });
+    }
+
+    // Remove template flags so it saves as a normal venue map
+    delete layout.template;
+    delete layout.bgImageRef;
+
+    // Use existing loadFromJSON for the actual loading
+    this.loadFromJSON(layout);
   }
 
   _pushUndo() {

@@ -10,7 +10,7 @@ import { showConfirmModal } from '../src/lib/ui-modals.js';
  */
 export function applyTheme() {
   const saved = localStorage.getItem('theme');
-  const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved === 'dark';
   const theme = isDark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   document.body.setAttribute('data-theme', theme);

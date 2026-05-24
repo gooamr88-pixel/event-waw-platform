@@ -41,6 +41,10 @@
         <button class="vd-icon-btn" id="btn-bg-clear" title="Remove Background" style="display:none;color:#ef4444"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         <button class="vd-icon-btn" id="btn-preview" title="Preview as Attendee"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
         <button class="vd-del-btn" id="btn-del-map" style="display:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> Delete Map</button>
+        <button class="vd-save-tpl-btn" id="btn-save-template" title="Save as Reusable Template">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M8 2v6h8V2"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+          <span class="vd-save-tpl-text">Save as Template</span>
+        </button>
         <button class="vd-save-btn" id="btn-save" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
           Save & Deploy
@@ -52,6 +56,15 @@
     <div class="vd-body">
       <!-- LEFT: TOOLBOX + PROPERTIES -->
       <div class="vd-toolbox">
+        <!-- ══ MY TEMPLATES (from database) ══ -->
+        <div class="vd-tb-section">
+          <div class="vd-tb-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M8 2v6h8V2"/><path d="M16 13H8"/><path d="M16 17H8"/></svg> My Templates</div>
+          <div class="vd-tpl-toolbox-list" id="user-templates-list">
+            <div class="vd-tpl-toolbox-empty"><span class="vd-tpl-toolbox-empty-icon">📂</span><span>Loading…</span></div>
+          </div>
+          <button class="vd-tpl-browse-btn" id="btn-browse-templates">📂 Browse All Templates</button>
+        </div>
+        <!-- ══ QUICK TEMPLATES (hardcoded, kept for backward compat) ══ -->
         <div class="vd-tb-section">
           <div class="vd-tb-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg> Quick Templates</div>
           <div class="vd-template-grid" id="template-grid">
@@ -106,6 +119,7 @@
     import { escapeHTML } from './src/lib/utils.js';
     import { ELEMENT_TYPES, VenueDesignerEngine, saveVenueMapV2 } from './src/lib/venue-designer-v2.js';
     import { loadVenueMap, deleteVenueMap } from './src/lib/venue-designer.js';
+    import { showSaveTemplateModal, showTemplateChooser, populateToolboxTemplates } from './src/lib/vd-template-ui.js';
 
     let engine, eventId, tiers = [];
 
@@ -137,6 +151,7 @@
       wireSnap();
       wireContextMenu();
       wireBgUpload();
+      wireTemplateButtons();
 
       // Load existing
       try {
@@ -152,6 +167,9 @@
       } catch (_) { engine.addElement('stage', 400, 40); }
 
       updateStats();
+
+      // Populate sidebar templates (async, non-blocking)
+      populateToolboxTemplates(engine, tiers).catch(() => {});
     });
 
     /* ── Toolbox ── */
@@ -529,6 +547,30 @@
         document.getElementById('btn-save').disabled = false;
         clearBtn.style.display = 'none';
         toast('Background removed', 'info');
+      });
+    }
+
+    /* -- Template Buttons -- */
+    function wireTemplateButtons() {
+      // Save as Template
+      document.getElementById('btn-save-template')?.addEventListener('click', () => {
+        if (engine.elements.length < 2) {
+          toast('Add some elements before saving a template', 'info');
+          return;
+        }
+        showSaveTemplateModal(engine, () => {
+          populateToolboxTemplates(engine, tiers).catch(() => {});
+        });
+      });
+
+      // Browse All Templates
+      document.getElementById('btn-browse-templates')?.addEventListener('click', () => {
+        showTemplateChooser(engine, tiers, () => {
+          document.getElementById('btn-save').disabled = false;
+          updateProps();
+          updateStats();
+          populateToolboxTemplates(engine, tiers).catch(() => {});
+        });
       });
     }
   </script>

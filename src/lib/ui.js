@@ -38,8 +38,8 @@ const DARK = 'dark';
  */
 export function initThemeFromStorage() {
   const saved = localStorage.getItem(THEME_KEY);
-  // L-1 FIX: Respect OS prefers-color-scheme when no manual choice is saved
-  const theme = saved || (matchDark() ? DARK : LIGHT);
+  // Default to light theme for all users unless explicitly saved as dark
+  const theme = saved || LIGHT;
   applyTheme(theme);
 }
 
@@ -80,7 +80,7 @@ function matchDark() {
  * @returns {'light'|'dark'}
  */
 export function getCurrentTheme() {
-  return document.documentElement.getAttribute(ATTR) || DARK;
+  return document.documentElement.getAttribute(ATTR) || LIGHT;
 }
 
 /* -- Navbar Scroll -- */

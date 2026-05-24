@@ -82,7 +82,7 @@ export function setupDarkMode() {
   const toggle = document.getElementById('dark-mode-toggle');
   // Sync initial state from unified theme key
   const saved = localStorage.getItem('theme');
-  const isDark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   document.body.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
