@@ -79,7 +79,7 @@ export default defineConfig({
   webServer: {
     command: 'npx serve . -l 3000 --cors --no-clipboard',
     port: 3000,
-    timeout: 30_000,
+    timeout: 60_000,
     reuseExistingServer: !process.env.CI,
   },
 

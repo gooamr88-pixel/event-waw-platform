@@ -31,7 +31,7 @@ export default {
 
   coverageReporters: ['text', 'text-summary', 'lcov', 'json-summary'],
 
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
