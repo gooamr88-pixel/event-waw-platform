@@ -128,8 +128,6 @@ input:-webkit-autofill:focus {
 /* Ensure proper box-sizing on all form elements (Samsung Internet fix) */
 input, select, textarea, button {
   box-sizing: border-box;
-}
-input:not([type="checkbox"]):not([type="radio"]), select, textarea, button {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
