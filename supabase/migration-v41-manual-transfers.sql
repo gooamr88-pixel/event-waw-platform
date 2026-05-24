@@ -83,6 +83,13 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS
 COMMENT ON COLUMN payments.payment_channel IS
   'Payment channel: stripe or manual (for commission debt tracking)';
 
+-- ── manual_transfer_orders: guest retrieval token ──
+ALTER TABLE manual_transfer_orders ADD COLUMN IF NOT EXISTS
+  guest_token TEXT;
+COMMENT ON COLUMN manual_transfer_orders.guest_token IS
+  'Raw guest retrieval token for guest ticket access after approval';
+
+
 
 -- ════════════════════════════════════════════════════════════
 -- PART 3: NEW TABLES
@@ -141,8 +148,12 @@ CREATE TABLE IF NOT EXISTS manual_transfer_orders (
   rejection_reason      TEXT,
   rejected_at           TIMESTAMPTZ,
 
+  -- Guest support
+  guest_token           TEXT,           -- Raw guest token sent to buyer email
+
   -- Seat support
   seat_ids              UUID[],         -- For seated events
+
 
   -- Promo code support
   promo_id              UUID,
@@ -716,6 +727,7 @@ DECLARE
   v_ticket_ids   UUID[];
   v_ticket_id    UUID;
   v_i            INT;
+  v_raw_token    TEXT := NULL;
 BEGIN
   -- ═══ 1. VALIDATE: Lock the manual order row ═══
   SELECT mto.*
@@ -805,15 +817,22 @@ BEGIN
     'manual', 'paid', now()
   );
 
-  -- ═══ 6. UPDATE: Manual order status ═══
+  -- ═══ 6. GUEST RETRIEVAL TOKEN ═══
+  IF v_mto.user_id IS NULL THEN
+    v_raw_token := gen_random_uuid()::text || '-' || gen_random_uuid()::text;
+    PERFORM create_guest_token(v_order_id, v_mto.buyer_email, v_raw_token);
+  END IF;
+
+  -- ═══ 7. UPDATE: Manual order status ═══
   UPDATE manual_transfer_orders
   SET status      = 'approved',
       approved_by = v_caller_id,
       approved_at = now(),
+      guest_token = v_raw_token,
       updated_at  = now()
   WHERE id = p_manual_order_id;
 
-  -- ═══ 7. CONVERT: Reservation ═══
+  -- ═══ 8. CONVERT: Reservation ═══
   IF v_mto.reservation_id IS NOT NULL THEN
     UPDATE reservations SET status = 'converted'
     WHERE id = v_mto.reservation_id;

@@ -121,10 +121,20 @@ export async function renderFinancialDashboard(container) {
     } else {
       const statusColors = { pending: 'ev-badge-yellow', processing: 'ev-badge-blue', completed: 'ev-badge-green', failed: 'ev-badge-red', cancelled: 'ev-badge-red' };
       payouts.forEach((po, i) => {
+        const fees = Number(po.platform_fees || 0);
+        const hasFees = fees > 0;
         html += `
           <tr>
             <td>${i + 1}</td>
-            <td style="font-weight:700">${fmt(po.net_amount)}</td>
+            <td style="font-weight:700;vertical-align:top">
+              ${fmt(po.net_amount)}
+              ${hasFees ? `
+                <div style="font-size:.7rem;font-weight:400;color:var(--ev-text-muted);margin-top:4px;line-height:1.3">
+                  Gross: ${fmt(po.gross_amount)}<br/>
+                  <span style="color:#ef4444">Deducted: ${fmt(po.platform_fees)}</span>
+                </div>
+              ` : ''}
+            </td>
             <td>${esc(po.payout_method)}</td>
             <td>${esc(po.event_title || 'Multi-event')}</td>
             <td><span class="ev-badge ${statusColors[po.status] || ''}">${esc(po.status)}</span>${po.failure_reason ? ` <span title="${escAttr(po.failure_reason)}" style="cursor:help">⚠</span>` : ''}</td>

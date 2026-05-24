@@ -221,6 +221,8 @@ BEGIN
   FROM (
     SELECT
       po.id,
+      po.gross_amount,
+      po.platform_fees,
       po.net_amount,
       po.currency,
       po.status,

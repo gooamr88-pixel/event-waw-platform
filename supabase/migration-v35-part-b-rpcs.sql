@@ -337,6 +337,12 @@ DECLARE
   v_available_balance DECIMAL(12,2) := 0;
   v_escrow_cutoff TIMESTAMPTZ := now() - interval '3 days';
   v_payout_id UUID;
+
+  -- Auto-deduction engine variables
+  v_remaining_payout_amount DECIMAL(12,2) := p_amount;
+  v_total_deducted DECIMAL(12,2) := 0;
+  v_deduct_amount DECIMAL(12,2);
+  v_debt RECORD;
 BEGIN
   IF p_amount IS NULL OR p_amount <= 0 THEN
     RETURN jsonb_build_object('error', 'Amount must be greater than 0');
@@ -416,16 +422,97 @@ BEGIN
     ELSE 'Unknown'
   END;
 
+  -- ══ AUTO-DEDUCTION ENGINE ══
+  -- Check if organizer has manual transfer commission debt in EGP
+  -- Propose EGP-EGP directly, convert USD payout to EGP debt using a standard 50.0 rate.
+  v_payout_id := gen_random_uuid();
+
+  FOR v_debt IN
+    SELECT cd.id, cd.commission_balance, e.currency AS event_currency
+    FROM commission_debt cd
+    JOIN events e ON e.id = cd.event_id
+    WHERE cd.organizer_id = v_org.id
+      AND cd.commission_balance > 0
+      AND cd.status IN ('accruing', 'due', 'overdue')
+    ORDER BY cd.created_at ASC
+  LOOP
+    IF v_remaining_payout_amount <= 0 THEN
+      EXIT;
+    END IF;
+
+    -- Adjust EGP debt to payout currency
+    IF v_currency = 'USD' AND COALESCE(v_debt.event_currency, 'EGP') = 'EGP' THEN
+      v_deduct_amount := LEAST(v_remaining_payout_amount, ROUND(v_debt.commission_balance / 50.0, 2));
+      
+      IF v_deduct_amount > 0 THEN
+        v_remaining_payout_amount := v_remaining_payout_amount - v_deduct_amount;
+        v_total_deducted := v_total_deducted + v_deduct_amount;
+        
+        -- Record settlement in EGP (usd * 50)
+        INSERT INTO commission_settlements (
+          debt_id, organizer_id, amount, method,
+          reference, verified_at, notes
+        ) VALUES (
+          v_debt.id, v_org.id, ROUND(v_deduct_amount * 50.0, 2), 'stripe_deduction',
+          'auto_payout_deduction_' || v_payout_id::text, now(),
+          'Auto-deducted from Stripe payout ' || v_payout_id::text || ' ($' || v_deduct_amount || ' converted to EGP)'
+        );
+
+        -- Update debt record
+        UPDATE commission_debt
+        SET commission_paid    = commission_paid + ROUND(v_deduct_amount * 50.0, 2),
+            commission_balance = commission_balance - ROUND(v_deduct_amount * 50.0, 2),
+            last_settled_at    = now(),
+            settlement_method  = 'stripe_deduction',
+            settlement_reference = 'auto_payout_deduction_' || v_payout_id::text,
+            scanner_locked     = CASE WHEN commission_balance - ROUND(v_deduct_amount * 50.0, 2) <= 0 THEN false ELSE scanner_locked END,
+            status             = CASE WHEN commission_balance - ROUND(v_deduct_amount * 50.0, 2) <= 0 THEN 'settled' ELSE status END,
+            updated_at         = now()
+        WHERE id = v_debt.id;
+      END IF;
+    ELSE
+      -- Payout currency matches debt currency (EGP to EGP or standard 1:1)
+      v_deduct_amount := LEAST(v_remaining_payout_amount, v_debt.commission_balance);
+      
+      IF v_deduct_amount > 0 THEN
+        v_remaining_payout_amount := v_remaining_payout_amount - v_deduct_amount;
+        v_total_deducted := v_total_deducted + v_deduct_amount;
+        
+        -- Record settlement
+        INSERT INTO commission_settlements (
+          debt_id, organizer_id, amount, method,
+          reference, verified_at, notes
+        ) VALUES (
+          v_debt.id, v_org.id, v_deduct_amount, 'stripe_deduction',
+          'auto_payout_deduction_' || v_payout_id::text, now(),
+          'Auto-deducted from Stripe payout ' || v_payout_id::text
+        );
+
+        -- Update debt record
+        UPDATE commission_debt
+        SET commission_paid    = commission_paid + v_deduct_amount,
+            commission_balance = commission_balance - v_deduct_amount,
+            last_settled_at    = now(),
+            settlement_method  = 'stripe_deduction',
+            settlement_reference = 'auto_payout_deduction_' || v_payout_id::text,
+            scanner_locked     = CASE WHEN commission_balance - v_deduct_amount <= 0 THEN false ELSE scanner_locked END,
+            status             = CASE WHEN commission_balance - v_deduct_amount <= 0 THEN 'settled' ELSE status END,
+            updated_at         = now()
+        WHERE id = v_debt.id;
+      END IF;
+    END IF;
+  END LOOP;
+
   -- ══ CREATE PAYOUT REQUEST ══
   INSERT INTO payouts (
-    organizer_id, gross_amount, platform_fees, tax_collected,
+    id, organizer_id, gross_amount, platform_fees, tax_collected,
     net_amount, currency, payout_method, payout_destination,
     status, requested_at
   ) VALUES (
-    v_org.id, p_amount, 0, 0,
-    p_amount, v_currency, v_org.payout_method, v_payout_dest,
+    v_payout_id, v_org.id, p_amount, v_total_deducted, 0,
+    v_remaining_payout_amount, v_currency, v_org.payout_method, v_payout_dest,
     'pending', now()
-  ) RETURNING id INTO v_payout_id;
+  );
 
   RETURN jsonb_build_object(
     'success', true, 'payout_id', v_payout_id,
