@@ -185,6 +185,7 @@
     .scanner-result.invalid { background: rgba(130, 20, 20, 0.97); }
     .scanner-result.duplicate { background: rgba(130, 90, 10, 0.97); }
     .scanner-result.reentry { background: rgba(15, 50, 120, 0.97); }
+    .scanner-result.locked { background: rgba(100, 10, 10, 0.98); }
     @keyframes resultIn { from { opacity: 0; transform: scale(.95); } to { opacity: 1; transform: scale(1); } }
 
     .result-icon {
@@ -196,6 +197,11 @@
     .scanner-result.invalid .result-icon { background: rgba(239,68,68,.2); border: 2px solid #ef4444; color: #ef4444; }
     .scanner-result.duplicate .result-icon { background: rgba(234,179,8,.2); border: 2px solid #eab308; color: #eab308; }
     .scanner-result.reentry .result-icon { background: rgba(59,130,246,.2); border: 2px solid #3b82f6; color: #3b82f6; }
+    .scanner-result.locked .result-icon { background: rgba(239,68,68,.3); border: 2px solid #ef4444; color: #ef4444; }
+    .locked-debt-card { margin-top:20px; padding:16px 20px; background:rgba(0,0,0,.3); border-radius:14px; border:1px solid rgba(239,68,68,.3); max-width:340px; }
+    .locked-debt-card .locked-debt-label { font-size:.7rem; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.08em; margin-bottom:6px; }
+    .locked-debt-card .locked-debt-amount { font-size:1.6rem; font-weight:800; color:#fff; font-family:var(--font-serif); }
+    .locked-debt-card .locked-debt-info { font-size:.8rem; color:rgba(255,255,255,.6); margin-top:10px; line-height:1.5; }
 
     /* Phase 5: Entry type badge */
     .result-entry-badge {
@@ -412,6 +418,12 @@
             if (result.section) histLabel += ` | ${result.section} R${result.row} S${result.seat}`;
             addToHistory('valid', histLabel, decodedText);
           }
+        } else if (result.locked) {
+          // ── KILL-SWITCH: Scanner locked due to unpaid commission ──
+          showResult('locked', '⛔ Scanner Locked', 'Unpaid commission debt', result);
+          playSound('error');
+          if (navigator.vibrate) navigator.vibrate([500, 200, 500, 200, 500]);
+          addToHistory('invalid', 'LOCKED — Unpaid commission', decodedText);
         } else {
           // Rejected
           const message = result.message || result.error || 'Ticket not recognized';
@@ -433,9 +445,26 @@
       const el = document.getElementById('scanner-result');
       el.className = `scanner-result ${type}`;
       document.getElementById('result-icon').textContent =
-        type === 'valid' ? '✓' : type === 'reentry' ? '↻' : type === 'duplicate' ? '⚠' : '✕';
+        type === 'valid' ? '✓' : type === 'reentry' ? '↻' : type === 'duplicate' ? '⚠' : type === 'locked' ? '🔒' : '✕';
       document.getElementById('result-title').textContent = title;
       document.getElementById('result-detail').textContent = detail;
+
+      // ── Kill-switch lock screen ──
+      const existingDebtCard = el.querySelector('.locked-debt-card');
+      if (existingDebtCard) existingDebtCard.remove();
+      if (type === 'locked' && resultData) {
+        const debtCard = document.createElement('div');
+        debtCard.className = 'locked-debt-card';
+        debtCard.innerHTML = `
+          <div class="locked-debt-label">Outstanding Commission</div>
+          <div class="locked-debt-amount">${resultData.balance || '—'} EGP</div>
+          <div class="locked-debt-info">
+            Ticket scanning is disabled because this event has unpaid platform commission.<br><br>
+            Please settle your commission debt via the Financial panel in your dashboard, or contact <strong>support@eventsli.com</strong>.
+          </div>
+        `;
+        el.querySelector('#result-detail').after(debtCard);
+      }
 
       // Phase 5: Entry type badge
       const badge = document.getElementById('result-entry-badge');

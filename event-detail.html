@@ -306,6 +306,13 @@
                 <span style="color:var(--text-muted);font-size:0.9rem;">Total</span>
                 <span id="total-price" style="font-size:1.3rem;font-weight:700;">$0</span>
               </div>
+              <!-- Payment Method Selector (shown for events with manual transfer methods) -->
+              <div id="payment-method-selector" style="display:none;margin-bottom:14px;">
+                <label style="font-size:0.78rem;font-weight:600;color:var(--text-muted);margin-bottom:6px;display:block;">Payment Method</label>
+                <select class="fi" id="payment-method-select" style="width:100%;font-size:0.88rem;">
+                  <option value="stripe">💳 Credit/Debit Card (Stripe)</option>
+                </select>
+              </div>
               <button class="btn btn-primary btn-full btn-lg" id="checkout-btn" disabled>
                 Reserve & Pay
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
@@ -313,7 +320,7 @@
               <button class="btn btn-outline btn-full" id="guest-checkout-btn" disabled style="margin-top:10px;font-size:0.88rem;">
                 🎫 Buy as Guest — No Account Needed
               </button>
-              <p style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
+              <p id="payment-security-note" style="text-align:center;margin-top:12px;font-size:0.75rem;color:var(--text-muted);">
                 🔒 Secure checkout powered by Stripe
               </p>
             </div>
@@ -572,6 +579,7 @@
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML, formatCurrency } from './src/lib/utils.js';
     import { setSafeHTML } from './src/lib/dom.js';
+    import { showManualCheckoutModal } from './src/lib/manual-checkout.js';
 
     let eventData = null;
     let selectedTier = null;
@@ -1014,6 +1022,49 @@
         }
       } else {
         renderTiers(event.ticket_tiers || []);
+
+        // ── HYBRID PAYMENT: Show payment method selector if manual methods available ──
+        const acceptedMethods = event.accepted_payment_methods || ['stripe'];
+        const hasManual = acceptedMethods.some(m => m !== 'stripe');
+        if (hasManual) {
+          const selector = document.getElementById('payment-method-selector');
+          const select = document.getElementById('payment-method-select');
+          const secNote = document.getElementById('payment-security-note');
+          if (selector && select) {
+            selector.style.display = 'block';
+            // Add manual payment options
+            const methodLabels = {
+              vodafone_cash: '📱 Vodafone Cash',
+              instapay: '🏦 InstaPay',
+              bank_transfer: '🏧 Bank Transfer',
+              fawry: '💳 Fawry'
+            };
+            // Only show Stripe option if it's in the accepted list
+            if (!acceptedMethods.includes('stripe')) {
+              select.innerHTML = '';
+            }
+            acceptedMethods.filter(m => m !== 'stripe').forEach(method => {
+              const opt = document.createElement('option');
+              opt.value = method;
+              opt.textContent = methodLabels[method] || method;
+              select.appendChild(opt);
+            });
+            // Update checkout button label + security note on method change
+            select.addEventListener('change', () => {
+              const checkoutBtn = document.getElementById('checkout-btn');
+              const guestBtn = document.getElementById('guest-checkout-btn');
+              if (select.value === 'stripe') {
+                checkoutBtn.innerHTML = 'Reserve & Pay <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+                if (guestBtn) guestBtn.style.display = '';
+                if (secNote) secNote.textContent = '🔒 Secure checkout powered by Stripe';
+              } else {
+                checkoutBtn.innerHTML = '📱 Pay via ' + (methodLabels[select.value] || select.value).replace(/^.+\s/, '') + ' <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+                if (guestBtn) guestBtn.style.display = 'none';
+                if (secNote) secNote.textContent = '📱 Manual transfer — pay directly to the organizer';
+              }
+            });
+          }
+        }
       }
 
       // ── Seating Chart: init if venue map exists ──
@@ -1438,7 +1489,31 @@
 
     // ── Authenticated Checkout ──
     document.getElementById('checkout-btn').addEventListener('click', async () => {
-      // Check auth + OTP before allowing checkout
+      // ── HYBRID PAYMENT: Route based on selected payment method ──
+      const payMethodSelect = document.getElementById('payment-method-select');
+      const selectedMethod = payMethodSelect?.value || 'stripe';
+
+      if (selectedMethod !== 'stripe') {
+        // Manual transfer checkout
+        const selectedItems = getSelectedItems();
+        if (selectedItems.length === 0) return;
+        if (selectedItems.length > 1) {
+          alert('Please select tickets from one tier at a time for manual transfer.');
+          return;
+        }
+        const firstItem = selectedItems[0];
+        showManualCheckoutModal({
+          eventId: eventData.id,
+          tierId: firstItem.tierId,
+          quantity: firstItem.qty,
+          paymentMethod: selectedMethod,
+          promoCode: typeof appliedPromo !== 'undefined' && appliedPromo?.code || null,
+          eventTitle: eventData.title,
+        });
+        return;
+      }
+
+      // Check auth + OTP before allowing Stripe checkout
       if (!authState?.user) {
         window.location.href = `login.html?redirect=${encodeURIComponent(window.location.href)}`;
         return;

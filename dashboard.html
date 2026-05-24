@@ -116,6 +116,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
         Gate Team
       </button>
+      <button class="ev-nav-item" data-panel="manual-orders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg>
+        Transfers
+      </button>
       <div style="height:1px;background:rgba(255,255,255,.12);margin:10px 14px"></div>
       <button class="ev-nav-item" data-panel="profile">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -388,8 +392,17 @@
 
     <!-- ════ PANEL: FINANCIAL ════ -->
     <div class="ev-panel" id="panel-financial">
+      <!-- Commission Debt Card (injected by commission-debt.js) -->
+      <div id="commission-debt-container" style="margin-bottom:20px"></div>
       <div id="financial-dashboard-body">
         <div class="ev-loading"><div class="ev-spinner"></div>Loading financial data…</div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: MANUAL ORDERS (PENDING TRANSFERS) ════ -->
+    <div class="ev-panel" id="panel-manual-orders">
+      <div id="manual-orders-body">
+        <div class="ev-loading"><div class="ev-spinner"></div>Loading transfer orders…</div>
       </div>
     </div>
 

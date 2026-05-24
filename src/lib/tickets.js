@@ -73,11 +73,23 @@ export async function verifyTicket(qrPayload) {
 
   const result = await response.json();
   
-  if (!response.ok) {
-    return { valid: false, error: result.error || 'Verification failed', ticket: result.ticket || null };
+  // ── KILL-SWITCH: Commission debt scanner lockout (HTTP 423) ──
+  if (response.status === 423 && result.locked) {
+    return {
+      valid: false,
+      locked: true,
+      error: result.error || 'Scanner Locked: Unpaid Commission',
+      balance: result.balance,
+      lock_reason: result.lock_reason,
+      reason: result.reason,
+    };
   }
 
-  return { valid: true, ticket: result.ticket };
+  if (!response.ok) {
+    return { valid: false, error: result.error || 'Verification failed', ticket: result.ticket || null, ...result };
+  }
+
+  return { valid: true, ...result };
 }
 
 /**

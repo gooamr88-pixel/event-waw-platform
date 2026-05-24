@@ -163,6 +163,38 @@ serve(async (req) => {
       }
     }
 
+    // ═══════════════════════════════════════════════════════
+    // COMMISSION DEBT KILL-SWITCH
+    // Server-side enforcement — CANNOT be bypassed by organizer.
+    // Uses event_id from HMAC-verified QR payload (qr_event_id),
+    // not from any user-supplied input.
+    // If the organizer has unpaid commission debt for this event
+    // and the scanner is locked, reject ALL scans with HTTP 423.
+    // ═══════════════════════════════════════════════════════
+    if (qr_event_id) {
+      const { data: debtCheck } = await supabase
+        .from('commission_debt')
+        .select('scanner_locked, commission_balance, lock_reason')
+        .eq('event_id', qr_event_id)
+        .eq('scanner_locked', true)
+        .maybeSingle();
+
+      if (debtCheck?.scanner_locked) {
+        console.warn(`⛔ KILL-SWITCH: Scanner locked for event ${qr_event_id} — unpaid commission: ${debtCheck.commission_balance}`);
+        return errorResponse(
+          423,
+          `Scanner Locked: Unpaid Commission\n\nOutstanding balance: ${debtCheck.commission_balance}\n\nPlease settle your commission debt with Eventsli to unlock ticket scanning.\n\nContact: support@eventsli.com`,
+          {
+            locked: true,
+            reason: 'unpaid_commission',
+            balance: debtCheck.commission_balance,
+            lock_reason: debtCheck.lock_reason,
+          },
+          req
+        );
+      }
+    }
+
     // ── Execute scan via RPC (atomic, concurrency-safe) ──
     const { data: scanResult, error: scanError } = await supabase
       .rpc('scan_ticket', {

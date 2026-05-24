@@ -25,6 +25,8 @@ import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { onDashboardAction } from '../src/lib/dashboard-bus.js';
 import { setupGateTeamPanel } from '../src/lib/dashboard-gate-team.js';
+import { renderManualOrdersPanel } from '../src/lib/dashboard-manual-orders.js';
+import { renderCommissionDebtCard } from '../src/lib/commission-debt.js';
 
 // H-5: Guard to prevent duplicate listener attachment on setupTicketsPanel
 let _ticketsPanelInitialized = false;
@@ -55,6 +57,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupProfilePanel();
   setupPromoForm();
   setupGateTeamPanel();
+  setupManualOrdersPanel();    // HYBRID PAYMENT: Pending Transfers panel
   loadPromoCodes();            // Initial load for promos
 
   setupGlobalKeyboardManager(); // H-3: Escape key handler
@@ -394,6 +397,35 @@ function injectAdminBridge(auth) {
     👑 Admin Panel
   `;
   nav.appendChild(link);
+}
+
+/* ==================================
+   MANUAL ORDERS PANEL — Pending Transfers
+   Wires the sidebar nav item + panel container for
+   manual transfer order management.
+   ================================== */
+function setupManualOrdersPanel() {
+  // Wire sidebar nav if it exists
+  const navItem = document.querySelector('[data-panel="manual-orders"]');
+  if (navItem) {
+    navItem.addEventListener('click', () => {
+      const container = document.getElementById('manual-orders-body');
+      if (container) renderManualOrdersPanel(container);
+    });
+  }
+
+  // Load commission debt card when financial panel is opened
+  const finNavItem = document.querySelector('[data-panel="financial"]');
+  if (finNavItem) {
+    const origClick = finNavItem.onclick;
+    finNavItem.addEventListener('click', () => {
+      // Render commission debt card after a short delay (financial panel loads first)
+      setTimeout(() => {
+        const debtContainer = document.getElementById('commission-debt-container');
+        if (debtContainer) renderCommissionDebtCard(debtContainer);
+      }, 500);
+    });
+  }
 }
 
 /* Google Maps variables and constants moved to src/lib/dashboard-modals.js */

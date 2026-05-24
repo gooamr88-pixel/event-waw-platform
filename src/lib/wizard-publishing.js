@@ -284,32 +284,33 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (!user) return;
 
       // ════════════════════════════════════════════════
-      // BRD RULE 4: STRIPE CONNECT PUBLISHING GATE
-      // Block publishing ticketed events if organizer hasn't
-      // completed Stripe Connect onboarding. Without this,
-      // payments go to the platform instead of the organizer.
+      // HYBRID PAYMENT: SOFT STRIPE GATE + DYNAMIC PAYMENT METHODS
+      // No longer blocks publishing. Instead, dynamically determines
+      // which payment methods are available based on Stripe status.
+      // Manual transfer methods (Vodafone Cash, InstaPay, etc.) are
+      // always available for paid events in supported regions.
       // ════════════════════════════════════════════════
+      let acceptedPaymentMethods = ['vodafone_cash', 'instapay', 'bank_transfer', 'fawry'];
       if (!isDraft && listingType !== 'display_only') {
         try {
           const { data: orgProfile } = await supabase
             .from('organizers')
-            .select('stripe_account_id, stripe_onboarding_complete')
+            .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
             .eq('user_id', user.id)
             .maybeSingle();
 
-          if (!orgProfile?.stripe_account_id || !orgProfile?.stripe_onboarding_complete) {
-            // Check if any ticket has price > 0 (free events don't need Stripe)
+          if (orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete) {
+            // Stripe is connected — enable both Stripe and manual methods
+            acceptedPaymentMethods = ['stripe', ...acceptedPaymentMethods];
+          } else {
+            // Stripe NOT connected — inform organizer (soft gate, non-blocking)
             const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
             if (hasPaidTickets) {
-              showToast('⚠️ You must complete Stripe Connect setup before publishing paid events. Go to Settings → Payment Setup.', 'error');
-              if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : 'Publish Event'; }
-              isPublishing = false;
-              return;
+              showToast('ℹ️ Stripe is not set up — buyers will only see Manual Transfer options (Vodafone Cash, InstaPay, etc.). You can connect Stripe later in Settings.', 'info');
             }
           }
         } catch (stripeCheckErr) {
-          console.warn('Stripe onboarding check failed (non-blocking):', stripeCheckErr);
-          // Don't block for query errors — the Edge Function has a server-side gate too
+          console.warn('Stripe/payment method check failed (non-blocking):', stripeCheckErr);
         }
       }
 
@@ -406,7 +407,9 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
           entry_requirements: document.getElementById('ce-policy-entry')?.value.trim() || null,
           parking_info: document.getElementById('ce-policy-parking')?.value.trim() || null,
           important_instructions: document.getElementById('ce-policy-instructions')?.value.trim() || null
-        }
+        },
+        // HYBRID PAYMENT: Set accepted payment methods based on organizer's Stripe status
+        accepted_payment_methods: (listingType !== 'display_only') ? acceptedPaymentMethods : null
       };
 
       let event;
