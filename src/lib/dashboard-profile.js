@@ -16,6 +16,12 @@ export function setupProfilePanel() {
     });
   }
 
+  // Manual payment methods: add row button
+  document.getElementById('add-payment-method-btn')?.addEventListener('click', () => {
+    const list = document.getElementById('manual-payment-methods-list');
+    if (list) addPaymentMethodRow(list);
+  });
+
   document.getElementById('profile-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = e.target.querySelector('[type="submit"]');
@@ -67,6 +73,8 @@ export function setupProfilePanel() {
           tax_rate: taxRate,
           tax_label: taxLabel,
           tax_inclusive: taxInclusive,
+          manual_payment_methods: getManualPaymentMethods(),
+          manual_transfer_instructions: document.getElementById('prof-transfer-instructions')?.value?.trim() || '',
         })
         .eq('user_id', user.id);
 
@@ -116,7 +124,7 @@ async function loadProfileData() {
     // Load tax config from organizers table
     const { data: org } = await supabase
       .from('organizers')
-      .select('tax_enabled, tax_rate, tax_label, tax_inclusive')
+      .select('tax_enabled, tax_rate, tax_label, tax_inclusive, manual_payment_methods, manual_transfer_instructions')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -137,6 +145,17 @@ async function loadProfileData() {
       }
       const inclEl = document.getElementById('prof-tax-inclusive');
       if (inclEl) inclEl.checked = org.tax_inclusive || false;
+
+      // Load manual payment methods
+      const pmList = document.getElementById('manual-payment-methods-list');
+      if (pmList && Array.isArray(org.manual_payment_methods)) {
+        pmList.innerHTML = '';
+        org.manual_payment_methods.forEach(pm => {
+          addPaymentMethodRow(pmList, pm.method || '', pm.destination || '');
+        });
+      }
+      const instrEl = document.getElementById('prof-transfer-instructions');
+      if (instrEl && org.manual_transfer_instructions) instrEl.value = org.manual_transfer_instructions;
     }
   } catch (err) {
     // H-5: Proper error logging instead of silent swallow
@@ -182,4 +201,63 @@ export function setupUserDropdown() {
     e.preventDefault();
     switchToPanel('payout');
   });
+}
+
+// ── Manual Payment Method Helpers ──
+
+function addPaymentMethodRow(container, method = '', destination = '') {
+  const row = document.createElement('div');
+  row.className = 'manual-pm-row';
+  row.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:8px';
+
+  const methods = [
+    ['vodafone_cash', '📱 Vodafone Cash'],
+    ['instapay', '🏦 InstaPay'],
+    ['bank_transfer', '🏧 Bank Transfer'],
+    ['fawry', '💳 Fawry'],
+    ['other', 'Other'],
+  ];
+
+  const select = document.createElement('select');
+  select.className = 'ev-form-input pm-method';
+  select.style.cssText = 'flex:0 0 160px;font-size:.85rem';
+  methods.forEach(([val, label]) => {
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = label;
+    if (val === method) opt.selected = true;
+    select.appendChild(opt);
+  });
+
+  const input = document.createElement('input');
+  input.className = 'ev-form-input pm-destination';
+  input.placeholder = 'Wallet number or account';
+  input.style.cssText = 'flex:1;font-size:.85rem';
+  input.value = destination;
+
+  const removeBtn = document.createElement('button');
+  removeBtn.type = 'button';
+  removeBtn.className = 'ev-btn ev-btn-outline';
+  removeBtn.style.cssText = 'padding:6px 10px;font-size:.82rem;color:#ef4444;border-color:#ef4444';
+  removeBtn.textContent = '✕';
+  removeBtn.addEventListener('click', () => row.remove());
+
+  row.appendChild(select);
+  row.appendChild(input);
+  row.appendChild(removeBtn);
+  container.appendChild(row);
+}
+
+function getManualPaymentMethods() {
+  const rows = document.querySelectorAll('.manual-pm-row');
+  const methods = [];
+  const labels = { vodafone_cash: 'Vodafone Cash', instapay: 'InstaPay', bank_transfer: 'Bank Transfer', fawry: 'Fawry', other: 'Other' };
+  rows.forEach(row => {
+    const method = row.querySelector('.pm-method')?.value;
+    const destination = row.querySelector('.pm-destination')?.value?.trim();
+    if (method && destination) {
+      methods.push({ method, destination, label: labels[method] || method });
+    }
+  });
+  return methods;
 }

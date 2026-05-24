@@ -96,6 +96,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
         Payouts
       </button>
+      <button class="ev-nav-item" data-panel="commission">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/><path d="M6 14h2"/><path d="M12 14h6"/></svg>
+        Commission Debt
+        <span class="ev-nav-badge" id="commission-debt-count" style="display:none">0</span>
+      </button>
       <div style="height:1px;background:rgba(255,255,255,.12);margin:10px 14px"></div>
       <a class="ev-nav-item" href="dashboard.html" style="text-decoration:none">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
@@ -329,6 +334,19 @@
       </div>
       <div id="admin-payouts-body">
         <div class="ev-loading"><div class="ev-spinner"></div>Loading payouts…</div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: COMMISSION DEBT ════ -->
+    <div class="ev-panel" id="panel-commission">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:20px;">
+        <div>
+          <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">💰 Commission Debt Management</h2>
+          <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">View outstanding commission balances and record organizer settlements.</p>
+        </div>
+      </div>
+      <div id="admin-commission-body">
+        <div class="ev-loading"><div class="ev-spinner"></div>Loading commission data…</div>
       </div>
     </div>
 

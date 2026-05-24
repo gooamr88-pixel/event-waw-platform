@@ -589,6 +589,23 @@
               </div>
             </div>
           </div>
+          <!-- Manual Payment Methods -->
+          <div class="ev-card" style="margin-top:20px">
+            <div class="ev-card-header"><span class="ev-card-title">📱 Manual Payment Methods</span></div>
+            <div style="padding:20px">
+              <p style="font-size:.82rem;color:var(--ev-text-muted);margin-bottom:16px;line-height:1.5">
+                Configure payment methods for manual transfers (Vodafone Cash, InstaPay, etc.). Buyers will see these destinations when paying via mobile wallet or bank transfer.
+              </p>
+              <div id="manual-payment-methods-list"></div>
+              <button type="button" class="ev-btn ev-btn-outline" id="add-payment-method-btn" style="margin-top:12px;font-size:.82rem;padding:8px 16px">
+                + Add Payment Method
+              </button>
+              <div class="ev-form-group" style="margin-top:20px">
+                <label for="prof-transfer-instructions">Transfer Instructions (shown to buyers)</label>
+                <textarea class="ev-form-input" id="prof-transfer-instructions" rows="3" placeholder="e.g. Please include your name in the transfer note. Allow 15 minutes for confirmation." style="resize:vertical"></textarea>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

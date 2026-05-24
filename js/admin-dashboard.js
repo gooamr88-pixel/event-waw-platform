@@ -23,6 +23,7 @@ import { loadAllEvents } from './admin-events-all.js';
 import { loadCMSPanel, setupCMSEvents } from './admin-cms-controller.js';
 import { renderEmailTemplatesEditor } from '../src/lib/admin-email-templates.js';
 import { renderAdminPayouts } from './admin-payouts.js';
+import { renderAdminCommissionPanel } from '../src/lib/admin-commission.js';
 
 let currentPanel = 'dashboard';
 let adminRole = 'moderator';
@@ -130,6 +131,7 @@ async function loadPanelData(panelId, force = false) {
     case 'cms':        await loadCMSPanel(); break;
     case 'email-templates': await renderEmailTemplatesEditor(document.getElementById('email-templates-body')); break;
     case 'payouts': await renderAdminPayouts(document.getElementById('admin-payouts-body')); break;
+    case 'commission': await renderAdminCommissionPanel(document.getElementById('admin-commission-body')); break;
   }
 }
 
