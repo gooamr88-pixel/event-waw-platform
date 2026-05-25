@@ -205,7 +205,7 @@ serve(async (req) => {
             id, name, price, currency,
             events (
               id, title, venue, city, country, date, end_date,
-              cover_image, logo, organizer_name, organizer_email, timezone
+              cover_image, organizer_name, organizer_email, timezone
             )
           ),
           orders (
@@ -215,7 +215,7 @@ serve(async (req) => {
         .eq('id', ticket_id)
         .single();
 
-      if (error || !data) return errorResponse(404, 'Ticket not found');
+      if (error || !data) return errorResponse(404, 'Ticket not found', {}, req);
       tickets = [data];
     } else {
       // Fetch all tickets for an order
@@ -228,7 +228,7 @@ serve(async (req) => {
             id, name, price, currency,
             events (
               id, title, venue, city, country, date, end_date,
-              cover_image, logo, organizer_name, organizer_email, timezone
+              cover_image, organizer_name, organizer_email, timezone
             )
           ),
           orders (
@@ -239,7 +239,7 @@ serve(async (req) => {
         .eq('status', 'valid');
 
       if (error || !data || data.length === 0) {
-        return errorResponse(404, 'No valid tickets found for this order');
+        return errorResponse(404, 'No valid tickets found for this order', {}, req);
       }
       tickets = data;
     }
@@ -586,7 +586,7 @@ serve(async (req) => {
           .eq('id', failBody.order_id);
       }
     } catch (_) { /* best effort */ }
-    return errorResponse(500, err.message || 'Failed to generate PDF');
+    return errorResponse(500, err.message || 'Failed to generate PDF', {}, req);
   }
 });
 
