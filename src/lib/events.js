@@ -2,7 +2,7 @@
    EVENTSLI - Events API
    =================================== */
 
-import { supabase, SUPABASE_FUNCTIONS_URL } from './supabase.js';
+import { supabase, SUPABASE_FUNCTIONS_URL, supabaseAnonKey } from './supabase.js';
 
 /**
  * Fetch all published AND admin-approved events with their ticket tiers.
@@ -117,7 +117,7 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // No Authorization header - guest checkout
+        'Authorization': `Bearer ${supabaseAnonKey}`,
       },
       body: JSON.stringify({
         tier_id: tierId,
@@ -242,6 +242,7 @@ export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, gu
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
       },
       body: JSON.stringify({
         tier_id: tierId,
