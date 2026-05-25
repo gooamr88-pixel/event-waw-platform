@@ -1065,6 +1065,8 @@
                 if (secNote) secNote.textContent = '📱 Manual transfer — pay directly to the organizer';
               }
             });
+            // Force state synchronization on page load
+            select.dispatchEvent(new Event('change'));
           }
         }
       }
