@@ -25,7 +25,7 @@ import { setupTicketsPanel } from '../src/lib/dashboard-tickets.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { onDashboardAction } from '../src/lib/dashboard-bus.js';
 import { setupGateTeamPanel } from '../src/lib/dashboard-gate-team.js';
-import { renderManualOrdersPanel } from '../src/lib/dashboard-manual-orders.js';
+import { renderManualOrdersPanel } from '../src/lib/dashboard-manual-orders.js?v=20260525_3';
 import { renderCommissionDebtCard } from '../src/lib/commission-debt.js';
 
 // H-5: Guard to prevent duplicate listener attachment on setupTicketsPanel
