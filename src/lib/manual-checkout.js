@@ -223,6 +223,36 @@ function showTransferInstructions(modal, data) {
   });
 }
 
+function showToast(message) {
+  let container = document.getElementById('mc-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'mc-toast-container';
+    Object.assign(container.style, {
+      position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+      zIndex: '999999', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'none'
+    });
+    document.body.appendChild(container);
+  }
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  Object.assign(toast.style, {
+    background: '#10b981', color: '#fff', padding: '10px 20px', borderRadius: '10px',
+    fontSize: '0.85rem', fontWeight: '600', boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+    opacity: '0', transform: 'translateY(10px)', transition: 'all 0.3s ease', textAlign: 'center'
+  });
+  container.appendChild(toast);
+  requestAnimationFrame(() => {
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateY(0)';
+  });
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(-10px)';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
 function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = String(str); return d.innerHTML; }
 
 function injectStyles() {
