@@ -48,7 +48,7 @@ BEGIN
       'template_name', p_template_name,
       'event_id', p_event_id,
       'variables', p_variables
-    )::text,
+    ),
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || v_key

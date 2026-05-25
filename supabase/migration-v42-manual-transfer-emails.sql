@@ -191,7 +191,7 @@ BEGIN
       'event_id', p_event_id,
       'variables', p_variables,
       'context', p_context
-    )::text,
+    ),
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'Authorization', 'Bearer ' || v_key
