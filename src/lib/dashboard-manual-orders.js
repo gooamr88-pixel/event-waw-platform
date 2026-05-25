@@ -120,7 +120,7 @@ function renderOrderCard(order) {
         <span class="mto-ref">${esc(order.transfer_reference || '—')}</span>
       </div>
       <div class="mto-card-body">
-        <div class="mto-buyer"><strong>${esc(order.buyer_name)}</strong> · ${esc(order.buyer_phone)}</div>
+        <div class="mto-buyer"><strong>${esc(order.buyer_name)}</strong> · ${esc(order.buyer_phone)} · <span class="mto-email-text" style="color:var(--ev-text-sec);font-weight:400;font-size:0.85rem;">${esc(order.buyer_email)}</span></div>
         <div class="mto-detail">${esc(order.events?.title || 'Unknown Event')} · ${order.quantity}x ${esc(order.ticket_tiers?.name || 'Ticket')}</div>
         <div class="mto-amount">${fmt(order.total_amount)} via ${methodLabels[order.payment_method] || order.payment_method}</div>
         <div class="mto-meta">

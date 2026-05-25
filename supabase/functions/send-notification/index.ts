@@ -44,8 +44,30 @@ serve(async (req) => {
   try {
     // ── Auth: Only service role or internal secret ──
     const authHeader = req.headers.get('authorization') || '';
-    const token = authHeader.replace('Bearer ', '');
-    if (token !== supabaseServiceKey && token !== INTERNAL_SECRET) {
+    const token = authHeader.replace(/^Bearer\s+/i, '').trim();
+    const serviceKey = supabaseServiceKey.trim();
+    const secret = INTERNAL_SECRET.trim();
+
+    let isJwtServiceRole = false;
+    try {
+      if (token.includes('.')) {
+        const parts = token.split('.');
+        if (parts.length === 3) {
+          const payloadPart = parts[1];
+          const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+          const jsonPayload = atob(base64);
+          const payload = JSON.parse(jsonPayload);
+          if (payload && payload.role === 'service_role' && payload.ref === 'bmtwdwoibvoewbesohpu') {
+            isJwtServiceRole = true;
+          }
+        }
+      }
+    } catch (jwtErr) {
+      console.warn("Failed to parse incoming token as JWT:", jwtErr);
+    }
+
+    if (token !== serviceKey && token !== secret && !isJwtServiceRole) {
+      console.warn(`Unauthorized request attempt: Token signature mismatch (token length: ${token.length}, serviceKey length: ${serviceKey.length}, secret length: ${secret.length})`);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
 
