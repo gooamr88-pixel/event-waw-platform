@@ -19,8 +19,11 @@ export async function renderCommissionDebtCard(container) {
     if (!data || !data.has_debt) return; // No debt — render nothing
 
     injectStyles();
+    const events = data.events || [];
+    const activeCurrency = events[0]?.event_currency || 'EGP';
+
     const fmt = (v) => new Intl.NumberFormat('en-US', {
-      style: 'currency', currency: 'EGP', minimumFractionDigits: 2
+      style: 'currency', currency: activeCurrency, minimumFractionDigits: 2
     }).format(v || 0);
 
     const statusConfig = {
@@ -63,19 +66,22 @@ export async function renderCommissionDebtCard(container) {
     `;
 
     // Per-event breakdown
-    const events = data.events || [];
     if (events.length > 0) {
       html += `<div class="ev-table-wrap"><table class="ev-table"><thead><tr>
         <th>Event</th><th>Manual Sales</th><th>Commission</th><th>Paid</th><th>Balance</th><th>Status</th><th></th>
       </tr></thead><tbody>`;
       events.forEach(ev => {
         const sc = statusConfig[ev.status] || statusConfig.accruing;
+        const fmtRow = (v) => new Intl.NumberFormat('en-US', {
+          style: 'currency', currency: ev.event_currency || 'EGP', minimumFractionDigits: 2
+        }).format(v || 0);
+
         html += `<tr>
           <td style="font-weight:600;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ev.event_title)}</td>
-          <td>${fmt(ev.total_manual_sales)}</td>
-          <td>${fmt(ev.commission_owed)}</td>
-          <td>${fmt(ev.commission_paid)}</td>
-          <td style="font-weight:700">${fmt(ev.commission_balance)}</td>
+          <td>${fmtRow(ev.total_manual_sales)}</td>
+          <td>${fmtRow(ev.commission_owed)}</td>
+          <td>${fmtRow(ev.commission_paid)}</td>
+          <td style="font-weight:700">${fmtRow(ev.commission_balance)}</td>
           <td><span class="cd-badge ${sc.cls}">${sc.label}</span></td>
           <td>${ev.scanner_locked ? '🔒' : ev.commission_balance > 0 ? '🔓' : '✅'}</td>
         </tr>`;

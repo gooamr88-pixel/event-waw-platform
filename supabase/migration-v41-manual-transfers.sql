@@ -1065,6 +1065,7 @@ BEGIN
       cd.event_id,
       e.title AS event_title,
       e.date AS event_date,
+      e.currency AS event_currency,
       cd.total_manual_sales,
       cd.commission_rate,
       cd.commission_owed,

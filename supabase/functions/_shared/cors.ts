@@ -53,7 +53,7 @@ function isAllowedOrigin(origin: string): boolean {
 /**
  * Get CORS headers for a specific request, matching the Origin dynamically.
  */
-function getCorsHeaders(req?: Request): Record<string, string> {
+export function getCorsHeaders(req?: Request): Record<string, string> {
   const origin = req?.headers?.get('Origin') || '';
   // For null/empty origin, return primary domain (never wildcard — prevents credential leaks)
   const allowOrigin = (!origin || origin === 'null')

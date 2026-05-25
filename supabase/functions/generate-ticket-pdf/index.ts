@@ -15,7 +15,7 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { PDFDocument, rgb, StandardFonts } from 'https://esm.sh/pdf-lib@1.17.1?target=deno';
-import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
+import { handleCORS, errorResponse, jsonResponse, getCorsHeaders } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
 import qrcode from 'https://esm.sh/qrcode-generator@1.4.4?target=deno';
@@ -182,11 +182,11 @@ serve(async (req) => {
       const { data: rpcResult, error: rpcError } = await adminClient
         .rpc('verify_guest_token', { p_token_hash: tokenHash });
 
-      if (rpcError || !rpcResult || rpcResult.length === 0 || !rpcResult[0]?.order_id) {
+      if (rpcError || !rpcResult || !rpcResult.is_valid || !rpcResult.order_id) {
         return errorResponse(401, 'Invalid or expired guest token', {}, req);
       }
 
-      guestVerifiedOrderId = rpcResult[0].order_id;
+      guestVerifiedOrderId = rpcResult.order_id;
     } else {
       // C-4 FIX: Neither JWT nor guest_token — reject
       return errorResponse(401, 'Authentication required', {}, req);
@@ -560,6 +560,7 @@ serve(async (req) => {
 
     // Build response headers with proper CORS (no wildcard)
     const pdfHeaders = {
+      ...getCorsHeaders(req),
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename="${fileName}"`,
       'Content-Length': String(pdfBytes.length),
