@@ -42,7 +42,7 @@ BEGIN
   END IF;
 
   -- Fire async HTTP POST via pg_net
-  PERFORM extensions.http_post(
+  PERFORM net.http_post(
     url := v_url,
     body := jsonb_build_object(
       'template_name', p_template_name,
