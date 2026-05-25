@@ -580,11 +580,13 @@
     import { escapeHTML, formatCurrency } from './src/lib/utils.js';
     import { setSafeHTML } from './src/lib/dom.js';
     import { showManualCheckoutModal } from './src/lib/manual-checkout.js';
+    import { showAlertModal } from './src/lib/ui-modals.js';
 
     let eventData = null;
     let selectedTier = null;
     let quantities = {};
     let authState = null;
+    let isBreakdownLoading = false;
 
     window.openLightbox = function(src) {
       if(!src) return;
@@ -1076,12 +1078,10 @@
             onCheckout: async ({ tierId, seatIds, seats }) => {
               // Check if user is logged in
               if (authState?.user) {
-                // Authenticated seated checkout
-                const result = await createSeatedCheckout({ tierId, seatIds });
-                if (result.checkout_url) {
-                  startReservationTimer();
-                  window.location.href = result.checkout_url;
-                }
+                // Authenticated seated checkout - show confirm modal first
+                const tierInfo = eventData?.ticket_tiers?.find(t => t.id === tierId);
+                const totalPrice = Math.round(seats.reduce((s, seat) => s + Number(seat.tier_price), 0) * 100) / 100;
+                showConfirmSeatedModal({ tierId, seatIds, seats, tierInfo, totalPrice, profile: authState.profile || {}, user: authState.user });
               } else {
                 // Guest seated checkout — show guest modal with seat context
                 const tierInfo = eventData?.ticket_tiers?.find(t => t.id === tierId);
@@ -1445,12 +1445,14 @@
       // Instant local total (shown immediately)
       const localTotal = Math.round(Math.max(0, subtotal - discount) * 100) / 100;
       document.getElementById('total-price').textContent = `${localTotal.toLocaleString()} ${cur}`;
-      document.getElementById('checkout-btn').disabled = !hasSelection;
-      document.getElementById('guest-checkout-btn').disabled = !hasSelection;
 
       // ── BRD Fix: Fetch server-side breakdown (debounced) ──
       const breakdownContainer = document.getElementById('server-breakdown');
       if (hasSelection && activeTierId && activeQty > 0) {
+        isBreakdownLoading = true;
+        document.getElementById('checkout-btn').disabled = true;
+        document.getElementById('guest-checkout-btn').disabled = true;
+
         clearTimeout(breakdownDebounce);
         breakdownDebounce = setTimeout(async () => {
           try {
@@ -1467,11 +1469,18 @@
             console.warn('Server breakdown fetch failed, using local total:', err);
             cachedBreakdown = null;
             if (breakdownContainer) breakdownContainer.innerHTML = '';
+          } finally {
+            isBreakdownLoading = false;
+            document.getElementById('checkout-btn').disabled = !hasSelection;
+            document.getElementById('guest-checkout-btn').disabled = !hasSelection;
           }
         }, 400);
       } else {
         cachedBreakdown = null;
         if (breakdownContainer) breakdownContainer.innerHTML = '';
+        isBreakdownLoading = false;
+        document.getElementById('checkout-btn').disabled = !hasSelection;
+        document.getElementById('guest-checkout-btn').disabled = !hasSelection;
       }
     }
 
@@ -1498,7 +1507,7 @@
         const selectedItems = getSelectedItems();
         if (selectedItems.length === 0) return;
         if (selectedItems.length > 1) {
-          alert('Please select tickets from one tier at a time for manual transfer.');
+          showAlertModal({ title: 'Single Tier Only', message: 'Please select tickets from one tier at a time for manual transfer.' });
           return;
         }
         const firstItem = selectedItems[0];
@@ -1526,7 +1535,16 @@
       const selectedItems = getSelectedItems();
       if (selectedItems.length === 0) return;
 
-      const totalPrice = Math.round(selectedItems.reduce((sum, item) => sum + (item.tier.price * item.qty), 0) * 100) / 100;
+      const subtotal = Math.round(selectedItems.reduce((sum, item) => sum + (item.tier.price * item.qty), 0) * 100) / 100;
+      let discount = 0;
+      if (appliedPromo && subtotal > 0) {
+        if (appliedPromo.discount_type === 'fixed') {
+          discount = Math.min(appliedPromo.discount_value, subtotal);
+        } else {
+          discount = Math.round(subtotal * (appliedPromo.discount_value / 100) * 100) / 100;
+        }
+      }
+      const totalPrice = Math.round(Math.max(0, subtotal - discount) * 100) / 100;
       const totalQty = selectedItems.reduce((sum, item) => sum + item.qty, 0);
       const profile = authState.profile || {};
 
@@ -1545,7 +1563,16 @@
       const selectedItems = getSelectedItems();
       if (selectedItems.length === 0) return;
 
-      const totalPrice = Math.round(selectedItems.reduce((sum, item) => sum + (item.tier.price * item.qty), 0) * 100) / 100;
+      const subtotal = Math.round(selectedItems.reduce((sum, item) => sum + (item.tier.price * item.qty), 0) * 100) / 100;
+      let discount = 0;
+      if (appliedPromo && subtotal > 0) {
+        if (appliedPromo.discount_type === 'fixed') {
+          discount = Math.min(appliedPromo.discount_value, subtotal);
+        } else {
+          discount = Math.round(subtotal * (appliedPromo.discount_value / 100) * 100) / 100;
+        }
+      }
+      const totalPrice = Math.round(Math.max(0, subtotal - discount) * 100) / 100;
       const totalQty = selectedItems.reduce((sum, item) => sum + item.qty, 0);
 
       showGuestModal({
@@ -1647,6 +1674,13 @@
             display:flex;align-items:flex-start;gap:8px;
           }
           @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+          @media (max-width: 480px) {
+            .confirm-box { padding: 20px 16px; border-radius: 16px; }
+            .confirm-box h3 { font-size: 1.1rem; }
+            .confirm-section { padding: 12px; margin-top: 14px; }
+            .confirm-btns { flex-direction: column-reverse; gap: 8px; }
+            .confirm-btns .btn { width: 100%; }
+          }
         </style>
         <div class="confirm-box">
           <h3>Confirm Your <span style="color:var(--accent-primary);">Booking</span></h3>
@@ -1709,7 +1743,7 @@
         const name = document.getElementById('confirm-name').value.trim();
         const phone = document.getElementById('confirm-phone').value.trim();
 
-        if (!name) { alert('Please enter your full name.'); return; }
+        if (!name) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
 
         const payBtn = document.getElementById('confirm-pay');
         payBtn.disabled = true;
@@ -1725,7 +1759,7 @@
           // Process checkout — one tier per Stripe session.
           // If multiple tiers selected, warn the user.
           if (items.length > 1) {
-            alert('Please select tickets from one tier at a time. Multiple tiers require separate purchases.');
+            showAlertModal({ title: 'Single Tier Only', message: 'Please select tickets from one tier at a time. Multiple tiers require separate purchases.' });
             payBtn.disabled = false;
             payBtn.innerHTML = 'Confirm & Pay <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
             return;
@@ -1742,7 +1776,7 @@
             window.location.href = result.checkout_url;
           }
         } catch (err) {
-          alert(err.message || 'Failed to process. Please try again.');
+          showAlertModal({ title: 'Checkout Failed', message: err.message || 'Failed to process. Please try again.', buttonColor: '#dc2626' });
           payBtn.disabled = false;
           payBtn.innerHTML = 'Confirm & Pay <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
         }
@@ -1782,6 +1816,13 @@
             box-shadow:0 30px 80px rgba(0,0,0,.4);
             max-height:90vh;overflow-y:auto;
             animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;
+          }
+          @media (max-width: 480px) {
+            .guest-box { padding: 20px 16px; border-radius: 16px; }
+            .guest-box h3 { font-size: 1.1rem; }
+            .confirm-section { padding: 12px; margin-top: 14px; }
+            .guest-btns { flex-direction: column-reverse; gap: 8px; }
+            .guest-btns .btn { width: 100%; }
           }
         </style>
         <div class="guest-box">
@@ -1831,7 +1872,7 @@
             <span>Your data is encrypted and linked to your QR code. After purchase, you'll receive an email with a secure link to view your tickets. No account creation needed.</span>
           </div>
 
-          <div style="display:flex;gap:10px;margin-top:20px;">
+          <div class="guest-btns" style="display:flex;gap:10px;margin-top:20px;">
             <button class="btn btn-outline btn-lg" id="guest-cancel" style="flex:1;">Cancel</button>
             <button class="btn btn-primary btn-lg" id="guest-pay" style="flex:1;">
               Pay as Guest
@@ -1853,12 +1894,12 @@
         const email = document.getElementById('guest-email').value.trim();
         const phone = document.getElementById('guest-phone').value.trim();
 
-        if (!name || name.length < 2) { alert('Please enter your full name.'); return; }
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email address.'); return; }
-        if (!phone || phone.length < 7) { alert('Please enter a valid phone number.'); return; }
+        if (!name || name.length < 2) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email address.' }); return; }
+        if (!phone || phone.length < 7) { showAlertModal({ title: 'Invalid Phone', message: 'Please enter a valid phone number.' }); return; }
 
         if (items.length > 1) {
-          alert('Please select tickets from one tier at a time for guest checkout.');
+          showAlertModal({ title: 'Single Tier Only', message: 'Please select tickets from one tier at a time for guest checkout.' });
           return;
         }
 
@@ -1883,9 +1924,163 @@
             window.location.href = result.checkout_url;
           }
         } catch (err) {
-          alert(err.message || 'Failed to process. Please try again.');
+          showAlertModal({ title: 'Checkout Failed', message: err.message || 'Failed to process. Please try again.', buttonColor: '#dc2626' });
           payBtn.disabled = false;
           payBtn.innerHTML = 'Pay as Guest <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+        }
+      });
+    }
+
+    // ══════════════════════════════════════════
+    // AUTHENTICATED SEATED CHECKOUT MODAL
+    // ══════════════════════════════════════════
+    function showConfirmSeatedModal({ tierId, seatIds, seats, tierInfo, totalPrice, profile, user }) {
+      document.getElementById('confirm-seated-modal')?.remove();
+
+      const seatsSummary = seats.length <= 6
+        ? seats.map(s => `Row ${escapeHTML(s.row_label)} Seat ${escapeHTML(s.seat_number)}`).join(', ')
+        : `${seats.length} seats selected`;
+
+      const modal = document.createElement('div');
+      modal.id = 'confirm-seated-modal';
+      modal.innerHTML = `
+        <style>
+          #confirm-seated-modal {
+            position:fixed;inset:0;z-index:99999;
+            background:rgba(0,0,0,.7);
+            backdrop-filter:blur(8px);
+            display:flex;align-items:center;justify-content:center;
+            padding:20px;
+            animation:fadeIn .3s ease;
+          }
+          .confirm-seated-box {
+            max-width:480px;width:100%;
+            background:var(--bg-card);
+            border:1px solid rgba(212,175,55,.12);
+            border-radius:20px;padding:28px 24px;
+            box-shadow:0 30px 80px rgba(0,0,0,.4);
+            max-height:90vh;overflow-y:auto;
+            animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;
+          }
+          @media (max-width: 480px) {
+            .confirm-seated-box { padding: 20px 16px; border-radius: 16px; }
+            .confirm-seated-box h3 { font-size: 1.1rem; }
+            .confirm-section { padding: 12px; margin-top: 14px; }
+            .cs-btns { flex-direction: column-reverse; gap: 8px; }
+            .cs-btns .btn { width: 100%; }
+          }
+        </style>
+        <div class="confirm-seated-box">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <div style="width:40px;height:40px;border-radius:12px;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">💺</div>
+            <h3 style="font-family:var(--font-serif);font-size:1.2rem;font-weight:700;margin:0;">Confirm Your <span style="color:var(--accent-primary);">Seats</span></h3>
+          </div>
+          <p style="color:var(--text-muted);font-size:0.85rem;margin:4px 0 16px;">${escapeHTML(eventData.title)}</p>
+
+          <div class="confirm-section" style="margin-top:0;padding:16px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;">
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent-primary);font-weight:700;margin-bottom:12px;">💺 Selected Seats</div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-light);">
+              <div style="font-weight:600;font-size:0.9rem;">${escapeHTML(tierInfo?.name || 'Ticket')} × ${seats.length}</div>
+              <div style="font-weight:700;color:var(--accent-primary);">${formatCurrency(totalPrice, eventData?.currency || 'USD')}</div>
+            </div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:8px;">${seatsSummary}</div>
+            <div id="cs-breakdown-container" style="margin-top:12px;"></div>
+            <div id="cs-total-row" style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:1.5px solid var(--border-color);">
+              <span style="font-size:0.9rem;color:var(--text-secondary);">${seats.length} seat${seats.length > 1 ? 's' : ''} · Total</span>
+              <span id="cs-final-total" style="font-size:1.3rem;font-weight:800;background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">${formatCurrency(totalPrice, eventData?.currency || 'USD')}</span>
+            </div>
+          </div>
+
+          <div class="confirm-section" style="margin-top:16px;padding:16px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;">
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent-primary);font-weight:700;margin-bottom:12px;">👤 Attendee Information</div>
+            <div class="confirm-field">
+              <label>Full Name</label>
+              <input type="text" id="cs-name" value="${escapeHTML(profile.full_name || user.user_metadata?.full_name || '')}" required />
+            </div>
+            <div class="confirm-field">
+              <label>Email</label>
+              <input type="email" id="cs-email" value="${escapeHTML(user.email || '')}" readonly style="opacity:0.6;cursor:not-allowed;" />
+            </div>
+            <div class="confirm-field">
+              <label>Phone</label>
+              <input type="tel" id="cs-phone" value="${escapeHTML(profile.phone || user.user_metadata?.phone || '')}" placeholder="+1 XXX XXX XXXX" />
+            </div>
+          </div>
+
+          <div class="confirm-note" style="margin-top:14px;padding:10px 14px;background:rgba(212,175,55,.04);border:1px solid rgba(212,175,55,.1);border-radius:10px;font-size:0.78rem;color:var(--text-muted);line-height:1.6;display:flex;align-items:flex-start;gap:8px;">
+            <span style="flex-shrink:0;">🔒</span>
+            <span>Your data is encrypted and linked to your QR code. The ticket cannot be transferred or forged. You must present a valid ID matching this information at the venue.</span>
+          </div>
+
+          <div class="cs-btns" style="display:flex;gap:10px;margin-top:20px;">
+            <button class="btn btn-outline btn-lg" id="cs-cancel" style="flex:1;">Cancel</button>
+            <button class="btn btn-primary btn-lg" id="cs-pay" style="flex:1;">
+              Confirm & Pay
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Populate pricing
+      const csBreakdownEl = document.getElementById('cs-breakdown-container');
+      const csFinalTotal = document.getElementById('cs-final-total');
+      if (csBreakdownEl) {
+        const cached = getCachedSeatBreakdown();
+        if (cached) {
+          injectBreakdownStyles();
+          renderPriceBreakdown(csBreakdownEl, cached, { compact: true });
+          if (cached.total != null && csFinalTotal) {
+            csFinalTotal.textContent = formatCurrency(Number(cached.total), eventData?.currency || 'USD');
+          }
+        } else {
+          (async () => {
+            try {
+              injectBreakdownStyles();
+              csBreakdownEl.innerHTML = '<div class="ev-breakdown ev-breakdown--loading">Calculating fees…</div>';
+              const bd = await getOrderBreakdown(tierId, seats.length, null);
+              renderPriceBreakdown(csBreakdownEl, bd, { compact: true });
+              if (bd.total != null && csFinalTotal) {
+                csFinalTotal.textContent = formatCurrency(Number(bd.total), eventData?.currency || 'USD');
+              }
+            } catch (e) {
+              csBreakdownEl.innerHTML = '';
+            }
+          })();
+        }
+      }
+
+      document.getElementById('cs-cancel').addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      document.getElementById('cs-pay').addEventListener('click', async () => {
+        const name = document.getElementById('cs-name').value.trim();
+        const phone = document.getElementById('cs-phone').value.trim();
+
+        if (!name) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
+
+        const payBtn = document.getElementById('cs-pay');
+        payBtn.disabled = true;
+        payBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving…';
+
+        try {
+          await supabase.from('profiles').update({
+            full_name: name,
+            phone: phone || null,
+          }).eq('id', user.id);
+
+          const result = await createSeatedCheckout({ tierId, seatIds });
+          if (result.checkout_url) {
+            modal.remove();
+            startReservationTimer();
+            window.location.href = result.checkout_url;
+          }
+        } catch (err) {
+          showAlertModal({ title: 'Reservation Failed', message: err.message || 'Failed to reserve seats. Please try again.', buttonColor: '#dc2626' });
+          payBtn.disabled = false;
+          payBtn.innerHTML = 'Confirm & Pay <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
         }
       });
     }
@@ -1920,6 +2115,13 @@
             box-shadow:0 30px 80px rgba(0,0,0,.4);
             max-height:90vh;overflow-y:auto;
             animation:scaleIn .4s cubic-bezier(.16,1,.3,1) forwards;
+          }
+          @media (max-width: 480px) {
+            .guest-seated-box { padding: 20px 16px; border-radius: 16px; }
+            .guest-seated-box h3 { font-size: 1.1rem; }
+            .confirm-section { padding: 12px; margin-top: 14px; }
+            .gs-btns { flex-direction: column-reverse; gap: 8px; }
+            .gs-btns .btn { width: 100%; }
           }
         </style>
         <div class="guest-seated-box">
@@ -1963,7 +2165,7 @@
             </div>
           </div>
 
-          <div style="display:flex;gap:10px;margin-top:20px;">
+          <div class="gs-btns" style="display:flex;gap:10px;margin-top:20px;">
             <button class="btn btn-outline btn-lg" id="gs-cancel" style="flex:1;">Cancel</button>
             <button class="btn btn-primary btn-lg" id="gs-pay" style="flex:1;">
               Pay as Guest
@@ -2012,9 +2214,9 @@
         const email = document.getElementById('gs-email').value.trim();
         const phone = document.getElementById('gs-phone').value.trim();
 
-        if (!name || name.length < 2) { alert('Please enter your full name.'); return; }
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { alert('Please enter a valid email.'); return; }
-        if (!phone || phone.length < 7) { alert('Please enter a valid phone number.'); return; }
+        if (!name || name.length < 2) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email address.' }); return; }
+        if (!phone || phone.length < 7) { showAlertModal({ title: 'Invalid Phone', message: 'Please enter a valid phone number.' }); return; }
 
         const payBtn = document.getElementById('gs-pay');
         payBtn.disabled = true;
@@ -2035,7 +2237,7 @@
             window.location.href = result.checkout_url;
           }
         } catch (err) {
-          alert(err.message || 'Failed to reserve seats. Please try again.');
+          showAlertModal({ title: 'Reservation Failed', message: err.message || 'Failed to reserve seats. Please try again.', buttonColor: '#dc2626' });
           payBtn.disabled = false;
           payBtn.innerHTML = 'Pay as Guest <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
         }

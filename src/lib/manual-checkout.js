@@ -4,7 +4,7 @@
    selects a non-Stripe payment method (Vodafone Cash, etc.)
    =================================== */
 import { supabase, SUPABASE_FUNCTIONS_URL } from './supabase.js';
-import { showToast } from './dashboard-ui.js';
+import { showAlertModal } from './ui-modals.js';
 
 /**
  * Shows the manual transfer checkout modal.
@@ -75,11 +75,17 @@ export async function showManualCheckoutModal(opts) {
     const notes = document.getElementById('mc-notes').value.trim();
 
     if (!name || !email || !phone) {
-      showToast('Please fill in all required fields', 'error');
+      showAlertModal({ title: 'Required Fields', message: 'Please fill in all required fields (*).' });
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showToast('Please enter a valid email address', 'error');
+      showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email address.' });
+      return;
+    }
+    // Strict phone validation supporting Egyptian (01XXXXXXXXX) or generic international numbers
+    const cleanPhone = phone.replace(/[\s-]/g, '');
+    if (!/^(\+?)[0-9]{8,15}$/.test(cleanPhone)) {
+      showAlertModal({ title: 'Invalid Phone Number', message: 'Please enter a valid phone number (e.g., 01XXXXXXXXX or international format).' });
       return;
     }
 
@@ -110,13 +116,21 @@ export async function showManualCheckoutModal(opts) {
         }),
       });
 
-      const data = await res.json();
+      // Safe JSON and text parsing to handle edge HTML error pages gracefully
+      const resText = await res.text();
+      let data = {};
+      try {
+        data = JSON.parse(resText);
+      } catch (jsonErr) {
+        throw new Error(`The server returned an invalid response (Status ${res.status}). Please try again later.`);
+      }
+
       if (!res.ok || data.error) throw new Error(data.error || `Server error: ${res.status}`);
 
       // Success — show transfer instructions
       showTransferInstructions(modal, data);
     } catch (err) {
-      showToast('❌ ' + err.message, 'error');
+      showAlertModal({ title: 'Checkout Failed', message: err.message, buttonColor: '#dc2626' });
       btn.disabled = false;
       btn.textContent = 'Continue →';
     }
@@ -202,7 +216,7 @@ function showTransferInstructions(modal, data) {
       `;
       document.getElementById('mc-done')?.addEventListener('click', () => modal.remove());
     } catch (err) {
-      showToast('❌ ' + err.message, 'error');
+      showAlertModal({ title: 'Confirmation Failed', message: err.message, buttonColor: '#dc2626' });
       btn.disabled = false;
       btn.textContent = 'I\'ve Sent the Payment ✓';
     }
@@ -216,7 +230,7 @@ function injectStyles() {
   const style = document.createElement('style');
   style.id = 'mc-modal-styles';
   style.textContent = `
-    .mc-overlay { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; animation:mcFadeIn .25s ease; }
+    .mc-overlay { position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,.55); backdrop-filter:blur(6px); display:flex; align-items:center; justify-content:center; animation:mcFadeIn .25s ease; }
     @keyframes mcFadeIn { from{opacity:0} to{opacity:1} }
     .mc-dialog { width:460px; max-width:95vw; max-height:90vh; overflow-y:auto; background:var(--ev-bg-card,#fff); border-radius:18px; box-shadow:0 24px 60px rgba(0,0,0,.35); }
     .mc-header { display:flex; justify-content:space-between; align-items:center; padding:18px 24px; border-bottom:1px solid var(--ev-border); }
