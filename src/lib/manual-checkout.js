@@ -3,13 +3,8 @@
    Shows the manual transfer checkout modal when a buyer
    selects a non-Stripe payment method (Vodafone Cash, etc.)
    =================================== */
-<<<<<<< HEAD
-import { supabase, SUPABASE_FUNCTIONS_URL } from './supabase.js';
-import { showAlertModal } from './ui-modals.js';
-=======
 import { supabase, SUPABASE_FUNCTIONS_URL, supabaseAnonKey } from './supabase.js';
-import { showToast } from './dashboard-ui.js';
->>>>>>> ff217c8fa66f1faf9fc1e3f805e4909ab380a4ad
+import { showAlertModal } from './ui-modals.js';
 
 /**
  * Shows the manual transfer checkout modal.
