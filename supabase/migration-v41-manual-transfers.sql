@@ -818,10 +818,10 @@ BEGIN
   );
 
   -- ═══ 6. GUEST RETRIEVAL TOKEN ═══
-  IF v_mto.user_id IS NULL THEN
-    v_raw_token := gen_random_uuid()::text || '-' || gen_random_uuid()::text;
-    PERFORM create_guest_token(v_order_id, v_mto.buyer_email, v_raw_token);
-  END IF;
+  -- Generates a guest token for ALL manual orders (including authenticated ones)
+  -- so they can securely view their tickets without being forced to log in on mobile.
+  v_raw_token := gen_random_uuid()::text || '-' || gen_random_uuid()::text;
+  PERFORM create_guest_token(v_order_id, v_mto.buyer_email, v_raw_token);
 
   -- ═══ 7. UPDATE: Manual order status ═══
   UPDATE manual_transfer_orders

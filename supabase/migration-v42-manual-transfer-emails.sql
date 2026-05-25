@@ -294,7 +294,7 @@ BEGIN
           'event_date', COALESCE(to_char(v_event.date, 'Day, Month DD, YYYY at HH12:MI AM'), 'TBD'),
           'event_venue', COALESCE(v_event.venue, 'TBD'),
           'order_id', v_order_id::text,
-          'ticket_link', v_origin || '/my-tickets.html'
+          'ticket_link', v_origin || '/my-tickets.html#guest_token=' || COALESCE(NEW.guest_token, '')
         );
         PERFORM notify_manual_order_email('ticket_delivery_auth', NEW.buyer_email, NEW.buyer_name, NEW.event_id, v_vars, jsonb_build_object('order_id', v_order_id));
       ELSE
