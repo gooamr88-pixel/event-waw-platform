@@ -1027,13 +1027,72 @@
 
         // ── HYBRID PAYMENT: Show payment method selector if manual methods available ──
         const acceptedMethods = event.accepted_payment_methods || ['stripe'];
-        const hasManual = acceptedMethods.some(m => m !== 'stripe');
-        if (hasManual) {
+        
+        // Filter accepted methods by what the organizer has actually configured in their profile
+        let configuredManualMethods = [];
+        try {
+          const { data: orgProfile } = await supabase
+            .from('organizers')
+            .select('manual_payment_methods')
+            .eq('user_id', event.organizer_id)
+            .maybeSingle();
+          if (orgProfile?.manual_payment_methods && Array.isArray(orgProfile.manual_payment_methods)) {
+            configuredManualMethods = orgProfile.manual_payment_methods.map(pm => pm.method);
+          }
+        } catch (orgErr) {
+          console.warn('Failed to load organizer payment methods:', orgErr);
+        }
+
+        const finalMethods = [];
+        if (acceptedMethods.includes('stripe')) {
+          finalMethods.push('stripe');
+        }
+        acceptedMethods.filter(m => m !== 'stripe').forEach(m => {
+          if (configuredManualMethods.includes(m)) {
+            finalMethods.push(m);
+          }
+        });
+
+        // Check if organizer has any active payment methods configured
+        const hasActivePayments = finalMethods.length > 0;
+        const finalAccepted = hasActivePayments ? finalMethods : acceptedMethods;
+        const hasManual = finalAccepted.some(m => m !== 'stripe');
+        const hasPaidTickets = (event.ticket_tiers || []).some(t => parseFloat(t.price) > 0);
+
+        if (!hasActivePayments && hasPaidTickets) {
+          // Organizer has not set up active payment methods yet
           const selector = document.getElementById('payment-method-selector');
           const select = document.getElementById('payment-method-select');
           const secNote = document.getElementById('payment-security-note');
           if (selector && select) {
             selector.style.display = 'block';
+            select.innerHTML = '<option value="">⚠️ Payments Unconfigured</option>';
+            select.disabled = true;
+          }
+          const checkoutBtn = document.getElementById('checkout-btn');
+          if (checkoutBtn) {
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '⚠️ Payments Unconfigured';
+            checkoutBtn.style.opacity = '0.5';
+            checkoutBtn.style.cursor = 'not-allowed';
+          }
+          const guestBtn = document.getElementById('guest-checkout-btn');
+          if (guestBtn) {
+            guestBtn.disabled = true;
+            guestBtn.style.opacity = '0.5';
+            guestBtn.style.cursor = 'not-allowed';
+          }
+          if (secNote) {
+            secNote.textContent = '⚠️ The organizer has not set up active payment methods (Stripe or Manual Transfer wallets) yet.';
+            secNote.style.color = 'var(--text-danger)';
+          }
+        } else if (hasManual) {
+          const selector = document.getElementById('payment-method-selector');
+          const select = document.getElementById('payment-method-select');
+          const secNote = document.getElementById('payment-security-note');
+          if (selector && select) {
+            selector.style.display = 'block';
+            select.disabled = false;
             // Add manual payment options
             const methodLabels = {
               vodafone_cash: '📱 Vodafone Cash',
@@ -1041,11 +1100,14 @@
               bank_transfer: '🏧 Bank Transfer',
               fawry: '💳 Fawry'
             };
-            // Only show Stripe option if it's in the accepted list
-            if (!acceptedMethods.includes('stripe')) {
-              select.innerHTML = '';
+            select.innerHTML = '';
+            if (finalAccepted.includes('stripe')) {
+              const opt = document.createElement('option');
+              opt.value = 'stripe';
+              opt.textContent = '💳 Credit/Debit Card (Stripe)';
+              select.appendChild(opt);
             }
-            acceptedMethods.filter(m => m !== 'stripe').forEach(method => {
+            finalAccepted.filter(m => m !== 'stripe').forEach(method => {
               const opt = document.createElement('option');
               opt.value = method;
               opt.textContent = methodLabels[method] || method;

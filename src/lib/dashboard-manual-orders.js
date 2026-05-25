@@ -17,9 +17,14 @@ export async function renderManualOrdersPanel(container) {
   injectStyles();
 
   try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const currentUserId = session?.user?.id;
+    if (!currentUserId) throw new Error('Not authenticated');
+
     let query = supabase
       .from('manual_transfer_orders')
-      .select('*, events(title), ticket_tiers(name)')
+      .select('*, events!inner(title, organizer_id), ticket_tiers(name)')
+      .eq('events.organizer_id', currentUserId)
       .order('created_at', { ascending: false })
       .limit(50);
 

@@ -300,8 +300,15 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             .maybeSingle();
 
           if (orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete) {
-            // Stripe is connected — enable both Stripe and manual methods
-            acceptedPaymentMethods = ['stripe', ...acceptedPaymentMethods];
+            // Stripe is connected — check if organizer has configured manual payment methods in their profile
+            const hasManualConfigured = orgProfile?.manual_payment_methods && 
+                                        Array.isArray(orgProfile.manual_payment_methods) && 
+                                        orgProfile.manual_payment_methods.length > 0;
+            if (hasManualConfigured) {
+              acceptedPaymentMethods = ['stripe', ...acceptedPaymentMethods];
+            } else {
+              acceptedPaymentMethods = ['stripe'];
+            }
           } else {
             // Stripe NOT connected — inform organizer (soft gate, non-blocking)
             const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
