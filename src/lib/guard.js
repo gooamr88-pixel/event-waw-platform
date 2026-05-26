@@ -297,9 +297,6 @@ export function updateNavForAuth(authState) {
   // Desktop nav buttons
   const signinBtn = document.getElementById('nav-signin');
   const signupBtn = document.getElementById('nav-signup');
-  const userBtn = document.getElementById('nav-user-btn');
-  const signoutBtn = document.getElementById('signout-btn');
-  const navUserName = document.getElementById('nav-user-name');
 
   // Mobile menu links
   const mobileSignin = document.getElementById('mobile-signin');
@@ -308,41 +305,30 @@ export function updateNavForAuth(authState) {
   const mobileDashboard = document.getElementById('mobile-dashboard');
   const mobileSignout = document.getElementById('mobile-signout');
 
+  // Hide/Show role dropdown container hover action based on auth state
+  const roleWrap = document.querySelector('.nav-role-wrap');
+
   if (user && isFullyAuth) {
     // -- Authenticated + OTP verified --
-    if (signinBtn) signinBtn.style.display = 'none';
-    if (signupBtn) signupBtn.style.display = 'none';
+    
+    // Convert Log In button into Dashboard / Admin Panel
+    if (signinBtn) {
+      const isSystemAdmin = profile?.role === 'admin';
+      signinBtn.href = isSystemAdmin ? 'admin.html' : 'dashboard.html';
+      signinBtn.textContent = isSystemAdmin ? 'Admin Panel' : 'Dashboard';
+      signinBtn.style.display = ''; // Ensure it is visible
+    }
+    
+    // Always keep Create Event button visible side-by-side
+    if (signupBtn) {
+      signupBtn.style.display = '';
+    }
 
-    // Hide the legacy role dropdown wrapper completely if user is authenticated
-    const roleWrap = document.querySelector('.nav-role-wrap');
+    // Hide the legacy role choose dropdown so hovering on "Dashboard" doesn't open it
     if (roleWrap) {
-      roleWrap.style.display = 'none';
-    }
-
-    if (userBtn) {
-      userBtn.style.display = 'inline-flex';
-      const name = profile?.full_name || user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : null) || 'Account';
-      if (navUserName) navUserName.textContent = name;
-
-      // Dynamically direct Dashboard links to admin.html vs dashboard.html based on role
-      const dashHref = profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
-      const dashText = profile?.role === 'admin' ? '📋 Admin Panel' : '📋 Dashboard';
-      const dashLink = userBtn.querySelector('.nav-user-dash-link');
-      if (dashLink) {
-        dashLink.href = dashHref;
-        dashLink.textContent = dashText;
-      }
-    }
-
-    if (signoutBtn) {
-      signoutBtn.style.display = 'inline-flex';
-      if (!signoutBtn.dataset.hasListener) {
-        signoutBtn.dataset.hasListener = 'true';
-        signoutBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          performSignOut('/index.html');
-        });
-      }
+      roleWrap.style.display = ''; // Keep container visible so Dashboard button stays
+      const dropdown = roleWrap.querySelector('.nav-role-dropdown');
+      if (dropdown) dropdown.style.display = 'none';
     }
 
     // Mobile
@@ -366,17 +352,23 @@ export function updateNavForAuth(authState) {
     }
   } else {
     // -- Guest or incomplete auth --
-    if (signinBtn) signinBtn.style.display = '';
-    if (signupBtn) signupBtn.style.display = '';
-    if (userBtn) userBtn.style.display = 'none';
-    if (signoutBtn) signoutBtn.style.display = 'none';
     
-    // Restore legacy role dropdown wrapper if user is guest
-    const roleWrap = document.querySelector('.nav-role-wrap');
+    // Restore Log In button to guest state
+    if (signinBtn) {
+      signinBtn.href = 'login.html';
+      signinBtn.textContent = 'Log In';
+      signinBtn.style.display = '';
+    }
+    
+    if (signupBtn) {
+      signupBtn.style.display = '';
+    }
+
+    // Restore the hover dropdown for guest role selection
     if (roleWrap) {
       roleWrap.style.display = '';
-      const roleDropdown = roleWrap.querySelector('.nav-role-dropdown');
-      if (roleDropdown) roleDropdown.style.display = '';
+      const dropdown = roleWrap.querySelector('.nav-role-dropdown');
+      if (dropdown) dropdown.style.display = '';
     }
 
     // Mobile
