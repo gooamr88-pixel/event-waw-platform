@@ -1054,8 +1054,9 @@
         });
 
         // Check if organizer has any active payment methods configured
-        const hasActivePayments = finalMethods.length > 0;
-        const finalAccepted = hasActivePayments ? finalMethods : acceptedMethods;
+        // No fallback: if finalMethods is empty, it means no payment methods are properly set up
+        const finalAccepted = finalMethods;
+        const hasActivePayments = finalAccepted.length > 0;
         const hasManual = finalAccepted.some(m => m !== 'stripe');
         const hasPaidTickets = (event.ticket_tiers || []).some(t => parseFloat(t.price) > 0);
 

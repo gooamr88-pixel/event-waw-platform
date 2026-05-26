@@ -285,12 +285,12 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
 
       // ════════════════════════════════════════════════
       // HYBRID PAYMENT: SOFT STRIPE GATE + DYNAMIC PAYMENT METHODS
-      // No longer blocks publishing. Instead, dynamically determines
-      // which payment methods are available based on Stripe status.
-      // Manual transfer methods (Vodafone Cash, InstaPay, etc.) are
-      // always available for paid events in supported regions.
+      // Dynamically determines which payment methods are available
+      // based on Stripe status AND organizer's configured manual methods.
+      // Only methods the organizer has actually set up (with destination)
+      // in their profile will be saved and shown to buyers.
       // ════════════════════════════════════════════════
-      let acceptedPaymentMethods = ['vodafone_cash', 'instapay', 'bank_transfer', 'fawry'];
+      let acceptedPaymentMethods = [];
       if (!isDraft && listingType !== 'display_only') {
         try {
           const { data: orgProfile } = await supabase
@@ -299,21 +299,32 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             .eq('user_id', user.id)
             .maybeSingle();
 
+          // Only include manual methods that have both a method type AND a destination configured
+          const configuredManualMethods = (orgProfile?.manual_payment_methods || [])
+            .filter(pm => pm.method && pm.destination)
+            .map(pm => pm.method);
+
           if (orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete) {
-            // Stripe is connected — check if organizer has configured manual payment methods in their profile
-            const hasManualConfigured = orgProfile?.manual_payment_methods && 
-                                        Array.isArray(orgProfile.manual_payment_methods) && 
-                                        orgProfile.manual_payment_methods.length > 0;
-            if (hasManualConfigured) {
-              acceptedPaymentMethods = ['stripe', ...acceptedPaymentMethods];
+            // Stripe is connected
+            if (configuredManualMethods.length > 0) {
+              acceptedPaymentMethods = ['stripe', ...configuredManualMethods];
             } else {
               acceptedPaymentMethods = ['stripe'];
             }
           } else {
-            // Stripe NOT connected — inform organizer (soft gate, non-blocking)
-            const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
-            if (hasPaidTickets) {
-              showToast('ℹ️ Stripe is not set up — buyers will only see Manual Transfer options (Vodafone Cash, InstaPay, etc.). You can connect Stripe later in Settings.', 'info');
+            // Stripe NOT connected
+            if (configuredManualMethods.length > 0) {
+              acceptedPaymentMethods = [...configuredManualMethods];
+              const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
+              if (hasPaidTickets) {
+                showToast('ℹ️ Stripe is not set up — buyers will only see your configured Manual Transfer options. You can connect Stripe later in Settings.', 'info');
+              }
+            } else {
+              // No payment methods configured at all
+              const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
+              if (hasPaidTickets) {
+                showToast('⚠️ No payment methods configured! Buyers won\'t be able to pay. Go to Profile → Payment Methods to set up Stripe or Manual Transfer wallets.', 'error');
+              }
             }
           }
         } catch (stripeCheckErr) {
