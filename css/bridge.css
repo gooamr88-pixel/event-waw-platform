@@ -563,3 +563,10 @@ body:not([data-theme="dark"]) .ev-select:focus {
 .mobile-menu a.mobile-user-link.danger {
   color: var(--es-color-danger, #ef4444) !important;
 }
+
+/* Hide desktop user account dropdown wrap on mobile screens */
+@media (max-width: 950px) {
+  .nav-actions .nav-user-wrap {
+    display: none !important;
+  }
+}

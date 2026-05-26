@@ -313,11 +313,10 @@ export function updateNavForAuth(authState) {
     if (signinBtn) signinBtn.style.display = 'none';
     if (signupBtn) signupBtn.style.display = 'none';
 
-    // Hide any legacy role dropdown inside desktop nav action if user is authenticated
+    // Hide the legacy role dropdown wrapper completely if user is authenticated
     const roleWrap = document.querySelector('.nav-role-wrap');
     if (roleWrap) {
-      const roleDropdown = roleWrap.querySelector('.nav-role-dropdown');
-      if (roleDropdown) roleDropdown.style.display = 'none';
+      roleWrap.style.display = 'none';
     }
 
     if (userBtn) {
@@ -372,6 +371,14 @@ export function updateNavForAuth(authState) {
     if (userBtn) userBtn.style.display = 'none';
     if (signoutBtn) signoutBtn.style.display = 'none';
     
+    // Restore legacy role dropdown wrapper if user is guest
+    const roleWrap = document.querySelector('.nav-role-wrap');
+    if (roleWrap) {
+      roleWrap.style.display = '';
+      const roleDropdown = roleWrap.querySelector('.nav-role-dropdown');
+      if (roleDropdown) roleDropdown.style.display = '';
+    }
+
     // Mobile
     if (mobileSignin) mobileSignin.style.display = '';
     if (mobileSignup) mobileSignup.style.display = '';
