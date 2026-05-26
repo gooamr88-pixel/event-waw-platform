@@ -16,6 +16,7 @@ export function initUI() {
   initThemeToggle();
   initNavScroll();
   initMobileMenu();
+  initUserDropdown();
 }
 
 /* ==================================
@@ -147,4 +148,30 @@ export function initParticles() {
     }
     c.appendChild(frag);
   });
+}
+
+/**
+ * Initialize the desktop account dropdown toggles with click-outside behavior.
+ */
+export function initUserDropdown() {
+  const userBtn = document.getElementById('nav-user-btn');
+  if (!userBtn) return;
+  
+  const info = userBtn.querySelector('.nav-user-info');
+  const dropdown = userBtn.querySelector('.nav-user-dropdown');
+  
+  if (info && dropdown) {
+    info.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userBtn.classList.toggle('active');
+    });
+    
+    document.addEventListener('click', () => {
+      userBtn.classList.remove('active');
+    });
+    
+    dropdown.addEventListener('click', (e) => {
+      e.stopPropagation();
+    });
+  }
 }

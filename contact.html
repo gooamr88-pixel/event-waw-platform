@@ -59,6 +59,22 @@
             </a>
           </div>
         </div>
+        
+        <!-- Logged-in User Account Dropdown -->
+        <div class="nav-user-wrap" id="nav-user-btn" style="display: none;">
+          <div class="nav-user-info">
+            <div class="nav-user-avatar">U</div>
+            <span id="nav-user-name">Account</span>
+            <svg class="nav-user-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
+          </div>
+          <div class="nav-user-dropdown">
+            <a href="my-tickets.html" class="nav-user-drop-item">🎫 My Tickets</a>
+            <a href="dashboard.html" class="nav-user-drop-item nav-user-dash-link">📋 Dashboard</a>
+            <div style="height: 1px; background: var(--ev-border, rgba(15, 23, 42, 0.08)); margin: 4px 6px;"></div>
+            <button id="signout-btn" class="nav-user-drop-item danger">🚪 Sign Out</button>
+          </div>
+        </div>
+
         <a href="register.html" class="btn btn-primary" id="nav-signup">Create Event</a>
         <button class="nav-toggle" id="nav-toggle" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
       </div>
@@ -74,8 +90,11 @@
     <a href="how-it-works.html">How It Works</a>
     <a href="why-us.html">Why Us?</a>
     <a href="contact.html" class="active">Contact Us</a>
-    <a href="login.html">Log In</a>
-    <a href="register.html">Create Event</a>
+    <a href="login.html" id="mobile-signin">Log In</a>
+    <a href="register.html" id="mobile-signup">Create Event</a>
+    <a href="my-tickets.html" id="mobile-my-tickets" class="mobile-user-link" style="display: none;">🎫 My Tickets</a>
+    <a href="dashboard.html" id="mobile-dashboard" class="mobile-user-link" style="display: none;">📋 Dashboard</a>
+    <a href="#" id="mobile-signout" class="mobile-user-link danger" style="display: none;">🚪 Sign Out</a>
     <button class="mobile-theme-toggle theme-toggle" aria-label="Toggle theme">
       <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
@@ -186,25 +205,12 @@
   <script src="js/main.js"></script>
   <script type="module">
     import { initUI } from './src/lib/ui.js';
-    import { semiProtectPage, updateNavForAuth, performSignOut } from './src/lib/guard.js';
+    import { semiProtectPage, updateNavForAuth } from './src/lib/guard.js';
 
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
       const authState = await semiProtectPage();
       updateNavForAuth(authState);
-
-      if (authState.user && authState.isFullyAuth) {
-        const dashHref = authState.profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
-        const dashLabel = authState.profile?.role === 'admin' ? 'Admin Panel' : 'Dashboard';
-        const signinBtn = document.getElementById('nav-signin');
-        const signupBtn = document.getElementById('nav-signup');
-        if (signinBtn) { signinBtn.textContent = dashLabel; signinBtn.href = dashHref; signinBtn.classList.remove('btn-outline'); signinBtn.classList.add('btn-primary'); const roleDropdown = document.querySelector('.nav-role-dropdown'); if (roleDropdown) roleDropdown.remove(); }
-        if (signupBtn) { signupBtn.textContent = 'Sign Out'; signupBtn.href = '#'; signupBtn.classList.remove('btn-primary'); signupBtn.classList.add('btn-outline'); signupBtn.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); }
-        const navLinks = document.getElementById('nav-links');
-        if (navLinks) { const el = navLinks.querySelector('a[href="#events"]'); if (el) { el.textContent = dashLabel; el.href = dashHref; } }
-        const mm = document.getElementById('mobile-menu');
-        if (mm) { mm.querySelectorAll('a').forEach(a => { if (a.href.includes('login.html')) { a.textContent = dashLabel; a.href = dashHref; } if (a.href.includes('register.html')) { a.textContent = 'Sign Out'; a.href = '#'; a.addEventListener('click', (e) => { e.preventDefault(); performSignOut('/index.html'); }); } }); }
-      }
     });
   </script>
 </body>

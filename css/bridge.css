@@ -386,3 +386,180 @@ body:not([data-theme="dark"]) .ev-select:focus {
     var(--es-emerald-800) 100%);
   box-shadow: 0 4px 20px rgba(5, 150, 105, 0.2);
 }
+
+/* ══════════════════════════════════
+   11. PREMIUM USER ACCOUNT DROPDOWN (PREMIUM DARK/LIGHT THEMES)
+   ══════════════════════════════════ */
+
+/* Wrapper */
+.nav-user-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* User Info Toggle Button */
+.nav-user-info {
+  display: flex;
+  align-items: center;
+  gap: var(--es-space-2, 8px);
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: var(--es-radius-full, 9999px);
+  border: 1px solid var(--ev-border, rgba(15, 23, 42, 0.08));
+  background: var(--ev-white, #fff);
+  box-shadow: var(--es-shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+  transition: all var(--es-transition-fast, 0.2s ease);
+  user-select: none;
+}
+
+/* Hover & Active States */
+.nav-user-info:hover {
+  border-color: var(--es-emerald-600);
+  background: rgba(5, 150, 105, 0.04);
+  box-shadow: var(--es-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Dark theme specific adjustment */
+[data-theme="dark"] .nav-user-info {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+[data-theme="dark"] .nav-user-info:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--es-emerald-500);
+}
+
+/* User Avatar Bubble */
+.nav-user-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-gradient, linear-gradient(135deg, var(--es-emerald-600), var(--es-emerald-700)));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+}
+
+/* User Name Text */
+#nav-user-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+}
+[data-theme="dark"] #nav-user-name {
+  color: #f1f5f9;
+}
+
+/* Dropdown Chevron */
+.nav-user-chevron {
+  color: var(--text-secondary, #475569);
+  transition: transform var(--es-transition-fast, 0.2s ease);
+}
+[data-theme="dark"] .nav-user-chevron {
+  color: #94a3b8;
+}
+
+/* Rotate Chevron on Active/Open Dropdown */
+.nav-user-wrap.active .nav-user-chevron {
+  transform: rotate(180deg);
+  color: var(--es-emerald-600);
+}
+
+/* Dropdown Menu Box */
+.nav-user-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 190px;
+  background: var(--ev-white, #ffffff);
+  border: 1px solid var(--ev-border, rgba(15, 23, 42, 0.08));
+  border-radius: var(--es-radius-lg, 12px);
+  box-shadow: var(--es-shadow-lg, 0 10px 15px -3px rgba(0, 0, 0, 0.1));
+  z-index: var(--es-z-dropdown, 150);
+  display: none;
+  padding: 6px;
+  flex-direction: column;
+  gap: 2px;
+  transform: translateY(10px);
+  opacity: 0;
+  transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+}
+
+/* Dropdown Reveal (via class active) */
+.nav-user-wrap.active .nav-user-dropdown {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+[data-theme="dark"] .nav-user-dropdown {
+  background: #18181b;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+/* Dropdown Menu Item */
+.nav-user-drop-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--es-radius-md, 8px);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary, #475569);
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--es-font-sans);
+  transition: all var(--es-transition-fast, 0.2s ease);
+}
+[data-theme="dark"] .nav-user-drop-item {
+  color: #cbd5e1;
+}
+
+/* Hover Item Style */
+.nav-user-drop-item:hover {
+  background: rgba(5, 150, 105, 0.06);
+  color: var(--es-emerald-600);
+  padding-left: 15px; /* Subtle slide micro-animation */
+}
+[data-theme="dark"] .nav-user-drop-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--es-emerald-400);
+}
+
+/* Special styling for danger/sign-out */
+.nav-user-drop-item.danger {
+  color: var(--es-color-danger, #ef4444);
+}
+.nav-user-drop-item.danger:hover {
+  background: rgba(239, 68, 68, 0.06);
+  color: var(--es-color-danger, #ef4444);
+}
+[data-theme="dark"] .nav-user-drop-item.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile responsive menu links */
+.mobile-menu a.mobile-user-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.mobile-menu a.mobile-user-link.danger {
+  color: var(--es-color-danger, #ef4444) !important;
+}

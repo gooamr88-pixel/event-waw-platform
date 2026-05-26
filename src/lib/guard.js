@@ -304,31 +304,80 @@ export function updateNavForAuth(authState) {
   // Mobile menu links
   const mobileSignin = document.getElementById('mobile-signin');
   const mobileSignup = document.getElementById('mobile-signup');
+  const mobileTickets = document.getElementById('mobile-my-tickets');
+  const mobileDashboard = document.getElementById('mobile-dashboard');
+  const mobileSignout = document.getElementById('mobile-signout');
 
   if (user && isFullyAuth) {
     // -- Authenticated + OTP verified --
     if (signinBtn) signinBtn.style.display = 'none';
     if (signupBtn) signupBtn.style.display = 'none';
 
+    // Hide any legacy role dropdown inside desktop nav action if user is authenticated
+    const roleWrap = document.querySelector('.nav-role-wrap');
+    if (roleWrap) {
+      const roleDropdown = roleWrap.querySelector('.nav-role-dropdown');
+      if (roleDropdown) roleDropdown.style.display = 'none';
+    }
+
     if (userBtn) {
       userBtn.style.display = 'inline-flex';
       const name = profile?.full_name || user.user_metadata?.full_name || (user.email ? user.email.split('@')[0] : null) || 'Account';
       if (navUserName) navUserName.textContent = name;
+
+      // Dynamically direct Dashboard links to admin.html vs dashboard.html based on role
+      const dashHref = profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+      const dashText = profile?.role === 'admin' ? '📋 Admin Panel' : '📋 Dashboard';
+      const dashLink = userBtn.querySelector('.nav-user-dash-link');
+      if (dashLink) {
+        dashLink.href = dashHref;
+        dashLink.textContent = dashText;
+      }
     }
 
-    if (signoutBtn) signoutBtn.style.display = 'inline-flex';
+    if (signoutBtn) {
+      signoutBtn.style.display = 'inline-flex';
+      if (!signoutBtn.dataset.hasListener) {
+        signoutBtn.dataset.hasListener = 'true';
+        signoutBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          performSignOut('/index.html');
+        });
+      }
+    }
 
     // Mobile
     if (mobileSignin) mobileSignin.style.display = 'none';
     if (mobileSignup) mobileSignup.style.display = 'none';
+    if (mobileTickets) mobileTickets.style.display = 'flex';
+    if (mobileDashboard) {
+      mobileDashboard.style.display = 'flex';
+      mobileDashboard.href = profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+      mobileDashboard.textContent = profile?.role === 'admin' ? '📋 Admin Panel' : '📋 Dashboard';
+    }
+    if (mobileSignout) {
+      mobileSignout.style.display = 'flex';
+      if (!mobileSignout.dataset.hasListener) {
+        mobileSignout.dataset.hasListener = 'true';
+        mobileSignout.addEventListener('click', (e) => {
+          e.preventDefault();
+          performSignOut('/index.html');
+        });
+      }
+    }
   } else {
     // -- Guest or incomplete auth --
     if (signinBtn) signinBtn.style.display = '';
     if (signupBtn) signupBtn.style.display = '';
     if (userBtn) userBtn.style.display = 'none';
     if (signoutBtn) signoutBtn.style.display = 'none';
+    
+    // Mobile
     if (mobileSignin) mobileSignin.style.display = '';
     if (mobileSignup) mobileSignup.style.display = '';
+    if (mobileTickets) mobileTickets.style.display = 'none';
+    if (mobileDashboard) mobileDashboard.style.display = 'none';
+    if (mobileSignout) mobileSignout.style.display = 'none';
   }
 }
 
