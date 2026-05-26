@@ -844,7 +844,7 @@
   </footer>
 
   <script type="module">
-    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL } from './src/lib/supabase.js';
+    import { supabase, getCurrentUser, SUPABASE_FUNCTIONS_URL, supabaseAnonKey } from './src/lib/supabase.js';
     import { semiProtectPage, updateNavForAuth } from './src/lib/guard.js';
     import { initUI } from './src/lib/ui.js';
     import { escapeHTML } from './src/lib/utils.js';
@@ -915,7 +915,10 @@
       try {
         const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/verify-guest-ticket`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseAnonKey}`
+          },
           body: JSON.stringify({ guest_token: token }),
         });
 
@@ -1121,11 +1124,10 @@
         const headers = { 'Content-Type': 'application/json' };
         const body = { ticket_id: ticketId };
 
-        // For authenticated users, send the auth token
+        // For authenticated users, send the auth token, otherwise use anon key
         const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          headers['Authorization'] = `Bearer ${session.access_token}`;
-        } else if (currentGuestToken) {
+        headers['Authorization'] = `Bearer ${session?.access_token || supabaseAnonKey}`;
+        if (!session?.access_token && currentGuestToken) {
           // For guests, include the guest token so the Edge Function can verify access
           body.guest_token = currentGuestToken;
         }
@@ -1236,7 +1238,10 @@
         try {
           const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/resend-guest-link`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseAnonKey}`
+            },
             body: JSON.stringify({ email }),
           });
 

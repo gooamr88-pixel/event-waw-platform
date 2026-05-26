@@ -2,7 +2,7 @@
    EVENTSLI - Tickets API
    =================================== */
 
-import { supabase } from './supabase.js';
+import { supabase, supabaseAnonKey } from './supabase.js';
 
 /**
  * Get all tickets for the current user, grouped by event.
@@ -194,7 +194,7 @@ export async function getGuestTickets(guestToken) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        // No Authorization header - guest access
+        'Authorization': `Bearer ${supabaseAnonKey}`,
       },
       body: JSON.stringify({ guest_token: guestToken }),
     }
@@ -223,9 +223,7 @@ export async function downloadTicketPDF(ticketId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(session?.access_token
-          ? { 'Authorization': `Bearer ${session.access_token}` }
-          : {}),
+        'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`,
       },
       body: JSON.stringify({ ticket_id: ticketId }),
     }
@@ -262,9 +260,7 @@ export async function downloadOrderPDF(orderId) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(session?.access_token
-          ? { 'Authorization': `Bearer ${session.access_token}` }
-          : {}),
+        'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`,
       },
       body: JSON.stringify({ order_id: orderId }),
     }
@@ -297,7 +293,10 @@ export async function downloadGuestPDF(orderId) {
     'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
     {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabaseAnonKey}`,
+      },
       body: JSON.stringify({ order_id: orderId }),
     }
   );
