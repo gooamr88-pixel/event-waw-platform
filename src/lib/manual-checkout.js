@@ -75,17 +75,17 @@ export async function showManualCheckoutModal(opts) {
     const notes = document.getElementById('mc-notes').value.trim();
 
     if (!name || !email || !phone) {
-      showAlertModal({ title: 'Required Fields', message: 'Please fill in all required fields (*).' });
+      showToast('Please fill in all required fields (*).', 'warning');
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email address.' });
+      showToast('Please enter a valid email address.', 'error');
       return;
     }
     // Strict phone validation supporting Egyptian (01XXXXXXXXX) or generic international numbers
     const cleanPhone = phone.replace(/[\s-]/g, '');
     if (!/^(\+?)[0-9]{8,15}$/.test(cleanPhone)) {
-      showAlertModal({ title: 'Invalid Phone Number', message: 'Please enter a valid phone number (e.g., 01XXXXXXXXX or international format).' });
+      showToast('Please enter a valid phone number (e.g., 01XXXXXXXXX).', 'error');
       return;
     }
 
@@ -130,7 +130,7 @@ export async function showManualCheckoutModal(opts) {
       // Success — show transfer instructions
       showTransferInstructions(modal, data);
     } catch (err) {
-      showAlertModal({ title: 'Checkout Failed', message: err.message, buttonColor: '#dc2626' });
+      showToast('Checkout Failed: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Continue →';
     }
@@ -216,41 +216,81 @@ function showTransferInstructions(modal, data) {
       `;
       document.getElementById('mc-done')?.addEventListener('click', () => modal.remove());
     } catch (err) {
-      showAlertModal({ title: 'Confirmation Failed', message: err.message, buttonColor: '#dc2626' });
+      showToast('Confirmation Failed: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'I\'ve Sent the Payment ✓';
     }
   });
 }
 
-function showToast(message) {
+function showToast(message, type = 'success') {
   let container = document.getElementById('mc-toast-container');
   if (!container) {
     container = document.createElement('div');
     container.id = 'mc-toast-container';
     Object.assign(container.style, {
-      position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
-      zIndex: '999999', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'none'
+      position: 'fixed', top: '24px', left: '50%', transform: 'translateX(-50%)',
+      zIndex: '9999999', display: 'flex', flexDirection: 'column', gap: '10px',
+      pointerEvents: 'none', width: '90%', maxWidth: '400px'
     });
     document.body.appendChild(container);
   }
+
   const toast = document.createElement('div');
-  toast.textContent = message;
-  Object.assign(toast.style, {
-    background: '#10b981', color: '#fff', padding: '10px 20px', borderRadius: '10px',
-    fontSize: '0.85rem', fontWeight: '600', boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-    opacity: '0', transform: 'translateY(10px)', transition: 'all 0.3s ease', textAlign: 'center'
-  });
+  toast.className = `mc-toast ${type}`;
+  
+  let bgColor, borderColor, icon, textColor;
+  if (type === 'error') {
+    bgColor = 'rgba(239, 68, 68, 0.98)';
+    borderColor = 'rgba(239, 68, 68, 0.2)';
+    textColor = '#ffffff';
+    icon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+  } else if (type === 'warning') {
+    bgColor = 'rgba(245, 158, 11, 0.98)';
+    borderColor = 'rgba(245, 158, 11, 0.2)';
+    textColor = '#ffffff';
+    icon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+  } else {
+    bgColor = 'rgba(16, 185, 129, 0.98)';
+    borderColor = 'rgba(16, 185, 129, 0.2)';
+    textColor = '#ffffff';
+    icon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+  }
+
+  toast.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 12px; pointer-events: auto; cursor: pointer; background: ${bgColor}; border: 1px solid ${borderColor}; color: ${textColor}; padding: 12px 18px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: 0.88rem; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(-20px); opacity: 0;">
+      <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255, 255, 255, 0.15); padding: 5px; border-radius: 8px;">${icon}</span>
+      <div style="flex: 1; line-height: 1.4; letter-spacing: -0.01em;">${message}</div>
+    </div>
+  `;
+
+  const toastCard = toast.firstElementChild;
   container.appendChild(toast);
+
   requestAnimationFrame(() => {
-    toast.style.opacity = '1';
-    toast.style.transform = 'translateY(0)';
+    toastCard.style.transform = 'translateY(0)';
+    toastCard.style.opacity = '1';
   });
-  setTimeout(() => {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateY(-10px)';
-    setTimeout(() => toast.remove(), 300);
-  }, 2500);
+
+  toastCard.addEventListener('click', () => {
+    dismissToast(toast, toastCard);
+  });
+
+  const timeoutId = setTimeout(() => {
+    dismissToast(toast, toastCard);
+  }, 4000);
+
+  function dismissToast(el, card) {
+    clearTimeout(timeoutId);
+    card.style.transform = 'translateY(-20px) scale(0.95)';
+    card.style.opacity = '0';
+    setTimeout(() => {
+      el.remove();
+      if (container.children.length === 0) {
+        container.remove();
+      }
+    }, 350);
+  }
 }
 
 function esc(str) { if (!str) return ''; const d = document.createElement('div'); d.textContent = String(str); return d.innerHTML; }
