@@ -570,3 +570,25 @@ body:not([data-theme="dark"]) .ev-select:focus {
     display: none !important;
   }
 }
+
+/* Guarantee navbar icons sizes and alignment */
+.theme-toggle svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+}
+.nav-user-chevron {
+  width: 12px !important;
+  height: 12px !important;
+  flex-shrink: 0;
+}
+.nav-toggle svg {
+  width: 22px !important;
+  height: 22px !important;
+  flex-shrink: 0;
+}
+.nav-role-item svg {
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0;
+}
