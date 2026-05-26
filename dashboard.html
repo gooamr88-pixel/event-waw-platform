@@ -1827,6 +1827,20 @@
             </div>
           </div>
         </div>
+        <!-- ═══ PAYMENT METHOD PREFERENCE ═══ -->
+        <div class="ev-card" id="ce-payment-pref-section" style="max-width:800px;margin:0 auto 24px;display:none">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px">
+            <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">💳</div>
+            <div>
+              <h4 style="margin:0;font-size:1rem;font-weight:700">Payment Methods for this Event</h4>
+              <p style="margin:2px 0 0;font-size:.8rem;color:var(--ev-text-sec)">Choose which payment options buyers will see</p>
+            </div>
+          </div>
+          <div id="ce-payment-pref-options" style="display:flex;flex-direction:column;gap:10px">
+            <!-- Populated dynamically by wizard-publishing.js -->
+          </div>
+          <p id="ce-payment-pref-note" style="font-size:.78rem;color:var(--ev-text-sec);margin:14px 0 0;text-align:center"></p>
+        </div>
         <!-- Event Preview -->
         <div class="ev-card" style="max-width:800px;margin:0 auto">
           <div class="ce-preview-card" id="ce-preview-card">

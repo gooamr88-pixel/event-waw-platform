@@ -1026,25 +1026,36 @@
         renderTiers(event.ticket_tiers || []);
 
         // ── HYBRID PAYMENT: Show payment method selector if manual methods available ──
-        const acceptedMethods = event.accepted_payment_methods || ['stripe'];
-        
         // Filter accepted methods by what the organizer has actually configured in their profile
         let configuredManualMethods = [];
+        let hasStripe = false;
         try {
           const { data: orgProfile } = await supabase
             .from('organizers')
-            .select('manual_payment_methods')
+            .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
             .eq('user_id', event.organizer_id)
             .maybeSingle();
           if (orgProfile?.manual_payment_methods && Array.isArray(orgProfile.manual_payment_methods)) {
-            configuredManualMethods = orgProfile.manual_payment_methods.map(pm => pm.method);
+            configuredManualMethods = orgProfile.manual_payment_methods
+              .filter(pm => pm.method && pm.destination)
+              .map(pm => pm.method);
           }
+          hasStripe = !!(orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete);
         } catch (orgErr) {
           console.warn('Failed to load organizer payment methods:', orgErr);
         }
 
+        // If the event was published with NO payment methods configured (empty or null),
+        // dynamically default to all currently available payment methods for this organizer.
+        let acceptedMethods = event.accepted_payment_methods;
+        if (!acceptedMethods || acceptedMethods.length === 0) {
+          acceptedMethods = [];
+          if (hasStripe) acceptedMethods.push('stripe');
+          acceptedMethods = [...acceptedMethods, ...configuredManualMethods];
+        }
+
         const finalMethods = [];
-        if (acceptedMethods.includes('stripe')) {
+        if (acceptedMethods.includes('stripe') && hasStripe) {
           finalMethods.push('stripe');
         }
         acceptedMethods.filter(m => m !== 'stripe').forEach(m => {

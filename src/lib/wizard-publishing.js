@@ -284,11 +284,11 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (!user) return;
 
       // ════════════════════════════════════════════════
-      // HYBRID PAYMENT: SOFT STRIPE GATE + DYNAMIC PAYMENT METHODS
-      // Dynamically determines which payment methods are available
-      // based on Stripe status AND organizer's configured manual methods.
-      // Only methods the organizer has actually set up (with destination)
-      // in their profile will be saved and shown to buyers.
+      // HYBRID PAYMENT: DYNAMIC PAYMENT METHOD SELECTION
+      // 1. Checks organizer's Stripe + Manual configuration
+      // 2. If BOTH are available → shows preference selector UI
+      // 3. If only ONE type → auto-selects it (no UI needed)
+      // 4. If NONE → shows warning
       // ════════════════════════════════════════════════
       let acceptedPaymentMethods = [];
       if (!isDraft && listingType !== 'display_only') {
@@ -304,27 +304,36 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             .filter(pm => pm.method && pm.destination)
             .map(pm => pm.method);
 
-          if (orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete) {
-            // Stripe is connected
-            if (configuredManualMethods.length > 0) {
-              acceptedPaymentMethods = ['stripe', ...configuredManualMethods];
-            } else {
+          const hasStripe = !!(orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete);
+          const hasManual = configuredManualMethods.length > 0;
+
+          // Read the organizer's per-event payment preference from the UI
+          const prefSection = document.getElementById('ce-payment-pref-section');
+          const selectedPref = document.querySelector('input[name="ce-payment-pref"]:checked')?.value;
+
+          if (hasStripe && hasManual) {
+            // Both available — use the preference selector
+            if (selectedPref === 'stripe_only') {
               acceptedPaymentMethods = ['stripe'];
+            } else if (selectedPref === 'manual_only') {
+              acceptedPaymentMethods = [...configuredManualMethods];
+            } else {
+              // 'both' or no selection (default to both)
+              acceptedPaymentMethods = ['stripe', ...configuredManualMethods];
+            }
+          } else if (hasStripe) {
+            acceptedPaymentMethods = ['stripe'];
+          } else if (hasManual) {
+            acceptedPaymentMethods = [...configuredManualMethods];
+            const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
+            if (hasPaidTickets) {
+              showToast('ℹ️ Stripe is not set up — buyers will only see your configured Manual Transfer options. You can connect Stripe later in Settings.', 'info');
             }
           } else {
-            // Stripe NOT connected
-            if (configuredManualMethods.length > 0) {
-              acceptedPaymentMethods = [...configuredManualMethods];
-              const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
-              if (hasPaidTickets) {
-                showToast('ℹ️ Stripe is not set up — buyers will only see your configured Manual Transfer options. You can connect Stripe later in Settings.', 'info');
-              }
-            } else {
-              // No payment methods configured at all
-              const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
-              if (hasPaidTickets) {
-                showToast('⚠️ No payment methods configured! Buyers won\'t be able to pay. Go to Profile → Payment Methods to set up Stripe or Manual Transfer wallets.', 'error');
-              }
+            // No payment methods configured at all
+            const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
+            if (hasPaidTickets) {
+              showToast('⚠️ No payment methods configured! Buyers won\'t be able to pay. Go to Profile → Payment Methods to set up Stripe or Manual Transfer wallets.', 'error');
             }
           }
         } catch (stripeCheckErr) {
@@ -575,6 +584,23 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         await supabase.from('promo_codes').insert(promoPayloads);
       }
 
+      if (!isDraft) {
+        // If they published a paid event with NO configured payment methods, trigger the unconfigured payments email
+        const hasPaidTickets = getTicketsList().some(t => parseFloat(t.price) > 0);
+        if (acceptedPaymentMethods.length === 0 && hasPaidTickets) {
+          try {
+            const { data: rpcRes, error: rpcErr } = await supabase.rpc('send_unconfigured_payments_email', { p_event_id: event.id });
+            if (rpcErr) {
+              console.warn('Failed to trigger unconfigured payments email:', rpcErr.message);
+            } else {
+              console.log('Unconfigured payments email triggered successfully:', rpcRes);
+            }
+          } catch (rpcCatch) {
+            console.warn('Failed to call send_unconfigured_payments_email RPC:', rpcCatch);
+          }
+        }
+      }
+
       if (isDraft) {
         showToast('📝 Draft saved successfully!', 'success');
       } else {
@@ -742,8 +768,109 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
     window.history.replaceState({}, '', cleanUrl);
   }
 
+  /**
+   * Populate the Payment Preference selector card on the Publishing tab.
+   * Only shows when the organizer has BOTH Stripe and Manual methods configured.
+   * When only one type is available, auto-selects it (no UI needed).
+   */
+  async function populatePaymentPreference() {
+    const section = document.getElementById('ce-payment-pref-section');
+    const container = document.getElementById('ce-payment-pref-options');
+    const note = document.getElementById('ce-payment-pref-note');
+    if (!section || !container) return;
+
+    try {
+      const user = await getCurrentUser();
+      if (!user) return;
+
+      const { data: orgProfile } = await supabase
+        .from('organizers')
+        .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      const hasStripe = !!(orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete);
+      const configuredManual = (orgProfile?.manual_payment_methods || [])
+        .filter(pm => pm.method && pm.destination);
+      const hasManual = configuredManual.length > 0;
+
+      // Only show selector when BOTH types are available
+      if (!hasStripe || !hasManual) {
+        section.style.display = 'none';
+        return;
+      }
+
+      // Build manual methods summary
+      const methodLabels = {
+        vodafone_cash: 'Vodafone Cash', instapay: 'InstaPay',
+        bank_transfer: 'Bank Transfer', fawry: 'Fawry', other: 'Other'
+      };
+      const manualSummary = configuredManual.map(pm => methodLabels[pm.method] || pm.method).join(', ');
+
+      section.style.display = '';
+      container.innerHTML = `
+        <label class="ce-pref-card ce-pref-selected" style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:14px;border:2px solid var(--ev-pink,#ec4899);background:rgba(236,72,153,0.04);cursor:pointer;transition:all .2s">
+          <input type="radio" name="ce-payment-pref" value="both" checked style="margin-top:3px;accent-color:var(--ev-pink,#ec4899);width:18px;height:18px;flex-shrink:0">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:1rem">💳📱</span>
+              <strong style="font-size:.9rem">All Payment Methods</strong>
+              <span style="font-size:.65rem;padding:2px 8px;border-radius:6px;background:linear-gradient(135deg,#ec4899,#8b5cf6);color:#fff;font-weight:600">Recommended</span>
+            </div>
+            <p style="margin:0;font-size:.8rem;color:var(--ev-text-sec);line-height:1.5">Buyers can pay with Stripe (Credit/Debit Card) or Manual Transfer (${manualSummary})</p>
+          </div>
+        </label>
+        <label class="ce-pref-card" style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:14px;border:2px solid var(--ev-border);background:transparent;cursor:pointer;transition:all .2s">
+          <input type="radio" name="ce-payment-pref" value="stripe_only" style="margin-top:3px;accent-color:var(--ev-pink,#ec4899);width:18px;height:18px;flex-shrink:0">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:1rem">💳</span>
+              <strong style="font-size:.9rem">Stripe Only</strong>
+            </div>
+            <p style="margin:0;font-size:.8rem;color:var(--ev-text-sec);line-height:1.5">Buyers can only pay with Credit/Debit Card via Stripe. Instant confirmation.</p>
+          </div>
+        </label>
+        <label class="ce-pref-card" style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:14px;border:2px solid var(--ev-border);background:transparent;cursor:pointer;transition:all .2s">
+          <input type="radio" name="ce-payment-pref" value="manual_only" style="margin-top:3px;accent-color:var(--ev-pink,#ec4899);width:18px;height:18px;flex-shrink:0">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-size:1rem">📱</span>
+              <strong style="font-size:.9rem">Manual Transfer Only</strong>
+            </div>
+            <p style="margin:0;font-size:.8rem;color:var(--ev-text-sec);line-height:1.5">Buyers pay via ${manualSummary}. Requires your manual approval.</p>
+          </div>
+        </label>
+      `;
+
+      if (note) note.textContent = 'You can change this for each event. Your configured methods are managed in Profile → Payment Methods.';
+
+      // Handle card selection styling
+      const cards = container.querySelectorAll('.ce-pref-card');
+      const radios = container.querySelectorAll('input[name="ce-payment-pref"]');
+      radios.forEach(radio => {
+        radio.addEventListener('change', () => {
+          cards.forEach(card => {
+            card.style.borderColor = 'var(--ev-border)';
+            card.style.background = 'transparent';
+            card.classList.remove('ce-pref-selected');
+          });
+          const selectedCard = radio.closest('.ce-pref-card');
+          if (selectedCard) {
+            selectedCard.style.borderColor = 'var(--ev-pink, #ec4899)';
+            selectedCard.style.background = 'rgba(236,72,153,0.04)';
+            selectedCard.classList.add('ce-pref-selected');
+          }
+        });
+      });
+    } catch (err) {
+      console.warn('Payment preference check failed (non-blocking):', err);
+      section.style.display = 'none';
+    }
+  }
+
   // ── Auto-check status on Publishing tab load ──
   checkStripeStatus();
+  populatePaymentPreference();
 }
 
 export function updateCePreview() {
