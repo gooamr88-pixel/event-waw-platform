@@ -28,9 +28,8 @@
       </a>
       <div class="ev-logo-tagline">DISCOVER & CREATE EVENTS EFFORTLESSLY</div>
       <div class="ev-cards-area">
-        <div class="ev-card ev-card--hosts"><h3><span class="ev-card-icon">🎪</span> Organizers</h3><ul><li>Create and publish events instantly</li><li>Manage tickets, vendors & sponsors</li><li>Track analytics from one dashboard</li></ul></div>
+        <div class="ev-card ev-card--hosts"><h3><span class="ev-card-icon">🎪</span> Organizers</h3><ul><li>Create and publish events instantly</li><li>Manage tickets & track sales</li><li>Track analytics from one dashboard</li></ul></div>
         <div class="ev-card ev-card--exhibitors"><h3><span class="ev-card-icon">🎫</span> Attendees</h3><ul><li>Discover events near you</li><li>Book tickets in seconds</li><li>Get instant QR code entry</li></ul></div>
-        <div class="ev-card ev-card--sponsors"><h3><span class="ev-card-icon">🤝</span> Partners & Sponsors</h3><ul><li>Boost your brand visibility</li><li>Connect with targeted audiences</li><li>Measure ROI with real-time data</li></ul></div>
       </div>
     </div>
     <!-- RIGHT PANEL -->
@@ -62,8 +61,6 @@
                 <option value="" disabled selected>Select here</option>
                 <option value="attendee">Attendee — Browse and book tickets</option>
                 <option value="organizer">Event Host — Create and manage events</option>
-                <option value="exhibitor">Exhibitor / Vendor</option>
-                <option value="sponsor">Sponsor</option>
               </select>
             </div>
             <div class="ev-fg">
@@ -150,7 +147,7 @@
       { q: "📱 How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly. One scan = one entry." },
       { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventsli.com</b> or use the contact form. We typically respond within 24 hours." },
       { q: "🔒 Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers. Everything is encrypted with bank-level security." },
-      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools." }
+      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b> who discover and book events, and <b>Event Hosts</b> who create and manage events with full analytics and ticketing tools." }
     ];
     const chatbox = document.getElementById('ev-chatbox');
     const fab = document.getElementById('ev-chat-fab');
@@ -195,18 +192,19 @@
     const SUPABASE_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co';
     let registeredEmail = '';
 
-    /** Route by role: admin → Motherboard, others → Dashboard */
+    /** Route by role: admin → Motherboard, organizer → Dashboard, attendee → Attendee Dashboard */
     async function getPostAuthRedirect() {
       try {
         const profile = await getCurrentProfile();
         if (profile?.role === 'admin') return '/admin.html';
+        if (profile?.role === 'organizer') return '/dashboard.html';
       } catch (_) {}
-      return '/dashboard.html';
+      return '/attendee-dashboard.html';
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
       initToggles(); initOTPInputs(); initPasswordStrength();
-      const isGuest = await guestOnlyPage({ redirectTo: '/dashboard.html' });
+      const isGuest = await guestOnlyPage();
       if (!isGuest) return;
 
       // Register
@@ -347,7 +345,7 @@
     });
 
     // Google OAuth return
-    // H31 FIX: Guard OAuth return with flag to prevent double-execution race
+    // Show Role Chooser Modal for new Google users
     let _oauthHandled = false;
     (async () => {
       if (_oauthHandled) return;
@@ -356,13 +354,114 @@
         _oauthHandled = true;
         const user = session.user; const meta = user.user_metadata || {};
         const { data: ep } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
-        if (!ep) { await supabase.from('profiles').insert({ id: user.id, email: user.email, full_name: meta.full_name || meta.name || '', avatar_url: meta.avatar_url || null, role: 'attendee' }); }
+        if (!ep) {
+          // New user — show role chooser modal
+          const chosenRole = await showRoleChooserModal(meta.full_name || meta.name || '');
+          await supabase.from('profiles').insert({
+            id: user.id, email: user.email,
+            full_name: meta.full_name || meta.name || '',
+            avatar_url: meta.avatar_url || null,
+            role: chosenRole
+          });
+        }
         const { markOTPVerified } = await import('./src/lib/guard.js');
         await markOTPVerified();
         const oauthDest = await getPostAuthRedirect();
         window.location.href = oauthDest;
       }
     })();
+
+    /**
+     * Show a premium glassmorphism modal asking the user to pick their role.
+     * Returns a Promise that resolves to 'attendee' or 'organizer'.
+     */
+    function showRoleChooserModal(displayName) {
+      return new Promise((resolve) => {
+        const firstName = (displayName || 'there').split(' ')[0];
+        const overlay = document.createElement('div');
+        overlay.id = 'role-chooser-overlay';
+        overlay.innerHTML = `
+          <style>
+            #role-chooser-overlay {
+              position:fixed;inset:0;z-index:99999;
+              background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+              display:flex;align-items:center;justify-content:center;padding:24px;
+              animation:rcFadeIn .4s ease;
+            }
+            @keyframes rcFadeIn { from{opacity:0} to{opacity:1} }
+            @keyframes rcSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+            .rc-box {
+              max-width:440px;width:100%;text-align:center;
+              background:rgba(24,24,27,.75);backdrop-filter:blur(60px) saturate(150%);
+              border:1px solid rgba(5,150,105,.15);border-radius:24px;
+              padding:40px 32px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+              animation:rcSlideUp .5s cubic-bezier(.16,1,.3,1) forwards;
+            }
+            .rc-wave { font-size:2.2rem;margin-bottom:16px;display:block; }
+            .rc-box h2 { font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:8px; }
+            .rc-box p { font-size:.88rem;color:#999;margin-bottom:28px;line-height:1.6; }
+            .rc-roles { display:flex;flex-direction:column;gap:12px; }
+            .rc-role-btn {
+              display:flex;align-items:center;gap:16px;padding:18px 20px;
+              border-radius:16px;border:1.5px solid rgba(255,255,255,.08);
+              background:rgba(255,255,255,.03);cursor:pointer;
+              transition:all .25s cubic-bezier(.16,1,.3,1);text-align:left;
+              color:#fff;font-family:inherit;
+            }
+            .rc-role-btn:hover {
+              border-color:rgba(5,150,105,.4);background:rgba(5,150,105,.08);
+              transform:translateY(-2px);box-shadow:0 8px 24px rgba(5,150,105,.12);
+            }
+            .rc-role-icon {
+              width:48px;height:48px;border-radius:14px;
+              display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+              flex-shrink:0;
+            }
+            .rc-role-icon.attendee { background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2); }
+            .rc-role-icon.organizer { background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.2); }
+            .rc-role-title { font-weight:700;font-size:.95rem;margin-bottom:2px; }
+            .rc-role-desc { font-size:.78rem;color:#888;line-height:1.4; }
+            @media(max-width:500px) { .rc-box{padding:32px 20px;} }
+          </style>
+          <div class="rc-box">
+            <span class="rc-wave">👋</span>
+            <h2>Welcome, ${firstName}!</h2>
+            <p>One last step — what would you like to do on Eventsli?</p>
+            <div class="rc-roles">
+              <button class="rc-role-btn" data-role="attendee">
+                <div class="rc-role-icon attendee">🎫</div>
+                <div>
+                  <div class="rc-role-title">Attend Events</div>
+                  <div class="rc-role-desc">Discover events, buy tickets, and get QR code entry</div>
+                </div>
+              </button>
+              <button class="rc-role-btn" data-role="organizer">
+                <div class="rc-role-icon organizer">🎪</div>
+                <div>
+                  <div class="rc-role-title">Host Events</div>
+                  <div class="rc-role-desc">Create events, sell tickets, and manage your audience</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelectorAll('.rc-role-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const role = btn.dataset.role;
+            // Visual feedback
+            btn.style.borderColor = 'rgba(5,150,105,.6)';
+            btn.style.background = 'rgba(5,150,105,.15)';
+            btn.innerHTML = '<div style="width:100%;text-align:center;color:#059669;font-weight:600;">✓ Selected! Redirecting...</div>';
+            setTimeout(() => {
+              overlay.remove();
+              resolve(role);
+            }, 600);
+          });
+        });
+      });
+    }
 
     async function sendOTPEmail(name, type) {
       const { data: { session } } = await supabase.auth.getSession();

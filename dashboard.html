@@ -112,11 +112,7 @@
         Tickets
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <button class="ev-nav-item" data-panel="approval">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-        Approval
-        <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
+
       <button class="ev-nav-item" data-panel="analytics">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
         Analytics
@@ -345,34 +341,7 @@
       </div>
     </div>
 
-    <!-- ════ PANEL: APPROVAL ════ -->
-    <div class="ev-panel" id="panel-approval">
-      <div class="ev-breadcrumb"><strong>Requests</strong> <span>›</span> <span>Vendor requests</span></div>
-      <div class="ev-tabs">
-        <button class="ev-tab active" data-approval-tab="pending">Pending</button>
-        <button class="ev-tab" data-approval-tab="accepted">Accepted</button>
-        <button class="ev-tab" data-approval-tab="rejected">Rejected</button>
-      </div>
-      <div class="ev-card">
-        <div class="ev-card-header">
-          <div class="ev-event-selector">
-            <label>Event:</label>
-            <select class="ev-filter-select" id="approval-event-select"><option value="">All Events</option></select>
-          </div>
-          <div class="ev-export-group">
-            <button class="ev-btn-icon" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-          </div>
-        </div>
-        <div class="ev-table-wrap">
-          <table class="ev-table">
-            <thead><tr><th>#</th><th>Vendor</th><th>Email</th><th>Type</th><th>Name</th><th>Category</th><th>Price</th><th>Date</th><th>Status</th></tr></thead>
-            <tbody id="approval-tbody">
-              <tr><td colspan="9" class="ev-table-empty">No pending requests</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+
 
     <!-- ════ PANEL: ANALYTICS ════ -->
     <div class="ev-panel" id="panel-analytics">
