@@ -203,15 +203,17 @@ async function loadDashboardData() {
     const [ordersRes, ticketsRes] = await Promise.all([
       supabase
         .from('orders')
-        .select('id, event_id, total_amount, currency, status, created_at, events(id, title, date, end_date, venue, city, cover_image, status)')
+        .select('*, events(*)')
         .eq('user_id', _user.id)
         .order('created_at', { ascending: false }),
       supabase
         .from('tickets')
         .select(`
-          id, status, scanned_at, created_at, order_id,
-          ticket_tiers(name, price,
-            events(id, title, date, venue, city, cover_image)
+          *,
+          orders(id, amount, status, created_at),
+          ticket_tiers(
+            id, name, price,
+            events(id, title, cover_image, venue, venue_address, date, status)
           )
         `)
         .eq('user_id', _user.id)
@@ -244,7 +246,7 @@ function renderStats() {
 
   _orders.forEach(o => {
     if (o.status === 'completed' || o.status === 'paid') {
-      totalSpent += (o.total_amount || 0);
+      totalSpent += (o.total_amount || o.amount || 0);
     }
     const d = o.events?.date ? new Date(o.events.date) : null;
     if (d) {
@@ -461,7 +463,8 @@ function renderOrdersTable() {
   _orders.forEach((o, i) => {
     const tr = document.createElement('tr');
     const dateStr = o.created_at ? new Date(o.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
-    const amount = o.total_amount != null ? (formatCurrency ? formatCurrency(o.total_amount, o.currency) : `$${o.total_amount.toFixed(2)}`) : 'Free';
+    const rawAmount = o.total_amount ?? o.amount;
+    const amount = rawAmount != null ? (formatCurrency ? formatCurrency(rawAmount, o.currency) : `$${Number(rawAmount).toFixed(2)}`) : 'Free';
     const statusClass = o.status === 'completed' || o.status === 'paid' ? 'ev-badge-success' : o.status === 'cancelled' ? 'ev-badge-danger' : 'ev-badge-warning';
     const statusText = o.status ? o.status.charAt(0).toUpperCase() + o.status.slice(1) : 'Unknown';
     const eventTitle = o.events?.title || 'Unknown Event';
