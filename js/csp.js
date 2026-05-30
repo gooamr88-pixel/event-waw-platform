@@ -40,19 +40,19 @@
     // TODO (Phase 3): Migrate inline scripts → external files, add nonce-based
     // CSP, and remove 'unsafe-inline' entirely.
     //
-    // CURRENT STATE: 'strict-dynamic' is included alongside 'unsafe-inline'.
-    // In modern browsers that support 'strict-dynamic' (Chrome 52+, Firefox 52+,
-    // Edge 79+), 'unsafe-inline' is automatically ignored — giving those browsers
-    // real CSP protection. Older browsers that don't support 'strict-dynamic'
-    // fall back to 'unsafe-inline' for compatibility.
+    // NOTE: 'strict-dynamic' was previously included here but has been REMOVED.
+    // On a static HTML site (no server-side nonce generation), 'strict-dynamic'
+    // causes modern browsers to IGNORE both 'unsafe-inline' and all host-based
+    // allowlists, effectively blocking all scripts. It should only be re-added
+    // after migrating to a server-rendered setup with per-request nonces.
     //
     // MIGRATION PATH:
-    //   1. ✅ Add 'strict-dynamic' (done — this step)
+    //   1. ✅ Remove 'strict-dynamic' (it broke inline + host-allowed scripts)
     //   2. Move all inline <script> tags to external .js files
     //   3. Add nonce-based CSP (generate nonce server-side)
-    //   4. Remove 'unsafe-inline' once all scripts are external + nonced
+    //   4. Re-add 'strict-dynamic' + remove 'unsafe-inline' once nonced
     // ──────────────────────────────────────────────────────────────────
-    "script-src 'self' 'unsafe-inline' 'strict-dynamic' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.google.com https://maps.googleusercontent.com https://maps.gstatic.com",
+    "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.google.com https://maps.googleusercontent.com https://maps.gstatic.com",
     
     // Styles: self + inline (needed for our inline <style> blocks) + Google
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.gstatic.com",
