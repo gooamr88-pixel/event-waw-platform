@@ -17,175 +17,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
   <script src="js/csp.js"></script>
-  <style>
-    /* ── Attendee Dashboard Enhancements ── */
-    .att-quick-actions { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
-    .att-action-card {
-      display:flex; flex-direction:column; align-items:center; gap:10px;
-      padding:20px 16px; border-radius:16px; cursor:pointer; text-decoration:none;
-      background:var(--ev-bg); border:1px solid var(--ev-border);
-      transition:all .25s cubic-bezier(.16,1,.3,1); text-align:center;
-    }
-    .att-action-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.1); border-color:rgba(5,150,105,.3); }
-    .att-action-icon {
-      width:48px; height:48px; border-radius:14px;
-      display:flex; align-items:center; justify-content:center; font-size:1.4rem;
-    }
-    .att-action-icon.blue { background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.15); }
-    .att-action-icon.green { background:rgba(5,150,105,.08); border:1px solid rgba(5,150,105,.15); }
-    .att-action-icon.amber { background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.15); }
-    .att-action-icon.purple { background:rgba(139,92,246,.08); border:1px solid rgba(139,92,246,.15); }
-    .att-action-label { font-size:.82rem; font-weight:600; color:var(--ev-text); }
-
-    .att-stat-card {
-      position:relative; overflow:hidden; border-radius:16px; padding:20px;
-      background:var(--ev-bg); border:1px solid var(--ev-border);
-      transition:all .25s ease;
-    }
-    .att-stat-card:hover { border-color:rgba(5,150,105,.25); }
-    .att-stat-card::before {
-      content:''; position:absolute; top:0; left:0; right:0; height:3px;
-      background:linear-gradient(90deg, #059669, #34d399); opacity:0;
-      transition:opacity .3s;
-    }
-    .att-stat-card:hover::before { opacity:1; }
-    .att-stat-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
-    .att-stat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
-    .att-stat-icon.tickets { background:rgba(59,130,246,.08); }
-    .att-stat-icon.upcoming { background:rgba(5,150,105,.08); }
-    .att-stat-icon.past { background:rgba(245,158,11,.08); }
-    .att-stat-icon.spent { background:rgba(139,92,246,.08); }
-    .att-stat-value { font-size:1.6rem; font-weight:800; color:var(--ev-text); line-height:1.2; }
-    .att-stat-label { font-size:.78rem; color:var(--ev-text-muted); margin-top:2px; }
-
-    .att-event-card {
-      border:1px solid var(--ev-border); border-radius:16px; overflow:hidden;
-      background:var(--ev-bg); transition:all .25s cubic-bezier(.16,1,.3,1);
-      cursor:pointer; position:relative;
-    }
-    .att-event-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,.12); border-color:rgba(5,150,105,.25); }
-    .att-event-cover { height:160px; position:relative; overflow:hidden; }
-    .att-event-cover img { width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
-    .att-event-card:hover .att-event-cover img { transform:scale(1.05); }
-    .att-event-cover-overlay {
-      position:absolute; inset:0;
-      background:linear-gradient(180deg, transparent 50%, rgba(0,0,0,.65));
-    }
-    .att-event-date-badge {
-      position:absolute; top:12px; right:12px;
-      background:rgba(0,0,0,.55); backdrop-filter:blur(8px);
-      color:#fff; font-size:.7rem; font-weight:700; padding:6px 12px;
-      border-radius:8px; border:1px solid rgba(255,255,255,.12);
-    }
-    .att-event-countdown {
-      position:absolute; bottom:12px; left:12px;
-      background:rgba(5,150,105,.9); color:#fff;
-      font-size:.7rem; font-weight:700; padding:4px 10px;
-      border-radius:6px; display:flex; align-items:center; gap:4px;
-    }
-    .att-event-body { padding:16px; }
-    .att-event-title { font-size:.95rem; font-weight:700; margin-bottom:8px; line-height:1.4; color:var(--ev-text); }
-    .att-event-meta { display:flex; flex-direction:column; gap:6px; }
-    .att-event-meta-item { display:flex; align-items:center; gap:6px; font-size:.78rem; color:var(--ev-text-muted); }
-    .att-event-meta-item svg { flex-shrink:0; opacity:.6; }
-    .att-event-actions { display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--ev-border); }
-    .att-event-action-btn {
-      flex:1; padding:8px; border-radius:8px; font-size:.75rem; font-weight:600;
-      text-align:center; cursor:pointer; transition:all .2s; border:none; font-family:inherit;
-      text-decoration:none; display:flex; align-items:center; justify-content:center; gap:4px;
-    }
-    .att-event-action-btn.primary { background:rgba(5,150,105,.08); color:#059669; }
-    .att-event-action-btn.primary:hover { background:rgba(5,150,105,.15); }
-    .att-event-action-btn.secondary { background:rgba(255,255,255,.04); color:var(--ev-text-muted); border:1px solid var(--ev-border); }
-    .att-event-action-btn.secondary:hover { border-color:rgba(5,150,105,.3); color:var(--ev-text); }
-
-    .att-ticket-card {
-      display:flex; align-items:stretch; border:1px solid var(--ev-border);
-      border-radius:16px; overflow:hidden; background:var(--ev-bg);
-      transition:all .25s ease; position:relative;
-    }
-    .att-ticket-card:hover { border-color:rgba(5,150,105,.25); box-shadow:0 8px 24px rgba(0,0,0,.08); }
-    .att-ticket-left {
-      width:90px; display:flex; flex-direction:column; align-items:center; justify-content:center;
-      padding:16px 12px; position:relative; flex-shrink:0;
-    }
-    .att-ticket-left::after {
-      content:''; position:absolute; top:0; right:0; bottom:0; width:1px;
-      border-right:2px dashed var(--ev-border);
-    }
-    .att-ticket-month { font-size:.65rem; font-weight:700; text-transform:uppercase; color:#059669; letter-spacing:1px; }
-    .att-ticket-day { font-size:1.6rem; font-weight:900; color:var(--ev-text); line-height:1; }
-    .att-ticket-right { flex:1; padding:16px; display:flex; flex-direction:column; justify-content:center; }
-    .att-ticket-event { font-size:.88rem; font-weight:700; color:var(--ev-text); margin-bottom:4px; }
-    .att-ticket-tier { font-size:.75rem; color:var(--ev-text-muted); margin-bottom:6px; }
-    .att-ticket-status { display:inline-flex; padding:3px 10px; border-radius:6px; font-size:.7rem; font-weight:600; }
-    .att-ticket-status.valid { background:rgba(5,150,105,.08); color:#059669; }
-    .att-ticket-status.used { background:rgba(245,158,11,.08); color:#d97706; }
-    .att-ticket-status.cancelled { background:rgba(239,68,68,.08); color:#ef4444; }
-
-    .att-profile-card { max-width:680px; border-radius:20px; overflow:hidden; }
-    .att-profile-header {
-      background:linear-gradient(135deg, #059669, #047857, #065f46);
-      padding:32px 28px; position:relative; overflow:hidden;
-    }
-    .att-profile-header::after {
-      content:''; position:absolute; top:-30px; right:-30px;
-      width:120px; height:120px; border-radius:50%;
-      background:rgba(255,255,255,.06);
-    }
-    .att-profile-avatar-wrap { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
-    .att-profile-avatar {
-      width:64px; height:64px; border-radius:50%; border:3px solid rgba(255,255,255,.25);
-      background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center;
-      color:#fff; font-size:1.6rem; font-weight:800; overflow:hidden;
-    }
-    .att-profile-avatar img { width:100%; height:100%; object-fit:cover; }
-    .att-profile-header-info h3 { color:#fff; font-size:1.1rem; font-weight:700; margin-bottom:2px; }
-    .att-profile-header-info p { color:rgba(255,255,255,.7); font-size:.82rem; }
-    .att-profile-body { padding:28px; }
-    .att-profile-field { margin-bottom:20px; }
-    .att-profile-field label {
-      display:block; font-size:.72rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:.5px; color:var(--ev-text-muted); margin-bottom:6px;
-    }
-    .att-profile-field input {
-      width:100%; padding:12px 16px; border:1.5px solid var(--ev-border); border-radius:12px;
-      background:var(--ev-bg); color:var(--ev-text); font-size:.88rem; font-family:inherit;
-      outline:none; transition:border-color .3s, box-shadow .3s;
-    }
-    .att-profile-field input:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.08); }
-    .att-profile-field input:disabled { opacity:.55; cursor:not-allowed; }
-
-    .att-empty-state { text-align:center; padding:60px 24px; }
-    .att-empty-icon {
-      width:80px; height:80px; margin:0 auto 20px; border-radius:50%;
-      background:rgba(5,150,105,.04); border:1px solid rgba(5,150,105,.1);
-      display:flex; align-items:center; justify-content:center; font-size:2rem;
-    }
-    .att-empty-title { font-size:1.05rem; font-weight:700; margin-bottom:8px; color:var(--ev-text); }
-    .att-empty-desc { font-size:.85rem; color:var(--ev-text-muted); max-width:380px; margin:0 auto 20px; line-height:1.7; }
-    .att-empty-btn {
-      display:inline-flex; align-items:center; gap:6px; padding:12px 28px;
-      background:#059669; color:#fff; border:none; border-radius:12px;
-      font-size:.85rem; font-weight:700; cursor:pointer; text-decoration:none;
-      transition:all .3s; font-family:inherit;
-    }
-    .att-empty-btn:hover { background:#047857; transform:translateY(-2px); box-shadow:0 8px 24px rgba(5,150,105,.25); }
-
-    .att-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-    .att-section-title { font-size:1.05rem; font-weight:700; color:var(--ev-text); }
-    .att-section-link { font-size:.8rem; font-weight:600; color:#059669; text-decoration:none; transition:color .2s; }
-    .att-section-link:hover { color:#047857; }
-
-    @media(max-width:768px) {
-      .att-quick-actions { grid-template-columns:repeat(2,1fr); }
-    }
-    @media(max-width:480px) {
-      .att-ticket-card { flex-direction:column; }
-      .att-ticket-left { width:100%; flex-direction:row; gap:8px; padding:12px 16px; }
-      .att-ticket-left::after { display:none; }
-    }
-  </style>
+  <link rel="stylesheet" href="css/attendee-dashboard.css" />
   <script>
     (function() {
       try {
@@ -264,31 +96,32 @@
     </div>
   </aside>
 
-  <!-- ══════ MAIN ══════ -->
-  <main class="ev-main">
-    <!-- Header -->
-    <header class="ev-header">
-      <div class="ev-header-left">
-        <h2 id="header-title">Dashboard</h2>
-      </div>
-      <div class="ev-header-right">
-        <button class="ev-dark-toggle" id="theme-toggle-btn" title="Toggle theme">
-          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        </button>
-        <div class="ev-user-wrap" id="user-wrap">
-          <div class="ev-user-info" id="user-info">
-            <div class="ev-user-avatar" id="user-avatar">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="ev-user-meta">
-              <div class="ev-user-name" id="user-name">Loading...</div>
-              <div class="ev-user-email" id="user-role">Attendee</div>
-            </div>
+  <!-- ══════ HEADER ══════ -->
+  <header class="ev-header">
+    <div class="ev-header-left">
+      <h2 id="header-title">Dashboard</h2>
+    </div>
+    <div class="ev-header-right">
+      <button class="ev-dark-toggle" id="theme-toggle-btn" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="ev-user-wrap" id="user-wrap">
+        <div class="ev-user-info" id="user-info">
+          <div class="ev-user-avatar" id="user-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="ev-user-meta">
+            <div class="ev-user-name" id="user-name">Loading...</div>
+            <div class="ev-user-email" id="user-role">Attendee</div>
           </div>
         </div>
       </div>
-    </header>
+    </div>
+  </header>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="ev-main">
 
     <!-- ════ PANEL: OVERVIEW (default) ════ -->
     <div class="ev-panel active" id="panel-overview">
