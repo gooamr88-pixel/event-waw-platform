@@ -203,12 +203,17 @@ async function loadDashboardData() {
     const [ordersRes, ticketsRes] = await Promise.all([
       supabase
         .from('orders')
-        .select('id, event_id, total_amount, currency, status, created_at, events(title, date, end_date, venue, city, country, cover_url, status)')
+        .select('id, event_id, total_amount, currency, status, created_at, events(id, title, date, end_date, venue, city, country, cover_image, status)')
         .eq('user_id', _user.id)
         .order('created_at', { ascending: false }),
       supabase
         .from('tickets')
-        .select('id, event_id, status, scanned_at, created_at, ticket_tiers(name, price, currency), events(title, date, venue, city)')
+        .select(`
+          id, status, scanned_at, created_at, order_id,
+          ticket_tiers(name, price, currency,
+            events(id, title, date, venue, city, cover_image)
+          )
+        `)
         .eq('user_id', _user.id)
         .order('created_at', { ascending: false })
     ]);
@@ -291,7 +296,7 @@ function getCountdown(dateStr) {
 }
 
 function buildEventCard(ev, eventId) {
-  const coverUrl = ev.cover_url || 'images/event-placeholder.png';
+  const coverUrl = ev.cover_image || 'images/event-placeholder.png';
   const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBD';
   const location = [ev.venue, ev.city, ev.country].filter(Boolean).join(', ') || 'Online';
   const countdown = ev.date ? getCountdown(ev.date) : null;
@@ -376,8 +381,8 @@ function renderAllEvents() {
    TICKET CARDS
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function buildTicketCard(ticket) {
-  const ev = ticket.events;
   const tier = ticket.ticket_tiers;
+  const ev = tier?.events;
   const eventDate = ev?.date ? new Date(ev.date) : null;
   const month = eventDate ? eventDate.toLocaleDateString('en-US', { month: 'short' }) : '—';
   const day = eventDate ? eventDate.getDate() : '—';
