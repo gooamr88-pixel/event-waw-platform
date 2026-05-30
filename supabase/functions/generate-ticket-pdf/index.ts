@@ -171,7 +171,8 @@ serve(async (req) => {
         .select('role')
         .eq('id', user.id)
         .single();
-      isAdmin = profile?.role === 'admin';
+      // M6 FIX: Include super_admin in admin check
+      isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
     } else if (guest_token && typeof guest_token === 'string') {
       // C-4 FIX: Hash the guest_token with SHA-256 and verify via RPC
       const encoder = new TextEncoder();

@@ -5,6 +5,11 @@
    Copy these into your Deno edge functions.
    ═══════════════════════════════════ */
 
+// L3 FIX: HTML-encode user-supplied values for email template safety
+function esc(s: string): string {
+  return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 // ── Shared design tokens ──
 const BRAND = {
   name: 'Eventsli',
@@ -116,7 +121,7 @@ export function otpRegisterEmail(code: string, name: string): string {
       </div>
       <h1 style="margin:0 0 8px;font-size:20px;font-weight:700;color:${BRAND.text};">Verify your email</h1>
       <p style="margin:0 0 28px;font-size:14px;color:${BRAND.textMuted};line-height:1.6;">
-        Hi${name ? ' <strong style="color:' + BRAND.text + ';">' + name + '</strong>' : ''}, 
+        Hi${name ? ' <strong style="color:' + BRAND.text + ';">' + esc(name) + '</strong>' : ''}, 
         welcome to ${BRAND.name}! Use this code to complete your registration:
       </p>
       <table role="presentation" align="center" cellpadding="0" cellspacing="0"
@@ -150,7 +155,7 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
     </td></tr>
 
     <tr><td style="padding:36px;">
-      <p style="margin:0 0 4px;font-size:14px;color:${BRAND.textMuted};">Hi ${userName || 'there'},</p>
+      <p style="margin:0 0 4px;font-size:14px;color:${BRAND.textMuted};">Hi ${esc(userName || 'there')},</p>
       <p style="margin:0 0 28px;font-size:14px;color:${BRAND.text};line-height:1.6;">
         Your tickets are confirmed! Show your QR code at the entrance for instant access.
       </p>
@@ -160,7 +165,7 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
         style="background:${BRAND.bg};border:1px solid ${BRAND.borderLight};border-radius:14px;">
         <tr><td style="padding:24px;">
           <h2 style="margin:0 0 20px;font-size:18px;font-weight:700;color:${BRAND.text};line-height:1.3;">
-            ${eventTitle}
+            ${esc(eventTitle)}
           </h2>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
@@ -169,11 +174,11 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};vertical-align:top;">📍 Venue</td>
-              <td style="padding:8px 0;font-size:13px;color:${BRAND.text};font-weight:500;">${eventVenue}</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.text};font-weight:500;">${esc(eventVenue)}</td>
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};vertical-align:top;">🎫 Ticket</td>
-              <td style="padding:8px 0;font-size:13px;color:${BRAND.color};font-weight:600;">${tierName} × ${quantity}</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.color};font-weight:600;">${esc(tierName)} × ${quantity}</td>
             </tr>
             <tr>
               <td colspan="2" style="padding-top:16px;border-top:1px solid ${BRAND.borderLight};"></td>
@@ -225,7 +230,7 @@ export function guestTicketEmail(data: { userName: string; eventTitle: string; t
     </td></tr>
 
     <tr><td style="padding:36px;">
-      <p style="margin:0 0 4px;font-size:14px;color:${BRAND.textMuted};">Hi ${userName || 'there'},</p>
+      <p style="margin:0 0 4px;font-size:14px;color:${BRAND.textMuted};">Hi ${esc(userName || 'there')},</p>
       <p style="margin:0 0 28px;font-size:14px;color:${BRAND.text};line-height:1.6;">
         Your tickets are confirmed! Since you purchased as a guest, <strong style="color:${BRAND.color};">save this email</strong> — 
         the link below is your only way to access your tickets and QR code.
@@ -236,7 +241,7 @@ export function guestTicketEmail(data: { userName: string; eventTitle: string; t
         style="background:${BRAND.bg};border:1px solid ${BRAND.borderLight};border-radius:14px;">
         <tr><td style="padding:24px;">
           <h2 style="margin:0 0 20px;font-size:18px;font-weight:700;color:${BRAND.text};line-height:1.3;">
-            ${eventTitle}
+            ${esc(eventTitle)}
           </h2>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
             <tr>
@@ -245,11 +250,11 @@ export function guestTicketEmail(data: { userName: string; eventTitle: string; t
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};vertical-align:top;">📍 Venue</td>
-              <td style="padding:8px 0;font-size:13px;color:${BRAND.text};font-weight:500;">${eventVenue}</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.text};font-weight:500;">${esc(eventVenue)}</td>
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:13px;color:${BRAND.textDim};vertical-align:top;">🎫 Ticket</td>
-              <td style="padding:8px 0;font-size:13px;color:${BRAND.color};font-weight:600;">${tierName} × ${quantity}</td>
+              <td style="padding:8px 0;font-size:13px;color:${BRAND.color};font-weight:600;">${esc(tierName)} × ${quantity}</td>
             </tr>
             <tr>
               <td colspan="2" style="padding-top:16px;border-top:1px solid ${BRAND.borderLight};"></td>
@@ -308,7 +313,7 @@ export function welcomeEmail(name: string, role: string): string {
         <span style="font-size:28px;">${isOrganizer ? '🎪' : '🎫'}</span>
       </div>
       <h1 style="margin:0 0 8px;font-size:22px;font-weight:700;color:${BRAND.text};">
-        Welcome to ${BRAND.name}${name ? ', ' + name : ''}!
+        Welcome to ${BRAND.name}${name ? ', ' + esc(name) : ''}!
       </h1>
       <p style="margin:0 0 28px;font-size:14px;color:${BRAND.textMuted};line-height:1.6;">
         ${isOrganizer

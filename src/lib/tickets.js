@@ -2,7 +2,7 @@
    EVENTSLI - Tickets API
    =================================== */
 
-import { supabase, supabaseAnonKey } from './supabase.js';
+import { supabase, supabaseAnonKey, SUPABASE_FUNCTIONS_URL } from './supabase.js';
 
 /**
  * Get all tickets for the current user, grouped by event.
@@ -60,7 +60,7 @@ export async function verifyTicket(qrPayload) {
   }
 
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/verify-ticket',
+    `${SUPABASE_FUNCTIONS_URL}/verify-ticket`,
     {
       method: 'POST',
       headers: {
@@ -189,7 +189,7 @@ export async function getOrderBySession(sessionId) {
  */
 export async function getGuestTickets(guestToken) {
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/verify-guest-ticket',
+    `${SUPABASE_FUNCTIONS_URL}/verify-guest-ticket`,
     {
       method: 'POST',
       headers: {
@@ -218,7 +218,7 @@ export async function downloadTicketPDF(ticketId) {
   const { data: { session } } = await supabase.auth.getSession();
 
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
+    `${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`,
     {
       method: 'POST',
       headers: {
@@ -255,7 +255,7 @@ export async function downloadOrderPDF(orderId) {
   const { data: { session } } = await supabase.auth.getSession();
 
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
+    `${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`,
     {
       method: 'POST',
       headers: {
@@ -290,7 +290,7 @@ export async function downloadOrderPDF(orderId) {
  */
 export async function downloadGuestPDF(orderId) {
   const response = await fetch(
-    'https://bmtwdwoibvoewbesohpu.supabase.co/functions/v1/generate-ticket-pdf',
+    `${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`,
     {
       method: 'POST',
       headers: { 
@@ -335,12 +335,31 @@ export async function downloadGuestPDF(orderId) {
 export function createDownloadButton({ ticketId, orderId, isGuest = false, label = 'Download PDF' } = {}) {
   const btn = document.createElement('button');
   btn.className = 'ev-download-btn';
-  btn.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
-    </svg>
-    <span>${label}</span>
-  `;
+  // M17 FIX: Use DOM API instead of innerHTML to prevent XSS via label parameter
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '16');
+  svg.setAttribute('height', '16');
+  svg.setAttribute('viewBox', '0 0 24 24');
+  svg.setAttribute('fill', 'none');
+  svg.setAttribute('stroke', 'currentColor');
+  svg.setAttribute('stroke-width', '2');
+  svg.setAttribute('stroke-linecap', 'round');
+  svg.setAttribute('stroke-linejoin', 'round');
+  const path = document.createElementNS(svgNS, 'path');
+  path.setAttribute('d', 'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4');
+  const polyline = document.createElementNS(svgNS, 'polyline');
+  polyline.setAttribute('points', '7 10 12 15 17 10');
+  const line = document.createElementNS(svgNS, 'line');
+  line.setAttribute('x1', '12'); line.setAttribute('y1', '15');
+  line.setAttribute('x2', '12'); line.setAttribute('y2', '3');
+  svg.appendChild(path);
+  svg.appendChild(polyline);
+  svg.appendChild(line);
+  const span = document.createElement('span');
+  span.textContent = label; // textContent prevents XSS
+  btn.appendChild(svg);
+  btn.appendChild(span);
 
   btn.addEventListener('click', async (e) => {
     e.preventDefault();

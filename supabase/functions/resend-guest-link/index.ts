@@ -17,6 +17,12 @@ const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') || '';
 const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventsli.com';
 const BREVO_SENDER_NAME = 'Eventsli';
 
+// L4 FIX: Mask PII in logs — show first 2 chars + ***@domain
+function maskEmail(e: string): string {
+  const [local, domain] = e.split('@');
+  return (local?.substring(0, 2) || '') + '***@' + (domain || '***');
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   const corsResponse = handleCORS(req);
@@ -80,7 +86,7 @@ serve(async (req) => {
 
     // Always return success to prevent email enumeration
     if (!orders || orders.length === 0) {
-      console.log(`No guest orders found for email: ${normalizedEmail}`);
+      console.log(`No guest orders found for email: ${maskEmail(normalizedEmail)}`);
       return jsonResponse({
         success: true,
         message: 'If tickets exist for this email, you will receive an access link shortly.',
@@ -139,7 +145,7 @@ serve(async (req) => {
         }),
       });
 
-      console.log(`✉️ Guest ticket resend email sent to ${normalizedEmail} (${ticketLinks.length} orders)`);
+      console.log(`✉️ Guest ticket resend email sent to ${maskEmail(normalizedEmail)} (${ticketLinks.length} orders)`);
     }
 
     return jsonResponse({

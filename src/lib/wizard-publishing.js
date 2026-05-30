@@ -9,6 +9,9 @@ import { emitDashboardAction } from './dashboard-bus.js';
 import { getTicketsList, getPromoCodesList } from './wizard-tickets.js';
 import { uploadCoverImage, uploadEventFile, getPendingCoverFile } from './wizard-uploads.js';
 import DOMPurify from 'https://esm.sh/dompurify@3.2.4';
+import { setSafeHTML } from './dom.js';
+
+const escapeHTML = (s) => { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; };
 
 let isPublishing = false;
 
@@ -53,14 +56,14 @@ function showTermsAcceptanceModal(requiredVersion) {
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-label', 'Platform Terms Acceptance');
 
-    overlay.innerHTML = `
+    setSafeHTML(overlay, `
       <div class="ev-modal" style="max-width:600px; max-height:85vh; display:flex; flex-direction:column;">
         <div class="ev-modal-header" style="flex-shrink:0;">
           <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #ec4899, #8b5cf6); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">📋</div>
             <div>
               <h2 style="margin:0; font-size:1.15rem;">Platform Terms & Conditions</h2>
-              <p style="margin:4px 0 0; font-size:0.8rem; color:var(--ev-text-sec);">Version ${requiredVersion} — Review required before publishing</p>
+              <p style="margin:4px 0 0; font-size:0.8rem; color:var(--ev-text-sec);">Version ${escapeHTML(requiredVersion)} — Review required before publishing</p>
             </div>
           </div>
           <button class="ev-modal-close" id="ev-terms-close">✕</button>
@@ -99,7 +102,7 @@ function showTermsAcceptanceModal(requiredVersion) {
           <label id="ev-terms-checkbox-label" style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; padding:12px 16px; border-radius:10px; border:1px solid var(--ev-border); background:rgba(0,0,0,0.15); margin-bottom:16px; transition:all 0.2s;">
             <input type="checkbox" id="ev-terms-agree" style="width:20px; height:20px; margin-top:2px; accent-color:var(--ev-pink); flex-shrink:0;" />
             <span style="font-size:0.84rem; color:var(--ev-text-primary); line-height:1.5;">
-              I have read and agree to the <strong>Eventsli Merchant Agreement</strong> (Version ${requiredVersion}). I understand that my acceptance is legally binding.
+              I have read and agree to the <strong>Eventsli Merchant Agreement</strong> (Version ${escapeHTML(requiredVersion)}). I understand that my acceptance is legally binding.
             </span>
           </label>
 
@@ -109,7 +112,7 @@ function showTermsAcceptanceModal(requiredVersion) {
           </div>
         </div>
       </div>
-    `;
+    `);
 
     document.body.appendChild(overlay);
 
@@ -805,7 +808,8 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         vodafone_cash: 'Vodafone Cash', instapay: 'InstaPay',
         bank_transfer: 'Bank Transfer', fawry: 'Fawry', other: 'Other'
       };
-      const manualSummary = configuredManual.map(pm => methodLabels[pm.method] || pm.method).join(', ');
+      // M11 FIX: Escape method names to prevent stored XSS via JSONB
+      const manualSummary = escapeHTML(configuredManual.map(pm => methodLabels[pm.method] || pm.method).join(', '));
 
       section.style.display = '';
       container.innerHTML = `

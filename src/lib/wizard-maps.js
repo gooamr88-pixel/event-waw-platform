@@ -44,6 +44,9 @@ let googleMapsRetries = 0;
 export async function initGooglePlacesAutocomplete(deps) {
   if (googleAutocompleteInitialized) return;
 
+  // Trigger lazy loading of Google Maps API (defined in dashboard.html)
+  if (typeof window.loadGoogleMaps === 'function') window.loadGoogleMaps();
+
   // Guard: wait for Google Maps API to load
   if (typeof google === 'undefined' || !google.maps || !google.maps.importLibrary) {
     if (googleMapsRetries++ < 20) {

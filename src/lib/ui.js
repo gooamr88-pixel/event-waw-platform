@@ -153,6 +153,9 @@ export function initParticles() {
 /**
  * Initialize the desktop account dropdown toggles with click-outside behavior.
  */
+// U5 FIX: Guard flag to prevent duplicate document-level listeners
+let _dropdownListenerAdded = false;
+
 export function initUserDropdown() {
   const userBtn = document.getElementById('nav-user-btn');
   if (!userBtn) return;
@@ -166,9 +169,13 @@ export function initUserDropdown() {
       userBtn.classList.toggle('active');
     });
     
-    document.addEventListener('click', () => {
-      userBtn.classList.remove('active');
-    });
+    // U5 FIX: Only add document click listener once
+    if (!_dropdownListenerAdded) {
+      document.addEventListener('click', () => {
+        userBtn.classList.remove('active');
+      });
+      _dropdownListenerAdded = true;
+    }
     
     dropdown.addEventListener('click', (e) => {
       e.stopPropagation();

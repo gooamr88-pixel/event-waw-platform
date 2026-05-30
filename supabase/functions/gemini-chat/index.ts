@@ -70,11 +70,11 @@ serve(async (req) => {
   );
   const { data: profile } = await adminClient
     .from('profiles')
-    .select('user_role')
+    .select('role')  // M7 FIX: was 'user_role', must be 'role' to match schema
     .eq('id', user.id)
     .single();
 
-  const userRole = profile?.user_role;
+  const userRole = profile?.role;  // M7 FIX: was profile?.user_role
   if (userRole !== 'admin' && userRole !== 'super_admin') {
     return errorResponse(403, 'Forbidden', {}, req);
   }

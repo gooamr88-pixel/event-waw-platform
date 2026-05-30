@@ -10,14 +10,15 @@
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Eventsli — Discover & Create Events Effortlessly" />
   <meta property="og:description" content="Book tickets for concerts, festivals, exhibitions, sports, and conferences. All-in-one event platform." />
-  <meta property="og:image" content="images/logo.png" />
+  <!-- L-og: Use absolute URL for og:image so social crawlers can resolve it -->
+  <meta property="og:image" content="https://eventsli.com/images/logo.png" />
   <meta property="og:site_name" content="Eventsli" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Eventsli — Discover & Create Events" />
   <meta name="twitter:description" content="Book tickets for concerts, festivals, exhibitions, sports, and conferences." />
-  <meta name="twitter:image" content="images/logo.png" />
+  <meta name="twitter:image" content="https://eventsli.com/images/logo.png" />
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json" />
@@ -49,6 +50,13 @@
   <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-landing cms-loading">
+  <!-- L-noscript: Graceful degradation for JS-disabled browsers -->
+  <noscript>
+    <div style="padding:40px 20px;text-align:center;background:#09090b;color:#f4f4f5;font-family:sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;flex-direction:column;">
+      <h1 style="font-size:1.5rem;margin-bottom:16px;">JavaScript Required</h1>
+      <p style="color:#a1a1aa;max-width:400px;">Eventsli requires JavaScript to function. Please enable JavaScript in your browser settings and reload the page.</p>
+    </div>
+  </noscript>
   <style>
     /* ═══ SKELETON SCREEN — Zero-FOUC CMS Loading Architecture ═══
        Pattern: Hide ALL hardcoded CMS content from first paint.
@@ -274,7 +282,8 @@
     <button class="close-btn" id="mobile-close">✕</button>
     <a href="index.html">Home</a>
     <a href="events.html">Events</a>
-    
+    <a href="my-tickets.html">My Tickets</a>
+    <!-- U7 FIX: My Tickets link was missing from mobile menu for unauth users -->
     <a href="how-it-works.html">How It Works</a>
     <a href="why-us.html">Why Us?</a>
     <a href="contact.html">Contact Us</a>
@@ -580,7 +589,8 @@
           <ul class="footer-links">
             <li><a href="contact.html">Help Center</a></li>
             <li><a href="contact.html">Contact</a></li>
-            <li><a href="#ev-chat-fab" onclick="document.getElementById('ev-chat-fab').click()">FAQ</a></li>
+            <!-- U10 FIX: Fallback to contact page if chat widget doesn't exist -->
+            <li><a href="contact.html" onclick="var fab=document.getElementById('ev-chat-fab');if(fab){fab.click();event.preventDefault()}">FAQ</a></li>
           </ul>
         </div>
         <div>
@@ -596,9 +606,9 @@
         <span>&copy; 2026 Eventsli. All rights reserved.</span>
         <span style="color:#777;">Made by <a href="https://eventsli.com" style="color:#059669;text-decoration:none;font-weight:600;">Yousef Amr</a></span>
         <div class="footer-social">
-          <a href="#" aria-label="Twitter"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
-          <a href="#" aria-label="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+          <a href="https://x.com/eventsli" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a>
+          <a href="https://instagram.com/eventsli" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+          <a href="https://linkedin.com/company/eventsli" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
         </div>
       </div>
     </div>
@@ -728,9 +738,19 @@
         try {
           var controller = new AbortController();
           var timeout = setTimeout(function() { controller.abort(); }, 15000);
+          // C19: Send auth token when available for authenticated rate-limiting
+          var fetchHeaders = { 'Content-Type': 'application/json' };
+          try {
+            var sbKey = Object.keys(localStorage).find(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
+            if (sbKey) {
+              var session = JSON.parse(localStorage.getItem(sbKey));
+              var token = session && session.access_token;
+              if (token) fetchHeaders['Authorization'] = 'Bearer ' + token;
+            }
+          } catch(_authErr) {} // Silently ignore — chat works for unauthenticated users too
           var resp = await fetch(GEMINI_ENDPOINT, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: fetchHeaders,
             body: JSON.stringify({ message: text, history: chatHistory.slice(-10) }),
             signal: controller.signal,
           });
@@ -902,32 +922,56 @@
              // Setup Image Slider
              if (heroImgContainer) {
                if (slides.length === 1) {
-                  heroImgContainer.innerHTML = `<img src="${escapeHTML(slides[0].image_url)}" alt="Featured Event" loading="eager" style="border-radius:20px; width:100%; aspect-ratio:4/5; display:block; object-fit:contain; background:transparent;" onerror="this.style.display='none'" />`;
+                  heroImgContainer.textContent = ''; // Clear safely
+                  const img = document.createElement('img');
+                  img.src = slides[0].image_url;
+                  img.alt = 'Featured Event';
+                  img.loading = 'eager';
+                  Object.assign(img.style, { borderRadius: '20px', width: '100%', aspectRatio: '4/5', display: 'block', objectFit: 'contain', background: 'transparent' });
+                  img.addEventListener('error', function() { this.style.display = 'none'; });
+                  heroImgContainer.appendChild(img);
                   updateHeroText(slides[0]);
                } else {
-                  // Build HTML for images, progress, and arrows
-                  let html = '';
-                  slides.forEach((s, i) => {
-                    const isActive = i === 0;
-                    html += `
-                    <div class="hero-slide ${isActive ? 'active' : ''}" style="position:${isActive ? 'relative' : 'absolute'}; top:0; left:0; width:100%; ${isActive ? 'aspect-ratio:4/5;' : 'height:100%;'} border-radius:20px; overflow:hidden; opacity:${isActive ? '1' : '0'}; transition:opacity 0.5s ease-in-out; background:transparent;">
-                      <img src="${escapeHTML(s.image_url)}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; z-index:1;" onerror="this.parentElement.style.display='none'" />
-                    </div>`;
-                  });
-                  let arrowsHTML = `
-                    <button class="hero-arrow-left" aria-label="Previous Slide" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10094;</button>
-                    <button class="hero-arrow-right" aria-label="Next Slide" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10095;</button>
-                  `;
-                  let dotsHTML = `<div style="position:absolute;bottom:35px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10">
-                    ${slides.map((_,i) => `<div class="hero-dot-wrapper" style="position:relative; width:30px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; overflow:hidden; cursor:pointer;" data-idx="${i}">
-                       <div class="hero-dot-progress" style="position:absolute; top:0; left:0; height:100%; width:${i===0?'100%':'0%'}; background:#fff; transition: width 0.1s linear;"></div>
-                    </div>`).join('')}
-                  </div>`;
-                  
-                  heroImgContainer.style.position = 'relative';
-                  heroImgContainer.style.borderRadius = '20px';
-                  heroImgContainer.style.touchAction = 'pan-y'; // Allow vertical scrolling, but catch horizontal swipes
-                  heroImgContainer.innerHTML = html + arrowsHTML + dotsHTML;
+                   // Build slides using safe DOM construction for CMS-driven image URLs
+                   heroImgContainer.textContent = ''; // Clear safely
+                   heroImgContainer.style.position = 'relative';
+                   heroImgContainer.style.borderRadius = '20px';
+                   heroImgContainer.style.touchAction = 'pan-y'; // Allow vertical scrolling, but catch horizontal swipes
+
+                   slides.forEach((s, i) => {
+                     const isActive = i === 0;
+                     const slideDiv = document.createElement('div');
+                     slideDiv.className = 'hero-slide' + (isActive ? ' active' : '');
+                     Object.assign(slideDiv.style, {
+                       position: isActive ? 'relative' : 'absolute',
+                       top: '0', left: '0', width: '100%',
+                       borderRadius: '20px', overflow: 'hidden',
+                       opacity: isActive ? '1' : '0',
+                       transition: 'opacity 0.5s ease-in-out',
+                       background: 'transparent'
+                     });
+                     if (isActive) { slideDiv.style.aspectRatio = '4/5'; } else { slideDiv.style.height = '100%'; }
+                     const slideImg = document.createElement('img');
+                     slideImg.src = s.image_url; // Set via property, not innerHTML
+                     Object.assign(slideImg.style, { position: 'absolute', top: '0', left: '0', width: '100%', height: '100%', objectFit: 'contain', zIndex: '1' });
+                     slideImg.addEventListener('error', function() { this.parentElement.style.display = 'none'; });
+                     slideDiv.appendChild(slideImg);
+                     heroImgContainer.appendChild(slideDiv);
+                   });
+
+                   // Arrows and dots are static (non-CMS) markup — safe to use setSafeHTML
+                   const controlsWrap = document.createElement('div');
+                   setSafeHTML(controlsWrap, `
+                     <button class="hero-arrow-left" aria-label="Previous Slide" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10094;</button>
+                     <button class="hero-arrow-right" aria-label="Next Slide" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:32px;height:32px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); transition:background 0.2s;">&#10095;</button>
+                     <div style="position:absolute;bottom:35px;left:50%;transform:translateX(-50%);display:flex;gap:8px;z-index:10">
+                       ${slides.map((_,i) => `<div class="hero-dot-wrapper" style="position:relative; width:30px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; overflow:hidden; cursor:pointer;" data-idx="${i}">
+                          <div class="hero-dot-progress" style="position:absolute; top:0; left:0; height:100%; width:${i===0?'100%':'0%'}; background:#fff; transition: width 0.1s linear;"></div>
+                       </div>`).join('')}
+                     </div>
+                   `);
+                   // Move children from controlsWrap into heroImgContainer
+                   while (controlsWrap.firstChild) { heroImgContainer.appendChild(controlsWrap.firstChild); }
                   
                   let currentSlide = 0;
                   let progressInterval;

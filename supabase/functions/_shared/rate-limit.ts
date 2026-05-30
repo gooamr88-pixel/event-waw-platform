@@ -4,9 +4,24 @@
 // For Supabase Edge Functions (Deno)
 // ═══════════════════════════════════
 //
-// NOTE: This is per-isolate. Each cold start resets the map.
-// For production at scale, consider Upstash Redis.
-// This is sufficient for MVP launch protection.
+// ╔══════════════════════════════════════════════════════════════╗
+// ║ ⚠️  SECURITY WARNING: PER-ISOLATE LIMITATION                ║
+// ║                                                              ║
+// ║ This rate limiter uses in-memory Maps, which means:          ║
+// ║  1. Each Deno isolate (cold start) gets a FRESH, empty map.  ║
+// ║  2. Supabase spins up multiple isolates under load.          ║
+// ║  3. An attacker sending concurrent requests will hit          ║
+// ║     different isolates, each with independent counters.       ║
+// ║  4. Rate limits are NOT enforced across isolates.             ║
+// ║                                                              ║
+// ║ This provides basic protection against casual abuse only.     ║
+// ║ It does NOT prevent determined brute-force or credential      ║
+// ║ stuffing attacks at scale.                                    ║
+// ║                                                              ║
+// ║ TODO: Replace with Upstash Redis (@upstash/ratelimit) for    ║
+// ║ production-grade, globally-consistent rate limiting.          ║
+// ║ See: https://upstash.com/docs/redis/sdks/ratelimit-ts/gettingstarted ║
+// ╚══════════════════════════════════════════════════════════════╝
 
 import { errorResponse } from './cors.ts';
 

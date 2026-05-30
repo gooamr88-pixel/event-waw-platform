@@ -63,7 +63,7 @@ export function renderCalendar() {
     dayEvents.forEach(ev => {
       const isPast = new Date(ev.date) < today;
       const cls = ev.status === 'draft' ? 'draft' : isPast ? 'past' : '';
-      html += `<a href="event-detail.html?id=${ev.id}" class="ev-calendar-event ${cls}" title="${escapeHTML(ev.title)}">${escapeHTML(ev.title)}</a>`;
+      html += `<a href="event-detail.html?id=${encodeURIComponent(ev.id)}" class="ev-calendar-event ${cls}" title="${escapeHTML(ev.title)}">${escapeHTML(ev.title)}</a>`;
     });
     html += '</div>';
   }

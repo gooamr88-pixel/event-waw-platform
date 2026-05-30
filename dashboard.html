@@ -33,8 +33,36 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <!-- Google Maps Places API (New) -->
+  <!--
+    ⚠️  SECURITY: This API key is visible in client-side source code.
+    It MUST have HTTP referrer restrictions configured in the Google Cloud Console
+    to prevent unauthorized usage. Restrict to your production domain(s):
+      - https://eventsli.com/*
+      - https://www.eventsli.com/*
+      - http://localhost:*/* (for development only)
+
+    TODO: Configure API key restrictions in Google Cloud Console:
+    https://console.cloud.google.com/apis/credentials
+  -->
   <script>
-    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:"AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4",v:"weekly"});
+    // Lazy-load Google Maps API — only initializes when loadGoogleMaps() is called
+    // (e.g., when the venue/map section of the create-event form is accessed)
+    window.__googleMapsLoaded = false;
+    window.loadGoogleMaps = function() {
+      if (window.__googleMapsLoaded) return Promise.resolve();
+      window.__googleMapsLoaded = true;
+      return new Promise(function(resolve, reject) {
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;a.defer=true;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:"AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4",v:"weekly"});
+        // Resolve when the API is ready
+        var checkReady = setInterval(function() {
+          if (window.google && window.google.maps && window.google.maps.importLibrary) {
+            clearInterval(checkReady);
+            resolve();
+          }
+        }, 100);
+        setTimeout(function() { clearInterval(checkReady); resolve(); }, 10000);
+      });
+    };
   </script>
   <script>
     (function() {

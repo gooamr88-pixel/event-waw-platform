@@ -82,6 +82,12 @@ export async function showManualCheckoutModal(opts) {
       showToast('Please enter a valid email address.', 'error');
       return;
     }
+
+    // H23 FIX: Validate tier/event IDs exist before sending to server
+    if (!tierId || !eventId) {
+      showToast('Invalid ticket selection. Please try again.', 'error');
+      return;
+    }
     // Strict phone validation supporting Egyptian (01XXXXXXXXX) or generic international numbers
     const cleanPhone = phone.replace(/[\s-]/g, '');
     if (!/^(\+?)[0-9]{8,15}$/.test(cleanPhone)) {

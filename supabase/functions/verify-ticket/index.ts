@@ -133,7 +133,7 @@ serve(async (req) => {
         .from('gate_team')
         .select('id')
         .eq('organizer_id', eventOrganizerId)
-        .eq('staff_email', user.email)
+        .eq('staff_email', user.email?.toLowerCase())
         .in('status', ['invited', 'active'])
         .maybeSingle();
 

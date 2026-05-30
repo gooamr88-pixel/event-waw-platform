@@ -95,7 +95,10 @@ serve(async (req) => {
         status: order.status,
         created_at: order.created_at,
         guest_name: order.guest_name,
-        guest_email: order.guest_email,
+        // L1 FIX: Redact full email — only show masked version to prevent PII leak
+        guest_email: order.guest_email
+          ? order.guest_email.substring(0, 2) + '***@' + order.guest_email.split('@')[1]
+          : null,
       },
       tickets: (order.tickets || []).map((t: any) => ({
         id: t.id,

@@ -51,6 +51,16 @@ function isAllowedOrigin(origin: string): boolean {
 }
 
 /**
+ * H1/H2 FIX: Validate origin for redirect URLs (Stripe success/cancel/return/refresh).
+ * Returns the origin only if it's in the allowlist, otherwise falls back to production domain.
+ * This prevents attackers from setting Origin: https://evil.com to hijack post-payment redirects.
+ */
+export function getSafeRedirectOrigin(req: Request): string {
+  const origin = req.headers.get('origin') || '';
+  return isAllowedOrigin(origin) ? origin : ALLOWED_ORIGINS[0]; // Falls back to https://eventsli.com
+}
+
+/**
  * Get CORS headers for a specific request, matching the Origin dynamically.
  */
 export function getCorsHeaders(req?: Request): Record<string, string> {

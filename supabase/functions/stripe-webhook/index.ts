@@ -31,7 +31,17 @@ const HANDLED_EVENTS = new Set([
 ]);
 
 serve(async (req) => {
-  const signature = req.headers.get('stripe-signature')!;
+  const signature = req.headers.get('stripe-signature');
+
+  // M3 FIX: Explicitly reject missing signature before SDK call
+  if (!signature) {
+    console.error('⛔ Webhook rejected: missing stripe-signature header');
+    return new Response(
+      JSON.stringify({ error: 'Missing stripe-signature header' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
   const body = await req.text(); // Raw body for signature verification
 
   let event: any;
@@ -490,66 +500,96 @@ serve(async (req) => {
       return new Response(JSON.stringify({ received: true }), { status: 200 });
     }
 
-    // Mark order as refunded
-    await supabase
-      .from('orders')
-      .update({ status: 'refunded' })
-      .eq('id', order.id);
+    // M1 FIX: Attempt atomic refund processing via RPC
+    // If process_refund RPC exists, use it for atomicity.
+    // Otherwise fall back to sequential with comprehensive error logging.
+    const { data: refundResult, error: refundError } = await supabase
+      .rpc('process_refund', {
+        p_order_id: order.id,
+        p_payment_intent: paymentIntent,
+      });
 
-    // BRD FIX: Update payments table status to 'refunded'
-    // Critical: get_organizer_financials() calculates refund amounts from
-    // payments.status IN ('refunded'). Without this, organizer's available
-    // balance stays inflated and they could withdraw refunded funds.
-    await supabase
-      .from('payments')
-      .update({ status: 'refunded', updated_at: new Date().toISOString() })
-      .eq('order_id', order.id);
+    if (refundError) {
+      // Fallback: RPC may not exist yet — use sequential operations
+      if (refundError.code === '42883') { // function does not exist
+        console.warn('M1: process_refund RPC not found, using sequential fallback');
 
-    console.log(`💰 Payment record updated to refunded for order ${order.id}`);
+        // Mark order as refunded
+        const { error: orderUpdateErr } = await supabase
+          .from('orders')
+          .update({ status: 'refunded' })
+          .eq('id', order.id);
+        if (orderUpdateErr) console.error('M1: Failed to update order status:', orderUpdateErr);
 
-    // Cancel all associated tickets
-    const { data: cancelledTickets } = await supabase
-      .from('tickets')
-      .update({ status: 'cancelled' })
-      .eq('order_id', order.id)
-      .eq('status', 'valid') // Only cancel valid (un-scanned) tickets
-      .select('id, ticket_tier_id');
+        // Update payments table
+        const { error: paymentUpdateErr } = await supabase
+          .from('payments')
+          .update({ status: 'refunded', updated_at: new Date().toISOString() })
+          .eq('order_id', order.id);
+        if (paymentUpdateErr) console.error('M1: Failed to update payment status:', paymentUpdateErr);
 
-    // Decrement sold_count for affected tiers
-    if (cancelledTickets && cancelledTickets.length > 0) {
-      // Group by tier
-      const tierCounts: Record<string, number> = {};
-      for (const t of cancelledTickets) {
-        tierCounts[t.ticket_tier_id] = (tierCounts[t.ticket_tier_id] || 0) + 1;
-      }
-      for (const [tierId, count] of Object.entries(tierCounts)) {
-        await supabase.rpc('increment_sold_count', {
-          p_tier_id: tierId,
-          p_amount: -count, // Negative to decrement
+        console.log(`💰 Payment record updated to refunded for order ${order.id}`);
+
+        // Cancel all associated tickets
+        const { data: cancelledTickets, error: ticketErr } = await supabase
+          .from('tickets')
+          .update({ status: 'cancelled' })
+          .eq('order_id', order.id)
+          .eq('status', 'valid')
+          .select('id, ticket_tier_id');
+        if (ticketErr) console.error('M1: Failed to cancel tickets:', ticketErr);
+
+        // Decrement sold_count for affected tiers
+        if (cancelledTickets && cancelledTickets.length > 0) {
+          const tierCounts: Record<string, number> = {};
+          for (const t of cancelledTickets) {
+            tierCounts[t.ticket_tier_id] = (tierCounts[t.ticket_tier_id] || 0) + 1;
+          }
+          for (const [tierId, count] of Object.entries(tierCounts)) {
+            await supabase.rpc('increment_sold_count', {
+              p_tier_id: tierId,
+              p_amount: -count,
+            });
+          }
+        }
+
+        // Release seats if this was a seated order
+        try {
+          const { data: orderDetail } = await supabase
+            .from('orders')
+            .select('reservation_id')
+            .eq('id', order.id)
+            .single();
+          if (orderDetail?.reservation_id) {
+            await supabase.rpc('release_seats_for_order', {
+              p_reservation_id: orderDetail.reservation_id,
+            });
+            console.log(`💺 Seats released for refunded order ${order.id}`);
+          }
+        } catch (seatErr) {
+          console.error('Failed to release seats on refund:', seatErr);
+        }
+
+        console.log(`💸 Refund processed (sequential): order ${order.id}`);
+      } else {
+        console.error('CRITICAL: process_refund RPC failed:', refundError);
+        // Log to webhook_failures for manual review
+        try {
+          await supabase.from('webhook_failures').insert({
+            stripe_session_id: paymentIntent,
+            order_id: order.id,
+            error: 'REFUND_PROCESSING_FAILED: ' + JSON.stringify(refundError),
+            payload: JSON.stringify({ payment_intent: paymentIntent }),
+          });
+        } catch (e) { console.error('Failed to log refund failure:', e); }
+        return new Response(JSON.stringify({ error: 'Refund processing failed' }), {
+          status: 500,
+          headers: { 'Content-Type': 'application/json' },
         });
       }
+    } else {
+      console.log(`💸 Refund processed (atomic): order ${order.id}, result: ${JSON.stringify(refundResult)}`);
     }
-
-    // Release seats if this was a seated order
-    if (order) {
-      try {
-        const { data: orderDetail } = await supabase
-          .from('orders')
-          .select('reservation_id')
-          .eq('id', order.id)
-          .single();
-        if (orderDetail?.reservation_id) {
-          await supabase.rpc('release_seats_for_order', {
-            p_reservation_id: orderDetail.reservation_id,
-          });
-          console.log(`💺 Seats released for refunded order ${order.id}`);
-        }
-      } catch (seatErr) {
-        console.error('Failed to release seats on refund:', seatErr);
-      }
-    }
-
-    console.log(`💸 Refund processed: order ${order.id}, ${cancelledTickets?.length || 0} tickets cancelled`);
   }
 
   // ════════════════════════════════════════════════

@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/theme.css?v=1778306046" />
   <link rel="stylesheet" href="css/mobile-ios.css?v=1778308900" />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
-  <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
+  <!-- H27 FIX: Removed forced theme override. Theme handled by global initThemeFromStorage() -->
   <script src="js/csp.js"></script>
   <style>
     /* Premium Clean Light Theme Overrides */
@@ -605,12 +605,12 @@
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;" class="ani-up d4">
           <a id="btn-my-tickets" href="my-tickets.html" class="btn btn-primary btn-full" style="border-radius: 12px; font-weight: 600;">View All My Tickets</a>
-          <a href="my-tickets.html" class="btn btn-outline btn-full" style="border-radius: 12px; font-weight: 600;">Browse More Events</a>
+          <a href="events.html" class="btn btn-outline btn-full" style="border-radius: 12px; font-weight: 600;">Browse More Events</a>
         </div>
       </div>
 
       <!-- Error View -->
-      <div id="error-view" style="display:none;" class="auth-box" style="text-align:center; background: #ffffff !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; padding: 32px 24px !important;">
+      <div id="error-view" style="display:none; text-align:center; background: #ffffff !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; padding: 32px 24px !important;" class="auth-box">
         <div style="text-align:center;">
           <div class="auth-ok-ic" style="width:60px;height:60px;margin-bottom:14px;border:1px solid rgba(239,68,68,.15) !important;background:rgba(239,68,68,.05); display: flex; align-items: center; justify-content: center;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
@@ -816,11 +816,42 @@
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
 
-      // Initialize Particles
+      // Initialize Particles with H28 FIX: auto-stop + visibility pause
       try {
         const particleCanvas = document.getElementById('particles');
         const particleSystem = new ParticleSystem(particleCanvas);
-        particleSystem.animate();
+
+        // H28 FIX: Track animation state for pause/resume
+        let particleAnimId = null;
+        let particleStopped = false;
+
+        function animateParticles() {
+          if (particleStopped) return;
+          particleSystem.update();
+          particleSystem.draw();
+          particleAnimId = requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // H28 FIX: Pause when tab is hidden to prevent CPU waste
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            if (particleAnimId) cancelAnimationFrame(particleAnimId);
+            particleAnimId = null;
+          } else if (!particleStopped) {
+            animateParticles();
+          }
+        });
+
+        // H28 FIX: Auto-stop particles after 30 seconds (page is already confirmed)
+        setTimeout(() => {
+          particleStopped = true;
+          if (particleAnimId) cancelAnimationFrame(particleAnimId);
+          particleAnimId = null;
+          // Clear the canvas
+          const ctx = particleCanvas.getContext('2d');
+          ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+        }, 30000);
       } catch (err) {
         console.error('Error starting particles:', err);
       }
@@ -1013,7 +1044,10 @@
                       </div>
                     </div>`;
                   }
-                } catch(e) {}
+                } catch(e) {
+                  console.warn('Failed to parse seat data from qr_hash:', e);
+                  return `<div class="assigned-seat-section" style="text-align:center;font-size:0.78rem;color:#6b7280;">Seat info unavailable</div>`;
+                }
               }
               return '';
             })()}

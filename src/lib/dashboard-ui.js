@@ -78,7 +78,8 @@ export function switchToPanel(panelName) {
   const panels = document.querySelectorAll('.ev-panel');
   items.forEach(i => i.classList.remove('active'));
   panels.forEach(p => p.classList.remove('active'));
-  const navItem = document.querySelector(`[data-panel="${panelName}"]`);
+  // U6 FIX: Use CSS.escape to prevent selector injection with special chars
+  const navItem = document.querySelector(`[data-panel="${CSS.escape(panelName)}"]`);
   if (navItem) navItem.classList.add('active');
   const panel = document.getElementById('panel-' + panelName);
   if (panel) panel.classList.add('active');

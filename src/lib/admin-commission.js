@@ -128,12 +128,12 @@ function showSettleModal(eventId, balance, panelContainer) {
   const modal = document.createElement('div');
   modal.id = 'acd-settle-modal';
   modal.className = 'acd-settle-modal';
-  modal.innerHTML = `
+  setSafeHTML(modal, `
     <div class="acd-settle-box">
       <h3>💰 Record <span style="color:var(--ev-accent,#d4af37)">Settlement</span></h3>
       <div class="ev-form-group">
         <label style="font-size:.82rem;font-weight:600">Amount (EGP)</label>
-        <input class="ev-form-input" type="number" id="settle-amount" value="${balance}" min="0.01" step="0.01" />
+        <input class="ev-form-input" type="number" id="settle-amount" value="${esc(balance)}" min="0.01" step="0.01" />
       </div>
       <div class="ev-form-group">
         <label style="font-size:.82rem;font-weight:600">Settlement Method</label>
@@ -153,7 +153,7 @@ function showSettleModal(eventId, balance, panelContainer) {
         <button class="ev-btn" id="settle-confirm" style="flex:1;background:#059669;color:#fff;border:none;font-weight:600">Confirm Settlement</button>
       </div>
     </div>
-  `;
+  `);
 
   document.body.appendChild(modal);
 

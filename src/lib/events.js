@@ -369,6 +369,8 @@ export async function deleteEvent(eventId) {
 
     // 3. ATOMIC: Set status to 'draft' so RLS delete policy accepts it
     //    (events_delete_draft allows DELETE only for status='draft')
+    //    RACE WINDOW NOTE: Between steps 2 and 4, a buyer could purchase a ticket
+    //    for the now-draft event. Step 3b re-checks tickets to close this gap.
     if (originalStatus !== 'draft') {
       const { error: statusErr } = await supabase
         .from('events')
@@ -377,6 +379,30 @@ export async function deleteEvent(eventId) {
 
       if (statusErr) {
         return { success: false, error: 'Failed to prepare event for deletion: ' + statusErr.message };
+      }
+
+      // 3b. GUARD: Re-check that no tickets were issued during the race window
+      //     between the initial check (step 2) and the draft status change (step 3).
+      if (tierIds.length > 0) {
+        const { count: postDraftCount, error: postDraftErr } = await supabase
+          .from('tickets')
+          .select('id', { count: 'exact', head: true })
+          .in('ticket_tier_id', tierIds);
+
+        if (postDraftErr) {
+          // Rollback status before aborting
+          await supabase.from('events').update({ status: originalStatus }).eq('id', eventId);
+          return { success: false, error: 'Failed to re-check tickets: ' + postDraftErr.message };
+        }
+
+        if (postDraftCount && postDraftCount > 0) {
+          // Rollback: tickets appeared in the race window — abort deletion
+          await supabase.from('events').update({ status: originalStatus }).eq('id', eventId);
+          return {
+            success: false,
+            error: `Cannot delete: ${postDraftCount} ticket(s) were issued while preparing deletion. Use archive instead.`,
+          };
+        }
       }
     }
 

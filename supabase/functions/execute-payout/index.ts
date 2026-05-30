@@ -155,12 +155,16 @@ serve(async (req) => {
     // This prevents duplicate execution if the admin clicks twice
     // or if there's a concurrent request.
 
+    // L2 FIX: Request exact count so lockCount is actually populated
     const { error: lockErr, count: lockCount } = await supabase
       .from('payouts')
-      .update({
-        status: 'processing',
-        processed_by: user.id,
-      })
+      .update(
+        {
+          status: 'processing',
+          processed_by: user.id,
+        },
+        { count: 'exact' }  // L2 FIX: Supabase v2 needs this to return count
+      )
       .eq('id', payout_id)
       .eq('status', 'pending'); // Only transition from 'pending'
 

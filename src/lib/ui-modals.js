@@ -1,6 +1,24 @@
 import { setSafeHTML } from './dom.js';
 import { escapeHTML } from './utils.js';
 
+// U1 FIX: Focus trapping helper for modal accessibility
+function trapFocus(overlayEl) {
+  const focusable = overlayEl.querySelectorAll('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])');
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  first.focus();
+  overlayEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    }
+  });
+}
+
 export function showConfirmModal({ title = 'Confirm Action', message = 'Are you sure?', confirmText = 'Confirm', confirmColor = '#059669', cancelText = 'Cancel' }) {
   return new Promise((resolve) => {
     // Remove existing
@@ -15,19 +33,21 @@ export function showConfirmModal({ title = 'Confirm Action', message = 'Are you 
       <div class="ev-modal" style="max-width:400px">
         <div class="ev-modal-header">
           <h2>${escapeHTML(title)}</h2>
-          <button class="ev-modal-close" id="ev-global-confirm-close">✕</button>
+          <button type="button" class="ev-modal-close" id="ev-global-confirm-close">✕</button>
         </div>
         <p style="font-size:.9rem;color:var(--ev-text-muted);margin-bottom:24px;">
           ${escapeHTML(message)}
         </p>
         <div style="display:flex;gap:10px;justify-content:flex-end">
-          <button class="ev-btn ev-btn-outline" id="ev-global-confirm-cancel">${escapeHTML(cancelText)}</button>
-          <button class="ev-btn" id="ev-global-confirm-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
+          <button type="button" class="ev-btn ev-btn-outline" id="ev-global-confirm-cancel">${escapeHTML(cancelText)}</button>
+          <button type="button" class="ev-btn" id="ev-global-confirm-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
         </div>
       </div>
     `);
 
     document.body.appendChild(overlay);
+    trapFocus(overlay); // U1 FIX
+    overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
     const close = () => {
       overlay.classList.remove('active');
@@ -63,7 +83,7 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
       <div class="ev-modal" style="max-width:400px">
         <div class="ev-modal-header">
           <h2>${escapeHTML(title)}</h2>
-          <button class="ev-modal-close" id="ev-global-prompt-close">✕</button>
+          <button type="button" class="ev-modal-close" id="ev-global-prompt-close">✕</button>
         </div>
         <p style="font-size:.9rem;color:var(--ev-text-muted);margin-bottom:16px;">
           ${escapeHTML(message)}
@@ -72,13 +92,14 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
           <input type="text" id="ev-global-prompt-input" class="ev-form-input" placeholder="${escapeHTML(placeholder)}" value="${escapeHTML(defaultValue)}" />
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;">
-          <button class="ev-btn ev-btn-outline" id="ev-global-prompt-cancel">${escapeHTML(cancelText)}</button>
-          <button class="ev-btn" id="ev-global-prompt-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
+          <button type="button" class="ev-btn ev-btn-outline" id="ev-global-prompt-cancel">${escapeHTML(cancelText)}</button>
+          <button type="button" class="ev-btn" id="ev-global-prompt-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
         </div>
       </div>
     `);
 
     document.body.appendChild(overlay);
+    trapFocus(overlay); // U1 FIX
 
     const input = overlay.querySelector('#ev-global-prompt-input');
     input.focus();
@@ -131,11 +152,13 @@ export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK
         <p style="font-size:.95rem;color:var(--ev-text-muted);margin-bottom:24px;">
           ${escapeHTML(message)}
         </p>
-        <button class="ev-btn" id="ev-global-alert-btn" style="background:${buttonColor};color:#fff;border:none;width:100%;">${escapeHTML(buttonText)}</button>
+        <button type="button" class="ev-btn" id="ev-global-alert-btn" style="background:${buttonColor};color:#fff;border:none;width:100%;">${escapeHTML(buttonText)}</button>
       </div>
     `);
 
     document.body.appendChild(overlay);
+    trapFocus(overlay); // U1 FIX
+    overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
 
     const close = () => {
       overlay.classList.remove('active');

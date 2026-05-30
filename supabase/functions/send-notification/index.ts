@@ -21,6 +21,7 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -32,13 +33,7 @@ const INTERNAL_SECRET = Deno.env.get('NOTIFICATION_SECRET') || supabaseServiceKe
 serve(async (req) => {
   // CORS
   if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
-    });
+    return new Response(null, { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -48,25 +43,7 @@ serve(async (req) => {
     const serviceKey = supabaseServiceKey.trim();
     const secret = INTERNAL_SECRET.trim();
 
-    let isJwtServiceRole = false;
-    try {
-      if (token.includes('.')) {
-        const parts = token.split('.');
-        if (parts.length === 3) {
-          const payloadPart = parts[1];
-          const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
-          const jsonPayload = atob(base64);
-          const payload = JSON.parse(jsonPayload);
-          if (payload && payload.role === 'service_role' && payload.ref === 'bmtwdwoibvoewbesohpu') {
-            isJwtServiceRole = true;
-          }
-        }
-      }
-    } catch (jwtErr) {
-      console.warn("Failed to parse incoming token as JWT:", jwtErr);
-    }
-
-    if (token !== serviceKey && token !== secret && !isJwtServiceRole) {
+    if (token !== serviceKey && token !== secret) {
       console.warn(`Unauthorized request attempt: Token signature mismatch (token length: ${token.length}, serviceKey length: ${serviceKey.length}, secret length: ${secret.length})`);
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
     }
@@ -127,6 +104,28 @@ serve(async (req) => {
 
         if (tickets) {
           const emailSet = new Set(); // Dedup by email
+
+          // M9 FIX: Batch-fetch all unique user profiles in ONE query
+          // instead of N+1 individual SELECTs (was timing out on large events)
+          const uniqueUserIds = [...new Set(
+            tickets
+              .filter(t => t.orders?.user_id && !t.orders?.is_guest)
+              .map(t => t.orders.user_id)
+          )];
+
+          const profileMap: Record<string, { full_name: string; email: string }> = {};
+          if (uniqueUserIds.length > 0) {
+            const { data: profiles } = await supabase
+              .from('profiles')
+              .select('id, full_name, email')
+              .in('id', uniqueUserIds);
+            if (profiles) {
+              for (const p of profiles) {
+                profileMap[p.id] = { full_name: p.full_name || '', email: p.email || '' };
+              }
+            }
+          }
+
           for (const t of tickets) {
             let email = '';
             let name = '';
@@ -135,11 +134,8 @@ serve(async (req) => {
               email = t.orders.guest_email || '';
               name = t.orders.guest_name || 'Guest';
             } else if (t.orders?.user_id) {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('full_name, email')
-                .eq('id', t.orders.user_id)
-                .single();
+              // M9 FIX: Use pre-fetched profile map instead of individual query
+              const profile = profileMap[t.orders.user_id];
               email = profile?.email || '';
               name = profile?.full_name || '';
             }
@@ -280,14 +276,14 @@ serve(async (req) => {
       results,
     }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 'Content-Type': 'application/json', ...getCorsHeaders(req) },
     });
 
   } catch (err) {
     console.error('send-notification error:', err);
     return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 'Content-Type': 'application/json', ...getCorsHeaders(req) },
     });
   }
 });

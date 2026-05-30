@@ -309,7 +309,7 @@ function showPreviewModal(subject, html) {
   const modal = document.createElement('div');
   modal.id = 'emt-preview-modal';
   modal.className = 'emt-preview-overlay';
-  modal.innerHTML = `
+  setSafeHTML(modal, `
     <div class="emt-preview-dialog">
       <div class="emt-preview-header">
         <div>
@@ -318,15 +318,20 @@ function showPreviewModal(subject, html) {
         </div>
         <button class="emt-preview-close" id="emt-preview-close">&times;</button>
       </div>
-      <iframe class="emt-preview-frame" id="emt-preview-iframe" sandbox="allow-same-origin"></iframe>
     </div>
-  `;
+  `);
+  // Append iframe separately since setSafeHTML strips iframes for safety
+  const iframe = document.createElement('iframe');
+  iframe.className = 'emt-preview-frame';
+  iframe.id = 'emt-preview-iframe';
+  iframe.setAttribute('sandbox', '');
+  modal.querySelector('.emt-preview-dialog').appendChild(iframe);
 
   document.body.appendChild(modal);
 
-  // Write HTML into iframe
-  const iframe = document.getElementById('emt-preview-iframe');
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  // Write HTML into sandboxed iframe (sandbox="" = maximum restriction)
+  const iframeEl = document.getElementById('emt-preview-iframe');
+  const doc = iframeEl.contentDocument || iframeEl.contentWindow.document;
   doc.open();
   doc.write(html);
   doc.close();

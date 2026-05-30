@@ -35,6 +35,21 @@ serve(async (req) => {
       return errorResponse(400, 'Password must be at least 8 characters');
     }
 
+    // M4 FIX: Password complexity checks
+    const COMMON_PASSWORDS = ['12345678', 'password', 'qwerty123', 'abcdefgh', 'letmein1', '11111111', '00000000'];
+    if (COMMON_PASSWORDS.includes(newPassword.toLowerCase())) {
+      return errorResponse(400, 'This password is too common. Please choose a stronger one.');
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      return errorResponse(400, 'Password must contain at least one uppercase letter');
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      return errorResponse(400, 'Password must contain at least one lowercase letter');
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      return errorResponse(400, 'Password must contain at least one number');
+    }
+
     const normalizedEmail = email.trim().toLowerCase();
 
     // ── Rate Limit: 5 verification attempts per 10 minutes per email ──

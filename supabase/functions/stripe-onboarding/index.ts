@@ -7,7 +7,7 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@17?target=deno';
-import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
+import { handleCORS, errorResponse, jsonResponse, getSafeRedirectOrigin } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit } from '../_shared/rate-limit.ts';
 
@@ -21,11 +21,11 @@ serve(async (req) => {
   try {
     // ── Authenticate ──
     const { user, error: authError } = await authenticateRequest(req);
-    if (!user) return errorResponse(401, authError || 'Unauthorized');
+    if (!user) return errorResponse(401, authError || 'Unauthorized', {}, req);  // L5 FIX
 
     // ── Rate Limit: 3 onboarding attempts per 10 min ──
     if (!rateLimit(`onboard:${user.id}`, 3, 600_000)) {
-      return errorResponse(429, 'Too many requests. Please wait.');
+      return errorResponse(429, 'Too many requests. Please wait.', {}, req);  // L5 FIX
     }
 
     // ── Parse action ──
@@ -47,7 +47,7 @@ serve(async (req) => {
       .single();
 
     if (!profile || !['organizer', 'admin'].includes(profile.role)) {
-      return errorResponse(403, 'Only organizers can set up payment accounts');
+      return errorResponse(403, 'Only organizers can set up payment accounts', {}, req);  // L5 FIX
     }
 
     // ═══════════════════════════════════
@@ -151,7 +151,8 @@ serve(async (req) => {
     }
 
     // Generate onboarding link
-    const origin = req.headers.get('origin') || allowedOrigin;
+    // H2 FIX: Validate origin against CORS allowlist to prevent open-redirect attacks
+    const origin = getSafeRedirectOrigin(req);
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${origin}/dashboard.html?stripe=refresh`,

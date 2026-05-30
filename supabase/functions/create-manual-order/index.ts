@@ -25,6 +25,7 @@ import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit } from '../_shared/rate-limit.ts';
 
 const VALID_METHODS = ['vodafone_cash', 'instapay', 'bank_transfer', 'fawry'];
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 serve(async (req) => {
   const corsResponse = handleCORS(req);
@@ -43,8 +44,11 @@ serve(async (req) => {
       const { user, error: authError } = await authenticateRequest(req);
       if (user) {
         userId = user.id;
+      } else {
+        // H6 FIX: If a JWT was provided but is invalid/expired, reject — don't silently downgrade to guest.
+        // Only allow guest mode when NO Authorization header is present.
+        return errorResponse(401, authError || 'Invalid or expired authentication token', {}, req);
       }
-      // If auth fails, treat as guest (don't block)
     }
 
     // ── Rate Limit: 5 orders per 10 minutes ──
@@ -78,6 +82,17 @@ serve(async (req) => {
     if (!buyer_email?.trim()) return errorResponse(400, 'Missing buyer_email', {}, req);
     if (!buyer_phone?.trim()) return errorResponse(400, 'Missing buyer_phone', {}, req);
 
+    // H7 FIX: Validate tier_id and event_id as UUIDs
+    if (!UUID_RE.test(tier_id)) return errorResponse(400, 'Invalid tier_id format', {}, req);
+    if (body.event_id && !UUID_RE.test(body.event_id)) return errorResponse(400, 'Invalid event_id format', {}, req);
+
+    // H7 FIX: Sanitize and limit optional string fields
+    const safeProofUrl = proof_image_url ? String(proof_image_url).slice(0, 2048) : null;
+    if (safeProofUrl && !safeProofUrl.startsWith('https://')) {
+      return errorResponse(400, 'proof_image_url must be a valid HTTPS URL', {}, req);
+    }
+    const safeBuyerNotes = buyer_notes ? String(buyer_notes).slice(0, 2000) : null;
+
     // Validate payment method
     if (!VALID_METHODS.includes(payment_method)) {
       return errorResponse(400, `Invalid payment method. Must be one of: ${VALID_METHODS.join(', ')}`, {}, req);
@@ -108,8 +123,8 @@ serve(async (req) => {
       p_user_id: userId,
       p_seat_ids: seat_ids || null,
       p_promo_code: promo_code || null,
-      p_proof_image_url: proof_image_url || null,
-      p_buyer_notes: buyer_notes || null,
+      p_proof_image_url: safeProofUrl,
+      p_buyer_notes: safeBuyerNotes,
     });
 
     if (error) {
