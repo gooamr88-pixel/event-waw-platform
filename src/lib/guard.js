@@ -316,7 +316,8 @@ export function updateNavForAuth(authState) {
     // Convert Log In button into Dashboard / Admin Panel
     if (signinBtn) {
       const isSystemAdmin = profile?.role === 'admin';
-      signinBtn.href = isSystemAdmin ? 'admin.html' : 'dashboard.html';
+      const isOrganizer = profile?.role === 'organizer';
+      signinBtn.href = isSystemAdmin ? 'admin.html' : isOrganizer ? 'dashboard.html' : 'attendee-dashboard.html';
       signinBtn.textContent = isSystemAdmin ? 'Admin Panel' : 'Dashboard';
       signinBtn.style.display = ''; // Ensure it is visible
     }
@@ -339,7 +340,8 @@ export function updateNavForAuth(authState) {
     if (mobileTickets) mobileTickets.style.display = 'flex';
     if (mobileDashboard) {
       mobileDashboard.style.display = 'flex';
-      mobileDashboard.href = profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+      const dashHref = profile?.role === 'admin' ? 'admin.html' : profile?.role === 'organizer' ? 'dashboard.html' : 'attendee-dashboard.html';
+      mobileDashboard.href = dashHref;
       mobileDashboard.textContent = profile?.role === 'admin' ? '📋 Admin Panel' : '📋 Dashboard';
     }
     if (mobileSignout) {
