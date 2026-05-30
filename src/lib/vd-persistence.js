@@ -63,7 +63,7 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
           for (let i = 0; i < backupSeats.length; i += 500) {
             await supabase.from('seats').insert(backupSeats.slice(i, i + 500));
           }
-          console.log(`Rollback successful: restored ${backupSeats.length} seats`);
+          console.debug(`Rollback successful: restored ${backupSeats.length} seats`);
         } catch (rollbackErr) {
           console.error('CRITICAL: Rollback also failed:', rollbackErr.message);
         }

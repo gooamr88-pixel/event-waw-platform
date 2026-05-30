@@ -72,7 +72,7 @@ export class SeatingChart {
 
     if (mapErr || !mapData) {
       this._hideLoading();
-      console.log('No venue map found for event - using GA fallback');
+      console.debug('No venue map found for event - using GA fallback');
       return false;
     }
 

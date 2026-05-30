@@ -596,7 +596,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             if (rpcErr) {
               console.warn('Failed to trigger unconfigured payments email:', rpcErr.message);
             } else {
-              console.log('Unconfigured payments email triggered successfully:', rpcRes);
+              console.debug('Unconfigured payments email triggered successfully');
             }
           } catch (rpcCatch) {
             console.warn('Failed to call send_unconfigured_payments_email RPC:', rpcCatch);

@@ -136,7 +136,7 @@ export async function getOrderBySessionPublic(sessionId) {
       return null;
     }
 
-    console.log(`Waiting for order... attempt ${attempt}/${maxAttempts}`);
+    console.debug(`Waiting for order... attempt ${attempt}/${maxAttempts}`);
     await new Promise(resolve => setTimeout(resolve, delayMs));
   }
   return null;
@@ -175,7 +175,7 @@ export async function getOrderBySession(sessionId) {
     }
 
     // Wait before retrying
-    console.log(`Waiting for order... attempt ${attempt}/${maxAttempts}`);
+    console.debug(`Waiting for order... attempt ${attempt}/${maxAttempts}`);
     await new Promise(resolve => setTimeout(resolve, delayMs));
   }
 

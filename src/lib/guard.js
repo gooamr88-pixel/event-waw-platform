@@ -433,7 +433,7 @@ export async function upgradeToOrganizer() {
     data: { role: 'organizer' }
   });
 
-  console.log('User upgraded to organizer:', user.id);
+  console.debug('User upgraded to organizer');
   return true;
 }
 

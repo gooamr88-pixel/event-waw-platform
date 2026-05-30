@@ -103,7 +103,7 @@ export async function getCurrentProfile() {
     .eq('id', user.id)
     .maybeSingle();
 
-  console.log('Profile auto-created/fetched successfully:', freshProfile);
+  console.debug('Profile auto-created/fetched successfully');
   return freshProfile || newProfile;
 }
 

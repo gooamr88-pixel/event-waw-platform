@@ -184,7 +184,7 @@ export async function initGooglePlacesAutocomplete(deps) {
     });
 
     googleAutocompleteInitialized = true;
-    console.log('Google Places (PlaceAutocompleteElement) initialized');
+    console.debug('Google Places (PlaceAutocompleteElement) initialized');
   } catch (err) {
     console.warn('Google Places init failed:', err);
     googleAutocompleteInitialized = false;
