@@ -17,6 +17,175 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
   <script src="js/csp.js"></script>
+  <style>
+    /* ── Attendee Dashboard Enhancements ── */
+    .att-quick-actions { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+    .att-action-card {
+      display:flex; flex-direction:column; align-items:center; gap:10px;
+      padding:20px 16px; border-radius:16px; cursor:pointer; text-decoration:none;
+      background:var(--ev-bg); border:1px solid var(--ev-border);
+      transition:all .25s cubic-bezier(.16,1,.3,1); text-align:center;
+    }
+    .att-action-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.1); border-color:rgba(5,150,105,.3); }
+    .att-action-icon {
+      width:48px; height:48px; border-radius:14px;
+      display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+    }
+    .att-action-icon.blue { background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.15); }
+    .att-action-icon.green { background:rgba(5,150,105,.08); border:1px solid rgba(5,150,105,.15); }
+    .att-action-icon.amber { background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.15); }
+    .att-action-icon.purple { background:rgba(139,92,246,.08); border:1px solid rgba(139,92,246,.15); }
+    .att-action-label { font-size:.82rem; font-weight:600; color:var(--ev-text); }
+
+    .att-stat-card {
+      position:relative; overflow:hidden; border-radius:16px; padding:20px;
+      background:var(--ev-bg); border:1px solid var(--ev-border);
+      transition:all .25s ease;
+    }
+    .att-stat-card:hover { border-color:rgba(5,150,105,.25); }
+    .att-stat-card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:linear-gradient(90deg, #059669, #34d399); opacity:0;
+      transition:opacity .3s;
+    }
+    .att-stat-card:hover::before { opacity:1; }
+    .att-stat-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+    .att-stat-icon { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:1.2rem; }
+    .att-stat-icon.tickets { background:rgba(59,130,246,.08); }
+    .att-stat-icon.upcoming { background:rgba(5,150,105,.08); }
+    .att-stat-icon.past { background:rgba(245,158,11,.08); }
+    .att-stat-icon.spent { background:rgba(139,92,246,.08); }
+    .att-stat-value { font-size:1.6rem; font-weight:800; color:var(--ev-text); line-height:1.2; }
+    .att-stat-label { font-size:.78rem; color:var(--ev-text-muted); margin-top:2px; }
+
+    .att-event-card {
+      border:1px solid var(--ev-border); border-radius:16px; overflow:hidden;
+      background:var(--ev-bg); transition:all .25s cubic-bezier(.16,1,.3,1);
+      cursor:pointer; position:relative;
+    }
+    .att-event-card:hover { transform:translateY(-3px); box-shadow:0 12px 32px rgba(0,0,0,.12); border-color:rgba(5,150,105,.25); }
+    .att-event-cover { height:160px; position:relative; overflow:hidden; }
+    .att-event-cover img { width:100%; height:100%; object-fit:cover; transition:transform .4s ease; }
+    .att-event-card:hover .att-event-cover img { transform:scale(1.05); }
+    .att-event-cover-overlay {
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, transparent 50%, rgba(0,0,0,.65));
+    }
+    .att-event-date-badge {
+      position:absolute; top:12px; right:12px;
+      background:rgba(0,0,0,.55); backdrop-filter:blur(8px);
+      color:#fff; font-size:.7rem; font-weight:700; padding:6px 12px;
+      border-radius:8px; border:1px solid rgba(255,255,255,.12);
+    }
+    .att-event-countdown {
+      position:absolute; bottom:12px; left:12px;
+      background:rgba(5,150,105,.9); color:#fff;
+      font-size:.7rem; font-weight:700; padding:4px 10px;
+      border-radius:6px; display:flex; align-items:center; gap:4px;
+    }
+    .att-event-body { padding:16px; }
+    .att-event-title { font-size:.95rem; font-weight:700; margin-bottom:8px; line-height:1.4; color:var(--ev-text); }
+    .att-event-meta { display:flex; flex-direction:column; gap:6px; }
+    .att-event-meta-item { display:flex; align-items:center; gap:6px; font-size:.78rem; color:var(--ev-text-muted); }
+    .att-event-meta-item svg { flex-shrink:0; opacity:.6; }
+    .att-event-actions { display:flex; gap:8px; margin-top:12px; padding-top:12px; border-top:1px solid var(--ev-border); }
+    .att-event-action-btn {
+      flex:1; padding:8px; border-radius:8px; font-size:.75rem; font-weight:600;
+      text-align:center; cursor:pointer; transition:all .2s; border:none; font-family:inherit;
+      text-decoration:none; display:flex; align-items:center; justify-content:center; gap:4px;
+    }
+    .att-event-action-btn.primary { background:rgba(5,150,105,.08); color:#059669; }
+    .att-event-action-btn.primary:hover { background:rgba(5,150,105,.15); }
+    .att-event-action-btn.secondary { background:rgba(255,255,255,.04); color:var(--ev-text-muted); border:1px solid var(--ev-border); }
+    .att-event-action-btn.secondary:hover { border-color:rgba(5,150,105,.3); color:var(--ev-text); }
+
+    .att-ticket-card {
+      display:flex; align-items:stretch; border:1px solid var(--ev-border);
+      border-radius:16px; overflow:hidden; background:var(--ev-bg);
+      transition:all .25s ease; position:relative;
+    }
+    .att-ticket-card:hover { border-color:rgba(5,150,105,.25); box-shadow:0 8px 24px rgba(0,0,0,.08); }
+    .att-ticket-left {
+      width:90px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      padding:16px 12px; position:relative; flex-shrink:0;
+    }
+    .att-ticket-left::after {
+      content:''; position:absolute; top:0; right:0; bottom:0; width:1px;
+      border-right:2px dashed var(--ev-border);
+    }
+    .att-ticket-month { font-size:.65rem; font-weight:700; text-transform:uppercase; color:#059669; letter-spacing:1px; }
+    .att-ticket-day { font-size:1.6rem; font-weight:900; color:var(--ev-text); line-height:1; }
+    .att-ticket-right { flex:1; padding:16px; display:flex; flex-direction:column; justify-content:center; }
+    .att-ticket-event { font-size:.88rem; font-weight:700; color:var(--ev-text); margin-bottom:4px; }
+    .att-ticket-tier { font-size:.75rem; color:var(--ev-text-muted); margin-bottom:6px; }
+    .att-ticket-status { display:inline-flex; padding:3px 10px; border-radius:6px; font-size:.7rem; font-weight:600; }
+    .att-ticket-status.valid { background:rgba(5,150,105,.08); color:#059669; }
+    .att-ticket-status.used { background:rgba(245,158,11,.08); color:#d97706; }
+    .att-ticket-status.cancelled { background:rgba(239,68,68,.08); color:#ef4444; }
+
+    .att-profile-card { max-width:680px; border-radius:20px; overflow:hidden; }
+    .att-profile-header {
+      background:linear-gradient(135deg, #059669, #047857, #065f46);
+      padding:32px 28px; position:relative; overflow:hidden;
+    }
+    .att-profile-header::after {
+      content:''; position:absolute; top:-30px; right:-30px;
+      width:120px; height:120px; border-radius:50%;
+      background:rgba(255,255,255,.06);
+    }
+    .att-profile-avatar-wrap { display:flex; align-items:center; gap:16px; position:relative; z-index:1; }
+    .att-profile-avatar {
+      width:64px; height:64px; border-radius:50%; border:3px solid rgba(255,255,255,.25);
+      background:rgba(255,255,255,.12); display:flex; align-items:center; justify-content:center;
+      color:#fff; font-size:1.6rem; font-weight:800; overflow:hidden;
+    }
+    .att-profile-avatar img { width:100%; height:100%; object-fit:cover; }
+    .att-profile-header-info h3 { color:#fff; font-size:1.1rem; font-weight:700; margin-bottom:2px; }
+    .att-profile-header-info p { color:rgba(255,255,255,.7); font-size:.82rem; }
+    .att-profile-body { padding:28px; }
+    .att-profile-field { margin-bottom:20px; }
+    .att-profile-field label {
+      display:block; font-size:.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:.5px; color:var(--ev-text-muted); margin-bottom:6px;
+    }
+    .att-profile-field input {
+      width:100%; padding:12px 16px; border:1.5px solid var(--ev-border); border-radius:12px;
+      background:var(--ev-bg); color:var(--ev-text); font-size:.88rem; font-family:inherit;
+      outline:none; transition:border-color .3s, box-shadow .3s;
+    }
+    .att-profile-field input:focus { border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.08); }
+    .att-profile-field input:disabled { opacity:.55; cursor:not-allowed; }
+
+    .att-empty-state { text-align:center; padding:60px 24px; }
+    .att-empty-icon {
+      width:80px; height:80px; margin:0 auto 20px; border-radius:50%;
+      background:rgba(5,150,105,.04); border:1px solid rgba(5,150,105,.1);
+      display:flex; align-items:center; justify-content:center; font-size:2rem;
+    }
+    .att-empty-title { font-size:1.05rem; font-weight:700; margin-bottom:8px; color:var(--ev-text); }
+    .att-empty-desc { font-size:.85rem; color:var(--ev-text-muted); max-width:380px; margin:0 auto 20px; line-height:1.7; }
+    .att-empty-btn {
+      display:inline-flex; align-items:center; gap:6px; padding:12px 28px;
+      background:#059669; color:#fff; border:none; border-radius:12px;
+      font-size:.85rem; font-weight:700; cursor:pointer; text-decoration:none;
+      transition:all .3s; font-family:inherit;
+    }
+    .att-empty-btn:hover { background:#047857; transform:translateY(-2px); box-shadow:0 8px 24px rgba(5,150,105,.25); }
+
+    .att-section-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .att-section-title { font-size:1.05rem; font-weight:700; color:var(--ev-text); }
+    .att-section-link { font-size:.8rem; font-weight:600; color:#059669; text-decoration:none; transition:color .2s; }
+    .att-section-link:hover { color:#047857; }
+
+    @media(max-width:768px) {
+      .att-quick-actions { grid-template-columns:repeat(2,1fr); }
+    }
+    @media(max-width:480px) {
+      .att-ticket-card { flex-direction:column; }
+      .att-ticket-left { width:100%; flex-direction:row; gap:8px; padding:12px 16px; }
+      .att-ticket-left::after { display:none; }
+    }
+  </style>
   <script>
     (function() {
       try {
@@ -52,34 +221,43 @@
       <p>My Dashboard</p>
     </div>
     <nav class="ev-sidebar-nav">
-      <button class="ev-nav-item active" data-panel="events">
+      <button class="ev-nav-item active" data-panel="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </button>
+      <button class="ev-nav-item" data-panel="my-events">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         My Events
       </button>
       <button class="ev-nav-item" data-panel="tickets">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3 3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3 3 3 0 01-3-3z"/><path d="M13 6v4m0 4v4"/></svg>
         My Tickets
       </button>
       <button class="ev-nav-item" data-panel="orders">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
         Orders
       </button>
+      <div style="height:1px;background:rgba(255,255,255,.08);margin:10px 14px"></div>
       <button class="ev-nav-item" data-panel="profile">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Profile
+        My Profile
       </button>
     </nav>
 
     <!-- Upgrade CTA -->
     <div style="padding: 16px; margin-top: auto;">
-      <a href="dashboard.html" class="ev-btn ev-btn-primary" id="upgrade-cta" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; font-size:.85rem; font-weight:600; text-decoration:none; background:linear-gradient(135deg, #059669, #10b981); color:#fff; border:none; cursor:pointer; transition:all .3s;">
+      <a href="#" class="ev-btn ev-btn-primary" id="upgrade-cta" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; font-size:.82rem; font-weight:600; text-decoration:none; background:linear-gradient(135deg, #059669, #10b981); color:#fff; border:none; cursor:pointer; transition:all .3s;">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
         Become an Organizer
       </a>
     </div>
 
     <div class="ev-sidebar-footer">
-      <button class="ev-nav-item" id="sign-out-btn">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Back to Home
+      </a>
+      <button id="sign-out-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         Sign Out
       </button>
@@ -94,24 +272,26 @@
         <h2 id="header-title">Dashboard</h2>
       </div>
       <div class="ev-header-right">
-        <button class="ev-btn-icon" id="theme-toggle-btn" title="Toggle theme">
+        <button class="ev-dark-toggle" id="theme-toggle-btn" title="Toggle theme">
           <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
         </button>
-        <div class="ev-user-info" id="user-info">
-          <div class="ev-user-avatar" id="user-avatar">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div class="ev-user-details">
-            <span class="ev-user-name" id="user-name">Loading...</span>
-            <span class="ev-user-role" id="user-role">Attendee</span>
+        <div class="ev-user-wrap" id="user-wrap">
+          <div class="ev-user-info" id="user-info">
+            <div class="ev-user-avatar" id="user-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="ev-user-meta">
+              <div class="ev-user-name" id="user-name">Loading...</div>
+              <div class="ev-user-email" id="user-role">Attendee</div>
+            </div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- ════ PANEL: EVENTS (default) ════ -->
-    <div class="ev-panel active" id="panel-events">
+    <!-- ════ PANEL: OVERVIEW (default) ════ -->
+    <div class="ev-panel active" id="panel-overview">
       <!-- Welcome Banner -->
       <div class="ev-welcome" id="welcome-banner">
         <div class="ev-welcome-text">
@@ -120,53 +300,108 @@
         </div>
       </div>
 
+      <!-- Quick Actions -->
+      <div class="att-quick-actions">
+        <a href="events.html" class="att-action-card">
+          <div class="att-action-icon blue">🔍</div>
+          <span class="att-action-label">Browse Events</span>
+        </a>
+        <a href="my-tickets.html" class="att-action-card">
+          <div class="att-action-icon green">🎫</div>
+          <span class="att-action-label">My Tickets</span>
+        </a>
+        <a href="#" class="att-action-card" id="action-orders">
+          <div class="att-action-icon amber">📋</div>
+          <span class="att-action-label">Order History</span>
+        </a>
+        <a href="#" class="att-action-card" id="action-profile">
+          <div class="att-action-icon purple">👤</div>
+          <span class="att-action-label">Edit Profile</span>
+        </a>
+      </div>
+
       <!-- Stats Grid -->
       <div class="ev-stat-grid" style="margin-bottom:24px">
-        <div class="ev-stat-card">
-          <div class="ev-stat-value" id="stat-total-tickets">0</div>
-          <div class="ev-stat-label">Total Tickets</div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon tickets">🎫</div>
+          </div>
+          <div class="att-stat-value" id="stat-total-tickets">0</div>
+          <div class="att-stat-label">Total Tickets</div>
         </div>
-        <div class="ev-stat-card">
-          <div class="ev-stat-value" id="stat-upcoming">0</div>
-          <div class="ev-stat-label">Upcoming Events</div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon upcoming">📅</div>
+          </div>
+          <div class="att-stat-value" id="stat-upcoming">0</div>
+          <div class="att-stat-label">Upcoming Events</div>
         </div>
-        <div class="ev-stat-card">
-          <div class="ev-stat-value" id="stat-past">0</div>
-          <div class="ev-stat-label">Past Events</div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon past">✅</div>
+          </div>
+          <div class="att-stat-value" id="stat-past">0</div>
+          <div class="att-stat-label">Past Events</div>
         </div>
-        <div class="ev-stat-card">
-          <div class="ev-stat-value" id="stat-spent">$0</div>
-          <div class="ev-stat-label">Total Spent</div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon spent">💰</div>
+          </div>
+          <div class="att-stat-value" id="stat-spent">$0</div>
+          <div class="att-stat-label">Total Spent</div>
         </div>
       </div>
 
       <!-- Upcoming Events -->
-      <div class="ev-card">
-        <div class="ev-card-header">
-          <h3>Upcoming Events</h3>
-          <a href="events.html" class="ev-btn ev-btn-sm" style="text-decoration:none;">Browse Events</a>
+      <div class="att-section-header">
+        <h3 class="att-section-title">🎪 Upcoming Events</h3>
+        <a href="events.html" class="att-section-link">Browse All →</a>
+      </div>
+      <div id="upcoming-events-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:24px;">
+        <div class="att-empty-state" style="grid-column:1/-1;">
+          <p style="color:var(--ev-text-muted);">Loading your upcoming events...</p>
         </div>
-        <div id="upcoming-events-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; padding:16px;">
-          <div class="ev-table-empty" style="grid-column:1/-1; text-align:center; padding:40px;">
-            <p style="color:var(--ev-text-muted);">Loading your upcoming events...</p>
-          </div>
+      </div>
+
+      <!-- Recent Tickets -->
+      <div class="att-section-header">
+        <h3 class="att-section-title">🎫 Recent Tickets</h3>
+        <a href="my-tickets.html" class="att-section-link">View All →</a>
+      </div>
+      <div id="recent-tickets-list" style="display:flex; flex-direction:column; gap:12px;">
+        <p style="color:var(--ev-text-muted); text-align:center; padding:24px;">Loading tickets...</p>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: MY EVENTS ════ -->
+    <div class="ev-panel" id="panel-my-events">
+      <div class="att-section-header">
+        <h3 class="att-section-title">📅 Events I'm Attending</h3>
+        <a href="events.html" class="att-section-link">Find More →</a>
+      </div>
+      <div id="all-events-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px;">
+        <div class="att-empty-state" style="grid-column:1/-1;">
+          <p style="color:var(--ev-text-muted);">Loading events...</p>
         </div>
       </div>
     </div>
 
     <!-- ════ PANEL: TICKETS ════ -->
     <div class="ev-panel" id="panel-tickets">
-      <div class="ev-card" style="text-align:center; padding:60px 20px;">
-        <div style="width:80px;height:80px;margin:0 auto 24px;border-radius:50%;background:rgba(5,150,105,.06);border:1px solid rgba(5,150,105,.12);display:flex;align-items:center;justify-content:center;font-size:2rem;">🎫</div>
-        <h3 style="margin-bottom:12px;">Your Tickets</h3>
-        <p style="color:var(--ev-text-muted);margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7;">View all your purchased tickets, QR codes, and event entry passes in one place.</p>
-        <a href="my-tickets.html" class="ev-btn ev-btn-primary" style="text-decoration:none;padding:12px 32px;border-radius:12px;">View My Tickets →</a>
+      <div class="att-section-header">
+        <h3 class="att-section-title">🎫 All My Tickets</h3>
+        <a href="my-tickets.html" class="att-section-link">View QR Codes →</a>
+      </div>
+      <div id="all-tickets-list" style="display:flex; flex-direction:column; gap:12px;">
+        <p style="color:var(--ev-text-muted); text-align:center; padding:24px;">Loading tickets...</p>
       </div>
     </div>
 
     <!-- ════ PANEL: ORDERS ════ -->
     <div class="ev-panel" id="panel-orders">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">📋 Order History</h2>
+      <div class="att-section-header">
+        <h3 class="att-section-title">📋 Order History</h3>
+      </div>
       <div class="ev-card">
         <div class="ev-table-wrap">
           <table class="ev-table">
@@ -174,13 +409,14 @@
               <tr>
                 <th>#</th>
                 <th>Event</th>
+                <th>Tickets</th>
                 <th>Amount</th>
                 <th>Status</th>
                 <th>Date</th>
               </tr>
             </thead>
             <tbody id="orders-tbody">
-              <tr><td colspan="5" class="ev-table-empty">Loading orders...</td></tr>
+              <tr><td colspan="6" class="ev-table-empty">Loading orders...</td></tr>
             </tbody>
           </table>
         </div>
@@ -189,28 +425,44 @@
 
     <!-- ════ PANEL: PROFILE ════ -->
     <div class="ev-panel" id="panel-profile">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">👤 My Profile</h2>
-      <div class="ev-card" style="max-width:600px;">
-        <form id="profile-form" style="padding:24px;">
-          <div style="display:grid;gap:16px;">
-            <div>
-              <label class="ev-label" for="profile-name">Full Name</label>
-              <input type="text" class="ev-input" id="profile-name" placeholder="Your name" />
+      <div class="att-section-header">
+        <h3 class="att-section-title">👤 My Profile</h3>
+      </div>
+      <div class="ev-card att-profile-card">
+        <div class="att-profile-header">
+          <div class="att-profile-avatar-wrap">
+            <div class="att-profile-avatar" id="profile-avatar-lg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
-            <div>
-              <label class="ev-label" for="profile-email">Email</label>
-              <input type="email" class="ev-input" id="profile-email" placeholder="your@email.com" disabled />
-            </div>
-            <div>
-              <label class="ev-label" for="profile-phone">Phone</label>
-              <input type="tel" class="ev-input" id="profile-phone" placeholder="+1 234 567 8900" />
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;">
-              <button type="submit" class="ev-btn ev-btn-primary" id="profile-save" style="padding:10px 24px;border-radius:10px;">Save Changes</button>
+            <div class="att-profile-header-info">
+              <h3 id="profile-display-name">Your Name</h3>
+              <p id="profile-display-email">your@email.com</p>
             </div>
           </div>
-          <div id="profile-msg" style="margin-top:12px;font-size:.85rem;display:none;"></div>
-        </form>
+        </div>
+        <div class="att-profile-body">
+          <form id="profile-form">
+            <div class="att-profile-field">
+              <label for="profile-name">Full Name</label>
+              <input type="text" id="profile-name" placeholder="Enter your full name" />
+            </div>
+            <div class="att-profile-field">
+              <label for="profile-email">Email Address</label>
+              <input type="email" id="profile-email" placeholder="your@email.com" disabled />
+            </div>
+            <div class="att-profile-field">
+              <label for="profile-phone">Phone Number</label>
+              <input type="tel" id="profile-phone" placeholder="+1 234 567 8900" />
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;">
+              <button type="submit" class="att-empty-btn" id="profile-save" style="padding:10px 28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Changes
+              </button>
+            </div>
+            <div id="profile-msg" style="margin-top:12px;font-size:.85rem;display:none;text-align:center;padding:10px;border-radius:10px;"></div>
+          </form>
+        </div>
       </div>
     </div>
 
