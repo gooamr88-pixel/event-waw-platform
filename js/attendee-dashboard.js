@@ -203,14 +203,14 @@ async function loadDashboardData() {
     const [ordersRes, ticketsRes] = await Promise.all([
       supabase
         .from('orders')
-        .select('id, event_id, total_amount, currency, status, created_at, events(id, title, date, end_date, venue, city, country, cover_image, status)')
+        .select('id, event_id, total_amount, currency, status, created_at, events(id, title, date, end_date, venue, city, cover_image, status)')
         .eq('user_id', _user.id)
         .order('created_at', { ascending: false }),
       supabase
         .from('tickets')
         .select(`
           id, status, scanned_at, created_at, order_id,
-          ticket_tiers(name, price, currency,
+          ticket_tiers(name, price,
             events(id, title, date, venue, city, cover_image)
           )
         `)
@@ -298,7 +298,7 @@ function getCountdown(dateStr) {
 function buildEventCard(ev, eventId) {
   const coverUrl = ev.cover_image || 'images/event-placeholder.png';
   const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBD';
-  const location = [ev.venue, ev.city, ev.country].filter(Boolean).join(', ') || 'Online';
+  const location = [ev.venue, ev.city].filter(Boolean).join(', ') || 'Online';
   const countdown = ev.date ? getCountdown(ev.date) : null;
 
   return `
@@ -397,7 +397,7 @@ function buildTicketCard(ticket) {
       </div>
       <div class="att-ticket-right">
         <div class="att-ticket-event">${escapeHTML(ev?.title || 'Unknown Event')}</div>
-        <div class="att-ticket-tier">${escapeHTML(tier?.name || 'General')} ${tier?.price ? `• ${formatCurrency ? formatCurrency(tier.price, tier.currency) : '$' + tier.price}` : '• Free'}</div>
+        <div class="att-ticket-tier">${escapeHTML(tier?.name || 'General')} ${tier?.price ? `• ${formatCurrency ? formatCurrency(tier.price) : '$' + tier.price}` : '• Free'}</div>
         <div><span class="att-ticket-status ${statusClass}">${escapeHTML(statusText)}</span></div>
       </div>
     </div>
