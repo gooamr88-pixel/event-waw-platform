@@ -353,10 +353,20 @@ DECLARE
   v_current_version TEXT;
   v_has_acceptance BOOLEAN;
   v_auth_user_id UUID := auth.uid();
+  v_auth_role TEXT := auth.role();
+  v_target_user_id UUID;
 BEGIN
-  -- SECURITY FIX (C8): Always use auth.uid(), ignore p_user_id parameter
-  -- This prevents users from querying other users' compliance status.
-  IF v_auth_user_id IS NULL THEN
+  -- SECURITY HARDENING (C8 FIX):
+  -- 1. If called by service_role (Edge Functions), check the requested p_user_id (the event organizer)
+  -- 2. If called by an admin (is_admin()), check the requested p_user_id
+  -- 3. Otherwise (regular client calls), they can ONLY check their own compliance status.
+  IF v_auth_role = 'service_role' OR is_admin() THEN
+    v_target_user_id := p_user_id;
+  ELSE
+    v_target_user_id := v_auth_user_id;
+  END IF;
+
+  IF v_target_user_id IS NULL THEN
     RETURN jsonb_build_object('compliant', false, 'reason', 'Not authenticated');
   END IF;
 
@@ -372,7 +382,7 @@ BEGIN
 
   SELECT EXISTS(
     SELECT 1 FROM terms_acceptances
-    WHERE user_id = v_auth_user_id  -- Was: p_user_id (VULNERABILITY)
+    WHERE user_id = v_target_user_id
       AND terms_version = v_current_version
       AND terms_type = 'platform'
   ) INTO v_has_acceptance;
