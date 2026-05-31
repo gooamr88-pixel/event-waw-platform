@@ -3,7 +3,7 @@
    =================================== */
 
 export { ELEMENT_TYPES, VenueDesignerEngine, createElement } from './vd-engine.js';
-export { saveVenueMapV2 } from './vd-persistence.js';
+export { saveVenueMapV2 } from './vd-persistence.js?v=3';
 export { renderCanvas } from './vd-renderers.js';
 export {
   saveVenueTemplate, updateVenueTemplate, loadUserTemplates,
