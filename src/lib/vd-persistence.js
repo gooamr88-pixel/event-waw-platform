@@ -29,11 +29,16 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
     mapId = existingMap.id;
     await supabase.from('seats').delete().eq('venue_map_id', mapId);
 
+    const validTierIds = new Set((engine?.tiers || []).map(t => t.id));
+
     // Insert new seats with rollback on failure
     try {
       const seatRows = [];
       for (const section of layoutJson.sections) {
-        const tierId = sectionTiers[section.key] || section.tier_id || null;
+        let tierId = sectionTiers[section.key] || section.tier_id || null;
+        if (tierId && !validTierIds.has(tierId)) {
+          tierId = null;
+        }
         for (const row of section.rows) {
           for (const seat of row.seats) {
             seatRows.push({
@@ -77,10 +82,15 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
     mapId = data.id;
   }
 
+  const validTierIds = new Set((engine?.tiers || []).map(t => t.id));
+
   // Bulk-insert seats from sections (new venue map — no rollback needed)
   const seatRows = [];
   for (const section of layoutJson.sections) {
-    const tierId = sectionTiers[section.key] || section.tier_id || null;
+    let tierId = sectionTiers[section.key] || section.tier_id || null;
+    if (tierId && !validTierIds.has(tierId)) {
+      tierId = null;
+    }
     for (const row of section.rows) {
       for (const seat of row.seats) {
         seatRows.push({
