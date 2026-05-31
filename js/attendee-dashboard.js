@@ -300,7 +300,7 @@ function getCountdown(dateStr) {
 function buildEventCard(ev, eventId) {
   const coverUrl = ev.cover_image || 'images/event-placeholder.png';
   const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : 'TBD';
-  const location = [ev.venue, ev.city].filter(Boolean).join(', ') || 'Online';
+  const location = [ev.venue, ev.venue_address || ev.city].filter(Boolean).join(', ') || 'Online';
   const countdown = ev.date ? getCountdown(ev.date) : null;
 
   return `

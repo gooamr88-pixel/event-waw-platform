@@ -396,11 +396,20 @@ export class SeatingChart {
   }
 
   _applySeatStyle(circle, status, tierColor) {
-    const isSelected = this.selectedSeats.has(circle.getAttribute('data-seat-id'));
+    const seatId = circle.getAttribute('data-seat-id');
+    const d = this.seatData.get(seatId);
+    const hasTier = d && d.tier_id;
+
+    const isSelected = this.selectedSeats.has(seatId);
     const effectiveStatus = isSelected ? 'selected' : status;
     const style = STATUS_STYLES[effectiveStatus] || STATUS_STYLES.available;
 
-    if (effectiveStatus === 'available') {
+    if (!hasTier) {
+      circle.style.fill = 'var(--seat-blocked)';
+      circle.style.opacity = '0.15';
+      circle.style.cursor = 'not-allowed';
+      circle.style.stroke = 'none';
+    } else if (effectiveStatus === 'available') {
       circle.style.fill = tierColor;
       circle.style.opacity = this.activeTierId && circle.getAttribute('data-tier-color') !== this.tierColorMap.get(this.activeTierId) ? '0.15' : '1';
     } else if (effectiveStatus === 'selected') {
@@ -413,7 +422,7 @@ export class SeatingChart {
       circle.style.opacity = style.opacity;
       circle.style.stroke = 'none';
     }
-    circle.style.cursor = style.cursor;
+    circle.style.cursor = !hasTier ? 'not-allowed' : style.cursor;
   }
 
   // ====================================
@@ -493,8 +502,8 @@ export class SeatingChart {
       const seatInfo = this.seatData.get(seatId);
       if (!seatInfo) return;
 
-      // Can't select unavailable seats
-      if (seatInfo.status !== 'available') return;
+      // Can't select unavailable or unassigned seats (no tier)
+      if (seatInfo.status !== 'available' || !seatInfo.tier_id) return;
 
       // Tier filter check
       if (this.activeTierId && seatInfo.tier_id !== this.activeTierId) return;
@@ -564,10 +573,10 @@ export class SeatingChart {
       touchHandled = true;
       handleSeatInteraction(circle);
 
-      // Show tooltip briefly on touch
+      // Show tooltip briefly on touch if seat has a tier
       const seatId = circle.getAttribute('data-seat-id');
       const d = this.seatData.get(seatId);
-      if (d) {
+      if (d && d.tier_id) {
         this._showTooltip(circle, d);
         clearTimeout(this._touchTooltipTimer);
         this._touchTooltipTimer = setTimeout(() => this._hideTooltip(), 2000);
@@ -576,14 +585,14 @@ export class SeatingChart {
       setTimeout(() => { touchHandled = false; }, 100);
     }, { passive: false });
 
-    // Hover tooltip (desktop only)
+    // Hover tooltip (desktop only) - only show if seat has a tier
     this.svgEl.addEventListener('mouseover', (e) => {
       if (touchHandled) return;
       const circle = e.target.closest('circle[data-seat-id]');
       if (!circle) return;
       const seatId = circle.getAttribute('data-seat-id');
       const d = this.seatData.get(seatId);
-      if (!d) return;
+      if (!d || !d.tier_id) return;
       this._showTooltip(circle, d);
     });
 
