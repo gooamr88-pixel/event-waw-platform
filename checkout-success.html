@@ -888,21 +888,34 @@
         progressBar.style.width = progress + '%';
       }, 600);
 
-      try {
-        const order = await getOrderBySessionPublic(sessionId);
-        clearInterval(progressInterval);
-        progressBar.style.width = '100%';
+      const maxRetries = 6;
+      const retryDelay = 2000;
+      let attempts = 0;
 
-        if (order && order.tickets && order.tickets.length > 0) {
-          setTimeout(() => showTickets(order, isGuest), 400);
+      async function pollOrder() {
+        attempts++;
+        try {
+          const order = await getOrderBySessionPublic(sessionId);
+          if (order && order.tickets && order.tickets.length > 0) {
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            setTimeout(() => showTickets(order, isGuest), 400);
+            return;
+          }
+        } catch (err) {
+          console.warn(`Attempt ${attempts} failed to fetch order:`, err);
+        }
+
+        if (attempts < maxRetries) {
+          setTimeout(pollOrder, retryDelay);
         } else {
+          clearInterval(progressInterval);
+          progressBar.style.width = '100%';
           setTimeout(showError, 400);
         }
-      } catch (err) {
-        console.error('Error loading order:', err);
-        clearInterval(progressInterval);
-        showError();
       }
+
+      pollOrder();
     });
 
     function showError() {
