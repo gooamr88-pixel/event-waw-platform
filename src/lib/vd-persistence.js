@@ -30,15 +30,21 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
     await supabase.from('seats').delete().eq('venue_map_id', mapId);
 
     const validTierIds = new Set((engine?.tiers || []).map(t => t.id));
+    console.log('[DEBUG] engine.tiers:', engine?.tiers);
+    console.log('[DEBUG] validTierIds:', [...validTierIds]);
+    console.log('[DEBUG] sectionTiers input:', sectionTiers);
 
     // Insert new seats with rollback on failure
     try {
       const seatRows = [];
       for (const section of layoutJson.sections) {
         let tierId = sectionTiers[section.key] || section.tier_id || null;
+        console.log(`[DEBUG] Section "${section.key}" - initial tierId:`, tierId);
         if (tierId && !validTierIds.has(tierId)) {
+          console.warn(`[DEBUG] Stale/invalid tierId "${tierId}" detected on section "${section.key}". Resetting to null.`);
           tierId = null;
         }
+        console.log(`[DEBUG] Section "${section.key}" - final tierId:`, tierId);
         for (const row of section.rows) {
           for (const seat of row.seats) {
             seatRows.push({
