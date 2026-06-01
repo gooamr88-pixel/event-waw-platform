@@ -89,8 +89,19 @@ serve(async (req) => {
           details_submitted: account.details_submitted,
         });
       } catch (err) {
-        console.error('Failed to retrieve Stripe account:', err);
-        return jsonResponse({ status: 'error', onboarding_complete: false });
+        // Account doesn't exist on this platform — clear stale ID
+        console.warn(`⚠️ Stale Stripe account ${profile.stripe_account_id} for user ${user.id} during status check: ${err.message}`);
+        await Promise.all([
+          supabase
+            .from('profiles')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('id', user.id),
+          supabase
+            .from('organizers')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('user_id', user.id)
+        ]);
+        return jsonResponse({ status: 'not_started', onboarding_complete: false, stale_account_cleared: true });
       }
     }
 
@@ -99,6 +110,30 @@ serve(async (req) => {
     // Creates or retrieves account, returns onboarding link
     // ═══════════════════════════════════
     let accountId = profile.stripe_account_id;
+
+    // ── Verify existing account is still valid on this platform ──
+    if (accountId) {
+      try {
+        await stripe.accounts.retrieve(accountId);
+        // Account exists and is connected — proceed
+      } catch (verifyErr) {
+        // Account doesn't exist, was deleted, or belongs to a different platform
+        console.warn(`⚠️ Stale Stripe account ${accountId} for user ${user.id}: ${verifyErr.message}. Creating fresh account.`);
+        accountId = null;
+
+        // Clear stale ID from DB so we don't keep hitting this
+        await Promise.all([
+          supabase
+            .from('profiles')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('id', user.id),
+          supabase
+            .from('organizers')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('user_id', user.id)
+        ]);
+      }
+    }
 
     if (!accountId) {
       // FIX 3.1: Create an Express connected account (was 'standard').
