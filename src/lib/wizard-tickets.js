@@ -91,6 +91,15 @@ export function renderCeTicketsTable() {
  * Called once from the orchestrator's setupCreateModal.
  */
 export function setupTicketListeners() {
+  // ── Sync ticket currencies on event currency change ──
+  document.getElementById('ce-currency')?.addEventListener('change', (e) => {
+    const newCurrency = e.target.value;
+    if (newCurrency) {
+      ceTicketsList.forEach(t => t.currency = newCurrency);
+      renderCeTicketsTable();
+    }
+  });
+
   // ── Ticket Type Cards ──
   document.querySelectorAll('.ce-ticket-card').forEach(card => {
     card.addEventListener('click', () => {

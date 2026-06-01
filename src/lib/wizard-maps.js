@@ -96,8 +96,12 @@ export async function initGooglePlacesAutocomplete(deps) {
       const setSelect = (id, val) => {
         const el = document.getElementById(id);
         if (!el || !val) return;
-        const opt = Array.from(el.options).find(o => o.value === val);
-        if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
+        if (el.tomselect) {
+          el.tomselect.setValue(val);
+        } else {
+          const opt = Array.from(el.options).find(o => o.value === val);
+          if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
+        }
       };
 
       // Venue name (displayName can be a string or an object)

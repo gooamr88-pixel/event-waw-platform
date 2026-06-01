@@ -220,8 +220,12 @@ export async function loadEventForEditing(eventId) {
       const el = document.getElementById(id);
       if (el && val != null && val !== '') {
         const strVal = String(val);
-        const opt = Array.from(el.options).find(o => o.value === strVal);
-        if (opt) el.value = strVal;
+        if (el.tomselect) {
+          el.tomselect.setValue(strVal);
+        } else {
+          const opt = Array.from(el.options).find(o => o.value === strVal);
+          if (opt) el.value = strVal;
+        }
       }
     };
 
