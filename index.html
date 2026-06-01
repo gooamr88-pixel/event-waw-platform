@@ -723,7 +723,7 @@
           var controller = new AbortController();
           var timeout = setTimeout(function() { controller.abort(); }, 15000);
           // C19: Send auth token when available for authenticated rate-limiting
-          var fetchHeaders = { 'Content-Type': 'application/json' };
+          var fetchHeaders = { 'Content-Type': 'application/json', 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdHdkd29pYnZvZXdiZXNvaHB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMzY0NjYsImV4cCI6MjA5MTkxMjQ2Nn0.YIuyd2y34UHkrAp9nZM_O2yVuaMAT-XWdSrex6eATjQ' };
           try {
             var sbKey = Object.keys(localStorage).find(function(k) { return k.startsWith('sb-') && k.endsWith('-auth-token'); });
             if (sbKey) {
@@ -836,8 +836,8 @@
       if (isOpen) input.focus();
     }
 
-    addMessage("Hey there! 👋 I'm <b>Waw Assistant</b>, your AI helper for Eventsli. Ask me anything about events, tickets, or our platform!", 'bot', true);
-    chatHistory.push({ role: 'model', text: "Hey there! I'm Waw Assistant, your AI helper for Eventsli. Ask me anything about events, tickets, or our platform!" });
+    addMessage("Hey there! 👋 I'm <b>Eventsli Assistant</b>, your AI helper for Eventsli. Ask me anything about events, tickets, or our platform!", 'bot', true);
+    chatHistory.push({ role: 'model', text: "Hey there! I'm Eventsli Assistant, your AI helper for Eventsli. Ask me anything about events, tickets, or our platform!" });
     setTimeout(addQuickReplies, 300);
 
     fab.addEventListener('click', toggleChat);

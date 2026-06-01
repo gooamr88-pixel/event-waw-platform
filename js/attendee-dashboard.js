@@ -137,7 +137,37 @@ function setupQuickActions() {
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 function setupSignOut() {
   document.getElementById('sign-out-btn')?.addEventListener('click', () => {
+    showLogoutConfirmation();
+  });
+}
+
+function showLogoutConfirmation() {
+  document.getElementById('logout-confirm-modal')?.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'logout-confirm-modal';
+  modal.innerHTML = `
+    <div style="position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.55);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:24px;" id="logout-backdrop">
+      <div style="background:var(--ev-card,#fff);border:1px solid var(--ev-border,#e5e7eb);border-radius:20px;padding:32px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <div style="width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:rgba(239,68,68,.08);display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🚪</div>
+        <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--ev-text,#1a1a1f);">Sign out?</h3>
+        <p style="font-size:.88rem;color:var(--ev-text-muted,#6b7280);margin-bottom:24px;line-height:1.6;">Are you sure you want to sign out of your Eventsli account?</p>
+        <div style="display:flex;gap:10px;">
+          <button id="logout-cancel" style="flex:1;padding:11px;border-radius:12px;font-size:.88rem;font-weight:600;cursor:pointer;border:1px solid var(--ev-border,#e5e7eb);background:transparent;color:var(--ev-text,#1a1a1f);transition:all .2s;font-family:inherit;">Cancel</button>
+          <button id="logout-confirm" style="flex:1;padding:11px;border-radius:12px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;background:#ef4444;color:#fff;transition:all .2s;font-family:inherit;">Sign Out</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  document.getElementById('logout-cancel').addEventListener('click', () => modal.remove());
+  document.getElementById('logout-confirm').addEventListener('click', () => {
+    modal.remove();
     performSignOut('/index.html');
+  });
+  document.getElementById('logout-backdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'logout-backdrop') modal.remove();
   });
 }
 

@@ -3,6 +3,16 @@
    Extends eveenty-dashboard.css
    ═══════════════════════════════════════════════ */
 
+/* ── Fix: Header padding for attendee dashboard ── */
+.ev-header {
+  padding: 12px 32px;
+}
+.ev-header h2,
+.ev-header .ev-header-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
 /* ══════ QUICK ACTIONS ══════ */
 .att-quick-actions { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
 .att-action-card {
