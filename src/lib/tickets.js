@@ -129,7 +129,15 @@ export async function getOrderBySessionPublic(sessionId) {
       p_session_id: sessionId,
     });
 
-    if (data) return data;
+    // Log RPC errors so permission/function-missing issues are visible
+    if (error) {
+      console.warn(`RPC get_order_by_session error (attempt ${attempt}/${maxAttempts}):`, error.message, error);
+    }
+
+    if (data) {
+      console.debug('RPC get_order_by_session result received:', data);
+      return data;
+    }
 
     if (attempt === maxAttempts) {
       console.warn('Order not found after polling (RPC). Webhook may be delayed.');
