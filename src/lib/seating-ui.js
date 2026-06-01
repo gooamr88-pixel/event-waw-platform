@@ -51,6 +51,13 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
             </button>
           </div>
         </div>
+        <!-- V52 FIX: Payment method selector for seated checkout (populated by event-detail.html) -->
+        <div id="seat-payment-method-selector" style="display:none;width:100%;">
+          <label style="font-size:0.75rem;font-weight:600;color:var(--text-muted);margin-bottom:5px;display:block;">Payment Method</label>
+          <select class="fi" id="seat-payment-method-select" style="width:100%;font-size:0.85rem;padding:8px 12px;">
+            <option value="stripe">💳 Credit/Debit Card (Stripe)</option>
+          </select>
+        </div>
         <!-- BRD: Server-side price breakdown (tax + service fee + total) -->
         <div id="seat-price-breakdown" style="width:100%;"></div>
       </div>
@@ -88,6 +95,10 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
     const seats = chart.getSelectedSeats();
     if (seats.length === 0) return;
 
+    // V52 FIX: Read payment method from seated selector
+    const seatPaySelect = document.getElementById('seat-payment-method-select');
+    const selectedMethod = seatPaySelect?.value || 'stripe';
+
     const btn = document.getElementById('checkout-seats-btn');
     btn.disabled = true;
     setSafeHTML(btn, '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving...');
@@ -97,8 +108,8 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
       const seatIds = seats.map(s => s.seat_id);
 
       if (options.onCheckout) {
-        // Delegate to the page-level handler (for guest modal etc)
-        await options.onCheckout({ tierId, seatIds, seats });
+        // Delegate to the page-level handler (passes selectedMethod for routing)
+        await options.onCheckout({ tierId, seatIds, seats, selectedMethod });
       } else {
         // Default: straight authenticated checkout
         const result = await createSeatedCheckout({ tierId, seatIds });
@@ -114,7 +125,10 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
       });
     } finally {
       btn.disabled = false;
-      setSafeHTML(btn, 'احجز الآن / Checkout <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>');
+      const btnLabel = selectedMethod !== 'stripe'
+        ? '📱 Pay & Reserve'
+        : 'احجز الآن / Checkout';
+      setSafeHTML(btn, btnLabel + ' <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>');
     }
   });
 

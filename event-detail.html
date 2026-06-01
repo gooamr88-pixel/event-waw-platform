@@ -1158,19 +1158,17 @@
       if (currentEventId) {
         try {
           const hasSeating = await initSeatingUI(currentEventId, document.getElementById('seating-chart-panel'), {
-            onCheckout: async ({ tierId, seatIds, seats }) => {
-              // V52 FIX: Check payment method selector for seated checkout too
-              const payMethodSelect = document.getElementById('payment-method-select');
-              const selectedMethod = payMethodSelect?.value || 'stripe';
+            onCheckout: async ({ tierId, seatIds, seats, selectedMethod }) => {
+              // V52 FIX: selectedMethod comes from seating-ui.js's own payment selector
+              const method = selectedMethod || 'stripe';
 
-              if (selectedMethod !== 'stripe') {
+              if (method !== 'stripe') {
                 // Manual transfer for seated checkout
-                const tierInfo = eventData?.ticket_tiers?.find(t => t.id === tierId);
                 showManualCheckoutModal({
                   eventId: eventData.id,
                   tierId: tierId,
                   quantity: seatIds.length,
-                  paymentMethod: selectedMethod,
+                  paymentMethod: method,
                   promoCode: typeof appliedPromo !== 'undefined' && appliedPromo?.code || null,
                   eventTitle: eventData.title,
                 });
@@ -1192,8 +1190,52 @@
             },
           });
           if (hasSeating) {
-            // Hide the GA ticket selector
+            // Hide the GA ticket selector (it has its own payment selector now)
             document.getElementById('ticket-selector').style.display = 'none';
+
+            // V52 FIX: Populate the seating chart's own payment method selector
+            // with the same methods we computed for the GA selector (finalAccepted)
+            const seatPaySelector = document.getElementById('seat-payment-method-selector');
+            const seatPaySelect = document.getElementById('seat-payment-method-select');
+            const seatHasManual = finalAccepted.some(m => m !== 'stripe');
+            if (seatPaySelector && seatPaySelect && seatHasManual) {
+              seatPaySelector.style.display = 'block';
+              seatPaySelect.innerHTML = '';
+
+              const seatMethodLabels = {
+                vodafone_cash: '📱 Vodafone Cash',
+                instapay: '🏦 InstaPay',
+                bank_transfer: '🏧 Bank Transfer',
+                fawry: '💳 Fawry'
+              };
+
+              if (finalAccepted.includes('stripe')) {
+                const opt = document.createElement('option');
+                opt.value = 'stripe';
+                opt.textContent = '💳 Credit/Debit Card (Stripe)';
+                seatPaySelect.appendChild(opt);
+              }
+              finalAccepted.filter(m => m !== 'stripe').forEach(method => {
+                const opt = document.createElement('option');
+                opt.value = method;
+                opt.textContent = seatMethodLabels[method] || method;
+                seatPaySelect.appendChild(opt);
+              });
+
+              // Update seated checkout button label on method change
+              seatPaySelect.addEventListener('change', () => {
+                const btn = document.getElementById('checkout-seats-btn');
+                if (!btn) return;
+                if (seatPaySelect.value === 'stripe') {
+                  btn.innerHTML = 'احجز الآن / Checkout <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+                } else {
+                  const label = (seatMethodLabels[seatPaySelect.value] || seatPaySelect.value).replace(/^.+\s/, '');
+                  btn.innerHTML = '📱 Pay via ' + label + ' <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>';
+                }
+              });
+              // Force sync on load
+              seatPaySelect.dispatchEvent(new Event('change'));
+            }
           }
         } catch (seatingErr) {
           console.warn('Seating chart init failed, using GA fallback:', seatingErr);
