@@ -292,26 +292,64 @@ END; $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- ════════════ PHASE 7: FINANCIAL DASHBOARD ════════════
 
+-- V-09 FIX: Read actual financial data from payments table instead of hardcoded 5% commission.
+-- This matches the production version from migration-v32-brd-financial-hardening.sql.
 CREATE OR REPLACE FUNCTION get_organizer_revenue(p_organizer_id UUID)
 RETURNS TABLE(event_id UUID, event_title TEXT, event_date TIMESTAMPTZ, event_status TEXT,
   total_tickets_sold BIGINT, total_capacity BIGINT, gross_revenue NUMERIC,
-  platform_fee NUMERIC, net_revenue NUMERIC, scanned_count BIGINT, scan_rate NUMERIC) AS $$
+  platform_fee NUMERIC, net_revenue NUMERIC, scanned_count BIGINT, scan_rate NUMERIC) AS $func$
+DECLARE
+  v_caller_id UUID;
 BEGIN
+  -- SECURITY: Always use the authenticated caller's ID, never the parameter
+  v_caller_id := auth.uid();
+  IF v_caller_id IS NULL THEN
+    RAISE EXCEPTION 'Not authenticated';
+  END IF;
+
   RETURN QUERY
-  SELECT e.id, e.title::TEXT, e.date, e.status::TEXT,
-    COALESCE((SELECT COUNT(*) FROM tickets t JOIN ticket_tiers tt2 ON tt2.id = t.ticket_tier_id WHERE tt2.event_id = e.id AND t.status IN ('valid','scanned')), 0)::BIGINT,
-    COALESCE(SUM(tt.capacity), 0)::BIGINT,
-    COALESCE((SELECT SUM(tt3.price) FROM tickets t JOIN ticket_tiers tt3 ON tt3.id = t.ticket_tier_id WHERE tt3.event_id = e.id AND t.status IN ('valid','scanned')), 0),
-    COALESCE((SELECT SUM(tt3.price) FROM tickets t JOIN ticket_tiers tt3 ON tt3.id = t.ticket_tier_id WHERE tt3.event_id = e.id AND t.status IN ('valid','scanned')), 0) * 0.05,
-    COALESCE((SELECT SUM(tt3.price) FROM tickets t JOIN ticket_tiers tt3 ON tt3.id = t.ticket_tier_id WHERE tt3.event_id = e.id AND t.status IN ('valid','scanned')), 0) * 0.95,
-    COALESCE((SELECT COUNT(*) FROM tickets t JOIN ticket_tiers tt2 ON tt2.id = t.ticket_tier_id WHERE tt2.event_id = e.id AND t.status = 'scanned'), 0)::BIGINT,
-    CASE WHEN COALESCE((SELECT COUNT(*) FROM tickets t JOIN ticket_tiers tt2 ON tt2.id = t.ticket_tier_id WHERE tt2.event_id = e.id AND t.status IN ('valid','scanned')), 0) > 0
-    THEN ROUND(COALESCE((SELECT COUNT(*) FROM tickets t JOIN ticket_tiers tt2 ON tt2.id = t.ticket_tier_id WHERE tt2.event_id = e.id AND t.status = 'scanned'), 0)::NUMERIC /
-      GREATEST(COALESCE((SELECT COUNT(*) FROM tickets t JOIN ticket_tiers tt2 ON tt2.id = t.ticket_tier_id WHERE tt2.event_id = e.id AND t.status IN ('valid','scanned')), 1)::NUMERIC, 1) * 100, 1)
-    ELSE 0 END
-  FROM events e LEFT JOIN ticket_tiers tt ON tt.event_id = e.id
-  WHERE e.organizer_id = p_organizer_id GROUP BY e.id, e.title, e.date, e.status ORDER BY e.date DESC;
-END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+  WITH ticket_stats AS (
+    SELECT
+      tt.event_id AS ev_id,
+      COUNT(*) FILTER (WHERE t.status IN ('valid','scanned')) AS sold,
+      COUNT(*) FILTER (WHERE t.status = 'scanned') AS scanned
+    FROM tickets t
+    JOIN ticket_tiers tt ON tt.id = t.ticket_tier_id
+    GROUP BY tt.event_id
+  ),
+  capacity_stats AS (
+    SELECT ct.event_id AS ev_id, SUM(ct.capacity)::BIGINT AS total_cap
+    FROM ticket_tiers ct GROUP BY ct.event_id
+  ),
+  -- V-09 FIX: Read actual financial data from payments table instead of hardcoded 5%
+  payment_stats AS (
+    SELECT
+      p.event_id AS ev_id,
+      COALESCE(SUM(p.subtotal), 0) AS gross,
+      COALESCE(SUM(p.platform_fee_total), 0) AS fees,
+      COALESCE(SUM(p.organizer_net), 0) AS net
+    FROM payments p
+    WHERE p.status = 'paid'
+    GROUP BY p.event_id
+  )
+  SELECT
+    e.id, e.title::TEXT, e.date, e.status::TEXT,
+    COALESCE(ts.sold, 0)::BIGINT,
+    COALESCE(cs.total_cap, 0)::BIGINT,
+    COALESCE(ps.gross, 0),
+    COALESCE(ps.fees, 0),
+    COALESCE(ps.net, 0),
+    COALESCE(ts.scanned, 0)::BIGINT,
+    CASE WHEN COALESCE(ts.sold, 0) > 0
+      THEN ROUND(COALESCE(ts.scanned, 0)::NUMERIC / GREATEST(ts.sold, 1) * 100, 1)
+      ELSE 0 END
+  FROM events e
+  LEFT JOIN ticket_stats ts ON ts.ev_id = e.id
+  LEFT JOIN capacity_stats cs ON cs.ev_id = e.id
+  LEFT JOIN payment_stats ps ON ps.ev_id = e.id
+  WHERE e.organizer_id = v_caller_id
+  ORDER BY e.date DESC;
+END; $func$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE OR REPLACE FUNCTION get_event_tier_revenue(p_event_id UUID, p_organizer_id UUID)
 RETURNS TABLE(tier_id UUID, tier_name TEXT, tier_price NUMERIC, capacity INT, sold BIGINT, revenue NUMERIC, scanned BIGINT) AS $$
@@ -445,14 +483,43 @@ DROP POLICY IF EXISTS "covers_select" ON storage.objects;
 DROP POLICY IF EXISTS "covers_update" ON storage.objects;
 DROP POLICY IF EXISTS "covers_delete" ON storage.objects;
 
+-- V-11 FIX: Insert — only organizers and admins can upload
 CREATE POLICY "covers_insert" ON storage.objects FOR INSERT
-  WITH CHECK (bucket_id = 'event-covers' AND auth.uid() IS NOT NULL);
+  WITH CHECK (
+    bucket_id = 'event-covers'
+    AND auth.uid() IS NOT NULL
+    AND EXISTS (
+      SELECT 1 FROM profiles p
+      WHERE p.id = auth.uid()
+      AND p.role IN ('organizer', 'admin', 'super_admin')
+    )
+  );
 CREATE POLICY "covers_select" ON storage.objects FOR SELECT
   USING (bucket_id = 'event-covers');
+-- V-11 FIX: Update — own files only (path starts with user ID), or admin
 CREATE POLICY "covers_update" ON storage.objects FOR UPDATE
-  USING (bucket_id = 'event-covers' AND auth.uid() IS NOT NULL);
+  USING (
+    bucket_id = 'event-covers'
+    AND auth.uid() IS NOT NULL
+    AND (
+      (storage.foldername(name))[1] = auth.uid()::text
+      OR EXISTS (
+        SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'super_admin')
+      )
+    )
+  );
+-- V-11 FIX: Delete — own files only (path starts with user ID), or admin
 CREATE POLICY "covers_delete" ON storage.objects FOR DELETE
-  USING (bucket_id = 'event-covers' AND auth.uid() IS NOT NULL);
+  USING (
+    bucket_id = 'event-covers'
+    AND auth.uid() IS NOT NULL
+    AND (
+      (storage.foldername(name))[1] = auth.uid()::text
+      OR EXISTS (
+        SELECT 1 FROM profiles p WHERE p.id = auth.uid() AND p.role IN ('admin', 'super_admin')
+      )
+    )
+  );
 
 
 -- ════════════ PHASE 10: RECOVERY INFRASTRUCTURE ════════════

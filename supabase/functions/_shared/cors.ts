@@ -6,8 +6,10 @@
 // ═══════════════════════════════════
 
 // S-3 FIX: Gate localhost origins behind environment variable
-// In production, set ENVIRONMENT=production to exclude localhost
-const IS_PRODUCTION = (Deno.env.get('ENVIRONMENT') || '').toLowerCase() === 'production';
+// V-14 FIX: Default to production unless explicitly set to 'development'.
+// Previously defaulted to non-production when ENVIRONMENT was unset,
+// which would expose localhost CORS origins in production.
+const IS_PRODUCTION = (Deno.env.get('ENVIRONMENT') || 'production').toLowerCase() !== 'development';
 
 // Multiple allowed origins — custom domain + Vercel deploy
 const ALLOWED_ORIGINS: string[] = [

@@ -103,8 +103,9 @@ serve(async (req) => {
     }
 
     // ── Validate amount ──
+    // V-08 FIX: Parse as float for validation only, use string-based cents conversion below
     const amountDecimal = parseFloat(payout.net_amount);
-    if (!amountDecimal || amountDecimal <= 0) {
+    if (!amountDecimal || amountDecimal <= 0 || !Number.isFinite(amountDecimal)) {
       return errorResponse(400, 'Invalid payout amount', { amount: payout.net_amount }, req);
     }
 
@@ -217,7 +218,11 @@ serve(async (req) => {
     // payout schedule triggers a transfer from the connected
     // account's Stripe balance to their external bank account.
 
-    const amountCents = Math.round(amountDecimal * 100);
+    // V-08 FIX: String-based cents conversion avoids floating-point imprecision.
+    // parseFloat("19.99") * 100 = 1998.9999... → Math.round saves it, but
+    // this approach eliminates the risk entirely.
+    const [whole = '0', frac = ''] = String(payout.net_amount).split('.');
+    const amountCents = parseInt(whole, 10) * 100 + parseInt((frac + '00').substring(0, 2), 10);
     const currency = (payout.currency || 'usd').toLowerCase();
 
     let stripePayout: any;
