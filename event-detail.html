@@ -1031,6 +1031,29 @@
                 .filter(pm => pm.method && pm.destination)
                 .map(pm => pm.method);
             }
+          } else if (pcErr) {
+            // RPC doesn't exist yet (migration not deployed) — fall back to direct query.
+            // This only works when the viewer IS the organizer (RLS: user_id = auth.uid()).
+            // For buyers, this will return null and they need the V52 migration.
+            console.warn('RPC get_event_payment_config failed, trying direct organizer query fallback:', pcErr.message);
+            try {
+              const { data: orgRow } = await supabase
+                .from('organizers')
+                .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
+                .eq('user_id', event.organizer_id)
+                .maybeSingle();
+
+              if (orgRow) {
+                hasStripe = !!(orgRow.stripe_account_id && orgRow.stripe_onboarding_complete);
+                if (orgRow.manual_payment_methods && Array.isArray(orgRow.manual_payment_methods)) {
+                  configuredManualMethods = orgRow.manual_payment_methods
+                    .filter(pm => pm.method && pm.destination)
+                    .map(pm => pm.method);
+                }
+              }
+            } catch (fallbackErr) {
+              console.warn('Direct organizer query also failed:', fallbackErr);
+            }
           }
         } catch (orgErr) {
           console.warn('Failed to load organizer payment methods:', orgErr);
