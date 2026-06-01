@@ -99,7 +99,12 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
     console.error('Checkout API Error:', response.status, errText);
     let err;
     try { err = JSON.parse(errText); } catch(e) {}
-    throw new Error(err?.error || errText || 'Failed to create checkout');
+    const message = err?.error || errText || 'Failed to create checkout';
+    // Surface 403 (Stripe blocked) with a clear, user-friendly message
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -137,7 +142,11 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
     console.error('Guest Checkout API Error:', response.status, errText);
     let err;
     try { err = JSON.parse(errText); } catch(e) {}
-    throw new Error(err?.error || errText || 'Failed to create guest checkout');
+    const message = err?.error || errText || 'Failed to create guest checkout';
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -225,8 +234,15 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || 'Failed to create seated checkout');
+    const errText = await response.text();
+    console.error('Seated Checkout API Error:', response.status, errText);
+    let err;
+    try { err = JSON.parse(errText); } catch(e) {}
+    const message = err?.error || errText || 'Failed to create seated checkout';
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -258,8 +274,15 @@ export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, gu
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || 'Failed to create guest seated checkout');
+    const errText = await response.text();
+    console.error('Guest Seated Checkout API Error:', response.status, errText);
+    let err;
+    try { err = JSON.parse(errText); } catch(e) {}
+    const message = err?.error || errText || 'Failed to create guest seated checkout';
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();

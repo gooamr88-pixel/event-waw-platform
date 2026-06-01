@@ -999,6 +999,7 @@
       }
 
       // ── Ticket Tiers or Display-Only Notice ──
+      let finalAccepted = [];
       if (event.listing_type === 'display_only') {
         // Hide ticket selector entirely for display-only events
         const ticketSelector = document.getElementById('ticket-selector');
@@ -1096,7 +1097,7 @@
 
         // Check if organizer has any active payment methods configured
         // No fallback: if finalMethods is empty, it means no payment methods are properly set up
-        const finalAccepted = finalMethods;
+        finalAccepted = finalMethods;
         const hasActivePayments = finalAccepted.length > 0;
         const hasManual = finalAccepted.some(m => m !== 'stripe');
         const hasPaidTickets = (event.ticket_tiers || []).some(t => parseFloat(t.price) > 0);
