@@ -1055,12 +1055,18 @@
           });
         }
 
+        // V52 FIX: Build final methods list.
+        // If we successfully loaded configuredManualMethods from the RPC, use it to verify.
+        // If the RPC failed (not deployed, error), trust event.accepted_payment_methods directly.
+        const rpcLoaded = configuredManualMethods.length > 0;
         const finalMethods = [];
         if (acceptedMethods.includes('stripe') && hasStripe) {
           finalMethods.push('stripe');
         }
         acceptedMethods.filter(m => m !== 'stripe').forEach(m => {
-          if (configuredManualMethods.includes(m)) {
+          // If RPC loaded: only include methods the organizer still has configured
+          // If RPC failed: trust the event's accepted_payment_methods (set at publish time)
+          if (!rpcLoaded || configuredManualMethods.includes(m)) {
             finalMethods.push(m);
           }
         });
@@ -1153,7 +1159,25 @@
         try {
           const hasSeating = await initSeatingUI(currentEventId, document.getElementById('seating-chart-panel'), {
             onCheckout: async ({ tierId, seatIds, seats }) => {
-              // Check if user is logged in
+              // V52 FIX: Check payment method selector for seated checkout too
+              const payMethodSelect = document.getElementById('payment-method-select');
+              const selectedMethod = payMethodSelect?.value || 'stripe';
+
+              if (selectedMethod !== 'stripe') {
+                // Manual transfer for seated checkout
+                const tierInfo = eventData?.ticket_tiers?.find(t => t.id === tierId);
+                showManualCheckoutModal({
+                  eventId: eventData.id,
+                  tierId: tierId,
+                  quantity: seatIds.length,
+                  paymentMethod: selectedMethod,
+                  promoCode: typeof appliedPromo !== 'undefined' && appliedPromo?.code || null,
+                  eventTitle: eventData.title,
+                });
+                return;
+              }
+
+              // Stripe path — check if user is logged in
               if (authState?.user) {
                 // Authenticated seated checkout - show confirm modal first
                 const tierInfo = eventData?.ticket_tiers?.find(t => t.id === tierId);
