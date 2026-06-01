@@ -11,7 +11,7 @@ import { showAlertModal } from './ui-modals.js';
  * @param {object} opts - { eventId, tierId, quantity, paymentMethod, promoCode, eventTitle }
  */
 export async function showManualCheckoutModal(opts) {
-  const { eventId, tierId, quantity, paymentMethod, promoCode, eventTitle } = opts;
+  const { eventId, tierId, quantity, paymentMethod, promoCode, eventTitle, seatIds } = opts;
   injectStyles();
 
   // Remove any existing modal
@@ -126,6 +126,7 @@ export async function showManualCheckoutModal(opts) {
           buyer_phone: phone,
           buyer_notes: notes || undefined,
           promo_code: promoCode || undefined,
+          seat_ids: seatIds || undefined,
         }),
       });
 
