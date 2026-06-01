@@ -41,13 +41,28 @@ serve(async (req) => {
     let userId = null;
 
     if (authHeader && authHeader.startsWith('Bearer ')) {
-      const { user, error: authError } = await authenticateRequest(req);
-      if (user) {
-        userId = user.id;
-      } else {
-        // H6 FIX: If a JWT was provided but is invalid/expired, reject — don't silently downgrade to guest.
-        // Only allow guest mode when NO Authorization header is present.
-        return errorResponse(401, authError || 'Invalid or expired authentication token', {}, req);
+      const token = authHeader.replace('Bearer ', '');
+      const isAnon = token === Deno.env.get('SUPABASE_ANON_KEY') || (() => {
+        try {
+          const parts = token.split('.');
+          if (parts.length === 3) {
+            const base64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            const payload = JSON.parse(atob(base64));
+            return payload.role === 'anon';
+          }
+        } catch (_) {}
+        return false;
+      })();
+
+      if (!isAnon) {
+        const { user, error: authError } = await authenticateRequest(req);
+        if (user) {
+          userId = user.id;
+        } else {
+          // H6 FIX: If a JWT was provided but is invalid/expired, reject — don't silently downgrade to guest.
+          // Only allow guest mode when NO Authorization header is present, or when the anon key is explicitly sent.
+          return errorResponse(401, authError || 'Invalid or expired authentication token', {}, req);
+        }
       }
     }
 

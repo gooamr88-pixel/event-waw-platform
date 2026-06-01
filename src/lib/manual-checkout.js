@@ -104,12 +104,13 @@ export async function showManualCheckoutModal(opts) {
       const { data: { session } } = await supabase.auth.getSession();
 
       const headers = { 'Content-Type': 'application/json' };
-      // Only send Authorization when we have a real session token.
-      // Sending the anon key as a Bearer token causes the Edge Function
-      // to reject it as an invalid JWT (H6 hardening: 401).
-      // Omitting the header lets the function handle it as a guest request.
+      // Send authenticated session token or fallback to the public anon key for guests.
+      // This satisfies the API Gateway's JWT verification (if enabled) while allowing the
+      // Edge Function to distinguish guest orders by parsing the JWT role or key value.
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
+      } else {
+        headers['Authorization'] = `Bearer ${supabaseAnonKey}`;
       }
 
       const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-manual-order`, {
