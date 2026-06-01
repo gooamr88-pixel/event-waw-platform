@@ -124,14 +124,22 @@ serve(async (req) => {
     if (totalCents > 0 && breakdown.organizer_id) {
       const { data: orgRow } = await adminClient
         .from('organizers')
-        .select('stripe_account_id, stripe_onboarding_complete')
+        .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
         .eq('user_id', breakdown.organizer_id)
         .maybeSingle();
       organizerStripe = orgRow;
 
       if (!orgRow?.stripe_account_id || !orgRow?.stripe_onboarding_complete) {
-        console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} has not completed Stripe Connect`);
-        return errorResponse(403, 'This event organizer has not completed their payment setup. Ticket purchases are temporarily unavailable.', {}, req);
+        // Check if organizer has manual methods configured — give a helpful error
+        const hasManualMethods = Array.isArray(orgRow?.manual_payment_methods) &&
+          orgRow.manual_payment_methods.some((pm: any) => pm.method && pm.destination);
+
+        const message = hasManualMethods
+          ? 'Stripe is not configured for this event. Please select a manual payment method (e.g., Vodafone Cash) from the dropdown instead.'
+          : 'This event organizer has not completed their payment setup. Ticket purchases are temporarily unavailable.';
+
+        console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} has not completed Stripe Connect. hasManualMethods=${hasManualMethods}`);
+        return errorResponse(403, message, { reason: 'stripe_not_configured', has_manual_methods: hasManualMethods }, req);
       }
 
       // ── H-14 FIX: Live Stripe API verification ──
@@ -145,12 +153,27 @@ serve(async (req) => {
           await adminClient.from('organizers')
             .update({ stripe_onboarding_complete: false })
             .eq('user_id', breakdown.organizer_id);
-          return errorResponse(403, 'This event organizer\'s payment account is not yet active. Ticket purchases are temporarily unavailable.', {}, req);
+
+          const hasManualMethods = Array.isArray(orgRow?.manual_payment_methods) &&
+            orgRow.manual_payment_methods.some((pm: any) => pm.method && pm.destination);
+
+          const message = hasManualMethods
+            ? 'Stripe account is not yet active. Please select a manual payment method (e.g., Vodafone Cash) from the dropdown.'
+            : 'This event organizer\'s payment account is not yet active. Ticket purchases are temporarily unavailable.';
+
+          return errorResponse(403, message, { reason: 'stripe_not_active', has_manual_methods: hasManualMethods }, req);
         }
       } catch (stripeErr) {
         console.error(`⚠️ Stripe account verification failed for ${orgRow.stripe_account_id}:`, stripeErr.message);
-        // Fail closed: do NOT proceed if we cannot verify the organizer's Stripe account
-        return errorResponse(500, 'Unable to verify organizer payment account. Please try again later.', {}, req);
+
+        const hasManualMethods = Array.isArray(orgRow?.manual_payment_methods) &&
+          orgRow.manual_payment_methods.some((pm: any) => pm.method && pm.destination);
+
+        const message = hasManualMethods
+          ? 'Unable to process card payment right now. Please select a manual payment method (e.g., Vodafone Cash) from the dropdown.'
+          : 'Unable to verify organizer payment account. Please try again later.';
+
+        return errorResponse(hasManualMethods ? 403 : 500, message, { reason: 'stripe_verification_failed', has_manual_methods: hasManualMethods }, req);
       }
     }
 
