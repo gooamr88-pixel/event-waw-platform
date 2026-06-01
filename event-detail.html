@@ -1015,32 +1015,44 @@
         renderTiers(event.ticket_tiers || []);
 
         // ── HYBRID PAYMENT: Show payment method selector if manual methods available ──
-        // Filter accepted methods by what the organizer has actually configured in their profile
+        // V52 FIX: Use RPC instead of direct organizers table query.
+        // The old query was blocked by RLS — buyers couldn't read organizer's payment config
+        // because the organizers table policy only allows `user_id = auth.uid()`.
         let configuredManualMethods = [];
         let hasStripe = false;
         try {
-          const { data: orgProfile } = await supabase
-            .from('organizers')
-            .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
-            .eq('user_id', event.organizer_id)
-            .maybeSingle();
-          if (orgProfile?.manual_payment_methods && Array.isArray(orgProfile.manual_payment_methods)) {
-            configuredManualMethods = orgProfile.manual_payment_methods
-              .filter(pm => pm.method && pm.destination)
-              .map(pm => pm.method);
+          const { data: paymentConfig, error: pcErr } = await supabase
+            .rpc('get_event_payment_config', { p_event_id: event.id });
+
+          if (!pcErr && paymentConfig && !paymentConfig.error) {
+            hasStripe = !!(paymentConfig.has_stripe && paymentConfig.stripe_onboarding_complete);
+            if (paymentConfig.manual_payment_methods && Array.isArray(paymentConfig.manual_payment_methods)) {
+              configuredManualMethods = paymentConfig.manual_payment_methods
+                .filter(pm => pm.method && pm.destination)
+                .map(pm => pm.method);
+            }
           }
-          hasStripe = !!(orgProfile?.stripe_account_id && orgProfile?.stripe_onboarding_complete);
         } catch (orgErr) {
           console.warn('Failed to load organizer payment methods:', orgErr);
         }
 
         // If the event was published with NO payment methods configured (empty or null),
         // dynamically default to all currently available payment methods for this organizer.
+        // V52 FIX: Also merge in any manual methods configured AFTER publishing.
+        // Without this, adding Vodafone Cash in profile settings after publishing
+        // would never show up because accepted_payment_methods was already set to ['stripe'].
         let acceptedMethods = event.accepted_payment_methods;
         if (!acceptedMethods || acceptedMethods.length === 0) {
+          // No methods set at all — use everything available
           acceptedMethods = [];
           if (hasStripe) acceptedMethods.push('stripe');
           acceptedMethods = [...acceptedMethods, ...configuredManualMethods];
+        } else {
+          // Methods were set at publish time — merge in any NEW manual methods
+          // that the organizer configured after publishing
+          configuredManualMethods.forEach(m => {
+            if (!acceptedMethods.includes(m)) acceptedMethods.push(m);
+          });
         }
 
         const finalMethods = [];
