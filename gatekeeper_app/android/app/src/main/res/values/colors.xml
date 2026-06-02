@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Eventsli Gatekeeper brand colors for Android native splash -->
+    <color name="launch_bg">#FF0F0F17</color>
+	<color name="ic_launcher_background">#0F0F17</color>
+</resources>

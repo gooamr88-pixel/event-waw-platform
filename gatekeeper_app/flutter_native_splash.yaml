@@ -1,0 +1,31 @@
+# ═══════════════════════════════════
+# EVENTSLI GATEKEEPER — Native Splash Screen Configuration
+# ═══════════════════════════════════
+#
+# Run: dart run flutter_native_splash:create
+#
+# Generates native Android/iOS splash screens that display
+# before Flutter engine initializes.
+
+flutter_native_splash:
+  # Background color matching AppColors.bgDeep
+  color: "#0F0F17"
+
+  # Splash image (centered logo)
+  image: "assets/images/splash_logo.png"
+
+  # Android 12+ splash (adaptive)
+  android_12:
+    color: "#0F0F17"
+    image: "assets/images/splash_logo.png"
+    icon_background_color: "#0F0F17"
+
+  # iOS configuration
+  ios: true
+
+  # Keep splash visible until Flutter signals removal
+  # (we dismiss it programmatically after init)
+  android: true
+
+  # Fullscreen (hide status bar during splash)
+  fullscreen: true

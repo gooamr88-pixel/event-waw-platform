@@ -1,0 +1,26 @@
+# ═══════════════════════════════════
+# EVENTSLI GATEKEEPER — Launcher Icons Configuration
+# ═══════════════════════════════════
+#
+# Run: dart run flutter_launcher_icons
+#
+# This generates adaptive icons for Android and iOS
+# from the source image at assets/images/app_icon.png
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/images/app_icon.png"
+
+  # Android Adaptive Icon
+  adaptive_icon_background: "#0F0F17"
+  adaptive_icon_foreground: "assets/images/app_icon_foreground.png"
+
+  # Web
+  web:
+    generate: false
+
+  # Windows
+  windows:
+    generate: false
