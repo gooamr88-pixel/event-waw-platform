@@ -33,3 +33,9 @@
 -keepclassmembers class * {
     @com.google.gson.annotations.SerializedName <fields>;
 }
+
+# ── Google Play Core (referenced by Flutter engine for deferred components) ──
+# These classes are not used at runtime but R8 fails if they're missing.
+-dontwarn com.google.android.play.core.splitcompat.**
+-dontwarn com.google.android.play.core.splitinstall.**
+-dontwarn com.google.android.play.core.tasks.**
