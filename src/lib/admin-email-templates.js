@@ -325,16 +325,10 @@ function showPreviewModal(subject, html) {
   iframe.className = 'emt-preview-frame';
   iframe.id = 'emt-preview-iframe';
   iframe.setAttribute('sandbox', '');
+  iframe.srcdoc = html;
   modal.querySelector('.emt-preview-dialog').appendChild(iframe);
 
   document.body.appendChild(modal);
-
-  // Write HTML into sandboxed iframe (sandbox="" = maximum restriction)
-  const iframeEl = document.getElementById('emt-preview-iframe');
-  const doc = iframeEl.contentDocument || iframeEl.contentWindow.document;
-  doc.open();
-  doc.write(html);
-  doc.close();
 
   // Close handlers
   document.getElementById('emt-preview-close').addEventListener('click', () => modal.remove());

@@ -95,7 +95,7 @@ CREATE POLICY templates_delete_own ON venue_templates FOR DELETE
 
 -- Admins can do everything (CRUD on all templates including system)
 CREATE POLICY templates_admin_all ON venue_templates FOR ALL
-  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
+  USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'moderator')));
 
 -- ══════════════════════════════════════════════
 -- 5. GRANTS

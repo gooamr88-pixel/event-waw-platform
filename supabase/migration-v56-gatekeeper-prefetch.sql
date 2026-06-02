@@ -49,7 +49,7 @@ BEGIN
   -- 3. Check if user is an admin
   IF NOT v_authorized AND EXISTS (
     SELECT 1 FROM profiles
-    WHERE id = v_user_id AND role = 'admin'
+    WHERE id = v_user_id AND role IN ('super_admin', 'admin', 'moderator')
   ) THEN
     v_authorized := true;
   END IF;
