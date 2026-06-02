@@ -541,33 +541,33 @@
    EVENT DETAIL PAGE
    ══════════════════════════════════ */
 [data-theme="light"] .event-detail-hero-overlay {
-  background: linear-gradient(to top, var(--bg-primary) 0%, rgba(10,10,15,0.5) 40%, rgba(10,10,15,0.2) 100%);
+  background: linear-gradient(to top, rgba(10,10,15,0.97) 0%, rgba(10,10,15,0.88) 35%, rgba(10,10,15,0.5) 65%, rgba(10,10,15,0.25) 100%);
 }
 [data-theme="light"] .event-hero-content h1#event-title {
-  color: var(--text-primary) !important;
-  text-shadow: none !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 16px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.8) !important;
 }
 [data-theme="light"] .event-hero-content h1#event-title + div {
-  color: var(--text-secondary) !important;
-  text-shadow: none !important;
+  color: rgba(255,255,255,0.88) !important;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6) !important;
 }
 [data-theme="light"] .event-hero-content #event-category {
-  color: var(--accent-primary) !important;
-  background: rgba(4, 120, 87, 0.1) !important;
-  border-color: rgba(4, 120, 87, 0.2) !important;
+  color: #34d399 !important;
+  background: rgba(5,150,105,0.2) !important;
+  border-color: rgba(5,150,105,0.4) !important;
   text-shadow: none !important;
 }
 [data-theme="light"] .event-hero-content .hero-back-btn {
-  color: var(--text-secondary) !important;
-  border-color: rgba(0, 0, 0, 0.15) !important;
-  background: rgba(255, 255, 255, 0.8) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.4) !important;
+  background: rgba(0,0,0,0.3) !important;
   backdrop-filter: blur(8px) !important;
   text-shadow: none !important;
 }
 [data-theme="light"] .event-hero-content .hero-back-btn:hover {
-  color: var(--accent-primary) !important;
-  border-color: var(--accent-primary) !important;
-  background: rgba(5, 150, 105, 0.08) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,0.6) !important;
+  background: rgba(0,0,0,0.45) !important;
 }
 [data-theme="light"] .ed-hero-overlay {
   background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(248,247,244,0.92));
