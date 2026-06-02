@@ -17,6 +17,7 @@
   color: #059669;
   border: 1px solid rgba(5, 150, 105,.18);
   white-space: nowrap;
+  margin-left: 12px;
 }
 .admin-env-badge.role-super_admin {
   background: #065f46;
