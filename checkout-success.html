@@ -121,43 +121,55 @@
     /* Checkmark & Badge */
     #ticket-view .auth-ok-ic {
       position: relative;
-      display: block !important;
-      width: 90px !important;
-      height: 90px !important;
-      margin: 0 auto 20px !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 100px !important;
+      height: 100px !important;
+      margin: 0 auto 24px !important;
       border-radius: 50% !important;
-      border: none !important;
-      background: transparent !important;
+      background: #ffffff !important;
+      border: 3px solid #10b981 !important;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2), 0 8px 10px -6px rgba(16, 185, 129, 0.1) !important;
+    }
+    #ticket-view .auth-ok-ic svg {
+      width: 70px !important;
+      height: 70px !important;
     }
     .checkmark-ring {
       position: absolute;
-      inset: 0;
+      inset: -3px;
       border-radius: 50%;
-      border: 2px solid #d1fae5;
+      border: 2px solid #34d399;
       animation: ringExpand 2s ease-out 1s infinite;
+      opacity: 0;
     }
     .checkmark-ring-2 {
       animation-delay: 1.5s;
     }
     @keyframes ringExpand {
       0% { transform: scale(1); opacity: 0.6; }
-      100% { transform: scale(1.8); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
     .ticket-path {
-      fill: none;
+      fill: transparent;
       stroke: #10b981;
-      stroke-width: 3;
+      stroke-width: 3.5;
       stroke-linecap: round;
       stroke-linejoin: round;
-      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.15));
     }
     .animate-icon .ticket-path {
       stroke-dasharray: 260;
       stroke-dashoffset: 260;
-      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards, ticketFill 0.5s ease-out 1s both;
     }
     @keyframes ticketOutline {
       to { stroke-dashoffset: 0; }
+    }
+    @keyframes ticketFill {
+      from { fill: transparent; }
+      to { fill: #ecfdf5; }
     }
     .ticket-dash-line {
       stroke: #a7f3d0;
