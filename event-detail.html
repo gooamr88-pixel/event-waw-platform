@@ -177,7 +177,7 @@
               <div class="ed-info-icon">👤</div>
               <div>
                 <div class="ed-info-label">Organizer</div>
-                <div class="ed-info-value" id="ed-organizer">Eventsli</div>
+                <div class="ed-info-value" id="ed-organizer">—</div>
               </div>
             </div>
             <div class="ed-info-item" id="ed-age-policy-card" style="display:none;">
@@ -752,7 +752,7 @@
       document.getElementById('ed-location').textContent = address || event.venue;
 
       // Organizer
-      const orgName = event.profiles?.full_name || 'Eventsli';
+      const orgName = event.organizer_name || event.profiles?.full_name || 'Eventsli';
       document.getElementById('ed-organizer').textContent = `By: ${orgName}`;
 
       // Age Policy
