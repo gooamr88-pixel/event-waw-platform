@@ -168,7 +168,7 @@
   <script type="module">
     import { signIn } from './src/lib/auth.js';
     import { supabase, getCurrentProfile } from './src/lib/supabase.js';
-    import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
+    import { guestOnlyPage, markOTPVerified, isAdminLevel } from './src/lib/guard.js';
 
     /**
      * Determine the correct redirect destination based on user role.
@@ -177,7 +177,7 @@
     async function getRedirectForUser() {
       try {
         const profile = await getCurrentProfile();
-        if (profile?.role === 'admin') return '/admin.html';
+        if (isAdminLevel(profile?.role)) return '/admin.html';
         if (profile?.role === 'organizer') return '/dashboard.html';
       } catch (_) { /* fallback to attendee dashboard */ }
       return '/attendee-dashboard.html';

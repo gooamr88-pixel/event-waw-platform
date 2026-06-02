@@ -312,7 +312,7 @@ export function updateNavForAuth(authState) {
     
     // Convert Log In button into Dashboard / Admin Panel
     if (signinBtn) {
-      const isSystemAdmin = profile?.role === 'admin';
+      const isSystemAdmin = isAdminLevel(profile?.role);
       const isOrganizer = profile?.role === 'organizer';
       signinBtn.href = isSystemAdmin ? 'admin.html' : isOrganizer ? 'dashboard.html' : 'attendee-dashboard.html';
       signinBtn.textContent = isSystemAdmin ? 'Admin Panel' : 'Dashboard';
@@ -337,9 +337,9 @@ export function updateNavForAuth(authState) {
     if (mobileTickets) mobileTickets.style.display = 'flex';
     if (mobileDashboard) {
       mobileDashboard.style.display = 'flex';
-      const dashHref = profile?.role === 'admin' ? 'admin.html' : profile?.role === 'organizer' ? 'dashboard.html' : 'attendee-dashboard.html';
+      const dashHref = isAdminLevel(profile?.role) ? 'admin.html' : profile?.role === 'organizer' ? 'dashboard.html' : 'attendee-dashboard.html';
       mobileDashboard.href = dashHref;
-      mobileDashboard.textContent = profile?.role === 'admin' ? '📋 Admin Panel' : '📋 Dashboard';
+      mobileDashboard.textContent = isAdminLevel(profile?.role) ? '📋 Admin Panel' : '📋 Dashboard';
     }
     if (mobileSignout) {
       mobileSignout.style.display = 'flex';
@@ -419,7 +419,7 @@ export async function upgradeToOrganizer() {
 
   // Check if already an organizer
   const profile = await getCurrentProfile();
-  if (profile?.role === 'organizer' || profile?.role === 'admin') return true;
+  if (profile?.role === 'organizer' || isAdminLevel(profile?.role)) return true;
 
   // Use the SECURITY DEFINER RPC - only allows attendee -> organizer
   const { error } = await supabase.rpc('request_organizer_upgrade');

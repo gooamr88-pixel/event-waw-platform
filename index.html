@@ -848,7 +848,7 @@
 
   <script src="js/main.js"></script>
   <script type="module">
-    import { semiProtectPage, updateNavForAuth, performSignOut } from './src/lib/guard.js';
+    import { semiProtectPage, updateNavForAuth, performSignOut, isAdminLevel } from './src/lib/guard.js';
     import { getEvents } from './src/lib/events.js';
     import { escapeHTML } from './src/lib/utils.js';
     import { initUI, initParticles } from './src/lib/ui.js';
@@ -1138,7 +1138,7 @@
       updateNavForAuth(authState);
 
       if (authState.user && authState.isFullyAuth) {
-        const dashHref = authState.profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        const dashHref = isAdminLevel(authState.profile?.role) ? 'admin.html' : 'dashboard.html';
         
         // Update "Create Your Event" buttons to go to Dashboard
         const heroCreate = document.getElementById('hero-create');

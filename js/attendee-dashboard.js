@@ -4,7 +4,7 @@
    ═══════════════════════════════════════════════════ */
 
 import { supabase, getCurrentUser, getCurrentProfile } from '../src/lib/supabase.js';
-import { protectPage, performSignOut, upgradeToOrganizer } from '../src/lib/guard.js';
+import { protectPage, performSignOut, upgradeToOrganizer, isAdminLevel } from '../src/lib/guard.js';
 import { setSafeHTML } from '../src/lib/dom.js';
 import { escapeHTML, formatCurrency } from '../src/lib/utils.js';
 
@@ -199,7 +199,7 @@ function setupUpgradeCTA() {
   const cta = document.getElementById('upgrade-cta');
   if (!cta) return;
 
-  if (_profile?.role === 'organizer' || _profile?.role === 'admin') {
+  if (_profile?.role === 'organizer' || isAdminLevel(_profile?.role)) {
     setSafeHTML(cta, `
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
       Organizer Dashboard

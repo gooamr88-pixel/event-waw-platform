@@ -195,7 +195,7 @@
   <script type="module">
     import { signUp } from './src/lib/auth.js';
     import { supabase, getCurrentProfile } from './src/lib/supabase.js';
-    import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
+    import { guestOnlyPage, markOTPVerified, isAdminLevel } from './src/lib/guard.js';
     const SUPABASE_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co';
     let registeredEmail = '';
 
@@ -203,7 +203,7 @@
     async function getPostAuthRedirect() {
       try {
         const profile = await getCurrentProfile();
-        if (profile?.role === 'admin') return '/admin.html';
+        if (isAdminLevel(profile?.role)) return '/admin.html';
         if (profile?.role === 'organizer') return '/dashboard.html';
       } catch (_) {}
       return '/attendee-dashboard.html';
