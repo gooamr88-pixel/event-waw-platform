@@ -221,7 +221,11 @@
           await markOTPVerified();
 
           // Determine destination: admin → Motherboard, others → Dashboard
-          const destination = redirect || await getRedirectForUser();
+          let destination = redirect;
+          const userRedirect = await getRedirectForUser();
+          if (userRedirect === '/admin.html' || !destination || destination.includes('dashboard.html')) {
+            destination = userRedirect;
+          }
 
           msg.className = 'ev-auth-msg success';
           msg.textContent = '✓ Welcome back! Redirecting…';
@@ -268,7 +272,11 @@
       await ensureProfile(session.user);
       await markOTPVerified();
       const redirect = new URLSearchParams(window.location.search).get('redirect');
-      const destination = redirect || await getRedirectForUser();
+      let destination = redirect;
+      const userRedirect = await getRedirectForUser();
+      if (userRedirect === '/admin.html' || !destination || destination.includes('dashboard.html')) {
+        destination = userRedirect;
+      }
       setTimeout(() => { window.location.href = destination; }, 600);
     }
 
