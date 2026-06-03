@@ -5,6 +5,7 @@
 import { supabase } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
+import { formatCurrency } from './utils.js';
 
 const esc = (s) => { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; };
 
@@ -61,6 +62,13 @@ export async function renderAdminCommissionPanel(container) {
     const lockedCount = rows.filter(r => r.scanner_locked).length;
     const settledCount = rows.filter(r => r.status === 'settled').length;
 
+    // M-2 FIX: Detect dominant currency from data instead of hardcoding 'EGP'
+    const currencies = [...new Set(rows.map(r => {
+      try { return r.events?.currency || (r.financial_snapshot && JSON.parse(r.financial_snapshot)?.currency); } catch(e) { return null; }
+    }).filter(Boolean))];
+    const primaryCurrency = currencies.length === 1 ? currencies[0] : (currencies.includes('EGP') ? 'EGP' : currencies[0] || 'EGP');
+    const fmtAmount = (v) => formatCurrency(v, primaryCurrency);
+
     // Update badge
     const badge = document.getElementById('commission-debt-count');
     if (badge) {
@@ -70,7 +78,7 @@ export async function renderAdminCommissionPanel(container) {
 
     let html = `
       <div class="acd-stats">
-        <div class="acd-stat"><div class="acd-stat-val" style="color:#ef4444">${totalOutstanding.toLocaleString()} EGP</div><div class="acd-stat-label">Total Outstanding</div></div>
+        <div class="acd-stat"><div class="acd-stat-val" style="color:#ef4444">${fmtAmount(totalOutstanding)}</div><div class="acd-stat-label">Total Outstanding</div></div>
         <div class="acd-stat"><div class="acd-stat-val" style="color:#eab308">${lockedCount}</div><div class="acd-stat-label">Locked Events</div></div>
         <div class="acd-stat"><div class="acd-stat-val" style="color:#22c55e">${settledCount}</div><div class="acd-stat-label">Settled</div></div>
         <div class="acd-stat"><div class="acd-stat-val">${rows.length}</div><div class="acd-stat-label">Total Records</div></div>
@@ -99,9 +107,9 @@ export async function renderAdminCommissionPanel(container) {
           <td>${i + 1}</td>
           <td>${orgName}${orgEmail}</td>
           <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${evTitle}</td>
-          <td style="font-weight:600">${Number(r.commission_owed).toLocaleString()}</td>
-          <td style="color:#22c55e">${Number(r.commission_paid).toLocaleString()}</td>
-          <td style="font-weight:700;color:${r.commission_balance > 0 ? '#ef4444' : '#22c55e'}">${Number(r.commission_balance).toLocaleString()}</td>
+          <td style="font-weight:600">${fmtAmount(Number(r.commission_owed))}</td>
+          <td style="color:#22c55e">${fmtAmount(Number(r.commission_paid))}</td>
+          <td style="font-weight:700;color:${r.commission_balance > 0 ? '#ef4444' : '#22c55e'}">${fmtAmount(Number(r.commission_balance))}</td>
           <td><span class="acd-badge ${status}">${status}</span></td>
           <td style="font-size:1.1rem;text-align:center">${lock}</td>
           <td>${settleBtn}</td>

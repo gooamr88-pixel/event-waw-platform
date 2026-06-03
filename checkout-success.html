@@ -652,7 +652,7 @@
     import { supabase } from './src/lib/supabase.js';
     import { getOrderBySessionPublic } from './src/lib/tickets.js';
     import { initUI } from './src/lib/ui.js';
-    import { escapeHTML } from './src/lib/utils.js';
+    import { escapeHTML, formatCurrency } from './src/lib/utils.js';
     import { showTransferModal } from './src/lib/ticket-transfer.js';
     import QRCode from 'https://esm.sh/qrcode@1';
 
@@ -1106,7 +1106,7 @@
                 </div>
                 <div style="text-align:right;">
                   <div class="ticket-attendee-label">Amount</div>
-                  <div class="ticket-attendee-value" style="color:#059669;">$${Number(t.tier_price).toLocaleString()}</div>
+                  <div class="ticket-attendee-value" style="color:#059669;">${formatCurrency(Number(t.tier_price), order.currency || 'USD')}</div>
                 </div>
               </div>
             </div>
@@ -1122,7 +1122,7 @@
               </div>
               <div class="ticket-status">
                 <span class="ticket-status-badge badge-valid">✦ Valid</span>
-                <span class="ticket-amount">$${Number(order.amount).toLocaleString()}</span>
+                <span class="ticket-amount">${formatCurrency(Number(order.amount), order.currency || 'USD')}</span>
               </div>
               <button class="btn btn-outline btn-sm ticket-transfer-btn" data-ticket-id="${t.id}" data-event-title="${escapeHTML(t.event_title)}" data-tier-name="${escapeHTML(t.tier_name)}" style="margin-top:14px;">
                 🔄 Transfer Ticket

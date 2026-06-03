@@ -25,15 +25,24 @@ export async function renderAdminPayouts(container) {
     // Stats
     const pending = payouts.filter(p => p.status === 'pending');
     const completed = payouts.filter(p => p.status === 'completed');
-    const totalPending = pending.reduce((s, p) => s + Number(p.net_amount || 0), 0);
-    const totalPaid = completed.reduce((s, p) => s + Number(p.net_amount || 0), 0);
+    // M-3 FIX: Group totals by currency to avoid mixing currencies
+    const groupByCurrency = (items) => {
+      const groups = {};
+      items.forEach(p => {
+        const c = p.currency || 'USD';
+        groups[c] = (groups[c] || 0) + Number(p.net_amount || 0);
+      });
+      return Object.entries(groups).map(([c, v]) => fmtCurrency(v, c)).join(' + ') || fmtCurrency(0);
+    };
+    const totalPendingDisplay = groupByCurrency(pending);
+    const totalPaidDisplay = groupByCurrency(completed);
 
     let html = `
       <div class="ev-stat-grid" style="margin-bottom:20px">
         <div class="ev-stat-card"><div class="ev-stat-icon orange">⏳</div><div><div class="ev-stat-value">${pending.length}</div><div class="ev-stat-label">Pending Requests</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon gold">💰</div><div><div class="ev-stat-value">${fmtCurrency(totalPending)}</div><div class="ev-stat-label">Pending Amount</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon gold">💰</div><div><div class="ev-stat-value">${totalPendingDisplay}</div><div class="ev-stat-label">Pending Amount</div></div></div>
         <div class="ev-stat-card"><div class="ev-stat-icon green">✅</div><div><div class="ev-stat-value">${completed.length}</div><div class="ev-stat-label">Completed Payouts</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon blue">💸</div><div><div class="ev-stat-value">${fmtCurrency(totalPaid)}</div><div class="ev-stat-label">Total Paid</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon blue">💸</div><div><div class="ev-stat-value">${totalPaidDisplay}</div><div class="ev-stat-label">Total Paid</div></div></div>
       </div>
 
       <div class="ev-card">

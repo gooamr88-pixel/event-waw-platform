@@ -162,6 +162,11 @@ export function setupTicketListeners() {
         showToast('Early bird price must be a valid positive number', 'error');
         return;
       }
+      // M-4 FIX: Validate early bird price is lower than regular price
+      if (parsedEarly >= price && price > 0) {
+        showToast('Early bird price must be lower than the regular price', 'error');
+        return;
+      }
     }
     const currency = document.getElementById('ce-currency')?.value || 'USD';
     
@@ -196,6 +201,8 @@ export function setupTicketListeners() {
 
     if (!code) { showToast('Promo code is required', 'error'); return; }
     if (value <= 0) { showToast('Discount value must be greater than 0', 'error'); return; }
+    // C-2 FIX: Cap percentage promo codes at 100%
+    if (type === 'percentage' && value > 100) { showToast('Percentage discount cannot exceed 100%', 'error'); return; }
     
     // Check for duplicates
     if (cePromoCodesList.some(p => p.code.toUpperCase() === code.toUpperCase())) {
