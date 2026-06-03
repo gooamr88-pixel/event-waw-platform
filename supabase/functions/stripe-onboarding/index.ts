@@ -202,6 +202,6 @@ serve(async (req) => {
 
   } catch (err) {
     console.error('Stripe onboarding error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

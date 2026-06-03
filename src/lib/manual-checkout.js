@@ -5,6 +5,7 @@
    =================================== */
 import { supabase, SUPABASE_FUNCTIONS_URL, supabaseAnonKey } from './supabase.js';
 import { showAlertModal } from './ui-modals.js';
+import { setSafeHTML } from './dom.js';
 
 /**
  * Shows the manual transfer checkout modal.
@@ -161,7 +162,7 @@ function showTransferInstructions(modal, data) {
   }).format(v || 0);
 
   const body = modal.querySelector('#mc-body');
-  body.innerHTML = `
+  setSafeHTML(body, `
     <div class="mc-step">
       <div class="mc-success-icon">✅</div>
       <h3 class="mc-success-title">Order Created!</h3>
@@ -198,7 +199,7 @@ function showTransferInstructions(modal, data) {
 
       <button class="mc-btn mc-btn-primary" id="mc-confirm-paid">I've Sent the Payment ✓</button>
     </div>
-  `;
+  `);
 
   // Copy button
   document.getElementById('mc-copy')?.addEventListener('click', () => {

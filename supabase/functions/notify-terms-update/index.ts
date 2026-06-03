@@ -39,7 +39,12 @@ serve(async (req) => {
     }
 
     // ── Parse input ──
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse(400, 'Invalid or missing JSON body', {}, req);
+    }
     const { version_code, title, content_hash, content_url } = body;
 
     if (!version_code || !title || !content_hash) {

@@ -444,6 +444,11 @@ serve(async (req) => {
     }
 
     console.log(`✅ Order ${order.id} created with ${qty} tickets (guest=${isGuest})`);
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // ════════════════════════════════════════════════
@@ -480,6 +485,11 @@ serve(async (req) => {
         }
       }
     }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // ════════════════════════════════════════════════
@@ -598,6 +608,11 @@ serve(async (req) => {
     } else {
       console.log(`💸 Refund processed (atomic): order ${order.id}, result: ${JSON.stringify(refundResult)}`);
     }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // ════════════════════════════════════════════════
@@ -633,14 +648,16 @@ serve(async (req) => {
 
         // Q-4 FIX: Use 'disputed' not 'refunded' — disputes can be won
         // and the order may need to be reinstated
-        await supabase.from('orders').update({ status: 'disputed' }).eq('id', order.id);
+        const { error: orderUpdateErr } = await supabase.from('orders').update({ status: 'disputed' }).eq('id', order.id);
+        if (orderUpdateErr) console.warn(`⚠️ DISPUTE: Failed to update order ${order.id} status:`, orderUpdateErr);
         // H-06b FIX: Also cancel 'scanned' tickets during dispute
-        const { data: disputedTickets } = await supabase
+        const { data: disputedTickets, error: ticketUpdateErr } = await supabase
           .from('tickets')
           .update({ status: 'cancelled' })
           .eq('order_id', order.id)
           .in('status', ['valid', 'scanned'])
           .select('id, ticket_tier_id');
+        if (ticketUpdateErr) console.warn(`⚠️ DISPUTE: Failed to cancel tickets for order ${order.id}:`, ticketUpdateErr);
         console.warn(`⚠️ DISPUTE: order ${order.id} — tickets cancelled pending resolution`);
 
         // Decrement sold_count for cancelled tickets (was missing — Q-5 fix)
@@ -658,10 +675,11 @@ serve(async (req) => {
         }
 
         // Update payments table to 'disputed'
-        await supabase
+        const { error: paymentUpdateErr } = await supabase
           .from('payments')
           .update({ status: 'disputed', updated_at: new Date().toISOString() })
           .eq('order_id', order.id);
+        if (paymentUpdateErr) console.warn(`⚠️ DISPUTE: Failed to update payment for order ${order.id}:`, paymentUpdateErr);
 
         // Log for manual review
         try {
@@ -676,6 +694,11 @@ serve(async (req) => {
         }
       }
     }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   // ════════════════════════════════════════════════
@@ -720,6 +743,11 @@ serve(async (req) => {
         console.error('Failed to log deauthorization:', e);
       }
     }
+
+    return new Response(JSON.stringify({ received: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   return new Response(JSON.stringify({ received: true }), {

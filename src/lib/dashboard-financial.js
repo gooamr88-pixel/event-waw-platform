@@ -171,7 +171,7 @@ function showPayoutModal(fin) {
   const modal = document.createElement('div');
   modal.id = 'fin-payout-modal';
   modal.className = 'fin-modal-overlay';
-  modal.innerHTML = `
+  setSafeHTML(modal, `
     <div class="fin-modal-dialog">
       <div class="fin-modal-header">
         <h3>💰 Request Payout</h3>
@@ -194,7 +194,7 @@ function showPayoutModal(fin) {
         </button>
       </div>
     </div>
-  `;
+  `);
 
   document.body.appendChild(modal);
 

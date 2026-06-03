@@ -6,6 +6,7 @@
 
 import { supabase } from './supabase.js';
 import { escapeHTML } from './utils.js';
+import { setSafeHTML } from './dom.js';
 
 /**
  * Fetch the full price breakdown from the server.
@@ -75,13 +76,13 @@ export function renderPriceBreakdown(container, breakdown, options = {}) {
   const isFree = breakdown.total === 0;
 
   if (isFree) {
-    container.innerHTML = `
+    setSafeHTML(container, `
       <div class="ev-breakdown" data-compact="${compact}">
         <div class="ev-breakdown__row ev-breakdown__total">
           <span class="ev-breakdown__label">Total</span>
           <span class="ev-breakdown__value">Free</span>
         </div>
-      </div>`;
+      </div>`);
     return;
   }
 
@@ -148,7 +149,7 @@ export function renderPriceBreakdown(container, breakdown, options = {}) {
   }
 
   html += `</div>`;
-  container.innerHTML = html;
+  setSafeHTML(container, html);
 }
 
 /**
