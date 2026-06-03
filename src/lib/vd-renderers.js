@@ -23,8 +23,8 @@ export function renderCanvas(elements, container, state, ELEMENT_TYPES, SEAT_R, 
 
   let defs = svg.querySelector('defs');
   if (!defs) {
-    defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-    defs.insertAdjacentHTML('beforeend', `
+    // FIX: Use DOMParser with SVG MIME to avoid insertAdjacentHTML SVG namespace issues (Firefox)
+    const defsMarkup = `<svg xmlns="http://www.w3.org/2000/svg"><defs>
       <pattern id="vd-grid" width="40" height="40" patternUnits="userSpaceOnUse">
         <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,.025)" stroke-width="0.5"/>
       </pattern>
@@ -39,8 +39,11 @@ export function renderCanvas(elements, container, state, ELEMENT_TYPES, SEAT_R, 
       <linearGradient id="vd-curtain-l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8b1a1a"/><stop offset=".3" stop-color="#a52222"/><stop offset=".5" stop-color="#6b1414"/><stop offset=".7" stop-color="#a52222"/><stop offset="1" stop-color="#8b1a1a"/></linearGradient>
       <linearGradient id="vd-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5c3d2e"/><stop offset=".5" stop-color="#6d4c3d"/><stop offset="1" stop-color="#4a3020"/></linearGradient>
       <linearGradient id="vd-metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#888"/><stop offset=".5" stop-color="#666"/><stop offset="1" stop-color="#444"/></linearGradient>
-      <radialGradient id="vd-spot"><stop offset="0" stop-color="rgba(212,175,55,.12)"/><stop offset="1" stop-color="transparent"/></radialGradient>`);
-    svg.appendChild(defs);
+      <radialGradient id="vd-spot"><stop offset="0" stop-color="rgba(212,175,55,.12)"/><stop offset="1" stop-color="transparent"/></radialGradient>
+    </defs></svg>`;
+    const parsed = new DOMParser().parseFromString(defsMarkup, 'image/svg+xml');
+    defs = parsed.querySelector('defs');
+    svg.appendChild(document.importNode(defs, true));
   }
 
   svg.querySelectorAll(':not(defs)').forEach(n => n.remove());
