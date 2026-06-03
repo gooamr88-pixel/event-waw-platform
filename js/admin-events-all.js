@@ -19,7 +19,7 @@ export async function loadAllEvents(onRefresh) {
   try {
     const { data, error } = await supabase
       .from('events')
-      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, date, end_date, category, venue, venue_address, city, organizer_id, created_at, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
+      .select('id, title, description, cover_image, status, admin_approved, admin_rejected_reason, date, end_date, category, venue, venue_address, city, organizer_id, created_at, custom_commission_pct, custom_commission_fixed, profiles!events_organizer_id_fkey(full_name, email, phone, avatar_url), ticket_tiers(id, name, price, capacity, sold_count)')
       .order('created_at', { ascending: false })
       .limit(200);
 
@@ -70,9 +70,12 @@ export async function loadAllEvents(onRefresh) {
         statusBadge = 'draft'; statusLabel = (ev.status || 'Unknown').charAt(0).toUpperCase() + (ev.status || 'Unknown').slice(1);
       }
 
+      const hasCustomFee = ev.custom_commission_pct != null;
+      const feeLabel = hasCustomFee ? ev.custom_commission_pct + '%' + (ev.custom_commission_fixed ? ' + $' + ev.custom_commission_fixed : '') : '';
+
       return `<tr>
         <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
-        <td><a href="#" class="ev-event-detail-link" data-event-idx="${i}" style="font-weight:600;color:var(--ev-accent);text-decoration:none;cursor:pointer">${escapeHTML(ev.title)}</a></td>
+        <td><a href="#" class="ev-event-detail-link" data-event-idx="${i}" style="font-weight:600;color:var(--ev-accent);text-decoration:none;cursor:pointer">${escapeHTML(ev.title)}</a>${hasCustomFee ? '<span style="display:inline-block;margin-left:6px;font-size:.6rem;padding:2px 6px;border-radius:8px;background:rgba(99,102,241,.1);color:#6366f1;font-weight:700;vertical-align:middle" title="Custom Fee: ' + escapeHTML(feeLabel) + '">FEE</span>' : ''}</td>
         <td>${escapeHTML(org.full_name || org.email || '—')}</td>
         <td>${date}</td>
         <td><span class="ev-badge ${statusBadge}">${statusLabel}</span></td>
