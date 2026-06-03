@@ -229,7 +229,7 @@
   <a href="#main-content" class="skip-link" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:9999;padding:12px 24px;background:#059669;color:#fff;font-weight:700;border-radius:0 0 8px 0;text-decoration:none;font-size:.95rem" onfocus="this.style.left='0';this.style.width='auto';this.style.height='auto'" onblur="this.style.left='-9999px';this.style.width='1px';this.style.height='1px'">Skip to main content</a>
 
   <!-- â• â• â• â• â• â•  NAVBAR â• â• â• â• â• â•  -->
-  <nav class="navbar" id="main-nav">
+  <nav class="navbar" id="main-nav" aria-label="Main navigation">
     <div class="container">
       <a href="index.html" class="nav-logo" id="nav-logo">
   <img src="images/logo-light-theme.png?v=1778305500" alt="Eventsli" class="logo-light-theme" />
@@ -274,8 +274,8 @@
   </nav>
 
   <!-- Mobile Menu -->
-  <div class="mobile-menu" id="mobile-menu">
-    <button class="close-btn" id="mobile-close">✕</button>
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation menu">
+    <button class="close-btn" id="mobile-close" aria-label="Close menu">✕</button>
     <a href="index.html">Home</a>
     <a href="events.html">Events</a>
     <a href="my-tickets.html">My Tickets</a>
@@ -616,7 +616,7 @@
     </div>
     <div class="ev-chatbox-footer">
       <div class="ev-chatbox-input-wrap">
-        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" aria-label="Type a message" />
         <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>

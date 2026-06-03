@@ -68,7 +68,7 @@ export async function loadApprovalQueue(onRefresh) {
         <td>
           <div style="display:flex;gap:4px;flex-wrap:wrap">
             <span class="ev-badge pending">Pending</span>
-            ${ev.has_been_approved_before ? '<span class="ev-badge" style="background:var(--ev-accent);color:#fff;font-weight:700">Edited</span>' : '<span class="ev-badge" style="background:#10b981;color:#fff;font-weight:700">New</span>'}
+            ${ev.has_been_approved_before ? '<span class="ev-badge" style="background:var(--ev-accent);color:#fff;font-weight:700">Edited</span>' : '<span class="ev-badge published">New</span>'}
           </div>
         </td>
         <td>

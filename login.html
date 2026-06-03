@@ -18,7 +18,9 @@
   <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-auth">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <!-- Top Blue Bar -->
+  <main id="main-content">
   <div class="ev-top-bar"></div>
 
   <div class="ev-auth-container">
@@ -116,6 +118,7 @@
       </div>
     </div>
   </div>
+  </main>
 
   <!-- ═══ CHAT WIDGET ═══ -->
   <div id="ev-chatbox" class="ev-chatbox">
@@ -129,7 +132,7 @@
     <div class="ev-chatbox-messages" id="ev-chatbox-messages"></div>
     <div class="ev-chatbox-footer">
       <div class="ev-chatbox-input-wrap">
-        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" aria-label="Type a message" />
         <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
     </div>

@@ -26,6 +26,8 @@
   <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-auth">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <main id="main-content">
   <div class="ev-top-bar"></div>
   <div class="ev-auth-container">
     <!-- LEFT PANEL -->
@@ -101,13 +103,13 @@
             </div>
             <form id="otp-form">
               <div class="ev-otp-inputs">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="0" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="1" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="2" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="0" aria-label="Digit 1 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="1" aria-label="Digit 2 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="2" aria-label="Digit 3 of 6" />
                 <div class="ev-otp-dash">—</div>
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="3" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="4" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="5" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="3" aria-label="Digit 4 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="4" aria-label="Digit 5 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="5" aria-label="Digit 6 of 6" />
               </div>
               <div style="display:flex;justify-content:center;"><button type="submit" class="ev-submit-btn" id="otp-submit" disabled><span id="otp-text">Verify & Continue</span><div id="otp-spinner" class="ev-btn-spinner" style="display:none;"></div></button></div>
             </form>
@@ -121,6 +123,7 @@
       </div>
     </div>
   </div>
+  </main>
   <!-- ═══ CHAT WIDGET ═══ -->
   <div id="ev-chatbox" class="ev-chatbox">
     <div class="ev-chatbox-header">
@@ -133,7 +136,7 @@
     <div class="ev-chatbox-messages" id="ev-chatbox-messages"></div>
     <div class="ev-chatbox-footer">
       <div class="ev-chatbox-input-wrap">
-        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" aria-label="Type a message" />
         <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
     </div>

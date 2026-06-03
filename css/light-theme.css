@@ -418,11 +418,11 @@
 }
 [data-theme="light"] .footer p,
 [data-theme="light"] .footer-brand p {
-  color: #88b39d !important;
+  color: #a7d4bf !important;  /* D2-2 FIX: raised from #88b39d to meet WCAG 4.5:1 */
 }
 [data-theme="light"] .footer-links a {
   color: #a7f3d0 !important;
-  transition: all 0.3s ease !important;
+  transition: color 0.3s ease, padding-left 0.3s ease !important;  /* D2-5 FIX: replaced transition:all */
 }
 [data-theme="light"] .footer-links a:hover {
   color: #34d399 !important;
@@ -446,13 +446,13 @@
   color: #6ee7b7 !important;
 }
 [data-theme="light"] .footer-bottom span {
-  color: #88b39d !important;
+  color: #a7d4bf !important;  /* D2-2 FIX */
 }
 [data-theme="light"] .footer-bottom a {
   color: #34d399 !important;
 }
 [data-theme="light"] footer .text-muted {
-  color: #88b39d !important;
+  color: #a7d4bf !important;  /* D2-2 FIX */
 }
 
 /* ══════════════════════════════════

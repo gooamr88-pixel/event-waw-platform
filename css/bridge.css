@@ -317,7 +317,7 @@ body:not([data-theme="dark"]) .ev-select:focus {
   align-items: center;
   justify-content: center;
   color: var(--ev-text-sec, #475569);
-  transition: all var(--es-transition-fast);
+  transition: border-color var(--es-transition-fast), color var(--es-transition-fast), background-color var(--es-transition-fast);  /* D2-5 FIX: replaced transition:all */
 }
 .ev-modal-close:hover {
   border-color: var(--ev-danger, #ef4444);

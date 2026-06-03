@@ -28,6 +28,7 @@
   </script>
 </head>
 <body class="ev-dash">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- ══════ ANTI-FOUC GUARD OVERLAY ══════ -->
   <div id="auth-guard-overlay">
@@ -121,7 +122,7 @@
   </header>
 
   <!-- ══════ MAIN CONTENT ══════ -->
-  <main class="ev-main">
+  <main class="ev-main" id="main-content">
 
     <!-- ════ PANEL: OVERVIEW (default) ════ -->
     <div class="ev-panel active" id="panel-overview">
@@ -240,12 +241,12 @@
           <table class="ev-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Event</th>
-                <th>Tickets</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th scope="col">#</th>
+                <th scope="col">Event</th>
+                <th scope="col">Tickets</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date</th>
               </tr>
             </thead>
             <tbody id="orders-tbody">

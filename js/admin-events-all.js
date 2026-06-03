@@ -75,7 +75,7 @@ export async function loadAllEvents(onRefresh) {
 
       return `<tr>
         <td style="font-weight:600;color:var(--ev-text-muted)">${i + 1}</td>
-        <td><a href="#" class="ev-event-detail-link" data-event-idx="${i}" style="font-weight:600;color:var(--ev-accent);text-decoration:none;cursor:pointer">${escapeHTML(ev.title)}</a>${hasCustomFee ? '<span style="display:inline-block;margin-left:6px;font-size:.6rem;padding:2px 6px;border-radius:8px;background:rgba(99,102,241,.1);color:#6366f1;font-weight:700;vertical-align:middle" title="Custom Fee: ' + escapeHTML(feeLabel) + '">FEE</span>' : ''}</td>
+        <td><a href="#" class="ev-event-detail-link" data-event-idx="${i}" style="font-weight:600;color:var(--ev-accent);text-decoration:none;cursor:pointer">${escapeHTML(ev.title)}</a>${hasCustomFee ? '<span class="ev-badge" style="display:inline-block;margin-left:6px;background:rgba(5,150,105,.1);color:var(--es-emerald-600);font-weight:700;vertical-align:middle" title="Custom Fee: ' + escapeHTML(feeLabel) + '">FEE</span>' : ''}</td>
         <td>${escapeHTML(org.full_name || org.email || '—')}</td>
         <td>${date}</td>
         <td><span class="ev-badge ${statusBadge}">${statusLabel}</span></td>
@@ -84,7 +84,7 @@ export async function loadAllEvents(onRefresh) {
         <td style="font-weight:600">${rev > 0 ? '$' + rev.toLocaleString() : '—'}</td>
         <td>
           <div style="display:flex;gap:6px">
-            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:#f59e0b;border-color:#f59e0b" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-email="${escapeHTML(org.email || '')}" ${ev.status === 'draft' ? 'disabled' : ''}>Suspend</button>
+            <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-suspend-btn" style="color:var(--es-color-warning);border-color:var(--es-color-warning)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-email="${escapeHTML(org.email || '')}" ${ev.status === 'draft' ? 'disabled' : ''}>Suspend</button>
             <button class="ev-btn ev-btn-outline ev-btn-sm ev-admin-delete-btn" style="color:var(--ev-danger);border-color:var(--ev-danger)" data-id="${ev.id}" data-title="${escapeHTML(ev.title)}" data-email="${escapeHTML(org.email || '')}">Delete</button>
           </div>
         </td>

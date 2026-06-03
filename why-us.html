@@ -19,8 +19,9 @@
   <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-landing">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <!-- ═══ NAVBAR ═══ -->
-  <nav class="navbar" id="main-nav">
+  <nav class="navbar" id="main-nav" aria-label="Main navigation">
     <div class="container">
       <a href="index.html" class="nav-logo" id="nav-logo">
   <img src="images/logo-light-theme.png?v=1778305500" alt="Eventsli" class="logo-light-theme" />
@@ -65,8 +66,8 @@
   </nav>
 
   <!-- Mobile Menu -->
-  <div class="mobile-menu" id="mobile-menu">
-    <button class="close-btn" id="mobile-close">✕</button>
+  <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation menu">
+    <button class="close-btn" id="mobile-close" aria-label="Close menu">✕</button>
     <a href="index.html">Home</a>
     <a href="events.html">Events</a>
     
@@ -86,6 +87,7 @@
     </button>
   </div>
 
+  <main id="main-content">
   <!-- ══════ HERO HEADER ══════ -->
   <section class="section" style="padding-top:140px;">
     <div class="container">
@@ -154,6 +156,7 @@
       </div>
     </div>
   </section>
+  </main>
 
   <!-- ====== FOOTER ====== -->
   <footer class="footer" id="footer">

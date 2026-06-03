@@ -56,7 +56,7 @@ export async function loadAllUsers(adminRole, onRefresh) {
       };
       const rs = roleStyleMap[u.role] || roleStyleMap.attendee;
       const isBlocked = u.is_blocked === true;
-      const blockedBadge = isBlocked ? ' <span class="ev-badge" style="background:rgba(220,38,38,.1);color:#dc2626;font-size:.65rem;margin-left:4px">BLOCKED</span>' : '';
+      const blockedBadge = isBlocked ? ' <span class="ev-badge rejected" style="font-size:.65rem;margin-left:4px">BLOCKED</span>' : '';
       
       const getLevel = (r) => {
         if (r === 'super_admin') return 3;
@@ -79,8 +79,8 @@ export async function loadAllUsers(adminRole, onRefresh) {
           ${canManage ? `<div style="display:flex;gap:6px;flex-wrap:wrap">
             <button class="ev-btn ev-btn-outline ev-btn-sm" data-set-role="${u.id}" data-current="${u.role}" data-name="${escapeHTML(u.full_name || u.email || '')}">Change Role</button>
             ${isBlocked 
-              ? `<button class="ev-btn ev-btn-sm" style="background:#10b981;color:#fff;border:none" data-unblock="${u.id}" data-name="${escapeHTML(u.full_name || u.email || '')}">Unblock</button>` 
-              : `<button class="ev-btn ev-btn-sm" style="background:#dc2626;color:#fff;border:none" data-block="${u.id}" data-name="${escapeHTML(u.full_name || u.email || '')}">Block</button>`
+              ? `<button class="ev-btn ev-btn-sm ev-btn-pink" data-unblock="${u.id}" data-name="${escapeHTML(u.full_name || u.email || '')}">Unblock</button>` 
+              : `<button class="ev-btn ev-btn-sm ev-btn-danger" data-block="${u.id}" data-name="${escapeHTML(u.full_name || u.email || '')}">Block</button>`
             }
           </div>` : '<span style="color:var(--ev-text-muted);font-size:.75rem">\u2014</span>'}
         </td>

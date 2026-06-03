@@ -42,6 +42,7 @@
   </script>
 </head>
 <body class="ev-dash" data-admin="true">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- ══════ AUTH GUARD ══════ -->
   <div id="auth-guard-overlay">
@@ -171,7 +172,7 @@
   </header>
 
   <!-- ══════ MAIN CONTENT ══════ -->
-  <main class="ev-main">
+  <main class="ev-main" id="main-content">
 
     <!-- ════ PANEL: DASHBOARD ════ -->
     <div class="ev-panel active" id="panel-dashboard">
@@ -212,15 +213,15 @@
           <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:6px">✅ Event Approval Queue</h2>
           <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Review, approve, or reject events submitted by organizers.</p>
         </div>
-        <input type="text" id="search-approvals" class="ev-form-input" placeholder="Search approvals..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+        <input type="text" id="search-approvals" class="ev-form-input" placeholder="Search approvals..." style="max-width:250px;font-size:.85rem;padding:8px 12px" aria-label="Search approvals" />
       </div>
       <div class="ev-card">
         <div class="ev-table-wrap">
           <table class="ev-table" id="approvals-table">
             <thead>
               <tr>
-                <th>#</th><th>Event Title</th><th>Organizer</th><th>Date</th>
-                <th>Category</th><th>Submitted</th><th>Status</th><th>Actions</th>
+                <th scope="col">#</th><th scope="col">Event Title</th><th scope="col">Organizer</th><th scope="col">Date</th>
+                <th scope="col">Category</th><th scope="col">Submitted</th><th scope="col">Status</th><th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody id="approvals-tbody">
@@ -239,7 +240,7 @@
           <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">View all registered users, manage roles, and monitor account status.</p>
         </div>
         <div style="display:flex;gap:10px;">
-          <input type="text" id="search-users" class="ev-form-input" placeholder="Search by name or email..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+          <input type="text" id="search-users" class="ev-form-input" placeholder="Search by name or email..." style="max-width:250px;font-size:.85rem;padding:8px 12px" aria-label="Search users" />
           <button class="ev-btn ev-btn-outline" id="export-users-btn" style="padding:8px 12px;font-size:.85rem">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export CSV
@@ -250,7 +251,7 @@
         <div class="ev-table-wrap">
           <table class="ev-table" id="users-table">
             <thead>
-              <tr><th>#</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr>
+              <tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Joined</th><th scope="col">Actions</th></tr>
             </thead>
             <tbody id="users-tbody">
               <tr><td colspan="6" class="ev-table-empty">Loading users...</td></tr>
@@ -268,7 +269,7 @@
           <p style="font-size:.84rem;color:var(--ev-text-muted);margin-bottom:0">Complete inventory of every event across the platform.</p>
         </div>
         <div style="display:flex;gap:10px;">
-          <input type="text" id="search-all-events" class="ev-form-input" placeholder="Search events..." style="max-width:250px;font-size:.85rem;padding:8px 12px" />
+          <input type="text" id="search-all-events" class="ev-form-input" placeholder="Search events..." style="max-width:250px;font-size:.85rem;padding:8px 12px" aria-label="Search events" />
           <button class="ev-btn ev-btn-outline" id="export-events-btn" style="padding:8px 12px;font-size:.85rem">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px;vertical-align:middle"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export CSV
@@ -279,7 +280,7 @@
         <div class="ev-table-wrap">
           <table class="ev-table" id="all-events-table">
             <thead>
-              <tr><th>#</th><th>Title</th><th>Organizer</th><th>Date</th><th>Status</th><th>Approved</th><th>Tickets</th><th>Revenue</th><th>Actions</th></tr>
+              <tr><th scope="col">#</th><th scope="col">Title</th><th scope="col">Organizer</th><th scope="col">Date</th><th scope="col">Status</th><th scope="col">Approved</th><th scope="col">Tickets</th><th scope="col">Revenue</th><th scope="col">Actions</th></tr>
             </thead>
             <tbody id="all-events-tbody">
               <tr><td colspan="8" class="ev-table-empty">Loading events...</td></tr>

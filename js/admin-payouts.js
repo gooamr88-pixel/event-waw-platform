@@ -113,8 +113,8 @@ export async function renderAdminPayouts(container) {
             <td>
               ${canProcess ? `
                 <div style="display:flex;gap:4px;flex-wrap:wrap">
-                  <button class="ev-btn ev-btn-sm apo-approve-btn" data-id="${esc(po.id)}" style="background:#22c55e;color:#fff;border:none;font-size:.75rem;padding:5px 10px;border-radius:6px;cursor:pointer">✓ Approve</button>
-                  <button class="ev-btn ev-btn-sm apo-reject-btn" data-id="${esc(po.id)}" style="background:#ef4444;color:#fff;border:none;font-size:.75rem;padding:5px 10px;border-radius:6px;cursor:pointer">✗ Reject</button>
+                  <button class="ev-btn ev-btn-sm ev-btn-pink apo-approve-btn" data-id="${esc(po.id)}">✓ Approve</button>
+                  <button class="ev-btn ev-btn-sm ev-btn-danger apo-reject-btn" data-id="${esc(po.id)}">✗ Reject</button>
                 </div>
               ` : `<span style="font-size:.75rem;color:var(--ev-text-muted)">—</span>`}
             </td>
@@ -353,7 +353,7 @@ function renderPayoutRows(tbody, payouts, parentContainer) {
         <td>${esc(po.event_title || 'Multi-event')}</td>
         <td><span class="apo-badge ${badge}">${esc(po.status)}</span></td>
         <td style="font-size:.8rem;color:var(--ev-text-muted)">${po.requested_at ? new Date(po.requested_at).toLocaleDateString() : '—'}</td>
-        <td>${canProcess ? `<button class="apo-approve-btn ev-btn ev-btn-sm" data-id="${esc(po.id)}" style="background:#22c55e;color:#fff;border:none;font-size:.75rem;padding:5px 8px;border-radius:6px;cursor:pointer;margin-right:4px">✓</button><button class="apo-reject-btn ev-btn ev-btn-sm" data-id="${esc(po.id)}" style="background:#ef4444;color:#fff;border:none;font-size:.75rem;padding:5px 8px;border-radius:6px;cursor:pointer">✗</button>` : '—'}</td>
+        <td>${canProcess ? `<button class="apo-approve-btn ev-btn ev-btn-sm ev-btn-pink" data-id="${esc(po.id)}" style="margin-right:4px">✓</button><button class="apo-reject-btn ev-btn ev-btn-sm ev-btn-danger" data-id="${esc(po.id)}">✗</button>` : '—'}</td>
       </tr>
     `;
   }).join(''));

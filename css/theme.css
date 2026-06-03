@@ -96,7 +96,7 @@
 
   /* ── Typography ── */
   --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-serif: var(--es-font-serif);  /* D1-8 FIX: was 'Cormorant Garamond' — now uses token */
 
   /* ── Motion ── */
   /* FIX: Replaced 'transition: all' — see styles.css for rationale */
@@ -137,7 +137,7 @@
   --text-primary:      #f4f4f5;
   --text-secondary:    #b0b0ba;
   --text-muted:        #8f8f9a;
-  --text-faint:        #5a5a66;
+  --text-faint:        #8a8a96;  /* D2-1 FIX: raised from #5a5a66 (3.8:1) to meet WCAG 4.5:1 */
   --text-on-accent:    #ffffff;
   --text-link:         #34D399;
   --text-link-hover:   #6EE7B7;
@@ -487,7 +487,7 @@ input[type="tel"], select, textarea {
 }
 .footer-links a {
   color: #a7f3d0 !important;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease, padding-left 0.3s ease;  /* D2-5 FIX: replaced transition:all */
 }
 .footer-links a:hover {
   color: #34d399 !important;
@@ -495,7 +495,7 @@ input[type="tel"], select, textarea {
   text-shadow: 0 0 10px rgba(52, 211, 153, 0.4);
 }
 .footer p, .footer-brand p {
-  color: #88b39d !important;
+  color: #a7d4bf !important;  /* D2-2 FIX: raised from #88b39d (3.3:1) to meet WCAG 4.5:1 */
 }
 .footer-social a {
   background: rgba(52, 211, 153, 0.08) !important;
@@ -517,7 +517,7 @@ input[type="tel"], select, textarea {
   color: #34d399 !important;
 }
 footer .text-muted {
-  color: #88b39d !important;
+  color: #a7d4bf !important;  /* D2-2 FIX */
 }
 
 /* ── Auth Pages ── */
