@@ -8,6 +8,7 @@
    =================================== */
 import { supabase, SUPABASE_FUNCTIONS_URL } from '../src/lib/supabase.js';
 import { setSafeHTML } from '../src/lib/dom.js';
+import { showConfirmModal } from '../src/lib/ui-modals.js';
 
 /**
  * Renders the admin payouts panel.
@@ -25,15 +26,24 @@ export async function renderAdminPayouts(container) {
     // Stats
     const pending = payouts.filter(p => p.status === 'pending');
     const completed = payouts.filter(p => p.status === 'completed');
-    const totalPending = pending.reduce((s, p) => s + Number(p.net_amount || 0), 0);
-    const totalPaid = completed.reduce((s, p) => s + Number(p.net_amount || 0), 0);
+    // M-3 FIX: Group totals by currency to avoid mixing currencies
+    const groupByCurrency = (items) => {
+      const groups = {};
+      items.forEach(p => {
+        const c = p.currency || 'USD';
+        groups[c] = (groups[c] || 0) + Number(p.net_amount || 0);
+      });
+      return Object.entries(groups).map(([c, v]) => fmtCurrency(v, c)).join(' + ') || fmtCurrency(0);
+    };
+    const totalPendingDisplay = groupByCurrency(pending);
+    const totalPaidDisplay = groupByCurrency(completed);
 
     let html = `
       <div class="ev-stat-grid" style="margin-bottom:20px">
         <div class="ev-stat-card"><div class="ev-stat-icon orange">⏳</div><div><div class="ev-stat-value">${pending.length}</div><div class="ev-stat-label">Pending Requests</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon gold">💰</div><div><div class="ev-stat-value">${fmtCurrency(totalPending)}</div><div class="ev-stat-label">Pending Amount</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon gold">💰</div><div><div class="ev-stat-value">${totalPendingDisplay}</div><div class="ev-stat-label">Pending Amount</div></div></div>
         <div class="ev-stat-card"><div class="ev-stat-icon green">✅</div><div><div class="ev-stat-value">${completed.length}</div><div class="ev-stat-label">Completed Payouts</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon blue">💸</div><div><div class="ev-stat-value">${fmtCurrency(totalPaid)}</div><div class="ev-stat-label">Total Paid</div></div></div>
+        <div class="ev-stat-card"><div class="ev-stat-icon blue">💸</div><div><div class="ev-stat-value">${totalPaidDisplay}</div><div class="ev-stat-label">Total Paid</div></div></div>
       </div>
 
       <div class="ev-card">
@@ -103,8 +113,8 @@ export async function renderAdminPayouts(container) {
             <td>
               ${canProcess ? `
                 <div style="display:flex;gap:4px;flex-wrap:wrap">
-                  <button class="ev-btn ev-btn-sm apo-approve-btn" data-id="${esc(po.id)}" style="background:#22c55e;color:#fff;border:none;font-size:.75rem;padding:5px 10px;border-radius:6px;cursor:pointer">✓ Approve</button>
-                  <button class="ev-btn ev-btn-sm apo-reject-btn" data-id="${esc(po.id)}" style="background:#ef4444;color:#fff;border:none;font-size:.75rem;padding:5px 10px;border-radius:6px;cursor:pointer">✗ Reject</button>
+                  <button class="ev-btn ev-btn-sm ev-btn-pink apo-approve-btn" data-id="${esc(po.id)}">✓ Approve</button>
+                  <button class="ev-btn ev-btn-sm ev-btn-danger apo-reject-btn" data-id="${esc(po.id)}">✗ Reject</button>
                 </div>
               ` : `<span style="font-size:.75rem;color:var(--ev-text-muted)">—</span>`}
             </td>
@@ -133,7 +143,7 @@ export async function renderAdminPayouts(container) {
     document.getElementById('admin-payout-filter')?.addEventListener('change', async (e) => {
       const status = e.target.value || null;
       const { data: filtered } = await supabase.rpc('admin_get_all_payouts', { p_status: status });
-      if (filtered) renderPayoutRows(container.querySelector('#admin-payouts-tbody'), filtered);
+      if (filtered) renderPayoutRows(container.querySelector('#admin-payouts-tbody'), filtered, container);
     });
 
     // Refresh
@@ -202,10 +212,14 @@ function showProcessModal(payoutId, action, parentContainer) {
       // organizer's bank account.
       // ═══════════════════════════════════════════════════
 
-      // Extra confirmation for irreversible financial action
-      if (!confirm('FINAL CONFIRMATION: Execute this Stripe payout now? Funds will be transferred to the organizer\'s bank account.')) {
-        return;
-      }
+      // P2-9 FIX: Use custom modal instead of native confirm()
+      const confirmed = await showConfirmModal({
+        title: 'Execute Stripe Payout',
+        message: 'This will immediately transfer funds to the organizer\'s bank account. This action cannot be undone.',
+        confirmText: 'Execute Payout',
+        confirmColor: '#22c55e'
+      });
+      if (!confirmed) return;
 
       btn.disabled = true;
       btn.textContent = 'Executing Stripe Payout...';
@@ -315,7 +329,7 @@ function showProcessModal(payoutId, action, parentContainer) {
 
 /* ── Re-render tbody only (for filter) ── */
 
-function renderPayoutRows(tbody, payouts) {
+function renderPayoutRows(tbody, payouts, parentContainer) {
   if (!tbody) return;
   if (!payouts || payouts.length === 0) {
     setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No payouts match filter</td></tr>');
@@ -339,10 +353,18 @@ function renderPayoutRows(tbody, payouts) {
         <td>${esc(po.event_title || 'Multi-event')}</td>
         <td><span class="apo-badge ${badge}">${esc(po.status)}</span></td>
         <td style="font-size:.8rem;color:var(--ev-text-muted)">${po.requested_at ? new Date(po.requested_at).toLocaleDateString() : '—'}</td>
-        <td>${canProcess ? `<button class="apo-approve-btn ev-btn ev-btn-sm" data-id="${esc(po.id)}" style="background:#22c55e;color:#fff;border:none;font-size:.75rem;padding:5px 8px;border-radius:6px;cursor:pointer;margin-right:4px">✓</button><button class="apo-reject-btn ev-btn ev-btn-sm" data-id="${esc(po.id)}" style="background:#ef4444;color:#fff;border:none;font-size:.75rem;padding:5px 8px;border-radius:6px;cursor:pointer">✗</button>` : '—'}</td>
+        <td>${canProcess ? `<button class="apo-approve-btn ev-btn ev-btn-sm ev-btn-pink" data-id="${esc(po.id)}" style="margin-right:4px">✓</button><button class="apo-reject-btn ev-btn ev-btn-sm ev-btn-danger" data-id="${esc(po.id)}">✗</button>` : '—'}</td>
       </tr>
     `;
   }).join(''));
+
+  // P1-2 FIX: Re-attach button handlers after filter re-render
+  tbody.querySelectorAll('.apo-approve-btn').forEach(btn => {
+    btn.addEventListener('click', () => showProcessModal(btn.dataset.id, 'completed', parentContainer));
+  });
+  tbody.querySelectorAll('.apo-reject-btn').forEach(btn => {
+    btn.addEventListener('click', () => showProcessModal(btn.dataset.id, 'failed', parentContainer));
+  });
 }
 
 /* ── Utilities ── */

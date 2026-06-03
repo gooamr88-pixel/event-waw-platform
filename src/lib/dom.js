@@ -58,6 +58,12 @@ export function safeHTML(htmlString) {
         // C-10: Block all data: URIs except data:image/* (used for QR codes)
         el.removeAttribute(attr.name);
       }
+
+      // M10 FIX: Strip data: URIs inside CSS url() functions in style attributes
+      // Catches patterns like: style="background:url(data:text/html;base64,...)"
+      if (name === 'style' && /url\s*\(\s*(['"]?\s*data:(?!image\/))/i.test(attr.value)) {
+        el.removeAttribute(attr.name);
+      }
     }
   });
 

@@ -675,6 +675,17 @@ body.eveenty-auth .ev-fg .iti__country-list {
   border-color: #e2e8f0;
 }
 
+/* OTP strong email and step headings readability overrides */
+body.eveenty-auth .ev-form-box h2 {
+  color: #1a1a1f !important;
+}
+body.eveenty-auth .ev-form-box p {
+  color: #4b5563 !important;
+}
+body.eveenty-auth .ev-form-box strong {
+  color: var(--es-emerald-600, #059669) !important;
+}
+
 
 /* ═══ RESPONSIVE ═══ */
 @media (max-width: 860px) {

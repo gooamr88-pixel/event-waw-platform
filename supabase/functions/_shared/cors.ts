@@ -6,8 +6,10 @@
 // ═══════════════════════════════════
 
 // S-3 FIX: Gate localhost origins behind environment variable
-// In production, set ENVIRONMENT=production to exclude localhost
-const IS_PRODUCTION = (Deno.env.get('ENVIRONMENT') || '').toLowerCase() === 'production';
+// V-14 FIX: Default to production unless explicitly set to 'development'.
+// Previously defaulted to non-production when ENVIRONMENT was unset,
+// which would expose localhost CORS origins in production.
+const IS_PRODUCTION = (Deno.env.get('ENVIRONMENT') || 'production').toLowerCase() !== 'development';
 
 // Multiple allowed origins — custom domain + Vercel deploy
 const ALLOWED_ORIGINS: string[] = [
@@ -48,6 +50,16 @@ function isAllowedOrigin(origin: string): boolean {
   // Allow only OUR Vercel preview deployments (project-scoped)
   if (/^https:\/\/event-waw-platform(-[a-z0-9]+)?(-[a-z0-9]+)?\.vercel\.app$/.test(origin)) return true;
   return false;
+}
+
+/**
+ * H1/H2 FIX: Validate origin for redirect URLs (Stripe success/cancel/return/refresh).
+ * Returns the origin only if it's in the allowlist, otherwise falls back to production domain.
+ * This prevents attackers from setting Origin: https://evil.com to hijack post-payment redirects.
+ */
+export function getSafeRedirectOrigin(req: Request): string {
+  const origin = req.headers.get('origin') || '';
+  return isAllowedOrigin(origin) ? origin : ALLOWED_ORIGINS[0]; // Falls back to https://eventsli.com
 }
 
 /**

@@ -15,8 +15,8 @@
     "test:security": "npx playwright test tests/security/ --config playwright.config.js",
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.js --coverage",
     "test:report": "npx playwright show-report test-results/playwright-report",
-    "lint": "npx eslint 'src/**/*.js' 'js/**/*.js' --max-warnings 0",
-    "lint:fix": "npx eslint 'src/**/*.js' 'js/**/*.js' --fix",
+    "lint": "npx eslint src/**/*.js js/**/*.js --max-warnings 0",
+    "lint:fix": "npx eslint src/**/*.js js/**/*.js --fix",
     "audit:filesize": "node scripts/audit-filesize.js",
     "precommit": "npm run lint && npm run audit:filesize && npm run test:unit"
   },

@@ -99,7 +99,12 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
     console.error('Checkout API Error:', response.status, errText);
     let err;
     try { err = JSON.parse(errText); } catch(e) {}
-    throw new Error(err?.error || errText || 'Failed to create checkout');
+    const message = err?.error || errText || 'Failed to create checkout';
+    // Surface 403 (Stripe blocked) with a clear, user-friendly message
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -137,7 +142,11 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
     console.error('Guest Checkout API Error:', response.status, errText);
     let err;
     try { err = JSON.parse(errText); } catch(e) {}
-    throw new Error(err?.error || errText || 'Failed to create guest checkout');
+    const message = err?.error || errText || 'Failed to create guest checkout';
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -225,8 +234,15 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || 'Failed to create seated checkout');
+    const errText = await response.text();
+    console.error('Seated Checkout API Error:', response.status, errText);
+    let err;
+    try { err = JSON.parse(errText); } catch(e) {}
+    const message = err?.error || errText || 'Failed to create seated checkout';
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -258,8 +274,15 @@ export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, gu
   );
 
   if (!response.ok) {
-    const err = await response.json();
-    throw new Error(err.error || 'Failed to create guest seated checkout');
+    const errText = await response.text();
+    console.error('Guest Seated Checkout API Error:', response.status, errText);
+    let err;
+    try { err = JSON.parse(errText); } catch(e) {}
+    const message = err?.error || errText || 'Failed to create guest seated checkout';
+    if (response.status === 403) {
+      throw new Error(message || 'Stripe is not available for this event. Please select a different payment method (e.g. Vodafone Cash).');
+    }
+    throw new Error(message);
   }
 
   return response.json();
@@ -369,6 +392,8 @@ export async function deleteEvent(eventId) {
 
     // 3. ATOMIC: Set status to 'draft' so RLS delete policy accepts it
     //    (events_delete_draft allows DELETE only for status='draft')
+    //    RACE WINDOW NOTE: Between steps 2 and 4, a buyer could purchase a ticket
+    //    for the now-draft event. Step 3b re-checks tickets to close this gap.
     if (originalStatus !== 'draft') {
       const { error: statusErr } = await supabase
         .from('events')
@@ -377,6 +402,30 @@ export async function deleteEvent(eventId) {
 
       if (statusErr) {
         return { success: false, error: 'Failed to prepare event for deletion: ' + statusErr.message };
+      }
+
+      // 3b. GUARD: Re-check that no tickets were issued during the race window
+      //     between the initial check (step 2) and the draft status change (step 3).
+      if (tierIds.length > 0) {
+        const { count: postDraftCount, error: postDraftErr } = await supabase
+          .from('tickets')
+          .select('id', { count: 'exact', head: true })
+          .in('ticket_tier_id', tierIds);
+
+        if (postDraftErr) {
+          // Rollback status before aborting
+          await supabase.from('events').update({ status: originalStatus }).eq('id', eventId);
+          return { success: false, error: 'Failed to re-check tickets: ' + postDraftErr.message };
+        }
+
+        if (postDraftCount && postDraftCount > 0) {
+          // Rollback: tickets appeared in the race window — abort deletion
+          await supabase.from('events').update({ status: originalStatus }).eq('id', eventId);
+          return {
+            success: false,
+            error: `Cannot delete: ${postDraftCount} ticket(s) were issued while preparing deletion. Use archive instead.`,
+          };
+        }
       }
     }
 

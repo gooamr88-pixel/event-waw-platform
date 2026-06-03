@@ -3,11 +3,12 @@
    Bridges SeatingChart engine with event-detail page
    =================================== */
 
-import { SeatingChart } from './seating-chart.js?v=2';
+import { SeatingChart } from './seating-chart.js?v=3';
 import { createSeatedCheckout, createGuestSeatedCheckout } from './events.js';
 import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from './price-breakdown.js';
 import { setSafeHTML } from './dom.js';
 import { showAlertModal } from './ui-modals.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 
 /**
  * Initialize the seating chart UI on the event-detail page.
@@ -37,20 +38,29 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
 
       <div id="seating-legend" class="seating-legend"></div>
 
-      <div id="seating-selection-bar" class="seating-selection-bar" style="display:none;">
-        <div class="seating-selection-info">
-          <div class="seating-selection-count" id="selection-count-text">No seats selected</div>
-          <div class="seating-selection-total" id="selection-total-text">$0</div>
+      <div id="seating-selection-bar" class="seating-selection-bar" style="display:none; flex-direction: column; align-items: stretch; gap: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 12px; flex-wrap: wrap;">
+          <div class="seating-selection-info">
+            <div class="seating-selection-count" id="selection-count-text">No seats selected</div>
+            <div class="seating-selection-total" id="selection-total-text">$0</div>
+          </div>
+          <div class="seating-selection-actions">
+            <button class="btn btn-outline btn-sm" id="clear-seats-btn">Clear</button>
+            <button class="btn btn-primary btn-sm" id="checkout-seats-btn" disabled>
+              احجز الآن / Checkout
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+            </button>
+          </div>
+        </div>
+        <!-- V52 FIX: Payment method selector for seated checkout (populated by event-detail.html) -->
+        <div id="seat-payment-method-selector" style="display:none;width:100%;">
+          <label style="font-size:0.75rem;font-weight:600;color:var(--text-muted);margin-bottom:5px;display:block;">Payment Method</label>
+          <select class="fi" id="seat-payment-method-select" style="width:100%;font-size:0.85rem;padding:8px 12px;">
+            <option value="stripe">💳 Credit/Debit Card (Stripe)</option>
+          </select>
         </div>
         <!-- BRD: Server-side price breakdown (tax + service fee + total) -->
-        <div id="seat-price-breakdown" style="width:100%;margin-top:8px;"></div>
-        <div class="seating-selection-actions">
-          <button class="btn btn-outline btn-sm" id="clear-seats-btn">Clear</button>
-          <button class="btn btn-primary btn-sm btn-pulse" id="checkout-seats-btn" disabled>
-            Checkout
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
-          </button>
-        </div>
+        <div id="seat-price-breakdown" style="width:100%;"></div>
       </div>
     </div>
   `);
@@ -86,6 +96,10 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
     const seats = chart.getSelectedSeats();
     if (seats.length === 0) return;
 
+    // V52 FIX: Read payment method from seated selector
+    const seatPaySelect = document.getElementById('seat-payment-method-select');
+    const selectedMethod = seatPaySelect?.value || 'stripe';
+
     const btn = document.getElementById('checkout-seats-btn');
     btn.disabled = true;
     setSafeHTML(btn, '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving...');
@@ -95,8 +109,8 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
       const seatIds = seats.map(s => s.seat_id);
 
       if (options.onCheckout) {
-        // Delegate to the page-level handler (for guest modal etc)
-        await options.onCheckout({ tierId, seatIds, seats });
+        // Delegate to the page-level handler (passes selectedMethod for routing)
+        await options.onCheckout({ tierId, seatIds, seats, selectedMethod });
       } else {
         // Default: straight authenticated checkout
         const result = await createSeatedCheckout({ tierId, seatIds });
@@ -112,12 +126,22 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
       });
     } finally {
       btn.disabled = false;
-      setSafeHTML(btn, 'Checkout <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>');
+      const btnLabel = selectedMethod !== 'stripe'
+        ? '📱 Pay & Reserve'
+        : 'احجز الآن / Checkout';
+      setSafeHTML(btn, btnLabel + ' <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>');
     }
   });
 
   // Store reference for cleanup
   mountEl._seatingChart = chart;
+
+  // H-13 FIX: Clean up polling interval on page unload
+  window.addEventListener('beforeunload', () => {
+    if (mountEl._seatingChart && typeof mountEl._seatingChart.destroy === 'function') {
+      mountEl._seatingChart.destroy();
+    }
+  });
 
   return true;
 }
@@ -134,7 +158,7 @@ function renderLegend(chart) {
     <div class="seating-legend-item" data-tier-id="${t.tier_id}">
       <span class="seating-legend-dot" style="background:${t.color}"></span>
       <span class="seating-legend-name">${escapeHTML(t.tier_name)}</span>
-      <span class="seating-legend-price">$${Number(t.tier_price).toLocaleString()}</span>
+      <span class="seating-legend-price">${formatCurrency(Number(t.tier_price), t.currency)}</span>
       <span class="seating-legend-avail">${t.available}/${t.total} left</span>
     </div>
   `).join('') + `
@@ -208,7 +232,8 @@ function updateSelectionBar(seats, chart) {
   const tierName = seats[0]?.tier_name || 'Selected';
 
   setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''}  ${escapeHTML(tierName)}`);
-  totalText.textContent = `$${total.toLocaleString()}`;
+  const eventCurrency = document.getElementById('seating-container')?.dataset?.currency || 'USD';
+  totalText.textContent = formatCurrency(total, eventCurrency);
 
   // ── BRD: Fetch server-side breakdown with tax + service fee (debounced) ──
   if (breakdownContainer) {
@@ -226,7 +251,7 @@ function updateSelectionBar(seats, chart) {
 
         // Update the header total to match server total (includes tax + fees)
         if (breakdown?.total != null) {
-          totalText.textContent = `$${Number(breakdown.total).toLocaleString()}`;
+          totalText.textContent = formatCurrency(Number(breakdown.total), breakdown.currency || eventCurrency);
         }
       } catch (err) {
         console.warn('Seat breakdown fetch failed, using local total:', err);
@@ -248,12 +273,4 @@ function renderLegendCounts(chart) {
   }
 }
 
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+

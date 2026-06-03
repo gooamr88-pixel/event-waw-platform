@@ -275,10 +275,10 @@ DROP POLICY IF EXISTS email_templates_admin_all ON email_templates;
 CREATE POLICY email_templates_admin_all ON email_templates
   FOR ALL
   USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'moderator'))
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'moderator'))
   );
 
 -- Logs: only admin can read
@@ -286,7 +286,7 @@ DROP POLICY IF EXISTS email_logs_admin_read ON email_logs;
 CREATE POLICY email_logs_admin_read ON email_logs
   FOR SELECT
   USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role IN ('super_admin', 'admin', 'moderator'))
   );
 
 -- Service role can insert logs (from Edge Functions)

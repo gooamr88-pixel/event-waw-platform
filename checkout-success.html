@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="css/theme.css?v=1778306046" />
   <link rel="stylesheet" href="css/mobile-ios.css?v=1778308900" />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
-  <script>localStorage.setItem('theme','light');document.documentElement.setAttribute('data-theme','light')</script>
+  <!-- H27 FIX: Removed forced theme override. Theme handled by global initThemeFromStorage() -->
   <script src="js/csp.js"></script>
   <style>
     /* Premium Clean Light Theme Overrides */
@@ -121,43 +121,55 @@
     /* Checkmark & Badge */
     #ticket-view .auth-ok-ic {
       position: relative;
-      display: block !important;
-      width: 90px !important;
-      height: 90px !important;
-      margin: 0 auto 20px !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      width: 100px !important;
+      height: 100px !important;
+      margin: 0 auto 24px !important;
       border-radius: 50% !important;
-      border: none !important;
-      background: transparent !important;
+      background: #ffffff !important;
+      border: 3px solid #10b981 !important;
+      box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2), 0 8px 10px -6px rgba(16, 185, 129, 0.1) !important;
+    }
+    #ticket-view .auth-ok-ic svg {
+      width: 70px !important;
+      height: 70px !important;
     }
     .checkmark-ring {
       position: absolute;
-      inset: 0;
+      inset: -3px;
       border-radius: 50%;
-      border: 2px solid #d1fae5;
+      border: 2px solid #34d399;
       animation: ringExpand 2s ease-out 1s infinite;
+      opacity: 0;
     }
     .checkmark-ring-2 {
       animation-delay: 1.5s;
     }
     @keyframes ringExpand {
       0% { transform: scale(1); opacity: 0.6; }
-      100% { transform: scale(1.8); opacity: 0; }
+      100% { transform: scale(1.6); opacity: 0; }
     }
     .ticket-path {
-      fill: none;
+      fill: transparent;
       stroke: #10b981;
-      stroke-width: 3;
+      stroke-width: 3.5;
       stroke-linecap: round;
       stroke-linejoin: round;
-      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.2));
+      filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.15));
     }
     .animate-icon .ticket-path {
       stroke-dasharray: 260;
       stroke-dashoffset: 260;
-      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      animation: ticketOutline 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards, ticketFill 0.5s ease-out 1s both;
     }
     @keyframes ticketOutline {
       to { stroke-dashoffset: 0; }
+    }
+    @keyframes ticketFill {
+      from { fill: transparent; }
+      to { fill: #ecfdf5; }
     }
     .ticket-dash-line {
       stroke: #a7f3d0;
@@ -540,9 +552,23 @@
       border-color: #10b981;
       box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
     }
+
+    /* Reset animations to trigger only when active */
+    #ticket-view .ani-up,
+    #ticket-view .ani-scale {
+      opacity: 0;
+      animation: none !important;
+    }
+    #ticket-view.show-active .ani-up {
+      animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
+    #ticket-view.show-active .ani-scale {
+      animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    }
   </style>
 </head>
 <body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <!-- Animated background particles & confetti -->
   <canvas id="particles"></canvas>
   <canvas id="confetti-canvas"></canvas>
@@ -551,6 +577,7 @@
   <div class="glow-orb glow-orb-1"></div>
   <div class="glow-orb glow-orb-2"></div>
 
+  <main id="main-content">
   <div class="auth-page">
     <div class="auth-wrap" style="max-width:30rem; z-index: 5; position: relative;">
       <div class="auth-head" style="margin-bottom: 24px; text-align: center;">
@@ -605,12 +632,12 @@
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;" class="ani-up d4">
           <a id="btn-my-tickets" href="my-tickets.html" class="btn btn-primary btn-full" style="border-radius: 12px; font-weight: 600;">View All My Tickets</a>
-          <a href="my-tickets.html" class="btn btn-outline btn-full" style="border-radius: 12px; font-weight: 600;">Browse More Events</a>
+          <a href="events.html" class="btn btn-outline btn-full" style="border-radius: 12px; font-weight: 600;">Browse More Events</a>
         </div>
       </div>
 
       <!-- Error View -->
-      <div id="error-view" style="display:none;" class="auth-box" style="text-align:center; background: #ffffff !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; padding: 32px 24px !important;">
+      <div id="error-view" style="display:none; text-align:center; background: #ffffff !important; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important; border: 1px solid #e5e7eb !important; border-radius: 20px !important; padding: 32px 24px !important;" class="auth-box">
         <div style="text-align:center;">
           <div class="auth-ok-ic" style="width:60px;height:60px;margin-bottom:14px;border:1px solid rgba(239,68,68,.15) !important;background:rgba(239,68,68,.05); display: flex; align-items: center; justify-content: center;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
@@ -622,12 +649,13 @@
       </div>
     </div>
   </div>
+  </main>
 
   <script type="module">
     import { supabase } from './src/lib/supabase.js';
     import { getOrderBySessionPublic } from './src/lib/tickets.js';
     import { initUI } from './src/lib/ui.js';
-    import { escapeHTML } from './src/lib/utils.js';
+    import { escapeHTML, formatCurrency } from './src/lib/utils.js';
     import { showTransferModal } from './src/lib/ticket-transfer.js';
     import QRCode from 'https://esm.sh/qrcode@1';
 
@@ -816,11 +844,42 @@
     document.addEventListener('DOMContentLoaded', async () => {
       initUI();
 
-      // Initialize Particles
+      // Initialize Particles with H28 FIX: auto-stop + visibility pause
       try {
         const particleCanvas = document.getElementById('particles');
         const particleSystem = new ParticleSystem(particleCanvas);
-        particleSystem.animate();
+
+        // H28 FIX: Track animation state for pause/resume
+        let particleAnimId = null;
+        let particleStopped = false;
+
+        function animateParticles() {
+          if (particleStopped) return;
+          particleSystem.update();
+          particleSystem.draw();
+          particleAnimId = requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // H28 FIX: Pause when tab is hidden to prevent CPU waste
+        document.addEventListener('visibilitychange', () => {
+          if (document.hidden) {
+            if (particleAnimId) cancelAnimationFrame(particleAnimId);
+            particleAnimId = null;
+          } else if (!particleStopped) {
+            animateParticles();
+          }
+        });
+
+        // H28 FIX: Auto-stop particles after 30 seconds (page is already confirmed)
+        setTimeout(() => {
+          particleStopped = true;
+          if (particleAnimId) cancelAnimationFrame(particleAnimId);
+          particleAnimId = null;
+          // Clear the canvas
+          const ctx = particleCanvas.getContext('2d');
+          ctx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+        }, 30000);
       } catch (err) {
         console.error('Error starting particles:', err);
       }
@@ -857,21 +916,34 @@
         progressBar.style.width = progress + '%';
       }, 600);
 
-      try {
-        const order = await getOrderBySessionPublic(sessionId);
-        clearInterval(progressInterval);
-        progressBar.style.width = '100%';
+      const maxRetries = 6;
+      const retryDelay = 2000;
+      let attempts = 0;
 
-        if (order && order.tickets && order.tickets.length > 0) {
-          setTimeout(() => showTickets(order, isGuest), 400);
+      async function pollOrder() {
+        attempts++;
+        try {
+          const order = await getOrderBySessionPublic(sessionId);
+          if (order && order.tickets && order.tickets.length > 0) {
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            setTimeout(() => showTickets(order, isGuest), 400);
+            return;
+          }
+        } catch (err) {
+          console.warn(`Attempt ${attempts} failed to fetch order:`, err);
+        }
+
+        if (attempts < maxRetries) {
+          setTimeout(pollOrder, retryDelay);
         } else {
+          clearInterval(progressInterval);
+          progressBar.style.width = '100%';
           setTimeout(showError, 400);
         }
-      } catch (err) {
-        console.error('Error loading order:', err);
-        clearInterval(progressInterval);
-        showError();
       }
+
+      pollOrder();
     });
 
     function showError() {
@@ -882,10 +954,14 @@
     // H-2: Static success page for guest checkouts (no DB query needed)
     function showGuestSuccess(email) {
       document.getElementById('loading-view').style.display = 'none';
-      document.getElementById('ticket-view').style.display = 'block';
+      const ticketView = document.getElementById('ticket-view');
+      ticketView.style.display = 'block';
       
-      // Trigger ticket icon animation
-      document.querySelectorAll('#ticket-view .auth-ok-ic').forEach(el => el.classList.add('animate-icon'));
+      // Trigger ticket icon and fade-in animations after display change
+      setTimeout(() => {
+        ticketView.classList.add('show-active');
+        document.querySelectorAll('#ticket-view .auth-ok-ic').forEach(el => el.classList.add('animate-icon'));
+      }, 50);
       
       launchConfetti();
       const container = document.getElementById('tickets-container');
@@ -920,10 +996,14 @@
 
     async function showTickets(order, isGuest) {
       document.getElementById('loading-view').style.display = 'none';
-      document.getElementById('ticket-view').style.display = 'block';
+      const ticketView = document.getElementById('ticket-view');
+      ticketView.style.display = 'block';
 
-      // Trigger ticket icon animation
-      document.querySelectorAll('#ticket-view .auth-ok-ic').forEach(el => el.classList.add('animate-icon'));
+      // Trigger ticket icon and fade-in animations after display change
+      setTimeout(() => {
+        ticketView.classList.add('show-active');
+        document.querySelectorAll('#ticket-view .auth-ok-ic').forEach(el => el.classList.add('animate-icon'));
+      }, 50);
 
       // Confetti celebration
       launchConfetti();
@@ -1013,7 +1093,10 @@
                       </div>
                     </div>`;
                   }
-                } catch(e) {}
+                } catch(e) {
+                  console.warn('Failed to parse seat data from qr_hash:', e);
+                  return `<div class="assigned-seat-section" style="text-align:center;font-size:0.78rem;color:#6b7280;">Seat info unavailable</div>`;
+                }
               }
               return '';
             })()}
@@ -1026,7 +1109,7 @@
                 </div>
                 <div style="text-align:right;">
                   <div class="ticket-attendee-label">Amount</div>
-                  <div class="ticket-attendee-value" style="color:#059669;">$${Number(t.tier_price).toLocaleString()}</div>
+                  <div class="ticket-attendee-value" style="color:#059669;">${formatCurrency(Number(t.tier_price), order.currency || 'USD')}</div>
                 </div>
               </div>
             </div>
@@ -1042,7 +1125,7 @@
               </div>
               <div class="ticket-status">
                 <span class="ticket-status-badge badge-valid">✦ Valid</span>
-                <span class="ticket-amount">$${Number(order.amount).toLocaleString()}</span>
+                <span class="ticket-amount">${formatCurrency(Number(order.amount), order.currency || 'USD')}</span>
               </div>
               <button class="btn btn-outline btn-sm ticket-transfer-btn" data-ticket-id="${t.id}" data-event-title="${escapeHTML(t.event_title)}" data-tier-name="${escapeHTML(t.tier_name)}" style="margin-top:14px;">
                 🔄 Transfer Ticket

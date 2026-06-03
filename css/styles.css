@@ -41,7 +41,7 @@
 
   /* ── Type ── */
   --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
+  --font-serif: var(--es-font-serif);  /* D1-8 FIX: was 'Cormorant Garamond' — now uses token */
 
   /* ── Motion ── */
   /* FIX: Replaced 'transition: all' with targeted properties to prevent
@@ -423,6 +423,7 @@ button { cursor: pointer; }
   max-width: 100%;
   padding: 0;
   gap: 16px;
+  overflow: hidden;
 }
 
 /* ── Logo ── */
@@ -474,6 +475,8 @@ button { cursor: pointer; }
   border-radius: 12px;
   border: 1px solid var(--nav-pill-border);
   margin: 0 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .nav-links a {
@@ -671,6 +674,7 @@ button { cursor: pointer; }
   .navbar { padding: 0 16px; }
   .nav-actions { gap: 6px; }
   .btn { padding: 8px 16px; font-size: 0.85rem; }
+  #nav-signup { white-space: nowrap; padding: 8px 14px; font-size: 0.82rem; }
 }
 
 @media (max-width: 950px) {
@@ -1596,12 +1600,12 @@ button { cursor: pointer; }
 }
 [data-theme="light"] .adv-pill-select .adv-select:hover {
   background: #fefefe;
-  border-color: rgba(184,150,46,.4);
-  box-shadow: 0 3px 12px rgba(184,150,46,.08);
+  border-color: rgba(5,150,105,.4);  /* D0-8 FIX: old gold → emerald */
+  box-shadow: 0 3px 12px rgba(5,150,105,.08);
 }
 [data-theme="light"] .adv-pill-select .adv-select:focus {
   border-color: #047857;
-  box-shadow: 0 0 0 3px rgba(184,150,46,.1), 0 4px 16px rgba(184,150,46,.05);
+  box-shadow: 0 0 0 3px rgba(5,150,105,.1), 0 4px 16px rgba(5,150,105,.05);
 }
 [data-theme="light"] .adv-pill-select .adv-select option {
   background: #fff;
@@ -1620,7 +1624,7 @@ button { cursor: pointer; }
 }
 [data-theme="light"] .adv-date-pill:focus {
   border-color: #047857;
-  box-shadow: 0 0 0 3px rgba(184,150,46,.1);
+  box-shadow: 0 0 0 3px rgba(5,150,105,.1);
 }
 
 /* Responsive */
@@ -2157,7 +2161,7 @@ button { cursor: pointer; }
 
 /* Search clear button */
 [data-theme="light"] .search-clear-btn { background: rgba(0,0,0,.05); color: #71717a; }
-[data-theme="light"] .search-clear-btn:hover { background: rgba(184,150,46,.1); color: #047857; }
+[data-theme="light"] .search-clear-btn:hover { background: rgba(5,150,105,.1); color: #047857; }
 
 /* Inline filter pills (advanced filters) */
 [data-theme="light"] .adv-pill-select .adv-select {
@@ -2165,10 +2169,10 @@ button { cursor: pointer; }
   color: var(--text-primary); box-shadow: 0 1px 3px rgba(0,0,0,.04);
 }
 [data-theme="light"] .adv-pill-select .adv-select:hover {
-  background: #fafafa; border-color: rgba(184,150,46,.35);
+  background: #fafafa; border-color: rgba(5,150,105,.35);
 }
 [data-theme="light"] .adv-pill-select .adv-select:focus {
-  border-color: #047857; box-shadow: 0 0 0 3px rgba(184,150,46,.1);
+  border-color: #047857; box-shadow: 0 0 0 3px rgba(5,150,105,.1);
 }
 [data-theme="light"] .adv-pill-select .adv-select option { background: var(--bg-card); color: var(--text-primary); }
 [data-theme="light"] .adv-pill-select > svg { color: #9ca3af; }
@@ -2176,7 +2180,7 @@ button { cursor: pointer; }
   background: var(--bg-card); border-color: rgba(0,0,0,.1);
   color: var(--text-primary); color-scheme: light;
 }
-[data-theme="light"] .adv-date-pill:focus { border-color: #047857; box-shadow: 0 0 0 3px rgba(184,150,46,.1); }
+[data-theme="light"] .adv-date-pill:focus { border-color: #047857; box-shadow: 0 0 0 3px rgba(5,150,105,.1); }
 [data-theme="light"] .adv-reset-pill { background: rgba(239,68,68,.06); border-color: rgba(239,68,68,.15); }
 
 /* Events page search */

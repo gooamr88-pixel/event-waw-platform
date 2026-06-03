@@ -20,26 +20,41 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { email, code, newPassword } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
-      return errorResponse(400, 'Valid email address is required');
+      return errorResponse(400, 'Valid email address is required', {}, req);
     }
     if (!code || typeof code !== 'string' || code.length !== 6) {
-      return errorResponse(400, 'A 6-digit verification code is required');
+      return errorResponse(400, 'A 6-digit verification code is required', {}, req);
     }
     if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
-      return errorResponse(400, 'Password must be at least 8 characters');
+      return errorResponse(400, 'Password must be at least 8 characters', {}, req);
+    }
+
+    // M4 FIX: Password complexity checks
+    const COMMON_PASSWORDS = ['12345678', 'password', 'qwerty123', 'abcdefgh', 'letmein1', '11111111', '00000000'];
+    if (COMMON_PASSWORDS.includes(newPassword.toLowerCase())) {
+      return errorResponse(400, 'This password is too common. Please choose a stronger one.', {}, req);
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      return errorResponse(400, 'Password must contain at least one uppercase letter', {}, req);
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      return errorResponse(400, 'Password must contain at least one lowercase letter', {}, req);
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      return errorResponse(400, 'Password must contain at least one number', {}, req);
     }
 
     const normalizedEmail = email.trim().toLowerCase();
 
     // ── Rate Limit: 5 verification attempts per 10 minutes per email ──
     if (!rateLimit(`pwd-verify:${normalizedEmail}`, 5, 600_000)) {
-      return errorResponse(429, 'Too many verification attempts. Please wait a few minutes.');
+      return errorResponse(429, 'Too many verification attempts. Please wait a few minutes.', {}, req);
     }
 
     const adminClient = createAdminClient();
@@ -50,12 +65,12 @@ serve(async (req) => {
 
     if (verifyError) {
       console.error('OTP verification error:', verifyError);
-      return errorResponse(500, 'Failed to verify code');
+      return errorResponse(500, 'Failed to verify code', {}, req);
     }
 
     const result = verifyData?.[0];
     if (!result || !result.is_verified) {
-      return errorResponse(400, result?.error_message || 'Invalid or expired code');
+      return errorResponse(400, result?.error_message || 'Invalid or expired code', {}, req);
     }
 
     const userId = result.p_user_id;
@@ -67,12 +82,12 @@ serve(async (req) => {
 
     if (updateError) {
       console.error('Password update error:', updateError);
-      return errorResponse(500, 'Failed to update password. Please try again.');
+      return errorResponse(500, 'Failed to update password. Please try again.', {}, req);
     }
 
     return jsonResponse({ success: true, message: 'Password updated successfully' });
   } catch (err) {
     console.error('Verify password reset OTP error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

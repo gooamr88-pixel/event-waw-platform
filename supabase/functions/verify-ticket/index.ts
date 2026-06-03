@@ -114,27 +114,33 @@ serve(async (req) => {
     const deviceInfo = req.headers.get('user-agent') || 'Unknown device';
     const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
 
-    // ── Verify scanner is authorized (organizer or admin) + check event expiry ──
+    // ── Verify scanner is authorized (organizer, gate_team, or admin) + check event expiry ──
     // Combined into single query (was 2 separate identical joins — PERF fix)
+    // v55: Also fetches event_id for gate_team event-scoping
     const { data: ticketCheck } = await supabase
       .from('tickets')
       .select(`
         ticket_tiers (
-          events ( organizer_id, date )
+          event_id,
+          events ( organizer_id, date, end_date )
         )
       `)
       .eq('id', ticket_id)
       .single();
 
     const eventOrganizerId = ticketCheck?.ticket_tiers?.events?.organizer_id;
+    const ticketEventId = ticketCheck?.ticket_tiers?.event_id;
+
     if (eventOrganizerId && eventOrganizerId !== user.id) {
-      // Check gate_team first — organizer-invited scanners
+      // v55 FIX: Check gate_team by BOTH staff_user_id (Flutter app) and staff_email (web fallback)
+      // Also scope to the specific event (event_id match OR event_id IS NULL = all-events access)
       const { data: gateTeamEntry } = await supabase
         .from('gate_team')
-        .select('id')
-        .eq('organizer_id', eventOrganizerId)
-        .eq('staff_email', user.email)
+        .select('id, role')
+        .or(`staff_user_id.eq.${user.id},staff_email.ilike.${user.email?.toLowerCase()}`)
+        .or(`event_id.eq.${ticketEventId},event_id.is.null`)
         .in('status', ['invited', 'active'])
+        .limit(1)
         .maybeSingle();
 
       if (!gateTeamEntry) {
@@ -153,15 +159,20 @@ serve(async (req) => {
       }
     }
 
+
     // ── Check if event has ended (24h grace period) ──
+    // v55 FIX: Use end_date when available (multi-day events), fallback to date
+    const eventEndDate = ticketCheck?.ticket_tiers?.events?.end_date;
     const eventDate = ticketCheck?.ticket_tiers?.events?.date;
-    if (eventDate) {
-      const eventEnd = new Date(eventDate);
+    const effectiveEndDate = eventEndDate || eventDate;
+    if (effectiveEndDate) {
+      const eventEnd = new Date(effectiveEndDate);
       eventEnd.setHours(eventEnd.getHours() + 24);
       if (new Date() > eventEnd) {
         return errorResponse(410, 'Event has ended. Ticket no longer valid for entry.', {}, req);
       }
     }
+
 
     // ═══════════════════════════════════════════════════════
     // COMMISSION DEBT KILL-SWITCH

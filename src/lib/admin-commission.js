@@ -5,6 +5,7 @@
 import { supabase } from './supabase.js';
 import { setSafeHTML } from './dom.js';
 import { showToast } from './dashboard-ui.js';
+import { formatCurrency } from './utils.js';
 
 const esc = (s) => { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; };
 
@@ -61,6 +62,13 @@ export async function renderAdminCommissionPanel(container) {
     const lockedCount = rows.filter(r => r.scanner_locked).length;
     const settledCount = rows.filter(r => r.status === 'settled').length;
 
+    // M-2 FIX: Detect dominant currency from data instead of hardcoding 'EGP'
+    const currencies = [...new Set(rows.map(r => {
+      try { return r.events?.currency || (r.financial_snapshot && JSON.parse(r.financial_snapshot)?.currency); } catch(e) { return null; }
+    }).filter(Boolean))];
+    const primaryCurrency = currencies.length === 1 ? currencies[0] : (currencies.includes('EGP') ? 'EGP' : currencies[0] || 'EGP');
+    const fmtAmount = (v) => formatCurrency(v, primaryCurrency);
+
     // Update badge
     const badge = document.getElementById('commission-debt-count');
     if (badge) {
@@ -70,7 +78,11 @@ export async function renderAdminCommissionPanel(container) {
 
     let html = `
       <div class="acd-stats">
+<<<<<<< HEAD
         <div class="acd-stat"><div class="acd-stat-val" style="color:#ef4444">${totalOutstanding.toLocaleString()} USD</div><div class="acd-stat-label">Total Outstanding</div></div>
+=======
+        <div class="acd-stat"><div class="acd-stat-val" style="color:#ef4444">${fmtAmount(totalOutstanding)}</div><div class="acd-stat-label">Total Outstanding</div></div>
+>>>>>>> 4ba84ed40b1334f32eab6a356968403e3f092da2
         <div class="acd-stat"><div class="acd-stat-val" style="color:#eab308">${lockedCount}</div><div class="acd-stat-label">Locked Events</div></div>
         <div class="acd-stat"><div class="acd-stat-val" style="color:#22c55e">${settledCount}</div><div class="acd-stat-label">Settled</div></div>
         <div class="acd-stat"><div class="acd-stat-val">${rows.length}</div><div class="acd-stat-label">Total Records</div></div>
@@ -99,9 +111,9 @@ export async function renderAdminCommissionPanel(container) {
           <td>${i + 1}</td>
           <td>${orgName}${orgEmail}</td>
           <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${evTitle}</td>
-          <td style="font-weight:600">${Number(r.commission_owed).toLocaleString()}</td>
-          <td style="color:#22c55e">${Number(r.commission_paid).toLocaleString()}</td>
-          <td style="font-weight:700;color:${r.commission_balance > 0 ? '#ef4444' : '#22c55e'}">${Number(r.commission_balance).toLocaleString()}</td>
+          <td style="font-weight:600">${fmtAmount(Number(r.commission_owed))}</td>
+          <td style="color:#22c55e">${fmtAmount(Number(r.commission_paid))}</td>
+          <td style="font-weight:700;color:${r.commission_balance > 0 ? '#ef4444' : '#22c55e'}">${fmtAmount(Number(r.commission_balance))}</td>
           <td><span class="acd-badge ${status}">${status}</span></td>
           <td style="font-size:1.1rem;text-align:center">${lock}</td>
           <td>${settleBtn}</td>
@@ -115,25 +127,30 @@ export async function renderAdminCommissionPanel(container) {
 
     // Settle button handlers
     container.querySelectorAll('[data-settle]').forEach(btn => {
-      btn.addEventListener('click', () => showSettleModal(btn.dataset.settle, btn.dataset.balance, container));
+      btn.addEventListener('click', () => showSettleModal(btn.dataset.settle, btn.dataset.balance, container, primaryCurrency));
     });
   } catch (err) {
     setSafeHTML(container, `<div class="ev-card" style="padding:20px;color:#ef4444">Error: ${esc(err.message)}</div>`);
   }
 }
 
-function showSettleModal(eventId, balance, panelContainer) {
+function showSettleModal(eventId, balance, panelContainer, currency = 'EGP') {
   document.getElementById('acd-settle-modal')?.remove();
 
   const modal = document.createElement('div');
   modal.id = 'acd-settle-modal';
   modal.className = 'acd-settle-modal';
-  modal.innerHTML = `
+  setSafeHTML(modal, `
     <div class="acd-settle-box">
       <h3>💰 Record <span style="color:var(--ev-accent,#d4af37)">Settlement</span></h3>
       <div class="ev-form-group">
+<<<<<<< HEAD
         <label style="font-size:.82rem;font-weight:600">Amount (USD)</label>
         <input class="ev-form-input" type="number" id="settle-amount" value="${balance}" min="0.01" step="0.01" />
+=======
+        <label style="font-size:.82rem;font-weight:600">Amount (${esc(currency)})</label>
+        <input class="ev-form-input" type="number" id="settle-amount" value="${esc(balance)}" min="0.01" max="${esc(balance)}" step="0.01" />
+>>>>>>> 4ba84ed40b1334f32eab6a356968403e3f092da2
       </div>
       <div class="ev-form-group">
         <label style="font-size:.82rem;font-weight:600">Settlement Method</label>
@@ -153,7 +170,7 @@ function showSettleModal(eventId, balance, panelContainer) {
         <button class="ev-btn" id="settle-confirm" style="flex:1;background:#059669;color:#fff;border:none;font-weight:600">Confirm Settlement</button>
       </div>
     </div>
-  `;
+  `);
 
   document.body.appendChild(modal);
 
@@ -166,6 +183,8 @@ function showSettleModal(eventId, balance, panelContainer) {
     const reference = document.getElementById('settle-reference').value.trim();
 
     if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+    // P2-12 FIX: Prevent over-settlement
+    if (amount > parseFloat(balance)) { showToast('Amount cannot exceed outstanding balance', 'error'); return; }
 
     const confirmBtn = modal.querySelector('#settle-confirm');
     confirmBtn.disabled = true;
@@ -173,6 +192,11 @@ function showSettleModal(eventId, balance, panelContainer) {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showToast('Session expired. Please log in again.', 'error');
+        modal.remove();
+        return;
+      }
       const { error } = await supabase.rpc('settle_commission', {
         p_event_id: eventId,
         p_amount: amount,

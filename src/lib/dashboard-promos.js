@@ -2,6 +2,7 @@ import { supabase, getCurrentUser } from './supabase.js';
 import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML, generateSkeletonRows } from './dom.js';
 import { showToast, getSwitchId } from './dashboard-ui.js';
+import { downloadCSV } from './csv-export.js'; // H21 FIX: Use shared CSV sanitizer
 
 /* ==================================
    PROMO CODES PANEL
@@ -40,8 +41,9 @@ async function loadFinancialData() {
 
     setSafeHTML(tbody, filtered.map((r, i) => {
       const gross = Number(r.gross_revenue || 0);
-      const fee = Math.round(gross * 0.05 * 100) / 100;
-      const net = gross - fee;
+      // H20 FIX: Use server-returned platform_fee instead of hardcoded 5% client recalculation
+      const fee = Number(r.platform_fee || 0);
+      const net = Number(r.net_revenue || 0) || (gross - fee);
       return `<tr>
       <td>${i + 1}</td>
       <td style="font-weight:600">${escapeHTML(r.event_title || '-')}</td>
@@ -56,22 +58,18 @@ async function loadFinancialData() {
     // Financial CSV export
     const csvBtn = document.getElementById('fin-csv-btn');
     if (csvBtn) csvBtn.onclick = () => {
-      const rows = [['Event','Tickets Sold','Gross Revenue','Platform Fee (5%)','Net Payout','Status']];
+      // H21 FIX: Use downloadCSV from csv-export.js which includes formula injection prevention
+      const rows = [['Event','Tickets Sold','Gross Revenue','Platform Fee','Net Payout','Status']];
       filtered.forEach(r => {
         const gross = Number(r.gross_revenue || 0);
-        const fee = Math.round(gross * 0.05 * 100) / 100;
-        const net = gross - fee;
+        const fee = Number(r.platform_fee || 0); // H20: server-side fee
+        const net = Number(r.net_revenue || 0) || (gross - fee);
         rows.push([
-          r.event_title || '', r.total_tickets_sold || 0,
-          gross, fee, net, net > 0 ? 'Earned' : 'Pending'
+          r.event_title || '', String(r.total_tickets_sold || 0),
+          gross.toFixed(2), fee.toFixed(2), net.toFixed(2), net > 0 ? 'Earned' : 'Pending'
         ]);
       });
-      const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      a.download = `financial_${Date.now()}.csv`;
-      a.click();
-      URL.revokeObjectURL(a.href);
+      downloadCSV(rows, `financial_${Date.now()}`);
       showToast('Financial CSV exported', 'success');
     };
   } catch (err) {
@@ -298,6 +296,7 @@ export function setupPromoForm() {
         code,
         discount_type: discountType,
         discount_value: discountVal,
+        discount_currency: discountType === 'fixed' ? currency : null,
         max_uses: maxUses,
         event_id: eventId,
         valid_until: expires ? new Date(expires).toISOString() : null,

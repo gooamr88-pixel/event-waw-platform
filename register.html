@@ -12,12 +12,22 @@
   <link rel="stylesheet" href="css/landing-eveenty.css" />
   <link rel="stylesheet" href="css/eveenty-auth.css?v=1778308385" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/css/intlTelInput.css" />
+  <style>
+    /* Fix flag images — override relative paths with absolute CDN URLs */
+    .iti {
+      --iti-path-flags-1x: url("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/img/flags.webp");
+      --iti-path-flags-2x: url("https://cdn.jsdelivr.net/npm/intl-tel-input@25.3.1/build/img/flags@2x.webp");
+    }
+  </style>
   <link rel="stylesheet" href="css/mobile-ios.css?v=1778308900" />
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#059669" />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
+  <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-auth">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <main id="main-content">
   <div class="ev-top-bar"></div>
   <div class="ev-auth-container">
     <!-- LEFT PANEL -->
@@ -27,9 +37,8 @@
       </a>
       <div class="ev-logo-tagline">DISCOVER & CREATE EVENTS EFFORTLESSLY</div>
       <div class="ev-cards-area">
-        <div class="ev-card ev-card--hosts"><h3><span class="ev-card-icon">🎪</span> Organizers</h3><ul><li>Create and publish events instantly</li><li>Manage tickets, vendors & sponsors</li><li>Track analytics from one dashboard</li></ul></div>
+        <div class="ev-card ev-card--hosts"><h3><span class="ev-card-icon">🎪</span> Organizers</h3><ul><li>Create and publish events instantly</li><li>Manage tickets & track sales</li><li>Track analytics from one dashboard</li></ul></div>
         <div class="ev-card ev-card--exhibitors"><h3><span class="ev-card-icon">🎫</span> Attendees</h3><ul><li>Discover events near you</li><li>Book tickets in seconds</li><li>Get instant QR code entry</li></ul></div>
-        <div class="ev-card ev-card--sponsors"><h3><span class="ev-card-icon">🤝</span> Partners & Sponsors</h3><ul><li>Boost your brand visibility</li><li>Connect with targeted audiences</li><li>Measure ROI with real-time data</li></ul></div>
       </div>
     </div>
     <!-- RIGHT PANEL -->
@@ -39,6 +48,8 @@
         <div class="ev-form-box">
           <div id="auth-msg" class="ev-auth-msg"></div>
           <!-- STEP 1: Main Form -->
+          <!-- H29 FIX: Wrap in <form> to enable HTML5 validation -->
+          <form id="register-form" novalidate>
           <div id="step-1">
             <div class="ev-fg">
               <label class="ev-label">Salutation <span class="required">*</span></label>
@@ -59,8 +70,6 @@
                 <option value="" disabled selected>Select here</option>
                 <option value="attendee">Attendee — Browse and book tickets</option>
                 <option value="organizer">Event Host — Create and manage events</option>
-                <option value="exhibitor">Exhibitor / Vendor</option>
-                <option value="sponsor">Sponsor</option>
               </select>
             </div>
             <div class="ev-fg">
@@ -69,43 +78,44 @@
             </div>
             <div class="ev-fg">
               <label class="ev-label" for="reg-pass">Password <span class="required">*</span></label>
-              <div class="ev-pass-wrap"><input type="password" class="ev-input" id="reg-pass" placeholder="Password" autocomplete="new-password" required minlength="8" /><button type="button" class="ev-pass-toggle" aria-label="Toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+              <div class="ev-pass-wrap"><input type="password" class="ev-input" id="reg-pass" placeholder="Password" autocomplete="new-password" required minlength="8" /><button type="button" class="ev-pass-toggle" aria-label="Toggle"><svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div>
               <div class="ev-pass-strength"><div class="ev-pass-bar"><div class="ev-pass-bar-fill" id="pass-bar-fill"></div></div><span class="ev-pass-label" id="pass-label"></span></div>
             </div>
             <div class="ev-fg">
               <label class="ev-label" for="reg-conf">Confirm password <span class="required">*</span></label>
-              <div class="ev-pass-wrap"><input type="password" class="ev-input" id="reg-conf" placeholder="Confirm password" autocomplete="new-password" required minlength="8" /><button type="button" class="ev-pass-toggle" aria-label="Toggle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+              <div class="ev-pass-wrap"><input type="password" class="ev-input" id="reg-conf" placeholder="Confirm password" autocomplete="new-password" required minlength="8" /><button type="button" class="ev-pass-toggle" aria-label="Toggle"><svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg><svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><line x1="1" y1="1" x2="23" y2="23"/></svg></button></div>
             </div>
             <label class="ev-terms-label"><input type="checkbox" id="terms-agree" required /><span>By signing up, you agree to our <a href="terms.html" target="_blank">Terms & conditions*</a>, <a href="privacy.html" target="_blank">Privacy policy*</a> and <a href="merchant-agreement.html" target="_blank">Merchant Agreement*</a></span></label>
-            <div style="display:flex;justify-content:center;"><button type="button" class="ev-submit-btn" id="reg-submit"><span id="reg-text">Register</span><div id="reg-spinner" class="ev-btn-spinner" style="display:none;"></div></button></div>
+            <div style="display:flex;justify-content:center;"><button type="submit" class="ev-submit-btn" id="reg-submit"><span id="reg-text">Register</span><div id="reg-spinner" class="ev-btn-spinner" style="display:none;"></div></button></div>
             <div class="ev-divider"><span>or continue with</span></div>
             <button type="button" class="ev-google-btn" id="google-signup">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
               Continue with Google
             </button>
           </div>
+          </form>
           <!-- STEP 2: OTP Verification -->
           <div id="step-otp" class="ev-otp-section">
             <div style="text-align:center;margin-bottom:24px;">
               <div class="ev-otp-icon-wrap"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg></div>
-              <h2 style="color:#fff;font-size:1.1rem;margin-top:16px;">Verify your email</h2>
-              <p style="font-size:0.82rem;color:#999;">We sent a 6-digit code to <strong id="otp-email-display" style="color:#fff;"></strong></p>
+              <h2 style="color:#1a1a1f;font-size:1.1rem;margin-top:16px;">Verify your email</h2>
+              <p style="font-size:0.82rem;color:#4b5563;">We sent a 6-digit code to <strong id="otp-email-display" style="color:var(--es-emerald-600, #059669);"></strong></p>
             </div>
             <form id="otp-form">
               <div class="ev-otp-inputs">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="0" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="1" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="2" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="0" aria-label="Digit 1 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="1" aria-label="Digit 2 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="2" aria-label="Digit 3 of 6" />
                 <div class="ev-otp-dash">—</div>
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="3" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="4" />
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="5" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="3" aria-label="Digit 4 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="4" aria-label="Digit 5 of 6" />
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" class="ev-otp-digit" data-index="5" aria-label="Digit 6 of 6" />
               </div>
               <div style="display:flex;justify-content:center;"><button type="submit" class="ev-submit-btn" id="otp-submit" disabled><span id="otp-text">Verify & Continue</span><div id="otp-spinner" class="ev-btn-spinner" style="display:none;"></div></button></div>
             </form>
             <div style="text-align:center;margin-top:20px;">
-              <p style="font-size:0.82rem;color:#999;">Didn't receive the code? <button type="button" class="ev-link-btn" id="resend-btn">Resend code</button></p>
-              <p id="otp-timer" style="font-size:0.75rem;color:#888;margin-top:8px;"></p>
+              <p style="font-size:0.82rem;color:#4b5563;">Didn't receive the code? <button type="button" class="ev-link-btn" id="resend-btn">Resend code</button></p>
+              <p id="otp-timer" style="font-size:0.75rem;color:#4b5563;margin-top:8px;"></p>
             </div>
           </div>
         </div>
@@ -113,6 +123,7 @@
       </div>
     </div>
   </div>
+  </main>
   <!-- ═══ CHAT WIDGET ═══ -->
   <div id="ev-chatbox" class="ev-chatbox">
     <div class="ev-chatbox-header">
@@ -125,7 +136,7 @@
     <div class="ev-chatbox-messages" id="ev-chatbox-messages"></div>
     <div class="ev-chatbox-footer">
       <div class="ev-chatbox-input-wrap">
-        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" aria-label="Type a message" />
         <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
     </div>
@@ -146,7 +157,7 @@
       { q: "📱 How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly. One scan = one entry." },
       { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventsli.com</b> or use the contact form. We typically respond within 24 hours." },
       { q: "🔒 Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers. Everything is encrypted with bank-level security." },
-      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>. Each role gets dedicated tools." }
+      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b> who discover and book events, and <b>Event Hosts</b> who create and manage events with full analytics and ticketing tools." }
     ];
     const chatbox = document.getElementById('ev-chatbox');
     const fab = document.getElementById('ev-chat-fab');
@@ -187,26 +198,29 @@
   <script type="module">
     import { signUp } from './src/lib/auth.js';
     import { supabase, getCurrentProfile } from './src/lib/supabase.js';
-    import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
+    import { guestOnlyPage, markOTPVerified, isAdminLevel } from './src/lib/guard.js';
     const SUPABASE_URL = 'https://bmtwdwoibvoewbesohpu.supabase.co';
     let registeredEmail = '';
 
-    /** Route by role: admin → Motherboard, others → Dashboard */
+    /** Route by role: admin → Motherboard, organizer → Dashboard, attendee → Attendee Dashboard */
     async function getPostAuthRedirect() {
       try {
         const profile = await getCurrentProfile();
-        if (profile?.role === 'admin') return '/admin.html';
+        if (isAdminLevel(profile?.role)) return '/admin.html';
+        if (profile?.role === 'organizer') return '/dashboard.html';
       } catch (_) {}
-      return '/dashboard.html';
+      return '/attendee-dashboard.html';
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
       initToggles(); initOTPInputs(); initPasswordStrength();
-      const isGuest = await guestOnlyPage({ redirectTo: '/dashboard.html' });
+      const isGuest = await guestOnlyPage();
       if (!isGuest) return;
 
       // Register
-      document.getElementById('reg-submit').addEventListener('click', async () => {
+      // H29 FIX: Use form submit event for HTML5 validation
+      document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
         const firstName = document.getElementById('reg-first').value.trim();
         const lastName = document.getElementById('reg-last').value.trim();
         const email = document.getElementById('reg-email').value.trim();
@@ -341,18 +355,123 @@
     });
 
     // Google OAuth return
+    // Show Role Chooser Modal for new Google users
+    let _oauthHandled = false;
     (async () => {
+      if (_oauthHandled) return;
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
+        _oauthHandled = true;
         const user = session.user; const meta = user.user_metadata || {};
         const { data: ep } = await supabase.from('profiles').select('id').eq('id', user.id).maybeSingle();
-        if (!ep) { await supabase.from('profiles').insert({ id: user.id, email: user.email, full_name: meta.full_name || meta.name || '', avatar_url: meta.avatar_url || null, role: 'attendee' }); }
+        if (!ep) {
+          // New user — show role chooser modal
+          const chosenRole = await showRoleChooserModal(meta.full_name || meta.name || '');
+          await supabase.from('profiles').insert({
+            id: user.id, email: user.email,
+            full_name: meta.full_name || meta.name || '',
+            avatar_url: meta.avatar_url || null,
+            role: chosenRole
+          });
+        }
         const { markOTPVerified } = await import('./src/lib/guard.js');
         await markOTPVerified();
         const oauthDest = await getPostAuthRedirect();
         window.location.href = oauthDest;
       }
     })();
+
+    /**
+     * Show a premium glassmorphism modal asking the user to pick their role.
+     * Returns a Promise that resolves to 'attendee' or 'organizer'.
+     */
+    function showRoleChooserModal(displayName) {
+      return new Promise((resolve) => {
+        const firstName = (displayName || 'there').split(' ')[0];
+        const overlay = document.createElement('div');
+        overlay.id = 'role-chooser-overlay';
+        overlay.innerHTML = `
+          <style>
+            #role-chooser-overlay {
+              position:fixed;inset:0;z-index:99999;
+              background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+              display:flex;align-items:center;justify-content:center;padding:24px;
+              animation:rcFadeIn .4s ease;
+            }
+            @keyframes rcFadeIn { from{opacity:0} to{opacity:1} }
+            @keyframes rcSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+            .rc-box {
+              max-width:440px;width:100%;text-align:center;
+              background:rgba(24,24,27,.75);backdrop-filter:blur(60px) saturate(150%);
+              border:1px solid rgba(5,150,105,.15);border-radius:24px;
+              padding:40px 32px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+              animation:rcSlideUp .5s cubic-bezier(.16,1,.3,1) forwards;
+            }
+            .rc-wave { font-size:2.2rem;margin-bottom:16px;display:block; }
+            .rc-box h2 { font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:8px; }
+            .rc-box p { font-size:.88rem;color:#999;margin-bottom:28px;line-height:1.6; }
+            .rc-roles { display:flex;flex-direction:column;gap:12px; }
+            .rc-role-btn {
+              display:flex;align-items:center;gap:16px;padding:18px 20px;
+              border-radius:16px;border:1.5px solid rgba(255,255,255,.08);
+              background:rgba(255,255,255,.03);cursor:pointer;
+              transition:all .25s cubic-bezier(.16,1,.3,1);text-align:left;
+              color:#fff;font-family:inherit;
+            }
+            .rc-role-btn:hover {
+              border-color:rgba(5,150,105,.4);background:rgba(5,150,105,.08);
+              transform:translateY(-2px);box-shadow:0 8px 24px rgba(5,150,105,.12);
+            }
+            .rc-role-icon {
+              width:48px;height:48px;border-radius:14px;
+              display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+              flex-shrink:0;
+            }
+            .rc-role-icon.attendee { background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2); }
+            .rc-role-icon.organizer { background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.2); }
+            .rc-role-title { font-weight:700;font-size:.95rem;margin-bottom:2px; }
+            .rc-role-desc { font-size:.78rem;color:#888;line-height:1.4; }
+            @media(max-width:500px) { .rc-box{padding:32px 20px;} }
+          </style>
+          <div class="rc-box">
+            <span class="rc-wave">👋</span>
+            <h2>Welcome, ${firstName}!</h2>
+            <p>One last step — what would you like to do on Eventsli?</p>
+            <div class="rc-roles">
+              <button class="rc-role-btn" data-role="attendee">
+                <div class="rc-role-icon attendee">🎫</div>
+                <div>
+                  <div class="rc-role-title">Attend Events</div>
+                  <div class="rc-role-desc">Discover events, buy tickets, and get QR code entry</div>
+                </div>
+              </button>
+              <button class="rc-role-btn" data-role="organizer">
+                <div class="rc-role-icon organizer">🎪</div>
+                <div>
+                  <div class="rc-role-title">Host Events</div>
+                  <div class="rc-role-desc">Create events, sell tickets, and manage your audience</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelectorAll('.rc-role-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const role = btn.dataset.role;
+            // Visual feedback
+            btn.style.borderColor = 'rgba(5,150,105,.6)';
+            btn.style.background = 'rgba(5,150,105,.15)';
+            btn.innerHTML = '<div style="width:100%;text-align:center;color:#059669;font-weight:600;">✓ Selected! Redirecting...</div>';
+            setTimeout(() => {
+              overlay.remove();
+              resolve(role);
+            }, 600);
+          });
+        });
+      });
+    }
 
     async function sendOTPEmail(name, type) {
       const { data: { session } } = await supabase.auth.getSession();
@@ -395,9 +514,11 @@
         btn.addEventListener('click', () => {
           const inp = btn.parentElement.querySelector('input'); if (!inp) return;
           const show = inp.type === 'password'; inp.type = show ? 'text' : 'password';
-          btn.innerHTML = show
-            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
-            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+          // H26 FIX: Toggle visibility via CSS classes instead of innerHTML
+          const eyeOpen = btn.querySelector('.eye-open');
+          const eyeClosed = btn.querySelector('.eye-closed');
+          if (eyeOpen) eyeOpen.style.display = show ? 'none' : '';
+          if (eyeClosed) eyeClosed.style.display = show ? '' : 'none';
         });
       });
     }

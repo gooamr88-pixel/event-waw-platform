@@ -171,7 +171,7 @@ function showPayoutModal(fin) {
   const modal = document.createElement('div');
   modal.id = 'fin-payout-modal';
   modal.className = 'fin-modal-overlay';
-  modal.innerHTML = `
+  setSafeHTML(modal, `
     <div class="fin-modal-dialog">
       <div class="fin-modal-header">
         <h3>💰 Request Payout</h3>
@@ -194,7 +194,7 @@ function showPayoutModal(fin) {
         </button>
       </div>
     </div>
-  `;
+  `);
 
   document.body.appendChild(modal);
 
@@ -202,11 +202,18 @@ function showPayoutModal(fin) {
   document.getElementById('fin-modal-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
+  // P1-7 FIX: Prevent double submission
+  let _payoutSubmitting = false;
+
   // Submit
   document.getElementById('fin-payout-submit').addEventListener('click', async () => {
+    if (_payoutSubmitting) return;
+    _payoutSubmitting = true;
+
     const amount = parseFloat(document.getElementById('fin-payout-amount').value);
     if (!amount || amount <= 0 || amount > maxAmount) {
       showToast(`Amount must be between 1 and ${fmt(maxAmount)}`, 'error');
+      _payoutSubmitting = false;
       return;
     }
 
@@ -228,6 +235,8 @@ function showPayoutModal(fin) {
       showToast('Payout request failed: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Payout Request';
+    } finally {
+      _payoutSubmitting = false;
     }
   });
 }
@@ -242,7 +251,7 @@ function esc(str) {
 }
 
 function escAttr(str) {
-  return (str || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function injectStyles() {

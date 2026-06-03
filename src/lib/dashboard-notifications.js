@@ -32,7 +32,7 @@ export async function loadNotifications() {
 
     const { data: tickets } = await supabase
       .from('tickets')
-      .select('id, ticket_tier_id, order_id, created_at')
+      .select('id, ticket_tier_id, order_id, created_at, attendee_name')
       .in('ticket_tier_id', tiers.map(t => t.id))
       .gt('created_at', lastSeen)
       .order('created_at', { ascending: false })

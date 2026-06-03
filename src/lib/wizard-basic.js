@@ -129,6 +129,8 @@ export function setupBasicTab(getOrchestratorState) {
       const file = e.target.files[0];
       if (!file) return;
       if (!file.type.startsWith('image/')) { showToast('Please select an image file', 'error'); return; }
+      // M-fe-3 FIX: Block SVG uploads (can contain embedded scripts)
+      if (file.type === 'image/svg+xml') { showToast('SVG files are not allowed. Please use JPG or PNG.', 'error'); return; }
       const reader = new FileReader();
       reader.onload = (ev) => {
         area.innerHTML = '';

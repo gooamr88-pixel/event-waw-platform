@@ -4,7 +4,11 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Hardcoded for production (no build tool to inject env vars)
+// H24: These credentials are INTENTIONALLY PUBLIC (by Supabase design).
+// The anon key is a publishable key that grants access only to what RLS policies allow.
+// Security relies on Row Level Security (RLS) policies in the database, NOT on keeping
+// this key secret. DO NOT treat this as a secret. The service_role key (server-only) is
+// what must never be exposed to the client.
 const supabaseUrl = 'https://bmtwdwoibvoewbesohpu.supabase.co';
 export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJtdHdkd29pYnZvZXdiZXNvaHB1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYzMzY0NjYsImV4cCI6MjA5MTkxMjQ2Nn0.YIuyd2y34UHkrAp9nZM_O2yVuaMAT-XWdSrex6eATjQ';
 
@@ -77,6 +81,8 @@ export async function getCurrentProfile() {
     phone: meta.phone || null,
     role: 'attendee', // SECURITY: Never trust meta.role — role elevation requires server-side RPC
     avatar_url: meta.avatar_url || null,
+    is_blocked: false,       // FIX: Default to safe values so guard.js block check works
+    otp_verified_at: null,   // FIX: Default so OTP check doesn't pass on fallback profiles
   };
 
   const { error: createError } = await supabase
@@ -99,7 +105,7 @@ export async function getCurrentProfile() {
     .eq('id', user.id)
     .maybeSingle();
 
-  console.log('Profile auto-created/fetched successfully:', freshProfile);
+  console.debug('Profile auto-created/fetched successfully');
   return freshProfile || newProfile;
 }
 

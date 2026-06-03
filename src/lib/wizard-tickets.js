@@ -62,6 +62,7 @@ export function renderCePromoTable() {
  */
 export function renderCeTicketsTable() {
   const tbody = document.getElementById('ce-tickets-tbody');
+  if (!tbody) return;
   if (!ceTicketsList.length) {
     setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">No tickets added yet</td></tr>');
     return;
@@ -91,6 +92,15 @@ export function renderCeTicketsTable() {
  * Called once from the orchestrator's setupCreateModal.
  */
 export function setupTicketListeners() {
+  // ── Sync ticket currencies on event currency change ──
+  document.getElementById('ce-currency')?.addEventListener('change', (e) => {
+    const newCurrency = e.target.value;
+    if (newCurrency) {
+      ceTicketsList.forEach(t => t.currency = newCurrency);
+      renderCeTicketsTable();
+    }
+  });
+
   // ── Ticket Type Cards ──
   document.querySelectorAll('.ce-ticket-card').forEach(card => {
     card.addEventListener('click', () => {
@@ -144,13 +154,23 @@ export function setupTicketListeners() {
     const isHidden = document.getElementById('ce-ticket-hidden')?.checked || false;
 
     if (!name) { showToast('Ticket name is required', 'error'); return; }
-    if (!price && price !== 0) { showToast('Ticket price is required (use 0 for free tickets)', 'error'); return; }
+    // P2-15 FIX: Reject negative quantity
+    if (qty < 1) { showToast('Ticket quantity must be at least 1', 'error'); return; }
+    // P2-16 FIX: Reject negative price
+    if (price < 0) { showToast('Ticket price cannot be negative', 'error'); return; }
+    // M-fe-2 FIX: Validate min purchase ≤ max purchase
+    if (minPurchase > maxPurchase) { showToast('Min purchase cannot exceed max purchase', 'error'); return; }
 
     // H-10: Early Bird Price Validation
     if (earlyPrice !== '') {
       const parsedEarly = parseFloat(earlyPrice);
       if (isNaN(parsedEarly) || parsedEarly < 0) {
         showToast('Early bird price must be a valid positive number', 'error');
+        return;
+      }
+      // M-4 FIX: Validate early bird price is lower than regular price
+      if (parsedEarly >= price && price > 0) {
+        showToast('Early bird price must be lower than the regular price', 'error');
         return;
       }
     }
@@ -187,6 +207,8 @@ export function setupTicketListeners() {
 
     if (!code) { showToast('Promo code is required', 'error'); return; }
     if (value <= 0) { showToast('Discount value must be greater than 0', 'error'); return; }
+    // C-2 FIX: Cap percentage promo codes at 100%
+    if (type === 'percentage' && value > 100) { showToast('Percentage discount cannot exceed 100%', 'error'); return; }
     
     // Check for duplicates
     if (cePromoCodesList.some(p => p.code.toUpperCase() === code.toUpperCase())) {

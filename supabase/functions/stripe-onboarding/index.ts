@@ -7,7 +7,7 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@17?target=deno';
-import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
+import { handleCORS, errorResponse, jsonResponse, getSafeRedirectOrigin } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { rateLimit } from '../_shared/rate-limit.ts';
 
@@ -21,11 +21,11 @@ serve(async (req) => {
   try {
     // ── Authenticate ──
     const { user, error: authError } = await authenticateRequest(req);
-    if (!user) return errorResponse(401, authError || 'Unauthorized');
+    if (!user) return errorResponse(401, authError || 'Unauthorized', {}, req);  // L5 FIX
 
     // ── Rate Limit: 3 onboarding attempts per 10 min ──
     if (!rateLimit(`onboard:${user.id}`, 3, 600_000)) {
-      return errorResponse(429, 'Too many requests. Please wait.');
+      return errorResponse(429, 'Too many requests. Please wait.', {}, req);  // L5 FIX
     }
 
     // ── Parse action ──
@@ -46,8 +46,8 @@ serve(async (req) => {
       .eq('id', user.id)
       .single();
 
-    if (!profile || !['organizer', 'admin'].includes(profile.role)) {
-      return errorResponse(403, 'Only organizers can set up payment accounts');
+    if (!profile || !['organizer', 'admin', 'super_admin'].includes(profile.role)) {
+      return errorResponse(403, 'Only organizers can set up payment accounts', {}, req);  // L5 FIX
     }
 
     // ═══════════════════════════════════
@@ -89,8 +89,19 @@ serve(async (req) => {
           details_submitted: account.details_submitted,
         });
       } catch (err) {
-        console.error('Failed to retrieve Stripe account:', err);
-        return jsonResponse({ status: 'error', onboarding_complete: false });
+        // Account doesn't exist on this platform — clear stale ID
+        console.warn(`⚠️ Stale Stripe account ${profile.stripe_account_id} for user ${user.id} during status check: ${err.message}`);
+        await Promise.all([
+          supabase
+            .from('profiles')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('id', user.id),
+          supabase
+            .from('organizers')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('user_id', user.id)
+        ]);
+        return jsonResponse({ status: 'not_started', onboarding_complete: false, stale_account_cleared: true });
       }
     }
 
@@ -99,6 +110,30 @@ serve(async (req) => {
     // Creates or retrieves account, returns onboarding link
     // ═══════════════════════════════════
     let accountId = profile.stripe_account_id;
+
+    // ── Verify existing account is still valid on this platform ──
+    if (accountId) {
+      try {
+        await stripe.accounts.retrieve(accountId);
+        // Account exists and is connected — proceed
+      } catch (verifyErr) {
+        // Account doesn't exist, was deleted, or belongs to a different platform
+        console.warn(`⚠️ Stale Stripe account ${accountId} for user ${user.id}: ${verifyErr.message}. Creating fresh account.`);
+        accountId = null;
+
+        // Clear stale ID from DB so we don't keep hitting this
+        await Promise.all([
+          supabase
+            .from('profiles')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('id', user.id),
+          supabase
+            .from('organizers')
+            .update({ stripe_account_id: null, stripe_onboarding_complete: false })
+            .eq('user_id', user.id)
+        ]);
+      }
+    }
 
     if (!accountId) {
       // FIX 3.1: Create an Express connected account (was 'standard').
@@ -151,7 +186,8 @@ serve(async (req) => {
     }
 
     // Generate onboarding link
-    const origin = req.headers.get('origin') || allowedOrigin;
+    // H2 FIX: Validate origin against CORS allowlist to prevent open-redirect attacks
+    const origin = getSafeRedirectOrigin(req);
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${origin}/dashboard.html?stripe=refresh`,
@@ -166,6 +202,6 @@ serve(async (req) => {
 
   } catch (err) {
     console.error('Stripe onboarding error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

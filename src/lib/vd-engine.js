@@ -29,6 +29,17 @@ export const ELEMENT_TYPES = {
 let _idCounter = 0;
 export function uid() { return 'el-' + (++_idCounter) + '-' + Date.now().toString(36); }
 
+/** Generate multi-letter row label: 0→A, 25→Z, 26→AA, 27→AB, etc. */
+function rowLabel(index) {
+  let label = '';
+  let n = index;
+  do {
+    label = String.fromCharCode(65 + (n % 26)) + label;
+    n = Math.floor(n / 26) - 1;
+  } while (n >= 0);
+  return label;
+}
+
 export function createElement(typeId, x = 100, y = 100) {
   const type = ELEMENT_TYPES[typeId.toUpperCase()] || ELEMENT_TYPES.LABEL;
   const base = {
@@ -184,7 +195,7 @@ export class VenueDesignerEngine {
           for (let s = 0; s < cols; s++) {
             seats.push({ number: String(s + 1), x: sec.x + s * SEAT_GAP, y: sec.y + r * ROW_GAP, r: SEAT_R });
           }
-          rows.push({ label: String.fromCharCode(65 + r), seats });
+          rows.push({ label: rowLabel(r), seats });
         }
         return { key: sec.label.toLowerCase().replace(/\s+/g, '-'), label: sec.label, tier_id: sec.tier_id, rows };
       }),
@@ -351,7 +362,8 @@ export class VenueDesignerEngine {
       }
     });
 
-    window.addEventListener('mousemove', (e) => {
+    // FIX: Store window listener references for cleanup in destroy()
+    this._onWindowMouseMove = (e) => {
       if (this._dragging) {
         const p = this._svgPoint(e);
         let nx = Math.round(p.x - this._dragging.offsetX);
@@ -377,14 +389,16 @@ export class VenueDesignerEngine {
         this.state.panY = e.clientY - this._panStart.y;
         this.render();
       }
-    });
+    };
+    window.addEventListener('mousemove', this._onWindowMouseMove);
 
-    window.addEventListener('mouseup', () => {
+    this._onWindowMouseUp = () => {
       if (this._dragging) { this.onChange('move', this._dragging.el); }
       this._dragging = null;
       this._resizing = null;
       if (this._panning) { this._panning = false; c.style.cursor = ''; }
-    });
+    };
+    window.addEventListener('mouseup', this._onWindowMouseUp);
 
     c.addEventListener('wheel', (e) => {
       e.preventDefault();
@@ -392,13 +406,14 @@ export class VenueDesignerEngine {
       else this.zoomOut();
     }, { passive: false });
 
-    window.addEventListener('keydown', (e) => {
+    this._onWindowKeyDown = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
       if (e.key === 'Delete' || e.key === 'Backspace') { this.removeSelected(); e.preventDefault(); }
       if (e.ctrlKey && e.key === 'z') { this.undo(); e.preventDefault(); }
       if (e.ctrlKey && e.key === 'y') { this.redo(); e.preventDefault(); }
       if (e.ctrlKey && e.key === 'd') { this.duplicateSelected(); e.preventDefault(); }
-    });
+    };
+    window.addEventListener('keydown', this._onWindowKeyDown);
 
     c.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
     c.addEventListener('drop', (e) => {
@@ -409,5 +424,24 @@ export class VenueDesignerEngine {
         this.addElement(typeId, p.x - 40, p.y - 25);
       }
     });
+  }
+
+  /**
+   * Clean up all window-level event listeners to prevent memory leaks.
+   * Must be called when the venue designer is unmounted/destroyed.
+   */
+  destroy() {
+    if (this._onWindowMouseMove) {
+      window.removeEventListener('mousemove', this._onWindowMouseMove);
+      this._onWindowMouseMove = null;
+    }
+    if (this._onWindowMouseUp) {
+      window.removeEventListener('mouseup', this._onWindowMouseUp);
+      this._onWindowMouseUp = null;
+    }
+    if (this._onWindowKeyDown) {
+      window.removeEventListener('keydown', this._onWindowKeyDown);
+      this._onWindowKeyDown = null;
+    }
   }
 }

@@ -170,11 +170,8 @@ export async function protectPage(options = {}) {
       || isAdminLevel(userRole);  // admin-level roles pass ALL role gates
     if (!roleOk) {
       hideLoadingOverlay();
-      if (userRole === 'attendee' && requireRole === 'organizer') {
-        showUpgradeModal(requireRole);
-      } else {
-        window.location.href = '/dashboard.html';
-      }
+      // Attendee on organizer page → redirect to their own dashboard
+      window.location.href = '/attendee-dashboard.html';
       return null;
     }
 
@@ -236,6 +233,8 @@ export async function guestOnlyPage(options = {}) {
     // User is logged in → route by role
     let dest = redirectTo;
     if (isAdminLevel(profile?.role)) dest = '/admin.html';
+    else if (profile?.role === 'organizer') dest = '/dashboard.html';
+    else dest = '/attendee-dashboard.html';
 
     window.location.href = dest;
     return false;
@@ -313,8 +312,9 @@ export function updateNavForAuth(authState) {
     
     // Convert Log In button into Dashboard / Admin Panel
     if (signinBtn) {
-      const isSystemAdmin = profile?.role === 'admin';
-      signinBtn.href = isSystemAdmin ? 'admin.html' : 'dashboard.html';
+      const isSystemAdmin = isAdminLevel(profile?.role);
+      const isOrganizer = profile?.role === 'organizer';
+      signinBtn.href = isSystemAdmin ? 'admin.html' : isOrganizer ? 'dashboard.html' : 'attendee-dashboard.html';
       signinBtn.textContent = isSystemAdmin ? 'Admin Panel' : 'Dashboard';
       signinBtn.style.display = ''; // Ensure it is visible
     }
@@ -337,8 +337,9 @@ export function updateNavForAuth(authState) {
     if (mobileTickets) mobileTickets.style.display = 'flex';
     if (mobileDashboard) {
       mobileDashboard.style.display = 'flex';
-      mobileDashboard.href = profile?.role === 'admin' ? 'admin.html' : 'dashboard.html';
-      mobileDashboard.textContent = profile?.role === 'admin' ? '📋 Admin Panel' : '📋 Dashboard';
+      const dashHref = isAdminLevel(profile?.role) ? 'admin.html' : profile?.role === 'organizer' ? 'dashboard.html' : 'attendee-dashboard.html';
+      mobileDashboard.href = dashHref;
+      mobileDashboard.textContent = isAdminLevel(profile?.role) ? '📋 Admin Panel' : '📋 Dashboard';
     }
     if (mobileSignout) {
       mobileSignout.style.display = 'flex';
@@ -418,7 +419,7 @@ export async function upgradeToOrganizer() {
 
   // Check if already an organizer
   const profile = await getCurrentProfile();
-  if (profile?.role === 'organizer' || profile?.role === 'admin') return true;
+  if (profile?.role === 'organizer' || isAdminLevel(profile?.role)) return true;
 
   // Use the SECURITY DEFINER RPC - only allows attendee -> organizer
   const { error } = await supabase.rpc('request_organizer_upgrade');
@@ -428,12 +429,9 @@ export async function upgradeToOrganizer() {
     return false;
   }
 
-  // Sync role to user metadata for consistency
-  await supabase.auth.updateUser({
-    data: { role: 'organizer' }
-  });
+  // Role source-of-truth is profiles table — do NOT sync to user_metadata (P0-2 FIX)
 
-  console.log('User upgraded to organizer:', user.id);
+  console.debug('User upgraded to organizer');
   return true;
 }
 
@@ -520,7 +518,7 @@ function showUpgradeModal(requiredRole) {
           Upgrade to Organizer
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
         </button>
-        <a href="/dashboard.html" class="btn btn-outline btn-lg">Go Back to Events</a>
+        <a href="/attendee-dashboard.html" class="btn btn-outline btn-lg">Go Back to Events</a>
       </div>
       <p id="upgrade-status"></p>
     </div>

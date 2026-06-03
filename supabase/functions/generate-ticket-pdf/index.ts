@@ -171,7 +171,8 @@ serve(async (req) => {
         .select('role')
         .eq('id', user.id)
         .single();
-      isAdmin = profile?.role === 'admin';
+      // M6 FIX: Include super_admin in admin check
+      isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
     } else if (guest_token && typeof guest_token === 'string') {
       // C-4 FIX: Hash the guest_token with SHA-256 and verify via RPC
       const encoder = new TextEncoder();
@@ -268,23 +269,42 @@ serve(async (req) => {
     const helvetica = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const helveticaBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
+    // ── Batch-fetch all user profiles BEFORE the loop (N+1 fix) ──
+    const profileMap = new Map<string, string>();
+    const uniqueUserIds = [
+      ...new Set(
+        tickets
+          .filter((t: any) => !t.orders?.is_guest && t.orders?.user_id)
+          .map((t: any) => t.orders.user_id as string)
+      ),
+    ];
+    if (uniqueUserIds.length > 0) {
+      try {
+        const { data: profiles } = await adminClient
+          .from('profiles')
+          .select('id, full_name')
+          .in('id', uniqueUserIds);
+        if (profiles) {
+          for (const p of profiles) {
+            profileMap.set(p.id, p.full_name || 'Attendee');
+          }
+        }
+      } catch {
+        // If batch fetch fails, all lookups will fall back to 'Attendee'
+        console.warn('⚠️ Batch profile fetch failed, using fallback names');
+      }
+    }
+
     for (const ticket of tickets) {
       const event = ticket.ticket_tiers?.events || {};
       const tier = ticket.ticket_tiers || {};
       const order = ticket.orders || {};
       const buyerName = order.is_guest ? (order.guest_name || 'Guest') : '';
 
-      // If authenticated, fetch user name
+      // Resolve display name from pre-fetched profile map
       let displayName = buyerName;
       if (!order.is_guest && order.user_id) {
-        try {
-          const { data: profile } = await adminClient
-            .from('profiles')
-            .select('full_name')
-            .eq('id', order.user_id)
-            .single();
-          displayName = profile?.full_name || 'Attendee';
-        } catch { displayName = 'Attendee'; }
+        displayName = profileMap.get(order.user_id) || 'Attendee';
       }
 
       // ── Generate QR PNG ──

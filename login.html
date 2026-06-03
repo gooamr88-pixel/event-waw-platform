@@ -15,9 +15,12 @@
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#059669" />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
+  <script src="js/csp.js"></script>
 </head>
 <body class="eveenty-auth">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
   <!-- Top Blue Bar -->
+  <main id="main-content">
   <div class="ev-top-bar"></div>
 
   <div class="ev-auth-container">
@@ -34,7 +37,7 @@
           <h3><span class="ev-card-icon">🎪</span> Organizers</h3>
           <ul>
             <li>Create and publish events instantly</li>
-            <li>Manage tickets, vendors & sponsors</li>
+            <li>Manage tickets & track sales</li>
             <li>Track analytics from one dashboard</li>
           </ul>
         </div>
@@ -49,15 +52,7 @@
           </ul>
         </div>
 
-        <!-- Partners Card -->
-        <div class="ev-card ev-card--sponsors">
-          <h3><span class="ev-card-icon">🤝</span> Partners & Sponsors</h3>
-          <ul>
-            <li>Boost your brand visibility</li>
-            <li>Connect with targeted audiences</li>
-            <li>Measure ROI with real-time data</li>
-          </ul>
-        </div>
+
       </div>
     </div>
 
@@ -82,7 +77,8 @@
               <div class="ev-pass-wrap">
                 <input type="password" class="ev-input" id="login-pass" placeholder="Password" autocomplete="current-password" required />
                 <button type="button" class="ev-pass-toggle" aria-label="Toggle password visibility">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg class="eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                 </button>
               </div>
             </div>
@@ -122,6 +118,7 @@
       </div>
     </div>
   </div>
+  </main>
 
   <!-- ═══ CHAT WIDGET ═══ -->
   <div id="ev-chatbox" class="ev-chatbox">
@@ -135,7 +132,7 @@
     <div class="ev-chatbox-messages" id="ev-chatbox-messages"></div>
     <div class="ev-chatbox-footer">
       <div class="ev-chatbox-input-wrap">
-        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" />
+        <input type="text" id="ev-chatbox-input" class="ev-chatbox-input" placeholder="Type a message..." autocomplete="off" aria-label="Type a message" />
         <button class="ev-chatbox-send" id="ev-chatbox-send" aria-label="Send"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
       </div>
     </div>
@@ -156,7 +153,7 @@
       { q: "📱 How does the QR scan work?", a: "Each ticket has a unique QR code. At the venue, organizers use our built-in Scanner to verify tickets instantly." },
       { q: "💬 How can I contact support?", a: "You can reach us at <b>support@eventsli.com</b> or use the contact form. We typically respond within 24 hours." },
       { q: "🔒 Is my payment secure?", a: "Absolutely. We use <b>Stripe</b> for all payments — your card details never touch our servers." },
-      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b>, <b>Event Hosts</b>, <b>Sponsors</b>, <b>Vendors</b>, and <b>Marketers</b>." }
+      { q: "👥 What roles does the platform support?", a: "Eventsli supports <b>Attendees</b> who discover and book events, and <b>Event Hosts</b> who create and manage events with full analytics and ticketing tools." }
     ];
     const chatbox=document.getElementById('ev-chatbox'),fab=document.getElementById('ev-chat-fab'),closeBtn=document.getElementById('ev-chatbox-close'),msgArea=document.getElementById('ev-chatbox-messages'),input=document.getElementById('ev-chatbox-input'),sendBtn=document.getElementById('ev-chatbox-send'),badge=document.getElementById('ev-fab-badge');
     let isOpen=false;
@@ -174,18 +171,19 @@
   <script type="module">
     import { signIn } from './src/lib/auth.js';
     import { supabase, getCurrentProfile } from './src/lib/supabase.js';
-    import { guestOnlyPage, markOTPVerified } from './src/lib/guard.js';
+    import { guestOnlyPage, markOTPVerified, isAdminLevel } from './src/lib/guard.js';
 
     /**
      * Determine the correct redirect destination based on user role.
-     * Admins → /admin.html (Motherboard), everyone else → /dashboard.html
+     * Admins → /admin.html, Organizers → /dashboard.html, Attendees → /attendee-dashboard.html
      */
     async function getRedirectForUser() {
       try {
         const profile = await getCurrentProfile();
-        if (profile?.role === 'admin') return '/admin.html';
-      } catch (_) { /* fallback to dashboard */ }
-      return '/dashboard.html';
+        if (isAdminLevel(profile?.role)) return '/admin.html';
+        if (profile?.role === 'organizer') return '/dashboard.html';
+      } catch (_) { /* fallback to attendee dashboard */ }
+      return '/attendee-dashboard.html';
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
@@ -226,7 +224,11 @@
           await markOTPVerified();
 
           // Determine destination: admin → Motherboard, others → Dashboard
-          const destination = redirect || await getRedirectForUser();
+          let destination = redirect;
+          const userRedirect = await getRedirectForUser();
+          if (userRedirect === '/admin.html' || !destination || destination.includes('dashboard.html')) {
+            destination = userRedirect;
+          }
 
           msg.className = 'ev-auth-msg success';
           msg.textContent = '✓ Welcome back! Redirecting…';
@@ -273,7 +275,11 @@
       await ensureProfile(session.user);
       await markOTPVerified();
       const redirect = new URLSearchParams(window.location.search).get('redirect');
-      const destination = redirect || await getRedirectForUser();
+      let destination = redirect;
+      const userRedirect = await getRedirectForUser();
+      if (userRedirect === '/admin.html' || !destination || destination.includes('dashboard.html')) {
+        destination = userRedirect;
+      }
       setTimeout(() => { window.location.href = destination; }, 600);
     }
 
@@ -284,13 +290,100 @@
           .from('profiles').select('id').eq('id', user.id).maybeSingle();
         if (!profile) {
           const meta = user.user_metadata || {};
+          // New user — show role chooser modal
+          const chosenRole = await showRoleChooserModal(meta.full_name || meta.name || '');
           await supabase.from('profiles').insert({
             id: user.id, email: user.email,
             full_name: meta.full_name || meta.name || '',
-            avatar_url: meta.avatar_url || null, role: 'attendee',
+            avatar_url: meta.avatar_url || null, role: chosenRole,
           });
         }
       } catch (err) { console.error('Profile sync error:', err); }
+    }
+
+    /** Role Chooser Modal — glassmorphism prompt for new Google users */
+    function showRoleChooserModal(displayName) {
+      return new Promise((resolve) => {
+        const firstName = (displayName || 'there').split(' ')[0];
+        const overlay = document.createElement('div');
+        overlay.id = 'role-chooser-overlay';
+        overlay.innerHTML = `
+          <style>
+            #role-chooser-overlay {
+              position:fixed;inset:0;z-index:99999;
+              background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+              display:flex;align-items:center;justify-content:center;padding:24px;
+              animation:rcFadeIn .4s ease;
+            }
+            @keyframes rcFadeIn { from{opacity:0} to{opacity:1} }
+            @keyframes rcSlideUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+            .rc-box {
+              max-width:440px;width:100%;text-align:center;
+              background:rgba(24,24,27,.75);backdrop-filter:blur(60px) saturate(150%);
+              border:1px solid rgba(5,150,105,.15);border-radius:24px;
+              padding:40px 32px;box-shadow:0 30px 80px rgba(0,0,0,.5);
+              animation:rcSlideUp .5s cubic-bezier(.16,1,.3,1) forwards;
+            }
+            .rc-wave { font-size:2.2rem;margin-bottom:16px;display:block; }
+            .rc-box h2 { font-size:1.35rem;font-weight:700;color:#fff;margin-bottom:8px; }
+            .rc-box p { font-size:.88rem;color:#999;margin-bottom:28px;line-height:1.6; }
+            .rc-roles { display:flex;flex-direction:column;gap:12px; }
+            .rc-role-btn {
+              display:flex;align-items:center;gap:16px;padding:18px 20px;
+              border-radius:16px;border:1.5px solid rgba(255,255,255,.08);
+              background:rgba(255,255,255,.03);cursor:pointer;
+              transition:all .25s cubic-bezier(.16,1,.3,1);text-align:left;
+              color:#fff;font-family:inherit;
+            }
+            .rc-role-btn:hover {
+              border-color:rgba(5,150,105,.4);background:rgba(5,150,105,.08);
+              transform:translateY(-2px);box-shadow:0 8px 24px rgba(5,150,105,.12);
+            }
+            .rc-role-icon {
+              width:48px;height:48px;border-radius:14px;
+              display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+              flex-shrink:0;
+            }
+            .rc-role-icon.attendee { background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2); }
+            .rc-role-icon.organizer { background:rgba(5,150,105,.1);border:1px solid rgba(5,150,105,.2); }
+            .rc-role-title { font-weight:700;font-size:.95rem;margin-bottom:2px; }
+            .rc-role-desc { font-size:.78rem;color:#888;line-height:1.4; }
+            @media(max-width:500px) { .rc-box{padding:32px 20px;} }
+          </style>
+          <div class="rc-box">
+            <span class="rc-wave">👋</span>
+            <h2>Welcome, ${firstName}!</h2>
+            <p>One last step — what would you like to do on Eventsli?</p>
+            <div class="rc-roles">
+              <button class="rc-role-btn" data-role="attendee">
+                <div class="rc-role-icon attendee">🎫</div>
+                <div>
+                  <div class="rc-role-title">Attend Events</div>
+                  <div class="rc-role-desc">Discover events, buy tickets, and get QR code entry</div>
+                </div>
+              </button>
+              <button class="rc-role-btn" data-role="organizer">
+                <div class="rc-role-icon organizer">🎪</div>
+                <div>
+                  <div class="rc-role-title">Host Events</div>
+                  <div class="rc-role-desc">Create events, sell tickets, and manage your audience</div>
+                </div>
+              </button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(overlay);
+
+        overlay.querySelectorAll('.rc-role-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const role = btn.dataset.role;
+            btn.style.borderColor = 'rgba(5,150,105,.6)';
+            btn.style.background = 'rgba(5,150,105,.15)';
+            btn.innerHTML = '<div style="width:100%;text-align:center;color:#059669;font-weight:600;">✓ Selected! Redirecting...</div>';
+            setTimeout(() => { overlay.remove(); resolve(role); }, 600);
+          });
+        });
+      });
     }
 
     // ══════ Helpers ══════
@@ -306,9 +399,11 @@
           if (!inp) return;
           const show = inp.type === 'password';
           inp.type = show ? 'text' : 'password';
-          btn.innerHTML = show
-            ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
-            : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+          // H26 FIX: Toggle visibility via CSS classes instead of innerHTML
+          const eyeOpen = btn.querySelector('.eye-open');
+          const eyeClosed = btn.querySelector('.eye-closed');
+          if (eyeOpen) eyeOpen.style.display = show ? 'none' : '';
+          if (eyeClosed) eyeClosed.style.display = show ? '' : 'none';
         });
       });
     }

@@ -11,9 +11,9 @@ import { setSafeHTML } from './dom.js';
 const TIER_COLORS = [
   '#d4af37', // Gold
   '#8b5cf6', // Purple
-  '#10B981', // Blue
+  '#3B82F6', // Blue
   '#22c55e', // Green
-  '#10B981', // Orange
+  '#F97316', // Orange
   '#ec4899', // Pink
   '#14b8a6', // Teal
   '#ef4444', // Red
@@ -72,7 +72,7 @@ export class SeatingChart {
 
     if (mapErr || !mapData) {
       this._hideLoading();
-      console.log('No venue map found for event - using GA fallback');
+      console.debug('No venue map found for event - using GA fallback');
       return false;
     }
 
@@ -396,13 +396,22 @@ export class SeatingChart {
   }
 
   _applySeatStyle(circle, status, tierColor) {
-    const isSelected = this.selectedSeats.has(circle.getAttribute('data-seat-id'));
+    const seatId = circle.getAttribute('data-seat-id');
+    const d = this.seatData.get(seatId);
+    const hasTier = d && d.tier_id;
+
+    const isSelected = this.selectedSeats.has(seatId);
     const effectiveStatus = isSelected ? 'selected' : status;
     const style = STATUS_STYLES[effectiveStatus] || STATUS_STYLES.available;
 
-    if (effectiveStatus === 'available') {
+    if (!hasTier) {
+      circle.style.fill = 'var(--seat-blocked)';
+      circle.style.opacity = '0.15';
+      circle.style.cursor = 'not-allowed';
+      circle.style.stroke = 'none';
+    } else if (effectiveStatus === 'available') {
       circle.style.fill = tierColor;
-      circle.style.opacity = this.activeTierId && circle.getAttribute('data-tier-color') !== this.tierColorMap.get(this.activeTierId) ? '0.15' : '1';
+      circle.style.opacity = this.activeTierId && d && d.tier_id !== this.activeTierId ? '0.15' : '1';
     } else if (effectiveStatus === 'selected') {
       circle.style.fill = '#ffffff';
       circle.style.opacity = '1';
@@ -413,7 +422,7 @@ export class SeatingChart {
       circle.style.opacity = style.opacity;
       circle.style.stroke = 'none';
     }
-    circle.style.cursor = style.cursor;
+    circle.style.cursor = !hasTier ? 'not-allowed' : style.cursor;
   }
 
   // ====================================
@@ -493,8 +502,8 @@ export class SeatingChart {
       const seatInfo = this.seatData.get(seatId);
       if (!seatInfo) return;
 
-      // Can't select unavailable seats
-      if (seatInfo.status !== 'available') return;
+      // Can't select unavailable or unassigned seats (no tier)
+      if (seatInfo.status !== 'available' || !seatInfo.tier_id) return;
 
       // Tier filter check
       if (this.activeTierId && seatInfo.tier_id !== this.activeTierId) return;
@@ -564,10 +573,10 @@ export class SeatingChart {
       touchHandled = true;
       handleSeatInteraction(circle);
 
-      // Show tooltip briefly on touch
+      // Show tooltip briefly on touch if seat has a tier
       const seatId = circle.getAttribute('data-seat-id');
       const d = this.seatData.get(seatId);
-      if (d) {
+      if (d && d.tier_id) {
         this._showTooltip(circle, d);
         clearTimeout(this._touchTooltipTimer);
         this._touchTooltipTimer = setTimeout(() => this._hideTooltip(), 2000);
@@ -576,14 +585,14 @@ export class SeatingChart {
       setTimeout(() => { touchHandled = false; }, 100);
     }, { passive: false });
 
-    // Hover tooltip (desktop only)
+    // Hover tooltip (desktop only) - only show if seat has a tier
     this.svgEl.addEventListener('mouseover', (e) => {
       if (touchHandled) return;
       const circle = e.target.closest('circle[data-seat-id]');
       if (!circle) return;
       const seatId = circle.getAttribute('data-seat-id');
       const d = this.seatData.get(seatId);
-      if (!d) return;
+      if (!d || !d.tier_id) return;
       this._showTooltip(circle, d);
     });
 
@@ -710,8 +719,9 @@ export class SeatingChart {
     toast.className = 'ev-orphan-toast';
     toast.setAttribute('role', 'alert');
 
+    const escText = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const seatLabels = orphanCheck.orphanSeats
-      .map(s => `<strong>Row ${s.row_label}, Seat ${s.seat_number}</strong>`)
+      .map(s => `<strong>Row ${escText(s.row_label)}, Seat ${escText(s.seat_number)}</strong>`)
       .join(', ');
 
     toast.innerHTML = `

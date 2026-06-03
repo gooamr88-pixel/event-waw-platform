@@ -31,7 +31,8 @@ export function formatCurrency(amount, currency = 'USD') {
     return new Intl.NumberFormat(locale, {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+      // L-formatCurrency FIX: Always show 2 decimals for financial consistency
+      minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(num);
   } catch (_) {

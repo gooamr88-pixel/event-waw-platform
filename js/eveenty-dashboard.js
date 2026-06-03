@@ -10,7 +10,7 @@ import { renderCalendar, setupCalendar, setCalendarEvents } from '../src/lib/das
 import { setupEmailAttendees } from '../src/lib/dashboard-attendees.js';
 import { setupProfilePanel, setupUserDropdown } from '../src/lib/dashboard-profile.js';
 import { renderRevenueBreakdown, initCharts } from '../src/lib/dashboard-analytics.js';
-import { setupPromoPanel, setupApprovalPanel } from '../src/lib/dashboard-vendors.js';
+import { setupPromoPanel } from '../src/lib/dashboard-vendors.js';
 import { loadPromoCodes, setupFinancialPanel, setupPromoForm } from '../src/lib/dashboard-promos.js';
 import { loadPayoutData, setupDarkMode, setupPayoutPanel } from '../src/lib/dashboard-payout.js';
 import { loadNotifications, renderNotifications, timeAgo } from '../src/lib/dashboard-notifications.js';
@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSearch();
   setupSignOut();
 
-  setupApprovalPanel();
+  // setupApprovalPanel removed — Vendor role amputated
   setupPromoPanel();
   setupFinancialPanel();
   setupPayoutPanel();

@@ -5,13 +5,14 @@
    =================================== */
 import { supabase, SUPABASE_FUNCTIONS_URL, supabaseAnonKey } from './supabase.js';
 import { showAlertModal } from './ui-modals.js';
+import { setSafeHTML } from './dom.js';
 
 /**
  * Shows the manual transfer checkout modal.
  * @param {object} opts - { eventId, tierId, quantity, paymentMethod, promoCode, eventTitle }
  */
 export async function showManualCheckoutModal(opts) {
-  const { eventId, tierId, quantity, paymentMethod, promoCode, eventTitle } = opts;
+  const { eventId, tierId, quantity, paymentMethod, promoCode, eventTitle, seatIds } = opts;
   injectStyles();
 
   // Remove any existing modal
@@ -67,8 +68,14 @@ export async function showManualCheckoutModal(opts) {
   document.getElementById('mc-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
+  // P1-6 FIX: Prevent double submission
+  let _submitting = false;
+
   // Submit handler
   document.getElementById('mc-submit').addEventListener('click', async () => {
+    if (_submitting) return;
+    _submitting = true;
+
     const name = document.getElementById('mc-name').value.trim();
     const email = document.getElementById('mc-email').value.trim();
     const phone = document.getElementById('mc-phone').value.trim();
@@ -76,16 +83,26 @@ export async function showManualCheckoutModal(opts) {
 
     if (!name || !email || !phone) {
       showToast('Please fill in all required fields (*).', 'warning');
+      _submitting = false;
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       showToast('Please enter a valid email address.', 'error');
+      _submitting = false;
+      return;
+    }
+
+    // H23 FIX: Validate tier/event IDs exist before sending to server
+    if (!tierId || !eventId) {
+      showToast('Invalid ticket selection. Please try again.', 'error');
+      _submitting = false;
       return;
     }
     // Strict phone validation supporting Egyptian (01XXXXXXXXX) or generic international numbers
     const cleanPhone = phone.replace(/[\s-]/g, '');
     if (!/^(\+?)[0-9]{8,15}$/.test(cleanPhone)) {
       showToast('Please enter a valid phone number (e.g., 01XXXXXXXXX).', 'error');
+      _submitting = false;
       return;
     }
 
@@ -97,12 +114,19 @@ export async function showManualCheckoutModal(opts) {
       // Get session for auth header (if logged in)
       const { data: { session } } = await supabase.auth.getSession();
 
+      const headers = { 'Content-Type': 'application/json' };
+      // Send authenticated session token or fallback to the public anon key for guests.
+      // This satisfies the API Gateway's JWT verification (if enabled) while allowing the
+      // Edge Function to distinguish guest orders by parsing the JWT role or key value.
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      } else {
+        headers['Authorization'] = `Bearer ${supabaseAnonKey}`;
+      }
+
       const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-manual-order`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token || supabaseAnonKey}`,
-        },
+        headers,
         body: JSON.stringify({
           event_id: eventId,
           tier_id: tierId,
@@ -113,6 +137,7 @@ export async function showManualCheckoutModal(opts) {
           buyer_phone: phone,
           buyer_notes: notes || undefined,
           promo_code: promoCode || undefined,
+          seat_ids: seatIds || undefined,
         }),
       });
 
@@ -133,6 +158,7 @@ export async function showManualCheckoutModal(opts) {
       showToast('Checkout Failed: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Continue →';
+      _submitting = false;
     }
   });
 }
@@ -147,7 +173,7 @@ function showTransferInstructions(modal, data) {
   }).format(v || 0);
 
   const body = modal.querySelector('#mc-body');
-  body.innerHTML = `
+  setSafeHTML(body, `
     <div class="mc-step">
       <div class="mc-success-icon">✅</div>
       <h3 class="mc-success-title">Order Created!</h3>
@@ -184,7 +210,7 @@ function showTransferInstructions(modal, data) {
 
       <button class="mc-btn mc-btn-primary" id="mc-confirm-paid">I've Sent the Payment ✓</button>
     </div>
-  `;
+  `);
 
   // Copy button
   document.getElementById('mc-copy')?.addEventListener('click', () => {
@@ -260,9 +286,11 @@ function showToast(message, type = 'success') {
   toast.innerHTML = `
     <div style="display: flex; align-items: center; gap: 12px; pointer-events: auto; cursor: pointer; background: ${bgColor}; border: 1px solid ${borderColor}; color: ${textColor}; padding: 12px 18px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: 0.88rem; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(-20px); opacity: 0;">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255, 255, 255, 0.15); padding: 5px; border-radius: 8px;">${icon}</span>
-      <div style="flex: 1; line-height: 1.4; letter-spacing: -0.01em;">${message}</div>
+      <div style="flex: 1; line-height: 1.4; letter-spacing: -0.01em;" class="mc-toast-msg"></div>
     </div>
   `;
+  // FIX: Use textContent to prevent XSS from server error messages
+  toast.querySelector('.mc-toast-msg').textContent = message;
 
   const toastCard = toast.firstElementChild;
   container.appendChild(toast);

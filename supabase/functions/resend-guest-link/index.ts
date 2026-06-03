@@ -17,13 +17,19 @@ const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') || '';
 const BREVO_SENDER_EMAIL = Deno.env.get('BREVO_SENDER_EMAIL') || 'noreply@eventsli.com';
 const BREVO_SENDER_NAME = 'Eventsli';
 
+// L4 FIX: Mask PII in logs — show first 2 chars + ***@domain
+function maskEmail(e: string): string {
+  const [local, domain] = e.split('@');
+  return (local?.substring(0, 2) || '') + '***@' + (domain || '***');
+}
+
 serve(async (req) => {
   // Handle CORS preflight
   const corsResponse = handleCORS(req);
   if (corsResponse) return corsResponse;
 
   if (req.method !== 'POST') {
-    return errorResponse(405, 'Method not allowed');
+    return errorResponse(405, 'Method not allowed', {}, req);
   }
 
   try {
@@ -32,13 +38,13 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { email } = body;
 
     if (!email || typeof email !== 'string' || !email.includes('@')) {
-      return errorResponse(400, 'Valid email is required');
+      return errorResponse(400, 'Valid email is required', {}, req);
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -46,12 +52,12 @@ serve(async (req) => {
     // ── Rate Limit: 3 resend requests per 10 minutes per IP ──
     const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (!rateLimit(`guest-resend:${clientIP}`, 3, 600_000)) {
-      return errorResponse(429, 'Too many requests. Please wait 10 minutes before trying again.');
+      return errorResponse(429, 'Too many requests. Please wait 10 minutes before trying again.', {}, req);
     }
 
     // Also rate limit per email to prevent abuse
     if (!rateLimit(`guest-resend:${normalizedEmail}`, 2, 600_000)) {
-      return errorResponse(429, 'We already sent a link to this email. Please check your inbox and spam folder.');
+      return errorResponse(429, 'We already sent a link to this email. Please check your inbox and spam folder.', {}, req);
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -80,7 +86,7 @@ serve(async (req) => {
 
     // Always return success to prevent email enumeration
     if (!orders || orders.length === 0) {
-      console.log(`No guest orders found for email: ${normalizedEmail}`);
+      console.log(`No guest orders found for email: ${maskEmail(normalizedEmail)}`);
       return jsonResponse({
         success: true,
         message: 'If tickets exist for this email, you will receive an access link shortly.',
@@ -139,7 +145,7 @@ serve(async (req) => {
         }),
       });
 
-      console.log(`✉️ Guest ticket resend email sent to ${normalizedEmail} (${ticketLinks.length} orders)`);
+      console.log(`✉️ Guest ticket resend email sent to ${maskEmail(normalizedEmail)} (${ticketLinks.length} orders)`);
     }
 
     return jsonResponse({
@@ -149,7 +155,7 @@ serve(async (req) => {
 
   } catch (err) {
     console.error('Resend guest link error:', err);
-    return errorResponse(500, 'Something went wrong. Please try again later.');
+    return errorResponse(500, 'Something went wrong. Please try again later.', {}, req);
   }
 });
 

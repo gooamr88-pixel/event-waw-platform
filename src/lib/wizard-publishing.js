@@ -9,6 +9,9 @@ import { emitDashboardAction } from './dashboard-bus.js';
 import { getTicketsList, getPromoCodesList } from './wizard-tickets.js';
 import { uploadCoverImage, uploadEventFile, getPendingCoverFile } from './wizard-uploads.js';
 import DOMPurify from 'https://esm.sh/dompurify@3.2.4';
+import { setSafeHTML } from './dom.js';
+
+const escapeHTML = (s) => { const d = document.createElement('div'); d.textContent = String(s ?? ''); return d.innerHTML; };
 
 let isPublishing = false;
 
@@ -17,7 +20,7 @@ let isPublishing = false;
  * Uses DOMPurify to strip ALL XSS vectors: script tags, event handlers,
  * javascript: URIs, data: URIs in dangerous contexts, and CSS expressions.
  */
-function sanitizeDescriptionHTML(html) {
+export function sanitizeDescriptionHTML(html) {
   if (!html || !html.trim()) return '';
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
@@ -53,14 +56,14 @@ function showTermsAcceptanceModal(requiredVersion) {
     overlay.setAttribute('aria-modal', 'true');
     overlay.setAttribute('aria-label', 'Platform Terms Acceptance');
 
-    overlay.innerHTML = `
+    setSafeHTML(overlay, `
       <div class="ev-modal" style="max-width:600px; max-height:85vh; display:flex; flex-direction:column;">
         <div class="ev-modal-header" style="flex-shrink:0;">
           <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:44px; height:44px; border-radius:12px; background:linear-gradient(135deg, #ec4899, #8b5cf6); display:flex; align-items:center; justify-content:center; font-size:1.3rem;">📋</div>
             <div>
               <h2 style="margin:0; font-size:1.15rem;">Platform Terms & Conditions</h2>
-              <p style="margin:4px 0 0; font-size:0.8rem; color:var(--ev-text-sec);">Version ${requiredVersion} — Review required before publishing</p>
+              <p style="margin:4px 0 0; font-size:0.8rem; color:var(--ev-text-sec);">Version ${escapeHTML(requiredVersion)} — Review required before publishing</p>
             </div>
           </div>
           <button class="ev-modal-close" id="ev-terms-close">✕</button>
@@ -99,7 +102,7 @@ function showTermsAcceptanceModal(requiredVersion) {
           <label id="ev-terms-checkbox-label" style="display:flex; align-items:flex-start; gap:12px; cursor:pointer; padding:12px 16px; border-radius:10px; border:1px solid var(--ev-border); background:rgba(0,0,0,0.15); margin-bottom:16px; transition:all 0.2s;">
             <input type="checkbox" id="ev-terms-agree" style="width:20px; height:20px; margin-top:2px; accent-color:var(--ev-pink); flex-shrink:0;" />
             <span style="font-size:0.84rem; color:var(--ev-text-primary); line-height:1.5;">
-              I have read and agree to the <strong>Eventsli Merchant Agreement</strong> (Version ${requiredVersion}). I understand that my acceptance is legally binding.
+              I have read and agree to the <strong>Eventsli Merchant Agreement</strong> (Version ${escapeHTML(requiredVersion)}). I understand that my acceptance is legally binding.
             </span>
           </label>
 
@@ -109,7 +112,7 @@ function showTermsAcceptanceModal(requiredVersion) {
           </div>
         </div>
       </div>
-    `;
+    `);
 
     document.body.appendChild(overlay);
 
@@ -242,6 +245,15 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (showEndTimeVal !== 'no' && !endDate) markError('ce-end-date', 'End date is required');
       
       if (listingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
+
+      // P2-13 FIX: End date must be after start date
+      if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+        markError('ce-end-date', 'End date must be after start date');
+      }
+      // P2-14 FIX: Start date must be in the future (for publishing only)
+      if (startDate && new Date(startDate) < new Date()) {
+        markError('ce-start-date', 'Start date must be in the future');
+      }
 
       if (listingType !== 'display_only' && getTicketsList().length === 0) {
         errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });
@@ -537,7 +549,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
             early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
             max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-            currency: t.currency || 'USD',
+            currency: currency || t.currency || 'USD',
             description: t.desc || null,
             min_purchase: t.minPurchase || 1,
             max_purchase: t.maxPurchase || 10,
@@ -554,7 +566,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
             early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
             max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
-            currency: t.currency || 'USD',
+            currency: currency || t.currency || 'USD',
             description: t.desc || null,
             min_purchase: t.minPurchase || 1,
             max_purchase: t.maxPurchase || 10,
@@ -571,17 +583,42 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       const promoCodes = getPromoCodesList();
       if (promoCodes.length > 0) {
         if (ceEditingEventId) {
-          // Delete existing promo codes and recreate
-          await supabase.from('promo_codes').delete().eq('event_id', event.id);
+          // FIX: Upsert by code instead of delete-all to preserve used_count and usage history
+          const { data: existingPromos } = await supabase
+            .from('promo_codes')
+            .select('id, code')
+            .eq('event_id', event.id);
+
+          const uiCodes = new Set(promoCodes.map(p => p.code.toUpperCase()));
+          const existingCodeMap = {};
+          (existingPromos || []).forEach(ep => { existingCodeMap[ep.code.toUpperCase()] = ep.id; });
+
+          // Delete promos removed from the UI
+          const promosToDelete = (existingPromos || []).filter(ep => !uiCodes.has(ep.code.toUpperCase()));
+          if (promosToDelete.length > 0) {
+            await supabase.from('promo_codes').delete().in('id', promosToDelete.map(p => p.id));
+          }
+
+          // Upsert remaining (preserves used_count for existing, creates new ones)
+          const promoPayloads = promoCodes.map(p => ({
+            ...(existingCodeMap[p.code.toUpperCase()] ? { id: existingCodeMap[p.code.toUpperCase()] } : {}),
+            event_id: event.id,
+            code: p.code,
+            discount_type: p.type,
+            discount_value: p.value,
+            max_uses: p.maxUses || null
+          }));
+          await supabase.from('promo_codes').upsert(promoPayloads);
+        } else {
+          const promoPayloads = promoCodes.map(p => ({
+            event_id: event.id,
+            code: p.code,
+            discount_type: p.type,
+            discount_value: p.value,
+            max_uses: p.maxUses || null
+          }));
+          await supabase.from('promo_codes').insert(promoPayloads);
         }
-        const promoPayloads = promoCodes.map(p => ({
-          event_id: event.id,
-          code: p.code,
-          discount_type: p.type,
-          discount_value: p.value,
-          max_uses: p.maxUses || null
-        }));
-        await supabase.from('promo_codes').insert(promoPayloads);
       }
 
       if (!isDraft) {
@@ -593,7 +630,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             if (rpcErr) {
               console.warn('Failed to trigger unconfigured payments email:', rpcErr.message);
             } else {
-              console.log('Unconfigured payments email triggered successfully:', rpcRes);
+              console.debug('Unconfigured payments email triggered successfully');
             }
           } catch (rpcCatch) {
             console.warn('Failed to call send_unconfigured_payments_email RPC:', rpcCatch);
@@ -661,7 +698,11 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         body: JSON.stringify({ action: 'check-status' }),
       });
 
-      if (!res.ok) return;
+      if (!res.ok) {
+        // H-16 FIX: Show error toast instead of silently returning
+        showToast('⚠️ Could not check Stripe status. Please try again later.', 'error');
+        return;
+      }
       const data = await res.json();
 
       if (data.onboarding_complete) {
@@ -805,10 +846,11 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         vodafone_cash: 'Vodafone Cash', instapay: 'InstaPay',
         bank_transfer: 'Bank Transfer', fawry: 'Fawry', other: 'Other'
       };
-      const manualSummary = configuredManual.map(pm => methodLabels[pm.method] || pm.method).join(', ');
+      // M11 FIX: Escape method names to prevent stored XSS via JSONB
+      const manualSummary = escapeHTML(configuredManual.map(pm => methodLabels[pm.method] || pm.method).join(', '));
 
       section.style.display = '';
-      container.innerHTML = `
+      setSafeHTML(container, `
         <label class="ce-pref-card ce-pref-selected" style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:14px;border:2px solid var(--ev-pink,#ec4899);background:rgba(236,72,153,0.04);cursor:pointer;transition:all .2s">
           <input type="radio" name="ce-payment-pref" value="both" checked style="margin-top:3px;accent-color:var(--ev-pink,#ec4899);width:18px;height:18px;flex-shrink:0">
           <div style="flex:1;min-width:0">
@@ -840,7 +882,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             <p style="margin:0;font-size:.8rem;color:var(--ev-text-sec);line-height:1.5">Buyers pay via ${manualSummary}. Requires your manual approval.</p>
           </div>
         </label>
-      `;
+      `);
 
       if (note) note.textContent = 'You can change this for each event. Your configured methods are managed in Profile → Payment Methods.';
 

@@ -34,6 +34,7 @@ export function isAutocompleteInitialized() { return googleAutocompleteInitializ
 export function resetMapState() {
   googleMapInstance = null;
   googleMapMarker = null;
+  googleMapsRetries = 0;
 }
 
 /**
@@ -43,6 +44,9 @@ export function resetMapState() {
 let googleMapsRetries = 0;
 export async function initGooglePlacesAutocomplete(deps) {
   if (googleAutocompleteInitialized) return;
+
+  // Trigger lazy loading of Google Maps API (defined in dashboard.html)
+  if (typeof window.loadGoogleMaps === 'function') window.loadGoogleMaps();
 
   // Guard: wait for Google Maps API to load
   if (typeof google === 'undefined' || !google.maps || !google.maps.importLibrary) {
@@ -93,8 +97,12 @@ export async function initGooglePlacesAutocomplete(deps) {
       const setSelect = (id, val) => {
         const el = document.getElementById(id);
         if (!el || !val) return;
-        const opt = Array.from(el.options).find(o => o.value === val);
-        if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
+        if (el.tomselect) {
+          el.tomselect.setValue(val);
+        } else {
+          const opt = Array.from(el.options).find(o => o.value === val);
+          if (opt) { el.value = val; el.dispatchEvent(new Event('change')); }
+        }
       };
 
       // Venue name (displayName can be a string or an object)
@@ -181,7 +189,7 @@ export async function initGooglePlacesAutocomplete(deps) {
     });
 
     googleAutocompleteInitialized = true;
-    console.log('Google Places (PlaceAutocompleteElement) initialized');
+    console.debug('Google Places (PlaceAutocompleteElement) initialized');
   } catch (err) {
     console.warn('Google Places init failed:', err);
     googleAutocompleteInitialized = false;

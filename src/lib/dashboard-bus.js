@@ -26,7 +26,12 @@ export async function emitDashboardAction(action, ...args) {
   const handlers = _handlers.get(action);
   if (handlers && handlers.size > 0) {
     const promises = Array.from(handlers).map(h => h(...args));
-    return await Promise.all(promises);
+    // L FIX: Use allSettled so one handler failure doesn't lose all results
+    const results = await Promise.allSettled(promises);
+    results.forEach((r, i) => {
+      if (r.status === 'rejected') console.error(`[dashboard-bus] Handler ${i} for "${action}" failed:`, r.reason);
+    });
+    return results.filter(r => r.status === 'fulfilled').map(r => r.value);
   }
   console.warn(`[dashboard-bus] No handler for action: ${action}`);
 }

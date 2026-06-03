@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Dashboard — Eventsli</title>
+  <meta name="description" content="Your personal Eventsli dashboard — view your tickets, upcoming events, and order history." />
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="stylesheet" href="css/bridge.css" />
+  <link rel="stylesheet" href="css/motion.css" />
+  <link rel="stylesheet" href="css/polish.css" />
+  <link rel="stylesheet" href="css/eveenty-dashboard.css?v=1778266133914" />
+  <link rel="stylesheet" href="css/mobile-ios.css?v=1778308900" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#059669" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="icon" type="image/png" href="images/favicon-v2.png" />
+  <script src="js/csp.js"></script>
+  <link rel="stylesheet" href="css/attendee-dashboard.css" />
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) {}
+    })();
+  </script>
+</head>
+<body class="ev-dash">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- ══════ ANTI-FOUC GUARD OVERLAY ══════ -->
+  <div id="auth-guard-overlay">
+    <div class="guard-overlay">
+      <div class="guard-spinner"></div>
+      <p>Verifying access...</p>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="ev-toast-container" id="toast-container" aria-live="polite" role="status"></div>
+
+  <!-- Mobile Toggle -->
+  <button class="ev-mobile-toggle" id="sidebar-toggle" aria-label="Toggle navigation menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="ev-sidebar-overlay" id="sidebar-overlay"></div>
+
+  <!-- ══════ SIDEBAR ══════ -->
+  <aside class="ev-sidebar" id="sidebar" role="navigation" aria-label="Dashboard navigation">
+    <div class="ev-sidebar-brand">
+      <h1 style="color: #059669;">Events<span>li</span></h1>
+      <p>My Dashboard</p>
+    </div>
+    <nav class="ev-sidebar-nav">
+      <button class="ev-nav-item active" data-panel="overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </button>
+      <button class="ev-nav-item" data-panel="my-events">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        My Events
+      </button>
+      <button class="ev-nav-item" data-panel="tickets">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 013-3h14a3 3 0 013 3v0a3 3 0 01-3 3 3 3 0 013 3v0a3 3 0 01-3 3H5a3 3 0 01-3-3v0a3 3 0 013-3 3 3 0 01-3-3z"/><path d="M13 6v4m0 4v4"/></svg>
+        My Tickets
+      </button>
+      <button class="ev-nav-item" data-panel="orders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        Orders
+      </button>
+      <div style="height:1px;background:rgba(255,255,255,.08);margin:10px 14px"></div>
+      <button class="ev-nav-item" data-panel="profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        My Profile
+      </button>
+    </nav>
+
+    <!-- Upgrade CTA -->
+    <div style="padding: 16px; margin-top: auto;">
+      <a href="#" class="ev-btn ev-btn-primary" id="upgrade-cta" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; border-radius:12px; font-size:.82rem; font-weight:600; text-decoration:none; background:linear-gradient(135deg, #059669, #10b981); color:#fff; border:none; cursor:pointer; transition:all .3s;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+        Become an Organizer
+      </a>
+    </div>
+
+    <div class="ev-sidebar-footer">
+      <a href="index.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Back to Home
+      </a>
+      <button id="sign-out-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ══════ HEADER ══════ -->
+  <header class="ev-header">
+    <div class="ev-header-left">
+      <h2 id="header-title">Dashboard</h2>
+    </div>
+    <div class="ev-header-right">
+      <button class="ev-dark-toggle" id="theme-toggle-btn" title="Toggle theme">
+        <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <div class="ev-user-wrap" id="user-wrap">
+        <div class="ev-user-info" id="user-info">
+          <div class="ev-user-avatar" id="user-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="ev-user-meta">
+            <div class="ev-user-name" id="user-name">Loading...</div>
+            <div class="ev-user-email" id="user-role">Attendee</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════ MAIN CONTENT ══════ -->
+  <main class="ev-main" id="main-content">
+
+    <!-- ════ PANEL: OVERVIEW (default) ════ -->
+    <div class="ev-panel active" id="panel-overview">
+      <!-- Welcome Banner -->
+      <div class="ev-welcome" id="welcome-banner">
+        <div class="ev-welcome-text">
+          <h2>Welcome back, <span id="welcome-name">there</span>! 👋</h2>
+          <p>Here's what's happening with your events and tickets.</p>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="att-quick-actions">
+        <a href="events.html" class="att-action-card">
+          <div class="att-action-icon blue">🔍</div>
+          <span class="att-action-label">Browse Events</span>
+        </a>
+        <a href="my-tickets.html" class="att-action-card">
+          <div class="att-action-icon green">🎫</div>
+          <span class="att-action-label">My Tickets</span>
+        </a>
+        <a href="#" class="att-action-card" id="action-orders">
+          <div class="att-action-icon amber">📋</div>
+          <span class="att-action-label">Order History</span>
+        </a>
+        <a href="#" class="att-action-card" id="action-profile">
+          <div class="att-action-icon purple">👤</div>
+          <span class="att-action-label">Edit Profile</span>
+        </a>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="ev-stat-grid" style="margin-bottom:24px">
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon tickets">🎫</div>
+          </div>
+          <div class="att-stat-value" id="stat-total-tickets">0</div>
+          <div class="att-stat-label">Total Tickets</div>
+        </div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon upcoming">📅</div>
+          </div>
+          <div class="att-stat-value" id="stat-upcoming">0</div>
+          <div class="att-stat-label">Upcoming Events</div>
+        </div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon past">✅</div>
+          </div>
+          <div class="att-stat-value" id="stat-past">0</div>
+          <div class="att-stat-label">Past Events</div>
+        </div>
+        <div class="att-stat-card">
+          <div class="att-stat-top">
+            <div class="att-stat-icon spent">💰</div>
+          </div>
+          <div class="att-stat-value" id="stat-spent">$0</div>
+          <div class="att-stat-label">Total Spent</div>
+        </div>
+      </div>
+
+      <!-- Upcoming Events -->
+      <div class="att-section-header">
+        <h3 class="att-section-title">🎪 Upcoming Events</h3>
+        <a href="events.html" class="att-section-link">Browse All →</a>
+      </div>
+      <div id="upcoming-events-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:24px;">
+        <div class="att-empty-state" style="grid-column:1/-1;">
+          <p style="color:var(--ev-text-muted);">Loading your upcoming events...</p>
+        </div>
+      </div>
+
+      <!-- Recent Tickets -->
+      <div class="att-section-header">
+        <h3 class="att-section-title">🎫 Recent Tickets</h3>
+        <a href="my-tickets.html" class="att-section-link">View All →</a>
+      </div>
+      <div id="recent-tickets-list" style="display:flex; flex-direction:column; gap:12px;">
+        <p style="color:var(--ev-text-muted); text-align:center; padding:24px;">Loading tickets...</p>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: MY EVENTS ════ -->
+    <div class="ev-panel" id="panel-my-events">
+      <div class="att-section-header">
+        <h3 class="att-section-title">📅 Events I'm Attending</h3>
+        <a href="events.html" class="att-section-link">Find More →</a>
+      </div>
+      <div id="all-events-grid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px;">
+        <div class="att-empty-state" style="grid-column:1/-1;">
+          <p style="color:var(--ev-text-muted);">Loading events...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: TICKETS ════ -->
+    <div class="ev-panel" id="panel-tickets">
+      <div class="att-section-header">
+        <h3 class="att-section-title">🎫 All My Tickets</h3>
+        <a href="my-tickets.html" class="att-section-link">View QR Codes →</a>
+      </div>
+      <div id="all-tickets-list" style="display:flex; flex-direction:column; gap:12px;">
+        <p style="color:var(--ev-text-muted); text-align:center; padding:24px;">Loading tickets...</p>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: ORDERS ════ -->
+    <div class="ev-panel" id="panel-orders">
+      <div class="att-section-header">
+        <h3 class="att-section-title">📋 Order History</h3>
+      </div>
+      <div class="ev-card">
+        <div class="ev-table-wrap">
+          <table class="ev-table">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Event</th>
+                <th scope="col">Tickets</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Status</th>
+                <th scope="col">Date</th>
+              </tr>
+            </thead>
+            <tbody id="orders-tbody">
+              <tr><td colspan="6" class="ev-table-empty">Loading orders...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PANEL: PROFILE ════ -->
+    <div class="ev-panel" id="panel-profile">
+      <div class="att-section-header">
+        <h3 class="att-section-title">👤 My Profile</h3>
+      </div>
+      <div class="ev-card att-profile-card">
+        <div class="att-profile-header">
+          <div class="att-profile-avatar-wrap">
+            <div class="att-profile-avatar" id="profile-avatar-lg">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="att-profile-header-info">
+              <h3 id="profile-display-name">Your Name</h3>
+              <p id="profile-display-email">your@email.com</p>
+            </div>
+          </div>
+        </div>
+        <div class="att-profile-body">
+          <form id="profile-form">
+            <div class="att-profile-field">
+              <label for="profile-name">Full Name</label>
+              <input type="text" id="profile-name" placeholder="Enter your full name" />
+            </div>
+            <div class="att-profile-field">
+              <label for="profile-email">Email Address</label>
+              <input type="email" id="profile-email" placeholder="your@email.com" disabled />
+            </div>
+            <div class="att-profile-field">
+              <label for="profile-phone">Phone Number</label>
+              <input type="tel" id="profile-phone" placeholder="+1 234 567 8900" />
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:8px;">
+              <button type="submit" class="att-empty-btn" id="profile-save" style="padding:10px 28px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Changes
+              </button>
+            </div>
+            <div id="profile-msg" style="margin-top:12px;font-size:.85rem;display:none;text-align:center;padding:10px;border-radius:10px;"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script type="module" src="js/attendee-dashboard.js"></script>
+</body>
+</html>

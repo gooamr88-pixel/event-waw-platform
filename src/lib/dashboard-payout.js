@@ -26,6 +26,7 @@ export function setupPayoutPanel() {
 
       if (!payoutData.bank_name || !payoutData.account_holder || !payoutData.account_number) {
         showToast('Please fill all required fields', 'error');
+        if (btn) { btn.disabled = false; btn.textContent = 'Save Payout Details'; }
         return;
       }
 

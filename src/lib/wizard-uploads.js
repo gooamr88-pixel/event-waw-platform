@@ -72,6 +72,8 @@ export async function uploadCoverImage(eventId) {
  */
 export async function uploadEventFile(eventId, file, label) {
   if (!file) return null;
+  // M-fe-1 FIX: Enforce 5MB file size limit for gallery/sponsor uploads
+  if (file.size > 5 * 1024 * 1024) { showToast('File must be under 5MB', 'error'); return null; }
   try {
     const ext = file.name.split('.').pop();
     const path = `events/${eventId}/${label}.${ext}`;

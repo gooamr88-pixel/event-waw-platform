@@ -2,7 +2,7 @@
 -- EVENTSLI — FULL DATABASE PURGE (Preserve Super Admin)
 --
 -- Preserves: gooamr88@gmail.com (auth.users + profiles)
--- Deletes:   ALL other data across every table
+-- Deletes:   ALL other data across every table in correct FK order
 --
 -- Run in: Supabase Dashboard → SQL Editor → New Query → Run
 -- ═══════════════════════════════════════════════════════════════
@@ -23,116 +23,91 @@ END $admin_check$;
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 1: LEAF TABLES (no dependents)
+-- LAYER 1: LEAF / DEDUPLICATION TABLES
 -- ════════════════════════════════════════════════════════════
 
--- Webhook failure logs
 DELETE FROM webhook_failures;
 
--- Login OTPs (except admin's)
 DELETE FROM login_otps
 WHERE user_id != (SELECT id FROM auth.users WHERE email = 'gooamr88@gmail.com');
 
--- Storage objects (ticket PDFs, event covers)
--- ⚠️ Cannot delete via SQL — Supabase blocks it.
--- Clear manually: Dashboard → Storage → ticket-pdfs → Select All → Delete
--- Clear manually: Dashboard → Storage → event-covers → Select All → Delete
+-- Scans (reference tickets)
+DO $$ BEGIN DELETE FROM scans; EXCEPTION WHEN undefined_table THEN NULL; END $$;
+
+-- Email logs (reference events, orders, tickets)
+DO $$ BEGIN DELETE FROM email_logs; EXCEPTION WHEN undefined_table THEN NULL; END $$;
+
+-- Commission settlements and debt
+DO $$ BEGIN DELETE FROM commission_settlements; EXCEPTION WHEN undefined_table THEN NULL; END $$;
+DO $$ BEGIN DELETE FROM commission_debt; EXCEPTION WHEN undefined_table THEN NULL; END $$;
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 2: TICKETS + PAYMENTS (depend on orders)
+-- LAYER 2: RESOLVING CIRCULAR REFERENCES & FK DELETIONS
 -- ════════════════════════════════════════════════════════════
 
--- All tickets (no admin exception — admin doesn't buy tickets)
+-- Break foreign key reference from orders to manual_transfer_orders
+DO $$ 
+BEGIN 
+  UPDATE orders SET manual_transfer_order_id = NULL; 
+EXCEPTION 
+  WHEN undefined_column OR undefined_table THEN NULL; 
+END $$;
+
+-- Tickets (reference orders, ticket_tiers, events)
 DELETE FROM tickets;
 
--- All payment records
+-- Payments (reference orders)
 DELETE FROM payments;
 
-
--- ════════════════════════════════════════════════════════════
--- LAYER 3: ORDERS + PAYOUTS (depend on events/organizers)
--- ════════════════════════════════════════════════════════════
-
+-- Orders (reference events, profiles)
 DELETE FROM orders;
-DELETE FROM payouts;
 
+-- Manual transfer orders (reference reservations, events, profiles)
+DO $$ BEGIN DELETE FROM manual_transfer_orders; EXCEPTION WHEN undefined_table THEN NULL; END $$;
 
--- ════════════════════════════════════════════════════════════
--- LAYER 4: RESERVATIONS (depend on ticket_tiers + profiles)
--- ════════════════════════════════════════════════════════════
-
+-- Reservations (reference ticket_tiers, profiles, events)
 DELETE FROM reservations;
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 5: SEATING (depend on ticket_tiers)
+-- LAYER 3: SEATING & PROMO CODES
 -- ════════════════════════════════════════════════════════════
 
--- These tables may not exist if migration-v8 wasn't run.
--- Wrapped in exception handlers for safety.
 DO $$ BEGIN DELETE FROM seats; EXCEPTION WHEN undefined_table THEN NULL; END $$;
 DO $$ BEGIN DELETE FROM sections; EXCEPTION WHEN undefined_table THEN NULL; END $$;
 DO $$ BEGIN DELETE FROM seating_charts; EXCEPTION WHEN undefined_table THEN NULL; END $$;
-
-
--- ════════════════════════════════════════════════════════════
--- LAYER 6: PROMO CODES (depend on events)
--- ════════════════════════════════════════════════════════════
 
 DO $$ BEGIN DELETE FROM promo_codes; EXCEPTION WHEN undefined_table THEN NULL; END $$;
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 7: TICKET TIERS (depend on events)
+-- LAYER 4: TICKET TIERS & EVENTS
 -- ════════════════════════════════════════════════════════════
 
 DELETE FROM ticket_tiers;
-
-
--- ════════════════════════════════════════════════════════════
--- LAYER 8: EVENTS (depend on profiles/organizer_id)
--- ════════════════════════════════════════════════════════════
 
 DELETE FROM events;
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 9: ORGANIZERS (depend on profiles)
+-- LAYER 5: ORGANIZERS, TERMS, GATE TEAM
 -- ════════════════════════════════════════════════════════════
 
--- Keep admin's organizer row if one exists
 DELETE FROM organizers
 WHERE user_id != (SELECT id FROM auth.users WHERE email = 'gooamr88@gmail.com');
 
-
--- ════════════════════════════════════════════════════════════
--- LAYER 10: TERMS VERSIONS (standalone reference table)
--- ════════════════════════════════════════════════════════════
-
 DO $$ BEGIN DELETE FROM terms_versions; EXCEPTION WHEN undefined_table THEN NULL; END $$;
-
-
--- ════════════════════════════════════════════════════════════
--- LAYER 11: GATE TEAM MEMBERS (depend on events + profiles)
--- ════════════════════════════════════════════════════════════
 
 DO $$ BEGIN DELETE FROM gate_team; EXCEPTION WHEN undefined_table THEN NULL; END $$;
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 12: PROFILES (depend on auth.users)
--- Keep ONLY the super admin profile
+-- LAYER 6: PROFILES & SUPABASE AUTH (Preserves Admin Only)
 -- ════════════════════════════════════════════════════════════
 
 DELETE FROM profiles
 WHERE id != (SELECT id FROM auth.users WHERE email = 'gooamr88@gmail.com');
-
-
--- ════════════════════════════════════════════════════════════
--- LAYER 13: AUTH TABLES (Supabase internal)
--- Keep ONLY the super admin
--- ════════════════════════════════════════════════════════════
 
 -- auth.identities (login providers)
 DELETE FROM auth.identities
@@ -162,15 +137,11 @@ WHERE email != 'gooamr88@gmail.com';
 
 
 -- ════════════════════════════════════════════════════════════
--- LAYER 14: RESET COUNTERS
--- UUID primary keys don't use sequences, but sold_count
--- and other counters on remaining rows need resetting.
+-- LAYER 7: RESET COUNTERS
 -- ════════════════════════════════════════════════════════════
 
--- Reset ticket_tiers sold_count (all tiers are deleted, but just in case)
 UPDATE ticket_tiers SET sold_count = 0 WHERE sold_count > 0;
 
--- Reset admin profile if needed
 UPDATE profiles
 SET otp_verified_at = NULL, stripe_customer_id = NULL
 WHERE id = (SELECT id FROM auth.users WHERE email = 'gooamr88@gmail.com');
@@ -180,7 +151,6 @@ WHERE id = (SELECT id FROM auth.users WHERE email = 'gooamr88@gmail.com');
 -- VERIFICATION QUERIES (run after COMMIT to confirm)
 -- ════════════════════════════════════════════════════════════
 
--- Check: only 1 user remains
 DO $verify$
 DECLARE
   v_user_count INT;
@@ -209,6 +179,5 @@ BEGIN
     RAISE EXCEPTION 'VERIFICATION FAILED: Expected 1 user, found %', v_user_count;
   END IF;
 END $verify$;
-
 
 COMMIT;

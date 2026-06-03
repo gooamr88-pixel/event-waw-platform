@@ -149,7 +149,7 @@ async function loadProfileData() {
       // Load manual payment methods
       const pmList = document.getElementById('manual-payment-methods-list');
       if (pmList && Array.isArray(org.manual_payment_methods)) {
-        pmList.innerHTML = '';
+        pmList.textContent = ''; // H25 FIX: Use textContent to clear (avoids HTML parser)
         org.manual_payment_methods.forEach(pm => {
           addPaymentMethodRow(pmList, pm.method || '', pm.destination || '');
         });

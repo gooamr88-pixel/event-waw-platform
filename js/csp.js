@@ -38,7 +38,19 @@
     // (see src/lib/dom.js, src/lib/utils.js) to prevent injection.
     //
     // TODO (Phase 3): Migrate inline scripts → external files, add nonce-based
-    // CSP, remove 'unsafe-inline', then consider adding 'strict-dynamic'.
+    // CSP, and remove 'unsafe-inline' entirely.
+    //
+    // NOTE: 'strict-dynamic' was previously included here but has been REMOVED.
+    // On a static HTML site (no server-side nonce generation), 'strict-dynamic'
+    // causes modern browsers to IGNORE both 'unsafe-inline' and all host-based
+    // allowlists, effectively blocking all scripts. It should only be re-added
+    // after migrating to a server-rendered setup with per-request nonces.
+    //
+    // MIGRATION PATH:
+    //   1. ✅ Remove 'strict-dynamic' (it broke inline + host-allowed scripts)
+    //   2. Move all inline <script> tags to external .js files
+    //   3. Add nonce-based CSP (generate nonce server-side)
+    //   4. Re-add 'strict-dynamic' + remove 'unsafe-inline' once nonced
     // ──────────────────────────────────────────────────────────────────
     "script-src 'self' 'unsafe-inline' https://js.stripe.com https://static.cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net https://maps.googleapis.com https://maps.google.com https://maps.googleusercontent.com https://maps.gstatic.com",
     
@@ -49,7 +61,7 @@
     "font-src 'self' https://fonts.gstatic.com",
     
     // Images: self + supabase storage + data URIs (for QR codes) + Google Maps
-    `img-src 'self' ${supabaseUrl} data: blob: https://api.qrserver.com https://ui-avatars.com https://*.tile.openstreetmap.org https://maps.googleapis.com https://maps.gstatic.com https://*.ggpht.com https://lh3.googleusercontent.com https://streetviewpixels-pa.googleapis.com`,
+    `img-src 'self' ${supabaseUrl} data: blob: https://api.qrserver.com https://ui-avatars.com https://*.tile.openstreetmap.org https://maps.googleapis.com https://maps.gstatic.com https://*.ggpht.com https://lh3.googleusercontent.com https://streetviewpixels-pa.googleapis.com https://cdn.jsdelivr.net`,
     
     // Connect: API calls to Supabase + Stripe + Brevo + Cloudflare + esm.sh + Google Maps
     `connect-src 'self' ${supabaseUrl} wss://*.supabase.co https://api.stripe.com https://api.brevo.com https://cloudflareinsights.com https://esm.sh https://cdn.jsdelivr.net https://*.tile.openstreetmap.org https://ipapi.co https://www.cloudflare.com https://maps.googleapis.com https://places.googleapis.com`,

@@ -3,6 +3,8 @@
   "short_name": "Eventsli",
   "description": "Discover & Create Events Effortlessly — Book tickets for concerts, festivals, exhibitions, sports, and conferences.",
   "start_url": "/index.html",
+  "id": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#059669",
@@ -12,7 +14,13 @@
       "src": "images/favicon-v2.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "images/favicon-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "images/logo.png",

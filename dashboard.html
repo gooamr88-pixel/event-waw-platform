@@ -16,7 +16,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="icon" type="image/png" href="images/favicon-v2.png" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" />
+  <script src="js/csp.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" crossorigin="anonymous" />
   <style>
     .ts-control { padding: 11px 16px; font-size: .86rem; border: 1px solid var(--ev-border); border-radius: 10px; background: var(--ev-bg); color: var(--ev-text); font-family: inherit; min-height: 44px; display: flex; align-items: center; transition: all .2s; }
     .ts-control.focus { border-color: var(--ev-yellow); box-shadow: 0 0 0 3px rgba(245,197,24,.1); background: var(--ev-white); }
@@ -31,10 +32,38 @@
     body.ev-dash[data-theme="dark"] .ts-dropdown .optgroup-header { background: rgba(255,255,255,0.05); }
     .ts-control > input { color: var(--ev-text) !important; font-family: inherit; }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js" crossorigin="anonymous"></script>
   <!-- Google Maps Places API (New) -->
+  <!--
+    ⚠️  SECURITY: This API key is visible in client-side source code.
+    It MUST have HTTP referrer restrictions configured in the Google Cloud Console
+    to prevent unauthorized usage. Restrict to your production domain(s):
+      - https://eventsli.com/*
+      - https://www.eventsli.com/*
+      - http://localhost:*/* (for development only)
+
+    TODO: Configure API key restrictions in Google Cloud Console:
+    https://console.cloud.google.com/apis/credentials
+  -->
   <script>
-    (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:"AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4",v:"weekly"});
+    // Lazy-load Google Maps API — only initializes when loadGoogleMaps() is called
+    // (e.g., when the venue/map section of the create-event form is accessed)
+    window.__googleMapsLoaded = false;
+    window.loadGoogleMaps = function() {
+      if (window.__googleMapsLoaded) return Promise.resolve();
+      window.__googleMapsLoaded = true;
+      return new Promise(function(resolve, reject) {
+        (g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;a.defer=true;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:"AIzaSyDDM_2NLmIH3acVqZgKX6lD21YNh01a4K4",v:"weekly"});
+        // Resolve when the API is ready
+        var checkReady = setInterval(function() {
+          if (window.google && window.google.maps && window.google.maps.importLibrary) {
+            clearInterval(checkReady);
+            resolve();
+          }
+        }, 100);
+        setTimeout(function() { clearInterval(checkReady); resolve(); }, 10000);
+      });
+    };
   </script>
   <script>
     (function() {
@@ -49,6 +78,7 @@
   </script>
 </head>
 <body class="ev-dash">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
 
   <!-- ══════ ANTI-FOUC GUARD OVERLAY ══════ -->
   <div id="auth-guard-overlay">
@@ -83,11 +113,7 @@
         Tickets
         <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <button class="ev-nav-item" data-panel="approval">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
-        Approval
-        <svg class="ev-nav-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
-      </button>
+
       <button class="ev-nav-item" data-panel="analytics">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
         Analytics
@@ -203,7 +229,7 @@
   </header>
 
   <!-- ══════ MAIN CONTENT ══════ -->
-  <main class="ev-main">
+  <main class="ev-main" id="main-content">
 
     <!-- ════ PANEL: EVENTS ════ -->
     <div class="ev-panel active" id="panel-events">
@@ -257,7 +283,7 @@
         <div class="ev-card-header">
           <div class="ev-search-bar">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-            <input type="text" id="ev-search" placeholder="Search events by name..." />
+            <input type="text" id="ev-search" placeholder="Search events by name..." aria-label="Search events by name" />
           </div>
           <button class="ev-payout-btn" id="payout-btn">💰 Revenue</button>
         </div>
@@ -265,8 +291,8 @@
           <table class="ev-table" id="events-table">
             <thead>
               <tr>
-                <th>#</th><th>Event</th><th>Tickets</th><th>Created</th>
-                <th>Date</th><th>Revenue</th><th>Status</th><th>Actions</th>
+                <th scope="col">#</th><th scope="col">Event</th><th scope="col">Tickets</th><th scope="col">Created</th>
+                <th scope="col">Date</th><th scope="col">Revenue</th><th scope="col">Status</th><th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody id="events-tbody">
@@ -286,7 +312,7 @@
     <div class="ev-panel" id="panel-tickets">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;flex-wrap:wrap;gap:12px">
         <h2 style="font-size:1.15rem;font-weight:700;margin:0">🎫 Ticket Management</h2>
-        <div class="ev-search-bar" style="max-width:280px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="ticket-search-input" placeholder="Search by name, email, order, seat…" /></div>
+        <div class="ev-search-bar" style="max-width:280px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="ticket-search-input" placeholder="Search by name, email, order, seat…" aria-label="Search tickets" /></div>
       </div>
       <div class="ev-stat-grid" style="margin-bottom:18px" id="ticket-stats-grid">
         <div class="ev-stat-card"><div class="ev-stat-icon orange">🎫</div><div><div class="ev-stat-value" id="tkt-stat-sold">0</div><div class="ev-stat-label">Tickets Sold</div></div></div>
@@ -307,7 +333,7 @@
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Attendee</th><th>Email</th><th>Tier</th><th>Seat</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <thead><tr><th scope="col">#</th><th scope="col">Attendee</th><th scope="col">Email</th><th scope="col">Tier</th><th scope="col">Seat</th><th scope="col">Status</th><th scope="col">Date</th><th scope="col">Actions</th></tr></thead>
             <tbody id="tickets-tbody">
               <tr><td colspan="7" class="ev-table-empty">Select an event to view tickets</td></tr>
             </tbody>
@@ -316,34 +342,7 @@
       </div>
     </div>
 
-    <!-- ════ PANEL: APPROVAL ════ -->
-    <div class="ev-panel" id="panel-approval">
-      <div class="ev-breadcrumb"><strong>Requests</strong> <span>›</span> <span>Vendor requests</span></div>
-      <div class="ev-tabs">
-        <button class="ev-tab active" data-approval-tab="pending">Pending</button>
-        <button class="ev-tab" data-approval-tab="accepted">Accepted</button>
-        <button class="ev-tab" data-approval-tab="rejected">Rejected</button>
-      </div>
-      <div class="ev-card">
-        <div class="ev-card-header">
-          <div class="ev-event-selector">
-            <label>Event:</label>
-            <select class="ev-filter-select" id="approval-event-select"><option value="">All Events</option></select>
-          </div>
-          <div class="ev-export-group">
-            <button class="ev-btn-icon" title="Export CSV"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
-          </div>
-        </div>
-        <div class="ev-table-wrap">
-          <table class="ev-table">
-            <thead><tr><th>#</th><th>Vendor</th><th>Email</th><th>Type</th><th>Name</th><th>Category</th><th>Price</th><th>Date</th><th>Status</th></tr></thead>
-            <tbody id="approval-tbody">
-              <tr><td colspan="9" class="ev-table-empty">No pending requests</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+
 
     <!-- ════ PANEL: ANALYTICS ════ -->
     <div class="ev-panel" id="panel-analytics">
@@ -371,13 +370,13 @@
         <div class="ev-card-header">
           <span class="ev-card-title">🏷️ Promo Codes</span>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <div class="ev-search-bar" style="max-width:240px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="promo-search" placeholder="Search promo codes…" /></div>
+            <div class="ev-search-bar" style="max-width:240px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><input type="text" id="promo-search" placeholder="Search promo codes…" aria-label="Search promo codes" /></div>
             <button class="ev-btn ev-btn-primary" id="new-promo-btn">+ New Promo</button>
           </div>
         </div>
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Code</th><th>Discount</th><th>Uses</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th scope="col">#</th><th scope="col">Code</th><th scope="col">Discount</th><th scope="col">Uses</th><th scope="col">Expires</th><th scope="col">Status</th><th scope="col">Actions</th></tr></thead>
             <tbody id="promo-tbody">
               <tr><td colspan="7" class="ev-table-empty">
                 <div style="font-size:2.5rem;margin-bottom:12px">🏷️</div>
@@ -449,7 +448,7 @@
       <div class="ev-card">
         <div class="ev-table-wrap">
           <table class="ev-table">
-            <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Event</th><th>Status</th><th>Added</th><th>Actions</th></tr></thead>
+            <thead><tr><th scope="col">#</th><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Event</th><th scope="col">Status</th><th scope="col">Added</th><th scope="col">Actions</th></tr></thead>
             <tbody id="gate-team-tbody">
               <tr><td colspan="7" class="ev-table-empty">
                 <div style="font-size:2.5rem;margin-bottom:12px">👥</div>
@@ -647,12 +646,12 @@
           <table class="ev-table" id="archives-table">
             <thead>
               <tr>
-                <th>#</th>
-                <th>Event</th>
-                <th>Tickets Sold</th>
-                <th>Event Date</th>
-                <th>Revenue</th>
-                <th>Actions</th>
+                <th scope="col">#</th>
+                <th scope="col">Event</th>
+                <th scope="col">Tickets Sold</th>
+                <th scope="col">Event Date</th>
+                <th scope="col">Revenue</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody id="archives-tbody">
@@ -1737,7 +1736,7 @@
               <h4 style="font-size:.92rem;margin-bottom:14px;display:flex;align-items:center;gap:6px">🎫 Tickets types</h4>
               <div class="ev-table-wrap">
                 <table class="ev-table" id="ce-tickets-table">
-                  <thead><tr><th>Ticket Type</th><th>Description</th><th>Price</th><th>Quantity</th><th>Early Bird End Time</th><th>Early Bird Sale Price</th><th></th></tr></thead>
+                  <thead><tr><th scope="col">Ticket Type</th><th scope="col">Description</th><th scope="col">Price</th><th scope="col">Quantity</th><th scope="col">Early Bird End Time</th><th scope="col">Early Bird Sale Price</th><th scope="col"></th></tr></thead>
                   <tbody id="ce-tickets-tbody">
                     <tr><td colspan="7" class="ev-table-empty">No tickets added yet</td></tr>
                   </tbody>
@@ -1778,7 +1777,7 @@
 
               <div class="ev-table-wrap" style="margin-top: 20px; border-radius: 8px; overflow: hidden; border: 1px solid var(--ev-border);">
                 <table class="ev-table" id="ce-promo-table" style="margin: 0;">
-                  <thead style="background: rgba(0,0,0,0.4);"><tr><th>Code</th><th>Discount</th><th>Max Uses</th><th style="width: 50px;"></th></tr></thead>
+                  <thead style="background: rgba(0,0,0,0.4);"><tr><th scope="col">Code</th><th scope="col">Discount</th><th scope="col">Max Uses</th><th scope="col" style="width: 50px;"></th></tr></thead>
                   <tbody id="ce-promo-tbody">
                     <tr><td colspan="4" class="ev-table-empty" style="padding: 24px; text-align: center; color: var(--ev-gray);">No promo codes added yet</td></tr>
                   </tbody>
@@ -2040,7 +2039,7 @@
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js" crossorigin="anonymous"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const tsSettings = { create: false, maxOptions: null };

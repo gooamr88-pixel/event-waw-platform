@@ -7,7 +7,7 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import Stripe from 'https://esm.sh/stripe@17?target=deno';
-import { handleCORS, errorResponse, jsonResponse } from '../_shared/cors.ts';
+import { handleCORS, errorResponse, jsonResponse, getSafeRedirectOrigin } from '../_shared/cors.ts';
 import { authenticateRequest, createAdminClient } from '../_shared/auth.ts';
 import { isValidUUID, isValidQuantity } from '../_shared/validation.ts';
 import { rateLimit, enforceRateLimit } from '../_shared/rate-limit.ts';
@@ -71,7 +71,11 @@ serve(async (req) => {
       .eq('id', tier_id)
       .single();
 
-    const checkoutCurrency = (tierLookup?.currency || 'usd').toLowerCase();
+    if (!tierLookup) {
+      return errorResponse(404, 'Ticket tier not found', {}, req);
+    }
+
+    const checkoutCurrency = (tierLookup.currency || 'usd').toLowerCase();
 
     // Call calculate_order_breakdown_v3 — returns cents fields for safe integer math
     const { data: breakdown, error: breakdownErr } = await adminClient
@@ -124,14 +128,22 @@ serve(async (req) => {
     if (totalCents > 0 && breakdown.organizer_id) {
       const { data: orgRow } = await adminClient
         .from('organizers')
-        .select('stripe_account_id, stripe_onboarding_complete')
+        .select('stripe_account_id, stripe_onboarding_complete, manual_payment_methods')
         .eq('user_id', breakdown.organizer_id)
         .maybeSingle();
       organizerStripe = orgRow;
 
       if (!orgRow?.stripe_account_id || !orgRow?.stripe_onboarding_complete) {
-        console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} has not completed Stripe Connect`);
-        return errorResponse(403, 'This event organizer has not completed their payment setup. Ticket purchases are temporarily unavailable.', {}, req);
+        // Check if organizer has manual methods configured — give a helpful error
+        const hasManualMethods = Array.isArray(orgRow?.manual_payment_methods) &&
+          orgRow.manual_payment_methods.some((pm: any) => pm.method && pm.destination);
+
+        const message = hasManualMethods
+          ? 'Stripe is not configured for this event. Please select a manual payment method (e.g., Vodafone Cash) from the dropdown instead.'
+          : 'This event organizer has not completed their payment setup. Ticket purchases are temporarily unavailable.';
+
+        console.warn(`⛔ Checkout blocked: organizer ${breakdown.organizer_id} has not completed Stripe Connect. hasManualMethods=${hasManualMethods}`);
+        return errorResponse(403, message, { reason: 'stripe_not_configured', has_manual_methods: hasManualMethods }, req);
       }
 
       // ── H-14 FIX: Live Stripe API verification ──
@@ -145,11 +157,27 @@ serve(async (req) => {
           await adminClient.from('organizers')
             .update({ stripe_onboarding_complete: false })
             .eq('user_id', breakdown.organizer_id);
-          return errorResponse(403, 'This event organizer\'s payment account is not yet active. Ticket purchases are temporarily unavailable.', {}, req);
+
+          const hasManualMethods = Array.isArray(orgRow?.manual_payment_methods) &&
+            orgRow.manual_payment_methods.some((pm: any) => pm.method && pm.destination);
+
+          const message = hasManualMethods
+            ? 'Stripe account is not yet active. Please select a manual payment method (e.g., Vodafone Cash) from the dropdown.'
+            : 'This event organizer\'s payment account is not yet active. Ticket purchases are temporarily unavailable.';
+
+          return errorResponse(403, message, { reason: 'stripe_not_active', has_manual_methods: hasManualMethods }, req);
         }
       } catch (stripeErr) {
         console.error(`⚠️ Stripe account verification failed for ${orgRow.stripe_account_id}:`, stripeErr.message);
-        // Fail open for transient Stripe API errors — the DB flag was already checked
+
+        const hasManualMethods = Array.isArray(orgRow?.manual_payment_methods) &&
+          orgRow.manual_payment_methods.some((pm: any) => pm.method && pm.destination);
+
+        const message = hasManualMethods
+          ? 'Unable to process card payment right now. Please select a manual payment method (e.g., Vodafone Cash) from the dropdown.'
+          : 'Unable to verify organizer payment account. Please try again later.';
+
+        return errorResponse(hasManualMethods ? 403 : 500, message, { reason: 'stripe_verification_failed', has_manual_methods: hasManualMethods }, req);
       }
     }
 
@@ -178,11 +206,13 @@ serve(async (req) => {
       if (!guest_name || typeof guest_name !== 'string' || guest_name.trim().length < 2) {
         return errorResponse(400, 'Full name is required (min 2 characters)', {}, req);
       }
-      if (!guest_email || typeof guest_email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest_email)) {
-        return errorResponse(400, 'A valid email address is required', {}, req);
+      // M8 FIX: Stricter email validation — require proper domain with TLD ≥ 2 chars
+      if (!guest_email || typeof guest_email !== 'string' || !/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(guest_email.trim())) {
+        return errorResponse(400, 'A valid email address is required (e.g., user@example.com)', {}, req);
       }
-      if (!guest_phone || typeof guest_phone !== 'string' || guest_phone.trim().length < 7) {
-        return errorResponse(400, 'A valid phone number is required', {}, req);
+      // M8 FIX: Validate phone contains only digits, spaces, +, -, ()
+      if (!guest_phone || typeof guest_phone !== 'string' || guest_phone.trim().length < 7 || !/^[0-9+\-() ]{7,20}$/.test(guest_phone.trim())) {
+        return errorResponse(400, 'A valid phone number is required (7-20 digits)', {}, req);
       }
 
 
@@ -223,7 +253,8 @@ serve(async (req) => {
       }
 
       // ── Create Stripe Checkout Session for Guest ──
-      const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
+      // H1 FIX: Validate origin against CORS allowlist to prevent open-redirect attacks
+      const originUrl = getSafeRedirectOrigin(req);
 
       const sessionConfig: any = {
         payment_method_types: ['card'],
@@ -273,9 +304,9 @@ serve(async (req) => {
 
       // ── Stripe Connect: Route payment to organizer ──
       // organizerStripe was pre-fetched and validated above (BRD Rule 4 gate)
-      if (organizerStripe?.stripe_account_id && organizerStripe.stripe_onboarding_complete && platformFeeCents > 0) {
+      if (organizerStripe?.stripe_account_id && organizerStripe.stripe_onboarding_complete) {
         sessionConfig.payment_intent_data = {
-          application_fee_amount: platformFeeCents,
+          ...(platformFeeCents > 0 ? { application_fee_amount: platformFeeCents } : {}),
           transfer_data: { destination: organizerStripe.stripe_account_id },
         };
       }
@@ -285,7 +316,10 @@ serve(async (req) => {
       return jsonResponse({
         checkout_url: session.url,
         reservation_id: res.reservation_id,
-        breakdown: breakdown,  // Return breakdown to frontend for display
+        // H3 FIX: Financial breakdown stripped from client response.
+        // Sensitive data (margins, fee structure) stays in Stripe metadata only.
+        total: breakdown.total,
+        currency: checkoutCurrency,
       });
     }
 
@@ -337,7 +371,8 @@ serve(async (req) => {
 
     // ── Create Stripe Checkout Session ──
     // organizerStripe was pre-fetched and validated above (BRD Rule 4 gate)
-    const originUrl = req.headers.get('origin') || Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com';
+    // H1 FIX: Validate origin against CORS allowlist to prevent open-redirect attacks
+    const originUrl = getSafeRedirectOrigin(req);
 
     const sessionConfig: any = {
       payment_method_types: ['card'],
@@ -382,9 +417,9 @@ serve(async (req) => {
     };
 
     // ── Stripe Connect: Route payment to organizer ──
-    if (organizerStripe?.stripe_account_id && organizerStripe.stripe_onboarding_complete && platformFeeCents > 0) {
+    if (organizerStripe?.stripe_account_id && organizerStripe.stripe_onboarding_complete) {
       sessionConfig.payment_intent_data = {
-        application_fee_amount: platformFeeCents,
+        ...(platformFeeCents > 0 ? { application_fee_amount: platformFeeCents } : {}),
         transfer_data: { destination: organizerStripe.stripe_account_id },
       };
     }
@@ -394,7 +429,9 @@ serve(async (req) => {
     return jsonResponse({
       checkout_url: session.url,
       reservation_id: res.reservation_id,
-      breakdown: breakdown,  // Return breakdown to frontend for display
+      // H3 FIX: Financial breakdown stripped from client response.
+      total: breakdown.total,
+      currency: checkoutCurrency,
     });
   } catch (err) {
     console.error('Checkout error:', err);

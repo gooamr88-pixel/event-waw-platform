@@ -91,13 +91,24 @@ function initFilters() {
 }
 
 /* -- Hero Slideshow -- */
+let _slideshowInterval = null; // H30 FIX: Track interval to prevent duplicates
 function initSlideshow() {
+  // H30 FIX: Clear any existing interval to prevent duplicate timers
+  if (_slideshowInterval) clearInterval(_slideshowInterval);
+
   const slides = document.querySelectorAll('.hero-slide');
   if (slides.length < 2) return;
+
+  // H30 FIX: Don't start slideshow if the CMS hero has taken over the container
+  const heroContainer = document.querySelector('.hero-img-container, .hero-section');
+  if (heroContainer && heroContainer.dataset.cmsHero === 'true') return;
+
   let current = 0;
-  const interval = setInterval(() => {
+  _slideshowInterval = setInterval(() => {
+    // Guard: if CMS replaced the slides mid-cycle, stop
     if (!document.querySelector('.hero-slide')) {
-      clearInterval(interval);
+      clearInterval(_slideshowInterval);
+      _slideshowInterval = null;
       return;
     }
     slides[current].classList.remove('active');

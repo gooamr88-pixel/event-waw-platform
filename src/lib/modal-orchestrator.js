@@ -13,7 +13,7 @@ import { clearPendingCoverFile, handleCeFileUpload } from './wizard-uploads.js';
 import { setupTicketListeners, setTicketsList, resetTicketState, renderCeTicketsTable, setPromoCodesList, renderCePromoTable } from './wizard-tickets.js';
 import { setupBasicTab, renderGoogleKeywords } from './wizard-basic.js';
 import { setupSponsorsTab, setCeGalleryCount } from './wizard-sponsors.js';
-import { setupPublishing, updateCePreview } from './wizard-publishing.js';
+import { setupPublishing, updateCePreview, sanitizeDescriptionHTML } from './wizard-publishing.js';
 
 let ceKeywords = [];
 let ceEditingEventId = null;
@@ -220,8 +220,12 @@ export async function loadEventForEditing(eventId) {
       const el = document.getElementById(id);
       if (el && val != null && val !== '') {
         const strVal = String(val);
-        const opt = Array.from(el.options).find(o => o.value === strVal);
-        if (opt) el.value = strVal;
+        if (el.tomselect) {
+          el.tomselect.setValue(strVal);
+        } else {
+          const opt = Array.from(el.options).find(o => o.value === strVal);
+          if (opt) el.value = strVal;
+        }
       }
     };
 
@@ -645,7 +649,7 @@ export async function showEditModal(eventId) {
       const updates = {
         title: document.getElementById('edit-title').value.trim().slice(0, 200),
         date: new Date(`${d}T${t || '00:00'}:00`).toISOString(),
-        description: document.getElementById('edit-desc').value.trim(),
+        description: typeof sanitizeDescriptionHTML === 'function' ? sanitizeDescriptionHTML(document.getElementById('edit-desc').value.trim()) : document.getElementById('edit-desc').value.trim(), // P1-10 FIX
         status: document.getElementById('edit-status').value,
       };
       if (!updates.title || updates.title.length < 3) {
