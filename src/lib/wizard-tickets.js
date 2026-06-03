@@ -154,6 +154,10 @@ export function setupTicketListeners() {
     const isHidden = document.getElementById('ce-ticket-hidden')?.checked || false;
 
     if (!name) { showToast('Ticket name is required', 'error'); return; }
+    // P2-15 FIX: Reject negative quantity
+    if (qty < 1) { showToast('Ticket quantity must be at least 1', 'error'); return; }
+    // P2-16 FIX: Reject negative price
+    if (price < 0) { showToast('Ticket price cannot be negative', 'error'); return; }
     // M-fe-2 FIX: Validate min purchase ≤ max purchase
     if (minPurchase > maxPurchase) { showToast('Min purchase cannot exceed max purchase', 'error'); return; }
 

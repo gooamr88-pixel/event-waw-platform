@@ -140,8 +140,11 @@ function renderOrderCard(order) {
 
 async function handleApprove(orderId, container) {
   if (!confirm('Confirm you received the full payment amount for this order?')) return;
+  // P1-11 FIX: Prevent double-click
+  const approveBtn = container.querySelector(`.mto-approve-btn[data-order-id="${orderId}"]`);
+  if (approveBtn) { approveBtn.disabled = true; approveBtn.textContent = 'Approving…'; }
   // H-15 FIX: Capture card state before RPC so we can rollback on failure
-  const card = container.querySelector(`.mto-approve-btn[data-order-id="${orderId}"]`)?.closest('.mto-card');
+  const card = approveBtn?.closest('.mto-card');
   const cardHTML = card?.outerHTML;
   const cardParent = card?.parentNode;
   const cardNextSibling = card?.nextSibling;
@@ -153,6 +156,8 @@ async function handleApprove(orderId, container) {
     renderManualOrdersPanel(container);
   } catch (err) {
     showToast('❌ Approval failed: ' + err.message, 'error');
+    // P1-11 FIX: Re-enable approve button on failure
+    if (approveBtn) { approveBtn.disabled = false; approveBtn.textContent = '✅ Approve'; }
     // H-15 FIX: Restore the card if it was removed during optimistic update
     if (cardHTML && cardParent && !container.querySelector(`.mto-approve-btn[data-order-id="${orderId}"]`)) {
       const temp = document.createElement('div');

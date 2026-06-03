@@ -202,11 +202,18 @@ function showPayoutModal(fin) {
   document.getElementById('fin-modal-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
+  // P1-7 FIX: Prevent double submission
+  let _payoutSubmitting = false;
+
   // Submit
   document.getElementById('fin-payout-submit').addEventListener('click', async () => {
+    if (_payoutSubmitting) return;
+    _payoutSubmitting = true;
+
     const amount = parseFloat(document.getElementById('fin-payout-amount').value);
     if (!amount || amount <= 0 || amount > maxAmount) {
       showToast(`Amount must be between 1 and ${fmt(maxAmount)}`, 'error');
+      _payoutSubmitting = false;
       return;
     }
 
@@ -228,6 +235,8 @@ function showPayoutModal(fin) {
       showToast('Payout request failed: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Submit Payout Request';
+    } finally {
+      _payoutSubmitting = false;
     }
   });
 }

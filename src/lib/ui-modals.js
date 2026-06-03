@@ -1,6 +1,16 @@
 import { setSafeHTML } from './dom.js';
 import { escapeHTML } from './utils.js';
 
+// P1-12 FIX: Sanitize color values to prevent CSS injection
+function safeColor(color, fallback = '#e91e8c') {
+  if (!color) return fallback;
+  // Allow hex colors, named colors, rgb/hsl functions only
+  if (/^#[0-9a-fA-F]{3,8}$/.test(color)) return color;
+  if (/^[a-zA-Z]{1,20}$/.test(color)) return color;
+  if (/^(rgb|hsl)a?\([0-9,\s.%]+\)$/.test(color)) return color;
+  return fallback;
+}
+
 // U1 FIX: Focus trapping helper for modal accessibility
 function trapFocus(overlayEl) {
   const focusable = overlayEl.querySelectorAll('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])');
@@ -40,7 +50,7 @@ export function showConfirmModal({ title = 'Confirm Action', message = 'Are you 
         </p>
         <div style="display:flex;gap:10px;justify-content:flex-end">
           <button type="button" class="ev-btn ev-btn-outline" id="ev-global-confirm-cancel">${escapeHTML(cancelText)}</button>
-          <button type="button" class="ev-btn" id="ev-global-confirm-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
+          <button type="button" class="ev-btn" id="ev-global-confirm-btn" style="background:${safeColor(confirmColor)};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
         </div>
       </div>
     `);
@@ -93,7 +103,7 @@ export function showPromptModal({ title = 'Input Required', message = 'Please en
         </div>
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:24px;">
           <button type="button" class="ev-btn ev-btn-outline" id="ev-global-prompt-cancel">${escapeHTML(cancelText)}</button>
-          <button type="button" class="ev-btn" id="ev-global-prompt-btn" style="background:${confirmColor};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
+          <button type="button" class="ev-btn" id="ev-global-prompt-btn" style="background:${safeColor(confirmColor)};color:#fff;border:none;">${escapeHTML(confirmText)}</button>
         </div>
       </div>
     `);
@@ -152,7 +162,7 @@ export function showAlertModal({ title = 'Alert', message = '', buttonText = 'OK
         <p style="font-size:.95rem;color:var(--ev-text-muted);margin-bottom:24px;">
           ${escapeHTML(message)}
         </p>
-        <button type="button" class="ev-btn" id="ev-global-alert-btn" style="background:${buttonColor};color:#fff;border:none;width:100%;">${escapeHTML(buttonText)}</button>
+        <button type="button" class="ev-btn" id="ev-global-alert-btn" style="background:${safeColor(buttonColor)};color:#fff;border:none;width:100%;">${escapeHTML(buttonText)}</button>
       </div>
     `);
 

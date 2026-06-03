@@ -38,14 +38,15 @@ async function detectGeo() {
     const loc = await detectUserLocation();
     if (loc && loc.lat && loc.lng) {
       userLocation = loc;
-      el.classList.add('active');
-      txt.textContent = [loc.city, loc.country].filter(Boolean).join(', ') || 'Located';
-      document.getElementById('ep-sort-indicator').style.display = '';
+      el?.classList.add('active');
+      if (txt) txt.textContent = [loc.city, loc.country].filter(Boolean).join(', ') || 'Located';
+      // P1-8 FIX: Null-guard DOM lookups
+      const sortEl = document.getElementById('ep-sort-indicator'); if (sortEl) sortEl.style.display = '';
       const si = document.getElementById('ep-search-input');
       if (si && loc.city) si.placeholder = `Search events near ${loc.city}...`;
       if (allEvents.length) applyAndRender();
-    } else { txt.textContent = 'Location unavailable'; }
-  } catch { txt.textContent = 'Location unavailable'; }
+    } else { if (txt) txt.textContent = 'Location unavailable'; }
+  } catch { if (txt) txt.textContent = 'Location unavailable'; }
 }
 
 /* -- Load Events -- */

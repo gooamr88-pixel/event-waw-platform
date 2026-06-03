@@ -429,10 +429,7 @@ export async function upgradeToOrganizer() {
     return false;
   }
 
-  // Sync role to user metadata for consistency
-  await supabase.auth.updateUser({
-    data: { role: 'organizer' }
-  });
+  // Role source-of-truth is profiles table — do NOT sync to user_metadata (P0-2 FIX)
 
   console.debug('User upgraded to organizer');
   return true;

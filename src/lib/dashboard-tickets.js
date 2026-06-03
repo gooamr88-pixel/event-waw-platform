@@ -1,6 +1,6 @@
 import { supabase, SUPABASE_FUNCTIONS_URL } from './supabase.js';
 import { safeQuery } from './api.js';
-import { escapeHTML } from './utils.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML, generateSkeletonRows } from './dom.js';
 import { showToast, getSwitchId } from './dashboard-ui.js';
 
@@ -39,7 +39,7 @@ export function setupTicketsPanel() {
     const mySwitch = getSwitchId();
     
     try {
-      const { data: tiers, error: tierErr } = await supabase.from('ticket_tiers').select('id, name, price').eq('event_id', eventId);
+      const { data: tiers, error: tierErr } = await supabase.from('ticket_tiers').select('id, name, price, currency').eq('event_id', eventId);
       if (getSwitchId() !== mySwitch) return;
       if (tierErr) { console.error('Tier query error:', tierErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tiers</td></tr>'); return; }
       if (!tiers?.length) { setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No tiers found</td></tr>'); return; }
@@ -75,7 +75,9 @@ export function setupTicketsPanel() {
       const totalRev = tickets.reduce((s, t) => s + (_cachedTierMap[t.ticket_tier_id]?.price || 0), 0);
       document.getElementById('tkt-stat-sold').textContent = tickets.length;
       document.getElementById('tkt-stat-scanned').textContent = scannedCount;
-      document.getElementById('tkt-stat-revenue').textContent = '$' + totalRev.toLocaleString();
+      // P2-18 FIX: Use dynamic currency instead of hardcoded '$'
+      const tierCurrency = tiers.find(t => t.currency)?.currency || 'USD';
+      document.getElementById('tkt-stat-revenue').textContent = formatCurrency(totalRev, tierCurrency);
       
       _cachedTickets = tickets;
       renderTicketRows(tickets);

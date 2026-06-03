@@ -141,7 +141,7 @@ function showSettleModal(eventId, balance, panelContainer, currency = 'EGP') {
       <h3>💰 Record <span style="color:var(--ev-accent,#d4af37)">Settlement</span></h3>
       <div class="ev-form-group">
         <label style="font-size:.82rem;font-weight:600">Amount (${esc(currency)})</label>
-        <input class="ev-form-input" type="number" id="settle-amount" value="${esc(balance)}" min="0.01" step="0.01" />
+        <input class="ev-form-input" type="number" id="settle-amount" value="${esc(balance)}" min="0.01" max="${esc(balance)}" step="0.01" />
       </div>
       <div class="ev-form-group">
         <label style="font-size:.82rem;font-weight:600">Settlement Method</label>
@@ -174,6 +174,8 @@ function showSettleModal(eventId, balance, panelContainer, currency = 'EGP') {
     const reference = document.getElementById('settle-reference').value.trim();
 
     if (!amount || amount <= 0) { alert('Please enter a valid amount.'); return; }
+    // P2-12 FIX: Prevent over-settlement
+    if (amount > parseFloat(balance)) { showToast('Amount cannot exceed outstanding balance', 'error'); return; }
 
     const confirmBtn = modal.querySelector('#settle-confirm');
     confirmBtn.disabled = true;

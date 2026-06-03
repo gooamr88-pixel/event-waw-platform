@@ -8,6 +8,7 @@
    =================================== */
 import { supabase, SUPABASE_FUNCTIONS_URL } from '../src/lib/supabase.js';
 import { setSafeHTML } from '../src/lib/dom.js';
+import { showConfirmModal } from '../src/lib/ui-modals.js';
 
 /**
  * Renders the admin payouts panel.
@@ -142,7 +143,7 @@ export async function renderAdminPayouts(container) {
     document.getElementById('admin-payout-filter')?.addEventListener('change', async (e) => {
       const status = e.target.value || null;
       const { data: filtered } = await supabase.rpc('admin_get_all_payouts', { p_status: status });
-      if (filtered) renderPayoutRows(container.querySelector('#admin-payouts-tbody'), filtered);
+      if (filtered) renderPayoutRows(container.querySelector('#admin-payouts-tbody'), filtered, container);
     });
 
     // Refresh
@@ -211,10 +212,14 @@ function showProcessModal(payoutId, action, parentContainer) {
       // organizer's bank account.
       // ═══════════════════════════════════════════════════
 
-      // Extra confirmation for irreversible financial action
-      if (!confirm('FINAL CONFIRMATION: Execute this Stripe payout now? Funds will be transferred to the organizer\'s bank account.')) {
-        return;
-      }
+      // P2-9 FIX: Use custom modal instead of native confirm()
+      const confirmed = await showConfirmModal({
+        title: 'Execute Stripe Payout',
+        message: 'This will immediately transfer funds to the organizer\'s bank account. This action cannot be undone.',
+        confirmText: 'Execute Payout',
+        confirmColor: '#22c55e'
+      });
+      if (!confirmed) return;
 
       btn.disabled = true;
       btn.textContent = 'Executing Stripe Payout...';
@@ -324,7 +329,7 @@ function showProcessModal(payoutId, action, parentContainer) {
 
 /* ── Re-render tbody only (for filter) ── */
 
-function renderPayoutRows(tbody, payouts) {
+function renderPayoutRows(tbody, payouts, parentContainer) {
   if (!tbody) return;
   if (!payouts || payouts.length === 0) {
     setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No payouts match filter</td></tr>');
@@ -352,6 +357,14 @@ function renderPayoutRows(tbody, payouts) {
       </tr>
     `;
   }).join(''));
+
+  // P1-2 FIX: Re-attach button handlers after filter re-render
+  tbody.querySelectorAll('.apo-approve-btn').forEach(btn => {
+    btn.addEventListener('click', () => showProcessModal(btn.dataset.id, 'completed', parentContainer));
+  });
+  tbody.querySelectorAll('.apo-reject-btn').forEach(btn => {
+    btn.addEventListener('click', () => showProcessModal(btn.dataset.id, 'failed', parentContainer));
+  });
 }
 
 /* ── Utilities ── */

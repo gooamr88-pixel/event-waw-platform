@@ -499,8 +499,8 @@ function renderOrdersTable() {
     const statusText = o.status ? o.status.charAt(0).toUpperCase() + o.status.slice(1) : 'Unknown';
     const eventTitle = o.events?.title || 'Unknown Event';
 
-    // Count tickets for this order
-    const orderTickets = _tickets.filter(t => t.event_id === o.event_id).length;
+    // P2-11 FIX: Count tickets for this specific order, not all tickets for the event
+    const orderTickets = _tickets.filter(t => t.order_id === o.id).length;
 
     setSafeHTML(tr, `
       <td style="font-weight:600;color:var(--ev-text-muted);font-size:.82rem;">${i + 1}</td>

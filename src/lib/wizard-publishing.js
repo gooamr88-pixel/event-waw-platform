@@ -20,7 +20,7 @@ let isPublishing = false;
  * Uses DOMPurify to strip ALL XSS vectors: script tags, event handlers,
  * javascript: URIs, data: URIs in dangerous contexts, and CSS expressions.
  */
-function sanitizeDescriptionHTML(html) {
+export function sanitizeDescriptionHTML(html) {
   if (!html || !html.trim()) return '';
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
@@ -245,6 +245,15 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       if (showEndTimeVal !== 'no' && !endDate) markError('ce-end-date', 'End date is required');
       
       if (listingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
+
+      // P2-13 FIX: End date must be after start date
+      if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+        markError('ce-end-date', 'End date must be after start date');
+      }
+      // P2-14 FIX: Start date must be in the future (for publishing only)
+      if (startDate && new Date(startDate) < new Date()) {
+        markError('ce-start-date', 'Start date must be in the future');
+      }
 
       if (listingType !== 'display_only' && getTicketsList().length === 0) {
         errors.push({ fieldId: 'ce-ticket-name', message: 'At least one ticket is required', tab: 'tickets' });

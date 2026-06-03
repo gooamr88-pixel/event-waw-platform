@@ -138,7 +138,8 @@ export function showToast(message, type = 'success') {
  * Triggers a CSV file download.
  */
 export function downloadCSV(rowsArray, filename) {
-  const csv = rowsArray.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  // P2-10 FIX: Also replace newlines to prevent broken CSV rows
+  const csv = rowsArray.map(r => r.map(c => `"${String(c).replace(/"/g,'""').replace(/[\r\n]+/g, ' ')}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   a.download = filename;

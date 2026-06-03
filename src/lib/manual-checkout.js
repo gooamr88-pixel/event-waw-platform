@@ -68,8 +68,14 @@ export async function showManualCheckoutModal(opts) {
   document.getElementById('mc-close').addEventListener('click', () => modal.remove());
   modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
+  // P1-6 FIX: Prevent double submission
+  let _submitting = false;
+
   // Submit handler
   document.getElementById('mc-submit').addEventListener('click', async () => {
+    if (_submitting) return;
+    _submitting = true;
+
     const name = document.getElementById('mc-name').value.trim();
     const email = document.getElementById('mc-email').value.trim();
     const phone = document.getElementById('mc-phone').value.trim();
@@ -77,22 +83,26 @@ export async function showManualCheckoutModal(opts) {
 
     if (!name || !email || !phone) {
       showToast('Please fill in all required fields (*).', 'warning');
+      _submitting = false;
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       showToast('Please enter a valid email address.', 'error');
+      _submitting = false;
       return;
     }
 
     // H23 FIX: Validate tier/event IDs exist before sending to server
     if (!tierId || !eventId) {
       showToast('Invalid ticket selection. Please try again.', 'error');
+      _submitting = false;
       return;
     }
     // Strict phone validation supporting Egyptian (01XXXXXXXXX) or generic international numbers
     const cleanPhone = phone.replace(/[\s-]/g, '');
     if (!/^(\+?)[0-9]{8,15}$/.test(cleanPhone)) {
       showToast('Please enter a valid phone number (e.g., 01XXXXXXXXX).', 'error');
+      _submitting = false;
       return;
     }
 
@@ -148,6 +158,7 @@ export async function showManualCheckoutModal(opts) {
       showToast('Checkout Failed: ' + err.message, 'error');
       btn.disabled = false;
       btn.textContent = 'Continue →';
+      _submitting = false;
     }
   });
 }

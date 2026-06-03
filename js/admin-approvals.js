@@ -119,9 +119,11 @@ async function handleApprove(eventId, onRefresh) {
 }
 
 async function handleReject(eventId, title, organizerEmail, onRefresh) {
+  // P2-8 FIX: title comes from dataset (browser-decoded), pass it only to the
+  // modal title which is rendered via escapeHTML() — avoids any double-escape issue.
   const reason = await showPromptModal({
-    title: 'Reject Event',
-    message: `Reject "${title}"? Please provide a reason:`,
+    title: `Reject: ${title}`,
+    message: 'Please provide a reason for rejecting this event:',
     placeholder: 'Reason for rejection...',
     confirmText: 'Reject Event',
     confirmColor: '#dc2626'
