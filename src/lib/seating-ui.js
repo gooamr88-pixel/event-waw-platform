@@ -135,6 +135,13 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
   // Store reference for cleanup
   mountEl._seatingChart = chart;
 
+  // H-13 FIX: Clean up polling interval on page unload
+  window.addEventListener('beforeunload', () => {
+    if (mountEl._seatingChart && typeof mountEl._seatingChart.destroy === 'function') {
+      mountEl._seatingChart.destroy();
+    }
+  });
+
   return true;
 }
 

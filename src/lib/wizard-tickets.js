@@ -154,6 +154,8 @@ export function setupTicketListeners() {
 
     if (!name) { showToast('Ticket name is required', 'error'); return; }
     if (!price && price !== 0) { showToast('Ticket price is required (use 0 for free tickets)', 'error'); return; }
+    // M-fe-2 FIX: Validate min purchase ≤ max purchase
+    if (minPurchase > maxPurchase) { showToast('Min purchase cannot exceed max purchase', 'error'); return; }
 
     // H-10: Early Bird Price Validation
     if (earlyPrice !== '') {

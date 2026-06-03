@@ -10,6 +10,15 @@ function esc(s: string): string {
   return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// M-backend FIX: Dynamic currency formatting instead of hardcoded '$'
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  usd: '$', eur: '€', gbp: '£', egp: 'EGP ', aed: 'AED ', sar: 'SAR ',
+};
+function fmtCurrency(amount: number, currency = 'usd'): string {
+  const sym = CURRENCY_SYMBOLS[currency.toLowerCase()] || `${currency.toUpperCase()} `;
+  return `${sym}${Number(amount).toLocaleString()}`;
+}
+
 // ── Shared design tokens ──
 const BRAND = {
   name: 'Eventsli',
@@ -143,8 +152,8 @@ export function otpRegisterEmail(code: string, name: string): string {
 // ═════════════════════════════════
 // 3. Ticket Confirmation
 // ═════════════════════════════════
-export function ticketConfirmationEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string }): string {
-  const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink } = data;
+export function ticketConfirmationEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string; currency?: string }): string {
+  const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink, currency = 'usd' } = data;
   const content = `
     <!-- Emerald Header -->
     <tr><td style="background:linear-gradient(135deg,${BRAND.color},${BRAND.colorDark});padding:20px 36px;">
@@ -185,7 +194,7 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:14px;color:${BRAND.textDim};font-weight:600;">Total</td>
-              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">$${Number(totalAmount).toLocaleString()}</td>
+              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">${fmtCurrency(totalAmount, currency)}</td>
             </tr>
           </table>
         </td></tr>
@@ -218,8 +227,8 @@ export function ticketConfirmationEmail(data: { userName: string; eventTitle: st
 // ═════════════════════════════════
 // 4. Guest Ticket Confirmation
 // ═════════════════════════════════
-export function guestTicketEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string }): string {
-  const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink } = data;
+export function guestTicketEmail(data: { userName: string; eventTitle: string; tierName: string; quantity: number; totalAmount: number; eventVenue: string; eventDate: string; orderId: string; ticketLink: string; currency?: string }): string {
+  const { userName, eventTitle, tierName, quantity, totalAmount, eventVenue, eventDate, orderId, ticketLink, currency = 'usd' } = data;
   const content = `
     <!-- Emerald Header -->
     <tr><td style="background:linear-gradient(135deg,${BRAND.color},${BRAND.colorDark});padding:20px 36px;">
@@ -261,7 +270,7 @@ export function guestTicketEmail(data: { userName: string; eventTitle: string; t
             </tr>
             <tr>
               <td style="padding:8px 0;font-size:14px;color:${BRAND.textDim};font-weight:600;">Total</td>
-              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">$${Number(totalAmount).toLocaleString()}</td>
+              <td style="padding:8px 0;font-size:18px;color:${BRAND.color};font-weight:700;">${fmtCurrency(totalAmount, currency)}</td>
             </tr>
           </table>
         </td></tr>

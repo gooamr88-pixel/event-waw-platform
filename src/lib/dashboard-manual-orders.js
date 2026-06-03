@@ -140,6 +140,11 @@ function renderOrderCard(order) {
 
 async function handleApprove(orderId, container) {
   if (!confirm('Confirm you received the full payment amount for this order?')) return;
+  // H-15 FIX: Capture card state before RPC so we can rollback on failure
+  const card = container.querySelector(`.mto-approve-btn[data-order-id="${orderId}"]`)?.closest('.mto-card');
+  const cardHTML = card?.outerHTML;
+  const cardParent = card?.parentNode;
+  const cardNextSibling = card?.nextSibling;
   try {
     const { data, error } = await supabase.rpc('approve_manual_order', { p_manual_order_id: orderId });
     if (error) throw error;
@@ -148,12 +153,30 @@ async function handleApprove(orderId, container) {
     renderManualOrdersPanel(container);
   } catch (err) {
     showToast('❌ Approval failed: ' + err.message, 'error');
+    // H-15 FIX: Restore the card if it was removed during optimistic update
+    if (cardHTML && cardParent && !container.querySelector(`.mto-approve-btn[data-order-id="${orderId}"]`)) {
+      const temp = document.createElement('div');
+      temp.innerHTML = cardHTML;
+      const restored = temp.firstElementChild;
+      if (restored) {
+        cardParent.insertBefore(restored, cardNextSibling);
+        // Re-attach event listeners on restored card
+        restored.querySelector('.mto-approve-btn')?.addEventListener('click', () => handleApprove(orderId, container));
+        restored.querySelector('.mto-reject-btn')?.addEventListener('click', () => handleReject(orderId, container));
+        restored.querySelector('.mto-proof-btn')?.addEventListener('click', function() { window.open(this.dataset.url, '_blank'); });
+      }
+    }
   }
 }
 
 async function handleReject(orderId, container) {
   const reason = prompt('Rejection reason (shown to buyer):');
   if (reason === null) return;
+  // H-15 FIX: Capture card state before RPC so we can rollback on failure
+  const card = container.querySelector(`.mto-reject-btn[data-order-id="${orderId}"]`)?.closest('.mto-card');
+  const cardHTML = card?.outerHTML;
+  const cardParent = card?.parentNode;
+  const cardNextSibling = card?.nextSibling;
   try {
     const { data, error } = await supabase.rpc('reject_manual_order', {
       p_manual_order_id: orderId, p_reason: reason || 'Payment not received'
@@ -164,6 +187,18 @@ async function handleReject(orderId, container) {
     renderManualOrdersPanel(container);
   } catch (err) {
     showToast('❌ Rejection failed: ' + err.message, 'error');
+    // H-15 FIX: Restore the card if it was removed during optimistic update
+    if (cardHTML && cardParent && !container.querySelector(`.mto-reject-btn[data-order-id="${orderId}"]`)) {
+      const temp = document.createElement('div');
+      temp.innerHTML = cardHTML;
+      const restored = temp.firstElementChild;
+      if (restored) {
+        cardParent.insertBefore(restored, cardNextSibling);
+        restored.querySelector('.mto-approve-btn')?.addEventListener('click', () => handleApprove(orderId, container));
+        restored.querySelector('.mto-reject-btn')?.addEventListener('click', () => handleReject(orderId, container));
+        restored.querySelector('.mto-proof-btn')?.addEventListener('click', function() { window.open(this.dataset.url, '_blank'); });
+      }
+    }
   }
 }
 

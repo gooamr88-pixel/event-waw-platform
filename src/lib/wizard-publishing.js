@@ -664,7 +664,11 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         body: JSON.stringify({ action: 'check-status' }),
       });
 
-      if (!res.ok) return;
+      if (!res.ok) {
+        // H-16 FIX: Show error toast instead of silently returning
+        showToast('⚠️ Could not check Stripe status. Please try again later.', 'error');
+        return;
+      }
       const data = await res.json();
 
       if (data.onboarding_complete) {

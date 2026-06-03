@@ -850,8 +850,9 @@
         const galleryGrid = document.getElementById('ed-gallery-grid');
         galleryGrid.textContent = '';
         gallerySection.style.display = 'block';
-        for (const url of uniqueGallery) {
-          const resolved = await resolveImageUrl(url);
+        // C-07 FIX: Batch resolve all gallery images in parallel
+        const resolvedGallery = await Promise.all(uniqueGallery.map(url => resolveImageUrl(url)));
+        resolvedGallery.forEach(resolved => {
           if (resolved) {
             const img = document.createElement('img');
             img.src = resolved;
@@ -861,7 +862,7 @@
             img.addEventListener('click', () => window.openLightbox(img.src));
             galleryGrid.appendChild(img);
           }
-        }
+        });
       }
 
       // ── Performers ──
@@ -874,7 +875,10 @@
         const perfGrid = document.getElementById('ed-performers-grid');
         perfGrid.textContent = '';
         perfSection.style.display = 'block';
-        for (const p of performersArr) {
+        // C-07 FIX: Batch resolve all performer images in parallel
+        const perfImageUrls = performersArr.map(p => p.image_url ? resolveImageUrl(p.image_url) : Promise.resolve(null));
+        const resolvedPerfImages = await Promise.all(perfImageUrls);
+        performersArr.forEach((p, idx) => {
           const card = document.createElement('div');
           card.style.textAlign = 'center';
           
@@ -890,18 +894,14 @@
           imgWrap.style.alignItems = 'center';
           imgWrap.style.justifyContent = 'center';
 
-          if (p.image_url) {
-            const resolved = await resolveImageUrl(p.image_url);
-            if (resolved) {
-              const img = document.createElement('img');
-              img.src = resolved;
-              img.style.width = '100%';
-              img.style.height = '100%';
-              img.style.objectFit = 'cover';
-              imgWrap.appendChild(img);
-            } else {
-              imgWrap.innerHTML = '<span style="font-size: 2rem;">👤</span>';
-            }
+          const resolved = resolvedPerfImages[idx];
+          if (p.image_url && resolved) {
+            const img = document.createElement('img');
+            img.src = resolved;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
+            imgWrap.appendChild(img);
           } else {
             imgWrap.innerHTML = '<span style="font-size: 2rem;">👤</span>';
           }
@@ -920,7 +920,7 @@
           card.appendChild(name);
           card.appendChild(role);
           perfGrid.appendChild(card);
-        }
+        });
       }
 
       // ── Sponsor Logos ──
@@ -935,8 +935,9 @@
         const sponsorsGrid = document.getElementById('ed-sponsors-grid');
         sponsorsGrid.textContent = '';
         sponsorsSection.style.display = 'block';
-        for (const url of uniqueSponsors) {
-          const resolved = await resolveImageUrl(url);
+        // C-07 FIX: Batch resolve all sponsor images in parallel
+        const resolvedSponsors = await Promise.all(uniqueSponsors.map(url => resolveImageUrl(url)));
+        resolvedSponsors.forEach(resolved => {
           if (resolved) {
             const img = document.createElement('img');
             img.src = resolved;
@@ -945,7 +946,7 @@
             img.onerror = () => img.remove();
             sponsorsGrid.appendChild(img);
           }
-        }
+        });
       }
 
       // ── Map Location ──
@@ -2425,15 +2426,19 @@
     }
 
     // ── Reservation Timer (10 minutes) ──
+    let _reservationInterval = null;
     function startReservationTimer() {
       const timerWrap = document.getElementById('reservation-timer');
       const timerDisplay = document.getElementById('timer-display');
       if (!timerWrap || !timerDisplay) return;
 
+      // M-fe-4 FIX: Clear any previously running timer
+      if (_reservationInterval) clearInterval(_reservationInterval);
+
       timerWrap.style.display = 'block';
       let seconds = 2100; // 35 minutes (matches DB reservation TTL)
 
-      const interval = setInterval(() => {
+      _reservationInterval = setInterval(() => {
         seconds--;
         const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
@@ -2443,11 +2448,20 @@
           timerDisplay.style.color = '#ef4444';
         }
         if (seconds <= 0) {
-          clearInterval(interval);
+          clearInterval(_reservationInterval);
+          _reservationInterval = null;
           timerDisplay.textContent = 'Expired';
         }
       }, 1000);
     }
+
+    // M-fe-4 FIX: Clean up reservation timer on page unload
+    window.addEventListener('beforeunload', () => {
+      if (_reservationInterval) {
+        clearInterval(_reservationInterval);
+        _reservationInterval = null;
+      }
+    });
 
     // ── Shared utilities imported from src/lib/ui.js ──
   </script>

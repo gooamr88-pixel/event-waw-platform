@@ -7,6 +7,10 @@ Disallow: /scanner.html
 Disallow: /venue-designer.html
 Disallow: /checkout-success.html
 Disallow: /my-tickets.html
+Disallow: /attendee-dashboard.html
+Disallow: /blocked.html
+Disallow: /forgot-password.html
+Disallow: /maintenance.html
 
 # Sitemaps
 Sitemap: https://eventsli.com/sitemap.xml

@@ -5,7 +5,7 @@
 
 export default [
   {
-    files: ["src/**/*.js", "js/**/*.js"],
+    files: ["src/**/*.js", "js/**/*.js", "sw.js", "scripts/**/*.js"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",
@@ -47,14 +47,39 @@ export default [
         WeakSet: "readonly",
         Symbol: "readonly",
         Reflect: "readonly",
-        Proxy: "readonly"
+        Proxy: "readonly",
+
+        // Additional Browser APIs
+        HTMLElement: "readonly",
+        MutationObserver: "readonly",
+        IntersectionObserver: "readonly",
+        FormData: "readonly",
+        CustomEvent: "readonly",
+        AbortController: "readonly",
+        TextEncoder: "readonly",
+        TextDecoder: "readonly",
+        structuredClone: "readonly",
+        crypto: "readonly",
+        self: "readonly",
+        caches: "readonly",
+        Response: "readonly",
+        Request: "readonly",
+        Headers: "readonly",
+        Event: "readonly",
+        EventTarget: "readonly",
+        performance: "readonly",
+        ResizeObserver: "readonly"
       }
     },
     rules: {
       "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
       "no-console": "off",
       "no-empty": "warn",
-      "no-constant-condition": "warn"
+      "no-constant-condition": "warn",
+      "no-eval": "error",
+      "no-implied-eval": "error",
+      "eqeqeq": ["warn", "smart"],
+      "no-debugger": "warn"
     }
   }
 ];

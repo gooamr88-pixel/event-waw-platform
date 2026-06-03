@@ -369,6 +369,7 @@ serve(async (req) => {
               eventDate: formattedDate,
               orderId: order.id,
               ticketLink: guestTicketUrl,
+              currency: session.currency || 'usd',
             })
           : ticketConfirmationEmail({
               userName,
@@ -380,6 +381,7 @@ serve(async (req) => {
               eventDate: formattedDate,
               orderId: order.id,
               ticketLink: `${Deno.env.get('ALLOWED_ORIGIN') || 'https://eventsli.com'}/my-tickets.html`,
+              currency: session.currency || 'usd',
             });
 
         // ── Send confirmation email IMMEDIATELY (no PDF — P-2 FIX) ──
@@ -394,7 +396,8 @@ serve(async (req) => {
           htmlContent: emailHtml,
         };
 
-        await fetch('https://api.brevo.com/v3/smtp/email', {
+        // H-11b FIX: Check email send response for failures
+        const emailRes = await fetch('https://api.brevo.com/v3/smtp/email', {
           method: 'POST',
           headers: {
             'accept': 'application/json',
@@ -403,7 +406,11 @@ serve(async (req) => {
           },
           body: JSON.stringify(emailPayload),
         });
-        console.log(`✉️ Confirmation email sent to ${userEmail} (guest=${isGuest})`);
+        if (!emailRes.ok) {
+          console.warn(`⚠️ Email send failed: ${emailRes.status} ${await emailRes.text().catch(() => '')}`);
+        } else {
+          console.log(`✉️ Confirmation email sent to ${userEmail} (guest=${isGuest})`);
+        }
 
         // ── PDF generation: AWAITED to prevent Deno isolate crash ──
         // Must await so the isolate stays alive. PDF failure is non-blocking
@@ -530,12 +537,13 @@ serve(async (req) => {
 
         console.log(`💰 Payment record updated to refunded for order ${order.id}`);
 
-        // Cancel all associated tickets
+        // H-06b FIX: Also cancel 'scanned' tickets on refund — previously
+        // only 'valid' tickets were cancelled, leaving scanned ones intact.
         const { data: cancelledTickets, error: ticketErr } = await supabase
           .from('tickets')
           .update({ status: 'cancelled' })
           .eq('order_id', order.id)
-          .eq('status', 'valid')
+          .in('status', ['valid', 'scanned'])
           .select('id, ticket_tier_id');
         if (ticketErr) console.error('M1: Failed to cancel tickets:', ticketErr);
 
@@ -608,14 +616,30 @@ serve(async (req) => {
         .maybeSingle();
 
       if (order) {
+        // H-07b FIX: Idempotency guard — prevent double-processing on webhook retry
+        const { data: currentOrder } = await supabase
+          .from('orders')
+          .select('status')
+          .eq('id', order.id)
+          .single();
+
+        if (currentOrder?.status === 'disputed') {
+          console.log(`Order ${order.id} already disputed, skipping duplicate webhook`);
+          return new Response(JSON.stringify({ received: true, duplicate: true }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
+
         // Q-4 FIX: Use 'disputed' not 'refunded' — disputes can be won
         // and the order may need to be reinstated
         await supabase.from('orders').update({ status: 'disputed' }).eq('id', order.id);
+        // H-06b FIX: Also cancel 'scanned' tickets during dispute
         const { data: disputedTickets } = await supabase
           .from('tickets')
           .update({ status: 'cancelled' })
           .eq('order_id', order.id)
-          .eq('status', 'valid')
+          .in('status', ['valid', 'scanned'])
           .select('id, ticket_tier_id');
         console.warn(`⚠️ DISPUTE: order ${order.id} — tickets cancelled pending resolution`);
 
