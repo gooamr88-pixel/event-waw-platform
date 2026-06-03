@@ -20,7 +20,7 @@ export async function renderCommissionDebtCard(container) {
 
     injectStyles();
     const events = data.events || [];
-    const activeCurrency = events[0]?.event_currency || 'EGP';
+    const activeCurrency = events[0]?.event_currency || 'USD';
 
     const fmt = (v) => new Intl.NumberFormat('en-US', {
       style: 'currency', currency: activeCurrency, minimumFractionDigits: 2
@@ -73,7 +73,7 @@ export async function renderCommissionDebtCard(container) {
       events.forEach(ev => {
         const sc = statusConfig[ev.status] || statusConfig.accruing;
         const fmtRow = (v) => new Intl.NumberFormat('en-US', {
-          style: 'currency', currency: ev.event_currency || 'EGP', minimumFractionDigits: 2
+          style: 'currency', currency: ev.event_currency || 'USD', minimumFractionDigits: 2
         }).format(v || 0);
 
         html += `<tr>
@@ -124,8 +124,8 @@ function injectStyles() {
     .cd-alert-locked p, .cd-alert-due p { font-size:.82rem; margin:4px 0 0; color:var(--ev-text-muted); }
     .cd-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:16px; }
     @media(max-width:640px) { .cd-summary { grid-template-columns:1fr; } }
-    .cd-stat { padding:16px; border-radius:12px; border:1px solid var(--ev-border); text-align:center; }
-    .cd-stat-balance { border-color:rgba(239,68,68,.2); background:rgba(239,68,68,.03); }
+    .cd-stat { padding:16px; border-radius:12px; border:1px solid var(--ev-border,#e2e8f0); background:var(--ev-white,#ffffff); text-align:center; box-shadow:0 1px 3px rgba(0,0,0,.04); }
+    .cd-stat-balance { border-color:rgba(239,68,68,.25); background:rgba(239,68,68,.05); }
     .cd-stat-label { display:block; font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--ev-text-muted); margin-bottom:6px; }
     .cd-stat-value { font-size:1.4rem; font-weight:800; }
     .cd-green { color:#22c55e; } .cd-red { color:#ef4444; }

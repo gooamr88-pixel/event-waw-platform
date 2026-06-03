@@ -15,17 +15,17 @@ function injectStyles() {
   const style = document.createElement('style');
   style.textContent = `
     .acd-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px; }
-    .acd-stat { padding:18px;border-radius:14px;border:1px solid var(--ev-border,rgba(255,255,255,.08)); background:var(--ev-card,#1a1a2e); }
+    .acd-stat { padding:18px;border-radius:14px;border:1px solid var(--ev-border,#e2e8f0); background:var(--ev-white,#ffffff); box-shadow:0 1px 3px rgba(0,0,0,.04),0 4px 12px rgba(0,0,0,.03); }
     .acd-stat-val { font-size:1.4rem;font-weight:800;font-family:var(--ev-font-serif,'Georgia',serif); }
-    .acd-stat-label { font-size:.72rem;color:var(--ev-text-muted,#888);text-transform:uppercase;letter-spacing:.06em;margin-top:4px; }
+    .acd-stat-label { font-size:.72rem;color:var(--ev-text-muted,#6b6b78);text-transform:uppercase;letter-spacing:.06em;margin-top:4px; }
     .acd-badge { padding:3px 10px;border-radius:50px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em; }
-    .acd-badge.accruing { background:rgba(59,130,246,.15);color:#60a5fa; }
-    .acd-badge.due { background:rgba(234,179,8,.15);color:#eab308; }
-    .acd-badge.overdue { background:rgba(239,68,68,.15);color:#ef4444; }
-    .acd-badge.settled { background:rgba(34,197,94,.15);color:#22c55e; }
-    .acd-badge.waived { background:rgba(120,120,120,.15);color:#888; }
-    .acd-settle-modal { position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease; }
-    .acd-settle-box { max-width:420px;width:100%;background:var(--ev-card,#1a1a2e);border:1px solid var(--ev-border,rgba(255,255,255,.1));border-radius:18px;padding:28px 24px; }
+    .acd-badge.accruing { background:rgba(59,130,246,.1);color:#3b82f6; }
+    .acd-badge.due { background:rgba(234,179,8,.1);color:#b45309; }
+    .acd-badge.overdue { background:rgba(239,68,68,.1);color:#dc2626; }
+    .acd-badge.settled { background:rgba(34,197,94,.1);color:#16a34a; }
+    .acd-badge.waived { background:rgba(120,120,120,.1);color:#6b7280; }
+    .acd-settle-modal { position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .3s ease; }
+    .acd-settle-box { max-width:420px;width:100%;background:var(--ev-white,#ffffff);border:1px solid var(--ev-border,#e2e8f0);border-radius:18px;padding:28px 24px;box-shadow:0 12px 40px rgba(0,0,0,.1); }
     .acd-settle-box h3 { font-family:var(--ev-font-serif,'Georgia',serif);font-size:1.1rem;font-weight:700;margin-bottom:16px; }
     .acd-settle-box .ev-form-group { margin-bottom:14px; }
     @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
@@ -70,7 +70,7 @@ export async function renderAdminCommissionPanel(container) {
 
     let html = `
       <div class="acd-stats">
-        <div class="acd-stat"><div class="acd-stat-val" style="color:#ef4444">${totalOutstanding.toLocaleString()} EGP</div><div class="acd-stat-label">Total Outstanding</div></div>
+        <div class="acd-stat"><div class="acd-stat-val" style="color:#ef4444">${totalOutstanding.toLocaleString()} USD</div><div class="acd-stat-label">Total Outstanding</div></div>
         <div class="acd-stat"><div class="acd-stat-val" style="color:#eab308">${lockedCount}</div><div class="acd-stat-label">Locked Events</div></div>
         <div class="acd-stat"><div class="acd-stat-val" style="color:#22c55e">${settledCount}</div><div class="acd-stat-label">Settled</div></div>
         <div class="acd-stat"><div class="acd-stat-val">${rows.length}</div><div class="acd-stat-label">Total Records</div></div>
@@ -132,7 +132,7 @@ function showSettleModal(eventId, balance, panelContainer) {
     <div class="acd-settle-box">
       <h3>💰 Record <span style="color:var(--ev-accent,#d4af37)">Settlement</span></h3>
       <div class="ev-form-group">
-        <label style="font-size:.82rem;font-weight:600">Amount (EGP)</label>
+        <label style="font-size:.82rem;font-weight:600">Amount (USD)</label>
         <input class="ev-form-input" type="number" id="settle-amount" value="${balance}" min="0.01" step="0.01" />
       </div>
       <div class="ev-form-group">

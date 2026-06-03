@@ -409,7 +409,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         country: country || null,
         keywords: ceKeywords.length ? ceKeywords : null,
         pixel_code: document.getElementById('ce-pixel')?.value.trim() || null,
-        currency: currency || 'EGP',
+        currency: currency || 'USD',
         timezone: timezone || null,
         doors_open: document.getElementById('ce-doors')?.value ? new Date(document.getElementById('ce-doors').value).toISOString() : null,
         end_date: endDate ? new Date(endDate).toISOString() : null,
