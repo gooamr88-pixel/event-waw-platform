@@ -34,7 +34,7 @@ export function renderEventsTable(events) {
   const tbody = document.getElementById('events-tbody');
   if (!tbody) return;
   
-  if (!events.length) {
+  if (!events || !events.length) {
     setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No events yet - create your first one!</td></tr>');
     return;
   }
@@ -44,7 +44,7 @@ export function renderEventsTable(events) {
     const created = new Date(ev.created_at);
     const isPast = date < new Date();
     const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
-    const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
+    const cap = ev.ticket_tiers?.reduce((s, t) => s + (t.capacity || 0), 0) || 0;
     let statusClass = ev.status === 'archived' ? 'archived' : (isPast ? 'past' : ev.status);
     let statusLabel = ev.status === 'archived' ? 'Archived' : (isPast ? 'Past' : (ev.status ? ev.status.charAt(0).toUpperCase() + ev.status.slice(1) : 'Draft'));
 
@@ -411,7 +411,7 @@ export function renderArchivesTable(events) {
       console.warn('Invalid date in archive:', ev);
     }
     const sold = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0), 0) || 0;
-    const cap = ev.ticket_tiers?.reduce((s, t) => s + t.capacity, 0) || 0;
+    const cap = ev.ticket_tiers?.reduce((s, t) => s + (t.capacity || 0), 0) || 0;
     const revenue = ev.ticket_tiers?.reduce((s, t) => s + (t.sold_count || 0) * (t.price || 0), 0) || 0;
 
     return `<tr style="opacity:.85">

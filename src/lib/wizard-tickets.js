@@ -62,6 +62,7 @@ export function renderCePromoTable() {
  */
 export function renderCeTicketsTable() {
   const tbody = document.getElementById('ce-tickets-tbody');
+  if (!tbody) return;
   if (!ceTicketsList.length) {
     setSafeHTML(tbody, '<tr><td colspan="7" class="ev-table-empty">No tickets added yet</td></tr>');
     return;
@@ -153,7 +154,6 @@ export function setupTicketListeners() {
     const isHidden = document.getElementById('ce-ticket-hidden')?.checked || false;
 
     if (!name) { showToast('Ticket name is required', 'error'); return; }
-    if (!price && price !== 0) { showToast('Ticket price is required (use 0 for free tickets)', 'error'); return; }
     // M-fe-2 FIX: Validate min purchase ≤ max purchase
     if (minPurchase > maxPurchase) { showToast('Min purchase cannot exceed max purchase', 'error'); return; }
 

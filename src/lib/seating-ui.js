@@ -8,6 +8,7 @@ import { createSeatedCheckout, createGuestSeatedCheckout } from './events.js';
 import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from './price-breakdown.js';
 import { setSafeHTML } from './dom.js';
 import { showAlertModal } from './ui-modals.js';
+import { escapeHTML, formatCurrency } from './utils.js';
 
 /**
  * Initialize the seating chart UI on the event-detail page.
@@ -157,7 +158,7 @@ function renderLegend(chart) {
     <div class="seating-legend-item" data-tier-id="${t.tier_id}">
       <span class="seating-legend-dot" style="background:${t.color}"></span>
       <span class="seating-legend-name">${escapeHTML(t.tier_name)}</span>
-      <span class="seating-legend-price">$${Number(t.tier_price).toLocaleString()}</span>
+      <span class="seating-legend-price">${formatCurrency(Number(t.tier_price), t.currency)}</span>
       <span class="seating-legend-avail">${t.available}/${t.total} left</span>
     </div>
   `).join('') + `
@@ -231,7 +232,8 @@ function updateSelectionBar(seats, chart) {
   const tierName = seats[0]?.tier_name || 'Selected';
 
   setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''}  ${escapeHTML(tierName)}`);
-  totalText.textContent = `$${total.toLocaleString()}`;
+  const eventCurrency = document.getElementById('seating-container')?.dataset?.currency || 'USD';
+  totalText.textContent = formatCurrency(total, eventCurrency);
 
   // ── BRD: Fetch server-side breakdown with tax + service fee (debounced) ──
   if (breakdownContainer) {
@@ -249,7 +251,7 @@ function updateSelectionBar(seats, chart) {
 
         // Update the header total to match server total (includes tax + fees)
         if (breakdown?.total != null) {
-          totalText.textContent = `$${Number(breakdown.total).toLocaleString()}`;
+          totalText.textContent = formatCurrency(Number(breakdown.total), breakdown.currency || eventCurrency);
         }
       } catch (err) {
         console.warn('Seat breakdown fetch failed, using local total:', err);
@@ -271,12 +273,4 @@ function renderLegendCounts(chart) {
   }
 }
 
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
+

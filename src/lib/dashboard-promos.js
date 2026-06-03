@@ -296,6 +296,7 @@ export function setupPromoForm() {
         code,
         discount_type: discountType,
         discount_value: discountVal,
+        discount_currency: discountType === 'fixed' ? currency : null,
         max_uses: maxUses,
         event_id: eventId,
         valid_until: expires ? new Date(expires).toISOString() : null,

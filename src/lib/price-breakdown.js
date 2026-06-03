@@ -5,6 +5,7 @@
    =================================== */
 
 import { supabase } from './supabase.js';
+import { escapeHTML } from './utils.js';
 
 /**
  * Fetch the full price breakdown from the server.
@@ -90,7 +91,7 @@ export function renderPriceBreakdown(container, breakdown, options = {}) {
   html += `
     <div class="ev-breakdown__row">
       <span class="ev-breakdown__label">
-        ${breakdown.tier_name} × ${breakdown.quantity}
+        ${escapeHTML(breakdown.tier_name)} × ${breakdown.quantity}
       </span>
       <span class="ev-breakdown__value">${fc(breakdown.subtotal)}</span>
     </div>`;
@@ -101,7 +102,7 @@ export function renderPriceBreakdown(container, breakdown, options = {}) {
       <div class="ev-breakdown__row ev-breakdown__discount">
         <span class="ev-breakdown__label">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-          Promo: ${breakdown.promo_code}
+          Promo: ${escapeHTML(breakdown.promo_code)}
         </span>
         <span class="ev-breakdown__value">-${fc(breakdown.promo_discount)}</span>
       </div>`;
@@ -112,7 +113,7 @@ export function renderPriceBreakdown(container, breakdown, options = {}) {
     html += `
       <div class="ev-breakdown__row">
         <span class="ev-breakdown__label">
-          ${breakdown.tax_label || 'VAT'} (${breakdown.tax_rate}%)
+          ${escapeHTML(breakdown.tax_label || 'VAT')} (${breakdown.tax_rate}%)
         </span>
         <span class="ev-breakdown__value">${fc(breakdown.tax_amount)}</span>
       </div>`;

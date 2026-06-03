@@ -107,7 +107,7 @@ export function otpLoginEmail(code: string): string {
         style="background:${BRAND.bg};border:2px solid rgba(5,150,105,0.15);border-radius:16px;">
         <tr><td style="padding:20px 40px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
-            ${code}
+            ${esc(code)}
           </span>
         </td></tr>
       </table>
@@ -137,7 +137,7 @@ export function otpRegisterEmail(code: string, name: string): string {
         style="background:${BRAND.bg};border:2px solid rgba(5,150,105,0.15);border-radius:16px;">
         <tr><td style="padding:20px 40px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
-            ${code}
+            ${esc(code)}
           </span>
         </td></tr>
       </table>
@@ -388,7 +388,7 @@ export function otpPasswordResetEmail(code: string): string {
         style="background:${BRAND.bg};border:2px solid rgba(5,150,105,0.15);border-radius:16px;">
         <tr><td style="padding:20px 40px;">
           <span style="font-size:38px;font-weight:800;letter-spacing:10px;color:${BRAND.color};font-family:'Courier New',monospace;">
-            ${code}
+            ${esc(code)}
           </span>
         </td></tr>
       </table>

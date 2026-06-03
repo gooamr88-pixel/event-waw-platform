@@ -46,7 +46,7 @@ serve(async (req) => {
       .eq('id', user.id)
       .single();
 
-    if (!profile || !['organizer', 'admin'].includes(profile.role)) {
+    if (!profile || !['organizer', 'admin', 'super_admin'].includes(profile.role)) {
       return errorResponse(403, 'Only organizers can set up payment accounts', {}, req);  // L5 FIX
     }
 

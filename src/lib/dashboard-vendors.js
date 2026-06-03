@@ -59,12 +59,11 @@ async function loadApprovalData() {
 
     setSafeHTML(tbody, data.map((r, i) => `<tr>
       <td>${i + 1}</td>
-      <td style="font-weight:600">${escapeHTML(r.vendor_name || r.business_name || '-')}</td>
-      <td>${escapeHTML(r.vendor_email || r.contact_email || '-')}</td>
-      <td>${escapeHTML(r.type || r.category || '-')}</td>
-      <td>${escapeHTML(r.name || r.business_name || '-')}</td>
+      <td style="font-weight:600">${escapeHTML(r.business_name || '-')}</td>
+      <td>${escapeHTML(r.contact_email || '-')}</td>
       <td>${escapeHTML(r.category || '-')}</td>
-      <td>${r.price ? '$' + Number(r.price).toLocaleString() : '-'}</td>
+      <td>${escapeHTML(r.booth_size || '-')}</td>
+      <td style="max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHTML(r.notes || '-')}</td>
       <td style="font-size:.8rem;color:var(--ev-text-sec)">${new Date(r.created_at).toLocaleDateString()}</td>
       <td><span class="ev-badge ${r.status || approvalTabFilter}">${escapeHTML(r.status || approvalTabFilter)}</span></td>
     </tr>`).join(''));

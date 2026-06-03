@@ -27,11 +27,11 @@ serve(async (req) => {
   try {
     // 1. Authenticate the calling user
     const { user, error: authError } = await authenticateRequest(req);
-    if (!user) return errorResponse(401, authError || 'Unauthorized');
+    if (!user) return errorResponse(401, authError || 'Unauthorized', {}, req);
 
     // ── Rate Limit: 3 OTP requests per 5 minutes per user ──
     if (!rateLimit(`otp:${user.id}`, 3, 300_000)) {
-      return errorResponse(429, 'Too many code requests. Please wait a few minutes.');
+      return errorResponse(429, 'Too many code requests. Please wait a few minutes.', {}, req);
     }
 
     // 2. Parse and validate request body
@@ -39,14 +39,14 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { name, type } = body;
 
     // Validate type
     if (type && !['login', 'register'].includes(type)) {
-      return errorResponse(400, 'Invalid type — must be "login" or "register"');
+      return errorResponse(400, 'Invalid type — must be "login" or "register"', {}, req);
     }
 
     // Sanitize name (prevent injection in email template)
@@ -61,9 +61,9 @@ serve(async (req) => {
       console.error('OTP generation error:', otpError);
       // Check for rate limit from DB
       if (otpError?.message?.includes('wait')) {
-        return errorResponse(429, 'Please wait before requesting a new code');
+        return errorResponse(429, 'Please wait before requesting a new code', {}, req);
       }
-      return errorResponse(500, 'Failed to generate verification code');
+      return errorResponse(500, 'Failed to generate verification code', {}, req);
     }
 
     const code = otpData[0].otp_code;
@@ -99,12 +99,12 @@ serve(async (req) => {
     if (!brevoRes.ok) {
       const errText = await brevoRes.text();
       console.error('Brevo API error:', errText);
-      return errorResponse(502, 'Failed to send email');
+      return errorResponse(502, 'Failed to send email', {}, req);
     }
 
     return jsonResponse({ success: true, masked_email: maskedEmail });
   } catch (err) {
     console.error('Send OTP email error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

@@ -24,19 +24,19 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { guest_token } = body;
 
     if (!guest_token || typeof guest_token !== 'string' || guest_token.length < 30) {
-      return errorResponse(400, 'Invalid guest token');
+      return errorResponse(400, 'Invalid guest token', {}, req);
     }
 
     // ── Rate Limit: 10 token verifications per minute per IP ──
     const clientIP = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
     if (!rateLimit(`guest-verify:${clientIP}`, 10, 60_000)) {
-      return errorResponse(429, 'Too many requests. Please wait a moment.');
+      return errorResponse(429, 'Too many requests. Please wait a moment.', {}, req);
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -54,12 +54,12 @@ serve(async (req) => {
 
     if (tokenError) {
       console.error('Token verification error:', tokenError);
-      return errorResponse(500, 'Failed to verify access link');
+      return errorResponse(500, 'Failed to verify access link', {}, req);
     }
 
     // JSONB return — single object, not array
     if (!tokenResult || !tokenResult.is_valid) {
-      return errorResponse(403, 'This access link is invalid or has expired. Please check your email for the correct link.');
+      return errorResponse(403, 'This access link is invalid or has expired. Please check your email for the correct link.', {}, req);
     }
 
     const { order_id, guest_email, guest_name } = tokenResult;
@@ -84,7 +84,7 @@ serve(async (req) => {
 
     if (orderError || !order) {
       console.error('Order not found:', orderError);
-      return errorResponse(404, 'Order not found');
+      return errorResponse(404, 'Order not found', {}, req);
     }
 
     return jsonResponse({
@@ -120,6 +120,6 @@ serve(async (req) => {
 
   } catch (err) {
     console.error('Guest ticket verification error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

@@ -34,6 +34,7 @@ export function isAutocompleteInitialized() { return googleAutocompleteInitializ
 export function resetMapState() {
   googleMapInstance = null;
   googleMapMarker = null;
+  googleMapsRetries = 0;
 }
 
 /**

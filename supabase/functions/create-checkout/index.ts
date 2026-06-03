@@ -71,7 +71,11 @@ serve(async (req) => {
       .eq('id', tier_id)
       .single();
 
-    const checkoutCurrency = (tierLookup?.currency || 'usd').toLowerCase();
+    if (!tierLookup) {
+      return errorResponse(404, 'Ticket tier not found', {}, req);
+    }
+
+    const checkoutCurrency = (tierLookup.currency || 'usd').toLowerCase();
 
     // Call calculate_order_breakdown_v3 — returns cents fields for safe integer math
     const { data: breakdown, error: breakdownErr } = await adminClient

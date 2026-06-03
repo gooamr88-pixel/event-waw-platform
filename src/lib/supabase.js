@@ -81,6 +81,8 @@ export async function getCurrentProfile() {
     phone: meta.phone || null,
     role: 'attendee', // SECURITY: Never trust meta.role — role elevation requires server-side RPC
     avatar_url: meta.avatar_url || null,
+    is_blocked: false,       // FIX: Default to safe values so guard.js block check works
+    otp_verified_at: null,   // FIX: Default so OTP check doesn't pass on fallback profiles
   };
 
   const { error: createError } = await supabase

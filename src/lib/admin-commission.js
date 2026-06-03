@@ -123,14 +123,14 @@ export async function renderAdminCommissionPanel(container) {
 
     // Settle button handlers
     container.querySelectorAll('[data-settle]').forEach(btn => {
-      btn.addEventListener('click', () => showSettleModal(btn.dataset.settle, btn.dataset.balance, container));
+      btn.addEventListener('click', () => showSettleModal(btn.dataset.settle, btn.dataset.balance, container, primaryCurrency));
     });
   } catch (err) {
     setSafeHTML(container, `<div class="ev-card" style="padding:20px;color:#ef4444">Error: ${esc(err.message)}</div>`);
   }
 }
 
-function showSettleModal(eventId, balance, panelContainer) {
+function showSettleModal(eventId, balance, panelContainer, currency = 'EGP') {
   document.getElementById('acd-settle-modal')?.remove();
 
   const modal = document.createElement('div');
@@ -140,7 +140,7 @@ function showSettleModal(eventId, balance, panelContainer) {
     <div class="acd-settle-box">
       <h3>💰 Record <span style="color:var(--ev-accent,#d4af37)">Settlement</span></h3>
       <div class="ev-form-group">
-        <label style="font-size:.82rem;font-weight:600">Amount (EGP)</label>
+        <label style="font-size:.82rem;font-weight:600">Amount (${esc(currency)})</label>
         <input class="ev-form-input" type="number" id="settle-amount" value="${esc(balance)}" min="0.01" step="0.01" />
       </div>
       <div class="ev-form-group">
@@ -181,6 +181,11 @@ function showSettleModal(eventId, balance, panelContainer) {
 
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        showToast('Session expired. Please log in again.', 'error');
+        modal.remove();
+        return;
+      }
       const { error } = await supabase.rpc('settle_commission', {
         p_event_id: eventId,
         p_amount: amount,

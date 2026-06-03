@@ -11,9 +11,9 @@ import { setSafeHTML } from './dom.js';
 const TIER_COLORS = [
   '#d4af37', // Gold
   '#8b5cf6', // Purple
-  '#10B981', // Blue
+  '#3B82F6', // Blue
   '#22c55e', // Green
-  '#10B981', // Orange
+  '#F97316', // Orange
   '#ec4899', // Pink
   '#14b8a6', // Teal
   '#ef4444', // Red
@@ -411,7 +411,7 @@ export class SeatingChart {
       circle.style.stroke = 'none';
     } else if (effectiveStatus === 'available') {
       circle.style.fill = tierColor;
-      circle.style.opacity = this.activeTierId && circle.getAttribute('data-tier-color') !== this.tierColorMap.get(this.activeTierId) ? '0.15' : '1';
+      circle.style.opacity = this.activeTierId && d && d.tier_id !== this.activeTierId ? '0.15' : '1';
     } else if (effectiveStatus === 'selected') {
       circle.style.fill = '#ffffff';
       circle.style.opacity = '1';
@@ -719,8 +719,9 @@ export class SeatingChart {
     toast.className = 'ev-orphan-toast';
     toast.setAttribute('role', 'alert');
 
+    const escText = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const seatLabels = orphanCheck.orphanSeats
-      .map(s => `<strong>Row ${s.row_label}, Seat ${s.seat_number}</strong>`)
+      .map(s => `<strong>Row ${escText(s.row_label)}, Seat ${escText(s.seat_number)}</strong>`)
       .join(', ');
 
     toast.innerHTML = `

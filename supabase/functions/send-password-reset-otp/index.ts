@@ -30,19 +30,19 @@ serve(async (req) => {
     try {
       body = await req.json();
     } catch {
-      return errorResponse(400, 'Invalid JSON body');
+      return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
     const { email } = body;
     if (!email || typeof email !== 'string' || !email.includes('@')) {
-      return errorResponse(400, 'Valid email address is required');
+      return errorResponse(400, 'Valid email address is required', {}, req);
     }
 
     const normalizedEmail = email.trim().toLowerCase();
 
     // ── Rate Limit: 3 reset requests per 10 minutes per email ──
     if (!rateLimit(`pwd-reset:${normalizedEmail}`, 3, 600_000)) {
-      return errorResponse(429, 'Too many reset requests. Please wait a few minutes.');
+      return errorResponse(429, 'Too many reset requests. Please wait a few minutes.', {}, req);
     }
 
     // 2. Generate OTP SERVER-SIDE using the service role
@@ -55,13 +55,13 @@ serve(async (req) => {
       // Don't reveal whether the email exists or not for security
       // But if it's a rate-limit error, tell them
       if (otpError?.message?.includes('wait')) {
-        return errorResponse(429, 'Please wait before requesting a new code');
+        return errorResponse(429, 'Please wait before requesting a new code', {}, req);
       }
       // For "no account" errors, we still return success to prevent email enumeration
       if (otpError?.message?.includes('No account')) {
         return jsonResponse({ success: true, masked_email: email.substring(0, 2) + '***@' + email.split('@')[1] });
       }
-      return errorResponse(500, 'Failed to generate reset code');
+      return errorResponse(500, 'Failed to generate reset code', {}, req);
     }
 
     const code = otpData[0].otp_code;
@@ -91,12 +91,12 @@ serve(async (req) => {
     if (!brevoRes.ok) {
       const errText = await brevoRes.text();
       console.error('Brevo API error:', errText);
-      return errorResponse(502, 'Failed to send email');
+      return errorResponse(502, 'Failed to send email', {}, req);
     }
 
     return jsonResponse({ success: true, masked_email: maskedEmail });
   } catch (err) {
     console.error('Send password reset OTP error:', err);
-    return errorResponse(500, err.message || 'Internal server error');
+    return errorResponse(500, err.message || 'Internal server error', {}, req);
   }
 });

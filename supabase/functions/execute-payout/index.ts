@@ -54,7 +54,12 @@ serve(async (req) => {
     }
 
     // ── Parse Request ──
-    const body = await req.json();
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return errorResponse(400, 'Invalid JSON body', {}, req);
+    }
     const { payout_id } = body;
 
     if (!payout_id) {

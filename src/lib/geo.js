@@ -141,12 +141,10 @@ export function formatDistance(km) {
  */
 export function sortByProximity(events, userLat, userLng) {
   return events.map(ev => {
-    if (ev.latitude != null && ev.longitude != null) {
-      ev._distance = haversineKm(userLat, userLng, ev.latitude, ev.longitude);
-    } else {
-      ev._distance = Infinity;
-    }
-    return ev;
+    const distance = (ev.latitude != null && ev.longitude != null)
+      ? haversineKm(userLat, userLng, ev.latitude, ev.longitude)
+      : Infinity;
+    return { ...ev, _distance: distance };
   }).sort((a, b) => a._distance - b._distance);
 }
 

@@ -274,9 +274,11 @@ function showToast(message, type = 'success') {
   toast.innerHTML = `
     <div style="display: flex; align-items: center; gap: 12px; pointer-events: auto; cursor: pointer; background: ${bgColor}; border: 1px solid ${borderColor}; color: ${textColor}; padding: 12px 18px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-size: 0.88rem; font-weight: 600; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); transform: translateY(-20px); opacity: 0;">
       <span style="display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: rgba(255, 255, 255, 0.15); padding: 5px; border-radius: 8px;">${icon}</span>
-      <div style="flex: 1; line-height: 1.4; letter-spacing: -0.01em;">${message}</div>
+      <div style="flex: 1; line-height: 1.4; letter-spacing: -0.01em;" class="mc-toast-msg"></div>
     </div>
   `;
+  // FIX: Use textContent to prevent XSS from server error messages
+  toast.querySelector('.mc-toast-msg').textContent = message;
 
   const toastCard = toast.firstElementChild;
   container.appendChild(toast);

@@ -218,7 +218,7 @@ export async function renderCMSEditor(container) {
     });
 
   } catch (err) {
-    container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--ev-danger)">Failed to load CMS data: ${esc(err.message)}</div>`;
+    setSafeHTML(container, `<div style="text-align:center;padding:40px;color:var(--ev-danger)">Failed to load CMS data: ${esc(err.message)}</div>`);
   }
 }
 
@@ -345,7 +345,7 @@ function esc(str) {
 }
 
 function escAttr(str) {
-  return (str || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function fmtTime(iso) {

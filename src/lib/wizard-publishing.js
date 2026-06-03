@@ -574,17 +574,42 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       const promoCodes = getPromoCodesList();
       if (promoCodes.length > 0) {
         if (ceEditingEventId) {
-          // Delete existing promo codes and recreate
-          await supabase.from('promo_codes').delete().eq('event_id', event.id);
+          // FIX: Upsert by code instead of delete-all to preserve used_count and usage history
+          const { data: existingPromos } = await supabase
+            .from('promo_codes')
+            .select('id, code')
+            .eq('event_id', event.id);
+
+          const uiCodes = new Set(promoCodes.map(p => p.code.toUpperCase()));
+          const existingCodeMap = {};
+          (existingPromos || []).forEach(ep => { existingCodeMap[ep.code.toUpperCase()] = ep.id; });
+
+          // Delete promos removed from the UI
+          const promosToDelete = (existingPromos || []).filter(ep => !uiCodes.has(ep.code.toUpperCase()));
+          if (promosToDelete.length > 0) {
+            await supabase.from('promo_codes').delete().in('id', promosToDelete.map(p => p.id));
+          }
+
+          // Upsert remaining (preserves used_count for existing, creates new ones)
+          const promoPayloads = promoCodes.map(p => ({
+            ...(existingCodeMap[p.code.toUpperCase()] ? { id: existingCodeMap[p.code.toUpperCase()] } : {}),
+            event_id: event.id,
+            code: p.code,
+            discount_type: p.type,
+            discount_value: p.value,
+            max_uses: p.maxUses || null
+          }));
+          await supabase.from('promo_codes').upsert(promoPayloads);
+        } else {
+          const promoPayloads = promoCodes.map(p => ({
+            event_id: event.id,
+            code: p.code,
+            discount_type: p.type,
+            discount_value: p.value,
+            max_uses: p.maxUses || null
+          }));
+          await supabase.from('promo_codes').insert(promoPayloads);
         }
-        const promoPayloads = promoCodes.map(p => ({
-          event_id: event.id,
-          code: p.code,
-          discount_type: p.type,
-          discount_value: p.value,
-          max_uses: p.maxUses || null
-        }));
-        await supabase.from('promo_codes').insert(promoPayloads);
       }
 
       if (!isDraft) {
@@ -816,7 +841,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       const manualSummary = escapeHTML(configuredManual.map(pm => methodLabels[pm.method] || pm.method).join(', '));
 
       section.style.display = '';
-      container.innerHTML = `
+      setSafeHTML(container, `
         <label class="ce-pref-card ce-pref-selected" style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border-radius:14px;border:2px solid var(--ev-pink,#ec4899);background:rgba(236,72,153,0.04);cursor:pointer;transition:all .2s">
           <input type="radio" name="ce-payment-pref" value="both" checked style="margin-top:3px;accent-color:var(--ev-pink,#ec4899);width:18px;height:18px;flex-shrink:0">
           <div style="flex:1;min-width:0">
@@ -848,7 +873,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             <p style="margin:0;font-size:.8rem;color:var(--ev-text-sec);line-height:1.5">Buyers pay via ${manualSummary}. Requires your manual approval.</p>
           </div>
         </label>
-      `;
+      `);
 
       if (note) note.textContent = 'You can change this for each event. Your configured methods are managed in Profile → Payment Methods.';
 
