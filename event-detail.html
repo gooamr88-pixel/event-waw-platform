@@ -256,7 +256,7 @@
           <!-- Policies & Instructions -->
           <div class="event-detail-section" id="ed-policies-section" style="display:none;">
             <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📋 Policies & Rules</h2>
-            <div id="ed-policies-container" style="display:flex;flex-direction:column;gap:12px;"></div>
+            <div id="ed-policies-container" class="ed-policies-grid"></div>
           </div>
 
           <!-- Hidden fields for backward compat -->
@@ -564,6 +564,73 @@
       display: flex; align-items: center; justify-content: center; transition: background 0.2s;
     }
     .lightbox-close:hover { background: rgba(255,255,255,0.2); }
+
+    /* ══════ POLICIES GRID ══════ */
+    .ed-policies-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 700px) {
+      .ed-policies-grid { grid-template-columns: 1fr; }
+    }
+
+    .ed-policy-card {
+      background: var(--bg-card, rgba(255,255,255,.03));
+      border: 1px solid var(--border-color, rgba(255,255,255,.08));
+      border-radius: 14px;
+      padding: 18px 20px;
+      transition: transform .25s cubic-bezier(.4,0,.2,1), box-shadow .25s cubic-bezier(.4,0,.2,1), border-color .25s;
+    }
+    .ed-policy-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,0,0,.08);
+      border-color: rgba(5,150,105,.2);
+    }
+    [data-theme="light"] .ed-policy-card {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    [data-theme="light"] .ed-policy-card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,.08);
+    }
+
+    .ed-policy-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .ed-policy-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(5,150,105,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      flex-shrink: 0;
+    }
+    [data-theme="light"] .ed-policy-icon {
+      background: rgba(5,150,105,.06);
+    }
+    .ed-policy-title {
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: var(--text-primary);
+      letter-spacing: -.01em;
+    }
+    .ed-policy-body {
+      color: var(--text-secondary, var(--text-muted));
+      font-size: 0.82rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      padding-left: 46px;
+    }
+    @media (max-width: 700px) {
+      .ed-policy-body { padding-left: 0; }
+    }
   </style>
 
   <!-- Lightbox Modal -->
@@ -796,15 +863,13 @@
         const addPolicy = (title, text, icon) => {
           if (!text || text.trim() === '') return;
           const div = document.createElement('div');
-          div.style.background = 'var(--ev-card)';
-          div.style.border = '1px solid var(--border-light)';
-          div.style.borderRadius = '12px';
-          div.style.padding = '14px 16px';
+          div.className = 'ed-policy-card';
           div.innerHTML = `
-            <div style="display:flex;align-items:center;gap:8px;font-weight:600;font-size:0.95rem;margin-bottom:6px;color:var(--text-primary);">
-              <span style="font-size:1.1rem;">${icon}</span> ${title}
+            <div class="ed-policy-header">
+              <span class="ed-policy-icon">${icon}</span>
+              <span class="ed-policy-title">${title}</span>
             </div>
-            <div style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;white-space:pre-wrap;">${escapeHTML(text)}</div>
+            <div class="ed-policy-body">${escapeHTML(text)}</div>
           `;
           policiesContainer.appendChild(div);
         };
