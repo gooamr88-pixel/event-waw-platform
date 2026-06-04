@@ -9,9 +9,10 @@ let _cachedTickets = [];
 let _cachedTierMap = {};
 let _cachedOrderMap = {};
 
-export function setupTicketsPanel() {
+export function setupTicketsPanel(events) {
   const select = document.getElementById('ticket-event-select');
   const searchInput = document.getElementById('ticket-search-input');
+  console.log('[Tickets] setupTicketsPanel called, select element:', !!select);
 
   // ── Search handler: client-side filter of loaded tickets ──
   searchInput?.addEventListener('input', () => {
@@ -20,9 +21,10 @@ export function setupTicketsPanel() {
     renderTicketRows(filterTickets(_cachedTickets, query));
   });
 
-  select?.addEventListener('change', async () => {
+  const loadTicketsForEvent = async () => {
     const tbody = document.getElementById('tickets-tbody');
     const eventId = select.value;
+    console.log('[Tickets] loadTicketsForEvent fired, eventId:', eventId);
     if (searchInput) searchInput.value = '';
     _cachedTickets = [];
 
@@ -41,6 +43,7 @@ export function setupTicketsPanel() {
     try {
       const { data: tiers, error: tierErr } = await supabase.from('ticket_tiers').select('id, name, price, currency').eq('event_id', eventId);
       if (getSwitchId() !== mySwitch) return;
+      console.log('[Tickets] Tiers response:', { tiers: tiers?.length, tierErr });
       if (tierErr) { console.error('Tier query error:', tierErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tiers</td></tr>'); return; }
       if (!tiers?.length) { setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No tiers found</td></tr>'); return; }
       _cachedTierMap = {};
@@ -50,6 +53,7 @@ export function setupTicketsPanel() {
         supabase.from('tickets').select('id, ticket_tier_id, order_id, user_id, status, qr_hash, created_at, scanned_at, attendee_name, attendee_email, seat_label').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
       );
       if (getSwitchId() !== mySwitch) return;
+      console.log('[Tickets] Tickets response:', { count: tickets?.length, tickErr });
 
       if (tickErr) { console.error('Ticket query error:', tickErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tickets</td></tr>'); return; }
 
@@ -138,9 +142,18 @@ export function setupTicketsPanel() {
         showToast('PDF print dialog opened', 'success');
       };
     } catch (err) {
+      console.error('[Tickets] Unexpected error:', err);
       setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty" style="color:var(--ev-danger)">${escapeHTML(err.message)}</td></tr>`);
     }
-  });
+  };
+
+  select?.addEventListener('change', loadTicketsForEvent);
+
+  // Auto-fire if populateEventSelects already pre-selected an event
+  if (select && select.value) {
+    console.log('[Tickets] Auto-firing for pre-selected event:', select.value);
+    loadTicketsForEvent();
+  }
 }
 
 /* ── Client-side search filter ── */

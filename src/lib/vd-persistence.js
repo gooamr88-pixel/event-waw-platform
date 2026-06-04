@@ -5,6 +5,17 @@
 import { supabase } from './supabase.js';
 import { ROW_GAP, SEAT_GAP, SEAT_R } from './vd-engine.js';
 
+/**
+ * Save or update the venue map for an event.
+ *
+ * Uses a SMART MERGE strategy instead of delete-and-reinsert:
+ *   • Existing seats with active bookings (sold/reserved) are PRESERVED.
+ *   • New seats are inserted as 'available'.
+ *   • Removed seats that are available/blocked are deleted.
+ *   • Tier assignments are updated only on non-booked seats.
+ *   • If the new layout would remove any sold/reserved seats, the save is
+ *     BLOCKED with a descriptive error message.
+ */
 export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
   const layoutJson = engine.toLayoutJSON();
 
@@ -15,107 +26,163 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
 
   if (existingMap) {
     version = (existingMap.version || 1) + 1;
-
-    // H22 FIX: Back up existing seats before delete-and-reinsert
-    // The Supabase JS client doesn't support transactions, so we use a backup-restore pattern.
-    // TODO: Migrate to a SECURITY DEFINER RPC that wraps this in a single SQL transaction.
-    const { data: backupSeats } = await supabase.from('seats')
-      .select('venue_map_id, section_key, row_label, seat_number, ticket_tier_id, status')
-      .eq('venue_map_id', existingMap.id);
-
-    const { error } = await supabase.from('venue_maps')
-      .update({ layout_json: layoutJson, version }).eq('id', existingMap.id);
-    if (error) throw new Error(`Failed to update venue map: ${error.message}`);
     mapId = existingMap.id;
-    await supabase.from('seats').delete().eq('venue_map_id', mapId);
 
+    // ── 1. Fetch existing seats with full booking state ──
+    const { data: oldSeats, error: fetchErr } = await supabase.from('seats')
+      .select('id, section_key, row_label, seat_number, ticket_tier_id, status, reservation_id, ticket_id, locked_until')
+      .eq('venue_map_id', mapId);
+
+    if (fetchErr) throw new Error(`Failed to fetch existing seats: ${fetchErr.message}`);
+
+    // ── 2. Build lookup: "section::row::number" → seat record ──
+    const oldMap = new Map();
+    for (const s of (oldSeats || [])) {
+      oldMap.set(`${s.section_key}::${s.row_label}::${s.seat_number}`, s);
+    }
+
+    // ── 3. Classify seats: keep / insert / update-tier ──
     const validTierIds = new Set((engine?.tiers || []).map(t => t.id));
-    console.log('[DEBUG] engine.tiers:', engine?.tiers);
-    console.log('[DEBUG] validTierIds:', [...validTierIds]);
-    console.log('[DEBUG] sectionTiers input:', sectionTiers);
+    const newSeatKeys = new Set();
+    const toInsert = [];
+    const tierUpdates = new Map(); // tierId → [seatId, ...]
 
-    // Insert new seats with rollback on failure
-    try {
-      const seatRows = [];
-      for (const section of layoutJson.sections) {
-        let tierId = sectionTiers[section.key] || section.tier_id || null;
-        console.log(`[DEBUG] Section "${section.key}" - initial tierId:`, tierId);
-        if (tierId && !validTierIds.has(tierId)) {
-          console.warn(`[DEBUG] Stale/invalid tierId "${tierId}" detected on section "${section.key}". Resetting to null.`);
-          tierId = null;
-        }
-        console.log(`[DEBUG] Section "${section.key}" - final tierId:`, tierId);
-        for (const row of section.rows) {
-          for (const seat of row.seats) {
-            seatRows.push({
-              venue_map_id: mapId, section_key: section.key,
-              row_label: row.label, seat_number: seat.number,
-              ticket_tier_id: tierId, status: 'available',
+    for (const section of layoutJson.sections) {
+      let tierId = sectionTiers[section.key] || section.tier_id || null;
+      if (tierId && !validTierIds.has(tierId)) tierId = null;
+
+      for (const row of section.rows) {
+        for (const seat of row.seats) {
+          const key = `${section.key}::${row.label}::${seat.number}`;
+          newSeatKeys.add(key);
+
+          const existing = oldMap.get(key);
+          if (existing) {
+            // Seat exists — only update tier on available/blocked seats
+            // (never change tier on sold/reserved — financial integrity)
+            if (existing.ticket_tier_id !== tierId &&
+                (existing.status === 'available' || existing.status === 'blocked')) {
+              const groupKey = tierId || '__null__';
+              if (!tierUpdates.has(groupKey)) tierUpdates.set(groupKey, []);
+              tierUpdates.get(groupKey).push(existing.id);
+            }
+          } else {
+            // New seat — will be inserted as available
+            toInsert.push({
+              venue_map_id: mapId,
+              section_key: section.key,
+              row_label: row.label,
+              seat_number: seat.number,
+              ticket_tier_id: tierId,
+              status: 'available',
             });
           }
         }
       }
+    }
 
-      const BATCH = 500;
-      let inserted = 0;
-      for (let i = 0; i < seatRows.length; i += BATCH) {
-        const batch = seatRows.slice(i, i + BATCH);
-        const { error: batchErr } = await supabase.from('seats').insert(batch);
-        if (batchErr) throw new Error(`Seat insert failed at batch ${Math.floor(i/BATCH)+1}: ${batchErr.message}`);
-        inserted += batch.length;
-      }
-      return { mapId, seatCount: inserted, version };
-    } catch (insertErr) {
-      // H22: Attempt to restore original seats on failure
-      console.error('Seat save failed, attempting rollback:', insertErr.message);
-      if (backupSeats?.length) {
-        try {
-          await supabase.from('seats').delete().eq('venue_map_id', mapId);
-          for (let i = 0; i < backupSeats.length; i += 500) {
-            await supabase.from('seats').insert(backupSeats.slice(i, i + 500));
-          }
-          console.debug(`Rollback successful: restored ${backupSeats.length} seats`);
-        } catch (rollbackErr) {
-          console.error('CRITICAL: Rollback also failed:', rollbackErr.message);
+    // ── 4. Find seats to remove (in old but not in new layout) ──
+    const toDeleteIds = [];
+    const conflictSeats = [];
+
+    for (const [key, seat] of oldMap) {
+      if (!newSeatKeys.has(key)) {
+        if (seat.status === 'sold' || seat.status === 'reserved') {
+          conflictSeats.push(seat);
+        } else {
+          toDeleteIds.push(seat.id);
         }
       }
-      throw new Error(`Save failed and was rolled back. Please retry. (${insertErr.message})`);
     }
+
+    // ── 5. Block save if sold/reserved seats would be removed ──
+    if (conflictSeats.length > 0) {
+      const details = conflictSeats.slice(0, 5).map(s =>
+        `${s.section_key} Row ${s.row_label} Seat ${s.seat_number} (${s.status})`
+      ).join(', ');
+      const extra = conflictSeats.length > 5 ? ` and ${conflictSeats.length - 5} more` : '';
+      throw new Error(
+        `Cannot save: ${conflictSeats.length} seat(s) have active bookings and would be removed. ` +
+        `Affected: ${details}${extra}. ` +
+        `Keep those sections in the layout or refund the tickets first.`
+      );
+    }
+
+    // ── 6. Update layout_json ──
+    const { error: updateErr } = await supabase.from('venue_maps')
+      .update({ layout_json: layoutJson, version }).eq('id', mapId);
+    if (updateErr) throw new Error(`Failed to update venue map: ${updateErr.message}`);
+
+    // ── 7. Delete removed available/blocked seats ──
+    if (toDeleteIds.length > 0) {
+      const BATCH = 500;
+      for (let i = 0; i < toDeleteIds.length; i += BATCH) {
+        const batch = toDeleteIds.slice(i, i + BATCH);
+        const { error: delErr } = await supabase.from('seats').delete().in('id', batch);
+        if (delErr) console.error('Seat delete batch failed:', delErr.message);
+      }
+    }
+
+    // ── 8. Update tier on existing available/blocked seats ──
+    for (const [groupKey, ids] of tierUpdates) {
+      const tierId = groupKey === '__null__' ? null : groupKey;
+      const BATCH = 500;
+      for (let i = 0; i < ids.length; i += BATCH) {
+        const batch = ids.slice(i, i + BATCH);
+        const { error: updErr } = await supabase.from('seats')
+          .update({ ticket_tier_id: tierId }).in('id', batch);
+        if (updErr) console.error('Seat tier update failed:', updErr.message);
+      }
+    }
+
+    // ── 9. Insert new seats ──
+    let inserted = 0;
+    if (toInsert.length > 0) {
+      const BATCH = 500;
+      for (let i = 0; i < toInsert.length; i += BATCH) {
+        const batch = toInsert.slice(i, i + BATCH);
+        const { error: insErr } = await supabase.from('seats').insert(batch);
+        if (insErr) throw new Error(`Seat insert failed: ${insErr.message}`);
+        inserted += batch.length;
+      }
+    }
+
+    const preserved = (oldSeats?.length || 0) - toDeleteIds.length;
+    const tierUpdateCount = [...tierUpdates.values()].reduce((sum, ids) => sum + ids.length, 0);
+    return { mapId, version, seatCount: preserved + inserted, preserved, added: inserted, removed: toDeleteIds.length, tierUpdated: tierUpdateCount };
+
   } else {
+    // ── New map: insert + bulk-insert available seats ──
     const { data, error } = await supabase.from('venue_maps')
       .insert({ event_id: eventId, layout_json: layoutJson, version: 1 }).select('id').single();
     if (error) throw new Error(`Failed to create venue map: ${error.message}`);
     mapId = data.id;
-  }
 
-  const validTierIds = new Set((engine?.tiers || []).map(t => t.id));
-
-  // Bulk-insert seats from sections (new venue map — no rollback needed)
-  const seatRows = [];
-  for (const section of layoutJson.sections) {
-    let tierId = sectionTiers[section.key] || section.tier_id || null;
-    if (tierId && !validTierIds.has(tierId)) {
-      tierId = null;
-    }
-    for (const row of section.rows) {
-      for (const seat of row.seats) {
-        seatRows.push({
-          venue_map_id: mapId, section_key: section.key,
-          row_label: row.label, seat_number: seat.number,
-          ticket_tier_id: tierId, status: 'available',
-        });
+    const validTierIds = new Set((engine?.tiers || []).map(t => t.id));
+    const seatRows = [];
+    for (const section of layoutJson.sections) {
+      let tierId = sectionTiers[section.key] || section.tier_id || null;
+      if (tierId && !validTierIds.has(tierId)) tierId = null;
+      for (const row of section.rows) {
+        for (const seat of row.seats) {
+          seatRows.push({
+            venue_map_id: mapId, section_key: section.key,
+            row_label: row.label, seat_number: seat.number,
+            ticket_tier_id: tierId, status: 'available',
+          });
+        }
       }
     }
-  }
 
-  const BATCH = 500;
-  let inserted = 0;
-  for (let i = 0; i < seatRows.length; i += BATCH) {
-    const batch = seatRows.slice(i, i + BATCH);
-    const { error } = await supabase.from('seats').insert(batch);
-    if (error) throw new Error(`Seat insert failed: ${error.message}`);
-    inserted += batch.length;
-  }
+    const BATCH = 500;
+    let inserted = 0;
+    for (let i = 0; i < seatRows.length; i += BATCH) {
+      const batch = seatRows.slice(i, i + BATCH);
+      const { error: batchErr } = await supabase.from('seats').insert(batch);
+      if (batchErr) throw new Error(`Seat insert failed: ${batchErr.message}`);
+      inserted += batch.length;
+    }
 
-  return { mapId, seatCount: inserted, version };
+    return { mapId, seatCount: inserted, version: 1, preserved: 0, added: inserted, removed: 0 };
+  }
 }

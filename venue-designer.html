@@ -284,7 +284,11 @@
             st[s.label.toLowerCase().replace(/\s+/g,'-')] = s.tier_id;
           });
           const r = await saveVenueMapV2(eventId, engine, st);
-          toast(`✅ ${r.seatCount} seats saved (v${r.version})`, 'success');
+          let msg = `✅ ${r.seatCount} seats saved (v${r.version})`;
+          if (r.preserved > 0) msg += ` · ${r.preserved} kept`;
+          if (r.added > 0) msg += ` · ${r.added} new`;
+          if (r.removed > 0) msg += ` · ${r.removed} removed`;
+          toast(msg, 'success');
           document.getElementById('btn-del-map').style.display = '';
         } catch (e) { toast('❌ ' + e.message, 'error'); }
         finally {

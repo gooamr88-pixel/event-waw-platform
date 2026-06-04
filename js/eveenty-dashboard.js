@@ -285,12 +285,12 @@ export async function loadDashboard() {
     document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '-';
 
     renderEventsTable(events);
-    // H-5: Only attach ticket panel listeners once
+    populateEventSelects(events);
+    // H-5: Only attach ticket panel listeners once (AFTER selects are populated)
     if (!_ticketsPanelInitialized) {
       _ticketsPanelInitialized = true;
       setupTicketsPanel(events);
     }
-    populateEventSelects(events);
     initCharts(revenueData, events);
     if (revenueData?.length) renderRevenueBreakdown(revenueData);
 
