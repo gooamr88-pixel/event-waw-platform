@@ -180,24 +180,60 @@ export class VenueDesignerEngine {
   }
 
   toLayoutJSON() {
+    const stageEl = this.elements.find(e => e.type === 'stage');
     return {
       version: 2,
       canvas: { width: this.state.canvasW, height: this.state.canvasH },
       bgImage: this.state.bgImage || null,
       elements: this.elements.map(e => ({ ...e })),
-      stage: this.elements.find(e => e.type === 'stage') || null,
+      stage: stageEl
+        ? { x: stageEl.x, y: stageEl.y, width: stageEl.w || 400, height: stageEl.h || 60, label: stageEl.label || 'STAGE' }
+        : null,
       sections: this.elements.filter(e => e.type === 'section').map(sec => {
         const rows = [];
         const rowCount = sec.rows || 3;
         const cols = sec.seatsPerRow || 8;
+        const w = sec.w || 250;
+        const h = sec.h || 150;
+
+        // ── Compute seat grid matching vd-renderers.js renderSection() ──
+        const padX = 15, padY = 24;
+        const areaW = w - padX * 2;
+        const areaH = h - padY - 10;
+        const gapX = Math.min(SEAT_GAP, areaW / cols);
+        const gapY = Math.min(ROW_GAP, areaH / rowCount);
+        const startX = padX + (areaW - (cols - 1) * gapX) / 2;
+        const startY = padY;
+        const sr = Math.min(SEAT_R, gapX / 3);
+
         for (let r = 0; r < rowCount; r++) {
           const seats = [];
           for (let s = 0; s < cols; s++) {
-            seats.push({ number: String(s + 1), x: sec.x + s * SEAT_GAP, y: sec.y + r * ROW_GAP, r: SEAT_R });
+            let sx = startX + s * gapX;
+            let sy = startY + r * gapY;
+            // Apply curve (same algorithm as renderSection)
+            if (sec.curve > 0) {
+              const cx = w / 2, dx = sx - cx;
+              const curveAmt = (sec.curve / 500) * (h * 0.3);
+              sy += curveAmt * (1 - Math.cos((dx / (w / 2)) * Math.PI));
+            }
+            // Absolute coordinates = section origin + relative position
+            seats.push({ number: String(s + 1), x: sec.x + sx, y: sec.y + sy, r: sr });
           }
-          rows.push({ label: rowLabel(r), seats });
+          rows.push({
+            label: rowLabel(r),
+            labelX: sec.x + Math.max(3, startX - 10),
+            seats,
+          });
         }
-        return { key: sec.label.toLowerCase().replace(/\s+/g, '-'), label: sec.label, tier_id: sec.tier_id, rows };
+        return {
+          key: sec.label.toLowerCase().replace(/\s+/g, '-'),
+          label: sec.label,
+          tier_id: sec.tier_id,
+          labelX: sec.x + w / 2,
+          labelY: sec.y + 13,
+          rows,
+        };
       }),
     };
   }

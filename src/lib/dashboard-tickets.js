@@ -2,16 +2,17 @@ import { supabase, SUPABASE_FUNCTIONS_URL } from './supabase.js';
 import { safeQuery } from './api.js';
 import { escapeHTML, formatCurrency } from './utils.js';
 import { setSafeHTML, generateSkeletonRows } from './dom.js';
-import { showToast, getSwitchId } from './dashboard-ui.js';
+import { showToast } from './dashboard-ui.js';
 
 // Module-level cache for the last-loaded ticket data (for search filtering)
 let _cachedTickets = [];
 let _cachedTierMap = {};
 let _cachedOrderMap = {};
 
-export function setupTicketsPanel() {
+export function setupTicketsPanel(events) {
   const select = document.getElementById('ticket-event-select');
   const searchInput = document.getElementById('ticket-search-input');
+  console.log('[Tickets] setupTicketsPanel called, select element:', !!select);
 
   // ── Search handler: client-side filter of loaded tickets ──
   searchInput?.addEventListener('input', () => {
@@ -20,9 +21,10 @@ export function setupTicketsPanel() {
     renderTicketRows(filterTickets(_cachedTickets, query));
   });
 
-  select?.addEventListener('change', async () => {
+  const loadTicketsForEvent = async () => {
     const tbody = document.getElementById('tickets-tbody');
     const eventId = select.value;
+    console.log('[Tickets] loadTicketsForEvent fired, eventId:', eventId);
     if (searchInput) searchInput.value = '';
     _cachedTickets = [];
 
@@ -35,12 +37,14 @@ export function setupTicketsPanel() {
     }
     setSafeHTML(tbody, generateSkeletonRows(['20px', '120px', '180px', '80px', '60px', '90px', '70px', '50px'], 5));
 
-    // ── H-1: capture switch-id so we can detect stale responses ──
-    const mySwitch = getSwitchId();
+    // ── Stale-response guard: if user selected a different event mid-flight, bail ──
+    const loadEventId = eventId;
+    const isStale = () => select.value !== loadEventId;
     
     try {
       const { data: tiers, error: tierErr } = await supabase.from('ticket_tiers').select('id, name, price, currency').eq('event_id', eventId);
-      if (getSwitchId() !== mySwitch) return;
+      if (isStale()) return;
+      console.log('[Tickets] Tiers response:', { tiers: tiers?.length, tierErr });
       if (tierErr) { console.error('Tier query error:', tierErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tiers</td></tr>'); return; }
       if (!tiers?.length) { setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No tiers found</td></tr>'); return; }
       _cachedTierMap = {};
@@ -49,7 +53,8 @@ export function setupTicketsPanel() {
       const { data: tickets, error: tickErr } = await safeQuery(
         supabase.from('tickets').select('id, ticket_tier_id, order_id, user_id, status, qr_hash, created_at, scanned_at, attendee_name, attendee_email, seat_label').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
       );
-      if (getSwitchId() !== mySwitch) return;
+      if (isStale()) return;
+      console.log('[Tickets] Tickets response:', { count: tickets?.length, tickErr });
 
       if (tickErr) { console.error('Ticket query error:', tickErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tickets</td></tr>'); return; }
 
@@ -66,7 +71,7 @@ export function setupTicketsPanel() {
       if (orderIds.length) {
         try {
           const { data: orders } = await supabase.from('orders').select('id, guest_name, guest_email, user_id').in('id', orderIds);
-          if (getSwitchId() !== mySwitch) return;
+          if (isStale()) return;
           if (orders) orders.forEach(o => { _cachedOrderMap[o.id] = o; });
         } catch (e) { console.warn('Order lookup skipped:', e); }
       }
@@ -138,9 +143,18 @@ export function setupTicketsPanel() {
         showToast('PDF print dialog opened', 'success');
       };
     } catch (err) {
+      console.error('[Tickets] Unexpected error:', err);
       setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty" style="color:var(--ev-danger)">${escapeHTML(err.message)}</td></tr>`);
     }
-  });
+  };
+
+  select?.addEventListener('change', loadTicketsForEvent);
+
+  // Auto-fire if populateEventSelects already pre-selected an event
+  if (select && select.value) {
+    console.log('[Tickets] Auto-firing for pre-selected event:', select.value);
+    loadTicketsForEvent();
+  }
 }
 
 /* ── Client-side search filter ── */

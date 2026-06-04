@@ -102,7 +102,7 @@ function renderOrderCard(order) {
     bank_transfer: '🏧 Bank Transfer', fawry: '💳 Fawry', other: '💰 Other'
   };
   const fmt = (v) => new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: order.currency || 'EGP', minimumFractionDigits: 2
+    style: 'currency', currency: order.currency || 'USD', minimumFractionDigits: 2
   }).format(v || 0);
   const timeAgo = getTimeAgo(order.created_at);
   const expiresIn = order.expires_at && ['pending_payment', 'pending_approval'].includes(order.status)

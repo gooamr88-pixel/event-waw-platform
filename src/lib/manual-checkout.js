@@ -169,7 +169,7 @@ function showTransferInstructions(modal, data) {
     bank_transfer: '🏧 Bank Transfer', fawry: '💳 Fawry'
   };
   const fmt = (v) => new Intl.NumberFormat('en-US', {
-    style: 'currency', currency: data.currency || 'EGP', minimumFractionDigits: 2
+    style: 'currency', currency: data.currency || 'USD', minimumFractionDigits: 2
   }).format(v || 0);
 
   const body = modal.querySelector('#mc-body');

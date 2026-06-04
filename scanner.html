@@ -460,7 +460,11 @@
         debtCard.className = 'locked-debt-card';
         debtCard.innerHTML = `
           <div class="locked-debt-label">Outstanding Commission</div>
+<<<<<<< HEAD
+          <div class="locked-debt-amount">${resultData.balance || '—'} USD</div>
+=======
           <div class="locked-debt-amount">${escapeHtml(resultData.balance) || '—'} EGP</div>
+>>>>>>> 4ba84ed40b1334f32eab6a356968403e3f092da2
           <div class="locked-debt-info">
             Ticket scanning is disabled because this event has unpaid platform commission.<br><br>
             Please settle your commission debt via the Financial panel in your dashboard, or contact <strong>support@eventsli.com</strong>.

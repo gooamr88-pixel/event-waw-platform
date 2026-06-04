@@ -15,13 +15,13 @@ export function escapeHTML(str) {
 
 /**
  * Format a number as currency using the browser's Intl.NumberFormat.
- * Arabic-region currencies (EGP, SAR, AED) render in their native locale.
+ * Arabic-region currencies (EGP, SAR, AED) render in English locale.
  * Falls back to naive formatting if Intl is unavailable.
  */
 const CURRENCY_LOCALE_MAP = {
-  EGP: 'ar-EG', SAR: 'ar-SA', AED: 'ar-AE',
-  KWD: 'ar-KW', QAR: 'ar-QA', BHD: 'ar-BH',
-  OMR: 'ar-OM', MAD: 'ar-MA', TND: 'ar-TN',
+  EGP: 'en-EG', SAR: 'en-SA', AED: 'en-AE',
+  KWD: 'en-KW', QAR: 'en-QA', BHD: 'en-BH',
+  OMR: 'en-OM', MAD: 'en-MA', TND: 'en-TN',
 };
 
 export function formatCurrency(amount, currency = 'USD') {

@@ -943,7 +943,7 @@
           ticket_tiers: {
             name: t.tier_name,
             price: t.tier_price,
-            currency: data.order?.currency || 'egp',
+            currency: data.order?.currency || 'usd',
           },
           orders: {
             id: data.order?.id,
@@ -1056,7 +1056,7 @@
           const shortId = ticket.id.slice(0, 8).toUpperCase();
 
           // Price formatting
-          const currency = (tier.currency || 'egp').toUpperCase();
+          const currency = (tier.currency || 'usd').toUpperCase();
           const priceDisplay = tier.price > 0 ? `${tier.price} ${currency}` : 'Free';
 
           html += `
