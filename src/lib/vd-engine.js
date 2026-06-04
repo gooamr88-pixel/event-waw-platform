@@ -51,7 +51,7 @@ export function createElement(typeId, x = 100, y = 100) {
     case 'stage':
       return { ...base, w: 400, h: 60, cornerRadius: 8 };
     case 'section':
-      return { ...base, w: 250, h: 150, rows: 5, seatsPerRow: 10, curve: 0, tier_id: null };
+      return { ...base, w: 250, h: 150, rows: 5, seatsPerRow: 10, curve: 0, tier_id: null, seatOverrides: {}, customRowNames: {} };
     case 'bar':
       return { ...base, w: 160, h: 40, cornerRadius: 20 };
     case 'vip':
@@ -110,7 +110,10 @@ export class VenueDesignerEngine {
     const sel = this.getSelected();
     if (!sel) return;
     this._pushUndo();
-    const copy = { ...sel, id: uid(), x: sel.x + 30, y: sel.y + 30 };
+    const copy = { ...sel, id: uid(), x: sel.x + 30, y: sel.y + 30,
+      seatOverrides: JSON.parse(JSON.stringify(sel.seatOverrides || {})),
+      customRowNames: JSON.parse(JSON.stringify(sel.customRowNames || {})),
+    };
     this.elements.push(copy);
     this.state.selectedId = copy.id;
     this.render();
@@ -222,6 +225,7 @@ export class VenueDesignerEngine {
           }
           rows.push({
             label: rowLabel(r),
+            customName: (sec.customRowNames || {})[rowLabel(r)] || null,
             labelX: sec.x + Math.max(3, startX - 10),
             seats,
           });
@@ -232,6 +236,8 @@ export class VenueDesignerEngine {
           tier_id: sec.tier_id,
           labelX: sec.x + w / 2,
           labelY: sec.y + 13,
+          seatOverrides: sec.seatOverrides || {},
+          customRowNames: sec.customRowNames || {},
           rows,
         };
       }),
@@ -256,6 +262,8 @@ export class VenueDesignerEngine {
       if (copy.type === 'section') {
         copy.tier_id = null;
         copy.tier_slot = `section-${sectionSlot++}`;
+        copy.seatOverrides = {};
+        copy.customRowNames = {};
       } else if (copy.type === 'table') {
         copy.tier_id = null;
         copy.tier_slot = `table-${tableSlot++}`;
@@ -279,7 +287,11 @@ export class VenueDesignerEngine {
 
   loadFromJSON(json) {
     if (json.version === 2 && json.elements) {
-      this.elements = json.elements;
+      this.elements = json.elements.map(e => ({
+        ...e,
+        seatOverrides: e.seatOverrides || {},
+        customRowNames: e.customRowNames || {},
+      }));
       _idCounter = Math.max(_idCounter, this.elements.length + 10);
       if (json.bgImage) this.state.bgImage = json.bgImage;
     } else {
@@ -299,6 +311,7 @@ export class VenueDesignerEngine {
           x: (sec.labelX || 600) - 125, y: (sec.labelY || 200) - 10,
           w: 250, h: Math.max(100, rowCount * ROW_GAP + 40),
           rows: rowCount, seatsPerRow, curve: 0, tier_id: sec.tier_id || null,
+          seatOverrides: {}, customRowNames: {},
           label: sec.label || sec.key, color: '#10B981', rotation: 0, locked: false,
         });
       }
@@ -333,6 +346,74 @@ export class VenueDesignerEngine {
 
     // Use existing loadFromJSON for the actual loading
     this.loadFromJSON(layout);
+  }
+
+  // ══════════════════════════════════════════
+  // SEAT-LEVEL CONTROL (v62)
+  // ══════════════════════════════════════════
+
+  /** Get seat overrides for a section element */
+  getSeatOverrides(sectionId) {
+    const el = this.elements.find(e => e.id === sectionId);
+    return el?.seatOverrides || {};
+  }
+
+  /** Set properties on specific seats. seatKeys = ['A::1', 'A::2', ...], props = { category: 'vip', ... } */
+  setSeatOverrides(sectionId, seatKeys, props) {
+    const el = this.elements.find(e => e.id === sectionId);
+    if (!el || el.type !== 'section') return;
+    this._pushUndo();
+    if (!el.seatOverrides) el.seatOverrides = {};
+    for (const key of seatKeys) {
+      el.seatOverrides[key] = { ...(el.seatOverrides[key] || {}), ...props };
+      // Clean up: remove keys with all null/undefined values
+      const o = el.seatOverrides[key];
+      if (Object.values(o).every(v => v === null || v === undefined || v === '')) {
+        delete el.seatOverrides[key];
+      }
+    }
+    this.render();
+    this.onChange('seatOverride', el);
+  }
+
+  /** Set properties on all seats in a row. rowLabel = 'A', props = { tier_id: '...', category: 'vip' } */
+  setRowOverrides(sectionId, rowLabel, props) {
+    const el = this.elements.find(e => e.id === sectionId);
+    if (!el || el.type !== 'section') return;
+    const cols = el.seatsPerRow || 8;
+    const keys = [];
+    for (let s = 1; s <= cols; s++) {
+      keys.push(`${rowLabel}::${s}`);
+    }
+    this.setSeatOverrides(sectionId, keys, props);
+  }
+
+  /** Set custom display name for a row */
+  setCustomRowName(sectionId, rowLabel, customName) {
+    const el = this.elements.find(e => e.id === sectionId);
+    if (!el || el.type !== 'section') return;
+    this._pushUndo();
+    if (!el.customRowNames) el.customRowNames = {};
+    if (customName && customName.trim()) {
+      el.customRowNames[rowLabel] = customName.trim();
+    } else {
+      delete el.customRowNames[rowLabel];
+    }
+    this.render();
+    this.onChange('rowName', el);
+  }
+
+  /** Clear all overrides for specific seats */
+  clearSeatOverrides(sectionId, seatKeys) {
+    const el = this.elements.find(e => e.id === sectionId);
+    if (!el || el.type !== 'section') return;
+    this._pushUndo();
+    if (!el.seatOverrides) return;
+    for (const key of seatKeys) {
+      delete el.seatOverrides[key];
+    }
+    this.render();
+    this.onChange('seatOverride', el);
   }
 
   _pushUndo() {

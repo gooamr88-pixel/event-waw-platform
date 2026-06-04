@@ -216,7 +216,7 @@ export async function updateEvent(eventId, updates) {
  * Create a seated checkout (auth user with specific seat selections).
  * Sends seat_ids[] to the Edge Function which calls reserve_seats().
  */
-export async function createSeatedCheckout({ tierId, seatIds, attendees }) {
+export async function createSeatedCheckout({ tierId, seatIds, attendees, promoCode }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
     throw new Error('Your session has expired. Please sign in again.');
@@ -231,9 +231,11 @@ export async function createSeatedCheckout({ tierId, seatIds, attendees }) {
         'Authorization': `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({
-        tier_id: tierId,
+        // v62: tier_id is optional for seated checkout (mixed tiers)
+        ...(tierId ? { tier_id: tierId } : {}),
         quantity: seatIds.length,
         seat_ids: seatIds,
+        promo_code: promoCode || null,
         attendees: attendees || undefined,
       }),
     }
@@ -257,7 +259,7 @@ export async function createSeatedCheckout({ tierId, seatIds, attendees }) {
 /**
  * Create a seated guest checkout (no auth, with specific seat selections).
  */
-export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone, attendees }) {
+export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone, attendees, promoCode }) {
   const response = await fetch(
     `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
@@ -267,13 +269,15 @@ export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, gu
         'Authorization': `Bearer ${supabaseAnonKey}`,
       },
       body: JSON.stringify({
-        tier_id: tierId,
+        // v62: tier_id is optional for seated checkout (mixed tiers)
+        ...(tierId ? { tier_id: tierId } : {}),
         quantity: seatIds.length,
         seat_ids: seatIds,
         is_guest: true,
         guest_name: guestName,
         guest_email: guestEmail,
         guest_phone: guestPhone,
+        promo_code: promoCode || null,
         attendees: attendees || undefined,
       }),
     }

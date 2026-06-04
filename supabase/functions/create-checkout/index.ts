@@ -38,7 +38,8 @@ serve(async (req) => {
     // Detect assigned-seating mode: seat_ids is an optional array of UUIDs
     const isSeatedCheckout = Array.isArray(seat_ids) && seat_ids.length > 0;
 
-    if (!isValidUUID(tier_id)) {
+    // tier_id is required for GA checkout, optional for seated checkout (mixed tiers)
+    if (!isSeatedCheckout && !isValidUUID(tier_id)) {
       return errorResponse(400, 'tier_id must be a valid UUID', {}, req);
     }
 
@@ -92,30 +93,54 @@ serve(async (req) => {
     // BRD: "الضريبة والعمولة يجب أن تُحسب في الخادم"
     // ════════════════════════════════════════════════
 
-    // Look up the tier to get event_id and currency
-    const { data: tierLookup } = await adminClient
-      .from('ticket_tiers')
-      .select('event_id, currency')
-      .eq('id', tier_id)
-      .single();
+    let breakdown: any;
+    let checkoutCurrency: string;
 
-    if (!tierLookup) {
-      return errorResponse(404, 'Ticket tier not found', {}, req);
-    }
+    if (isSeatedCheckout) {
+      // v62: Per-seat pricing — use calculate_seated_breakdown
+      // This RPC sums individual seat effective_prices (COALESCE: seat override > row tier > section tier)
+      const { data: seatedBreakdown, error: seatedErr } = await adminClient
+        .rpc('calculate_seated_breakdown', {
+          p_seat_ids: seat_ids,
+          p_promo_code: promo_code || null,
+        });
 
-    const checkoutCurrency = (tierLookup.currency || 'usd').toLowerCase();
+      if (seatedErr || !seatedBreakdown) {
+        console.error('Seated breakdown error:', seatedErr?.message);
+        return errorResponse(400, seatedErr?.message || 'Failed to calculate seated pricing', {}, req);
+      }
 
-    // Call calculate_order_breakdown_v3 — returns cents fields for safe integer math
-    const { data: breakdown, error: breakdownErr } = await adminClient
-      .rpc('calculate_order_breakdown_v3', {
-        p_tier_id: tier_id,
-        p_quantity: qty,
-        p_promo_code: promo_code || null,
-      });
+      breakdown = seatedBreakdown;
+      // Currency comes from the tier of the first seat
+      checkoutCurrency = (seatedBreakdown.currency || 'usd').toLowerCase();
+    } else {
+      // GA checkout — look up tier for event_id and currency
+      const { data: tierLookup } = await adminClient
+        .from('ticket_tiers')
+        .select('event_id, currency')
+        .eq('id', tier_id)
+        .single();
 
-    if (breakdownErr || !breakdown) {
-      console.error('Breakdown error:', breakdownErr?.message);
-      return errorResponse(400, breakdownErr?.message || 'Failed to calculate pricing', {}, req);
+      if (!tierLookup) {
+        return errorResponse(404, 'Ticket tier not found', {}, req);
+      }
+
+      checkoutCurrency = (tierLookup.currency || 'usd').toLowerCase();
+
+      // Call calculate_order_breakdown_v3 — returns cents fields for safe integer math
+      const { data: gaBreakdown, error: breakdownErr } = await adminClient
+        .rpc('calculate_order_breakdown_v3', {
+          p_tier_id: tier_id,
+          p_quantity: qty,
+          p_promo_code: promo_code || null,
+        });
+
+      if (breakdownErr || !gaBreakdown) {
+        console.error('Breakdown error:', breakdownErr?.message);
+        return errorResponse(400, breakdownErr?.message || 'Failed to calculate pricing', {}, req);
+      }
+
+      breakdown = gaBreakdown;
     }
 
     // Extract values from the server-calculated breakdown
@@ -298,8 +323,8 @@ serve(async (req) => {
             price_data: {
               currency: checkoutCurrency,
               product_data: {
-                name: `${res.event_title} — ${res.tier_name}`,
-                description: `${qty}x ticket(s) · Guest: ${guest_name.trim()}`,
+                name: `${res.event_title}${res.tier_name ? ' — ' + res.tier_name : ''}`,
+                description: `${qty}x seated ticket(s) · Guest: ${guest_name.trim()}`,
               },
               unit_amount: totalCents,  // Server-calculated total (includes tax + fees)
             },
@@ -310,7 +335,7 @@ serve(async (req) => {
           reservation_id: res.reservation_id,
           user_id: '__GUEST__',
           event_id: res.event_id,
-          tier_id: tier_id,
+          tier_id: tier_id || '',
           quantity: String(qty),
           is_guest: 'true',
           guest_name: guest_name.trim(),
@@ -421,8 +446,8 @@ serve(async (req) => {
           price_data: {
             currency: checkoutCurrency,
             product_data: {
-              name: `${res.event_title} — ${res.tier_name}`,
-              description: `${qty}x ticket(s)`,
+              name: `${res.event_title}${res.tier_name ? ' — ' + res.tier_name : ''}`,
+              description: `${qty}x ${isSeatedCheckout ? 'seated ' : ''}ticket(s)`,
             },
             unit_amount: totalCents,  // Server-calculated total
           },
@@ -433,7 +458,7 @@ serve(async (req) => {
         reservation_id: res.reservation_id,
         user_id: user.id,
         event_id: res.event_id,
-        tier_id: tier_id,
+        tier_id: tier_id || '',
         quantity: String(qty),
         is_guest: 'false',
         ...(isSeatedCheckout ? { seat_ids: JSON.stringify(seat_ids) } : {}),

@@ -9,6 +9,7 @@ import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from '
 import { setSafeHTML } from './dom.js';
 import { showAlertModal } from './ui-modals.js';
 import { escapeHTML, formatCurrency } from './utils.js';
+import { supabase } from './supabase.js';
 
 /**
  * Initialize the seating chart UI on the event-detail page.
@@ -31,8 +32,10 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
 
       <div class="seating-hint">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        <span>Click seats to select them. Scroll to zoom, drag to pan. All seats in a selection must be from the same tier.</span>
+        <span>Click seats to select them. Scroll to zoom, drag to pan.</span>
       </div>
+
+      <div id="category-filters-container" style="display:none; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;"></div>
 
       <div id="seating-chart-mount" class="seating-chart-container"></div>
 
@@ -87,6 +90,15 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
   // Render tier legend
   renderLegend(chart);
 
+  // Render category filters
+  renderCategoryFilters(chart);
+
+  // Check if a promo code is already applied in the DOM and pass it to the chart
+  const promoInput = document.getElementById('promo-input');
+  if (promoInput && promoInput.disabled && promoInput.value) {
+    chart.setPromoCode(promoInput.value);
+  }
+
   // Wire up buttons
   document.getElementById('clear-seats-btn')?.addEventListener('click', () => {
     chart.clearSelection();
@@ -105,12 +117,11 @@ export async function initSeatingUI(eventId, mountEl, options = {}) {
     setSafeHTML(btn, '<span style="display:inline-block;width:16px;height:16px;border:2px solid rgba(0,0,0,.3);border-top-color:var(--bg-primary);border-radius:50%;animation:spin 0.6s linear infinite;"></span> Reserving...');
 
     try {
-      const tierId = chart.getSelectedTierId();
       const seatIds = seats.map(s => s.seat_id);
 
       if (options.onCheckout) {
-        // Delegate to the page-level handler (passes selectedMethod for routing)
-        await options.onCheckout({ tierId, seatIds, seats, selectedMethod });
+        // v62: Pass seatIds instead of single tierId — mixed tiers supported
+        await options.onCheckout({ tierId: seats[0]?.tier_id, seatIds, seats, selectedMethod });
       } else {
         // Default: straight authenticated checkout
         const result = await createSeatedCheckout({ tierId, seatIds });
@@ -228,14 +239,21 @@ function updateSelectionBar(seats, chart) {
   bar.classList.add('has-selection');
   checkoutBtn.disabled = false;
 
-  const total = seats.reduce((sum, s) => sum + Number(s.tier_price), 0);
-  const tierName = seats[0]?.tier_name || 'Selected';
+  // v62: Sum effective per-seat prices instead of flat tier price
+  const total = seats.reduce((sum, s) => sum + Number(s.effective_price ?? s.tier_price), 0);
 
-  setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''}  ${escapeHTML(tierName)}`);
+  // v62: Show mixed tier names when seats from different tiers are selected
+  const uniqueTiers = [...new Set(seats.map(s => s.tier_name).filter(Boolean))];
+  const tierLabel = uniqueTiers.length <= 1
+    ? (uniqueTiers[0] || 'Selected')
+    : `${uniqueTiers.length} tiers`;
+
+  setSafeHTML(countText, `<strong>${seats.length}</strong> seat${seats.length !== 1 ? 's' : ''}  ${escapeHTML(tierLabel)}`);
   const eventCurrency = document.getElementById('seating-container')?.dataset?.currency || 'USD';
   totalText.textContent = formatCurrency(total, eventCurrency);
 
   // ── BRD: Fetch server-side breakdown with tax + service fee (debounced) ──
+  // v62: Use calculate_seated_breakdown RPC for per-seat pricing
   if (breakdownContainer) {
     clearTimeout(seatBreakdownDebounce);
     seatBreakdownDebounce = setTimeout(async () => {
@@ -243,10 +261,34 @@ function updateSelectionBar(seats, chart) {
         injectBreakdownStyles();
         breakdownContainer.innerHTML = '<div class="ev-breakdown ev-breakdown--loading">Calculating fees…</div>';
 
-        const tierId = chart.getSelectedTierId();
-        const breakdown = await getOrderBreakdown(tierId, seats.length, null);
-        cachedSeatBreakdown = breakdown;
+        const promoInput = document.getElementById('promo-input');
+        const promoCode = (promoInput && promoInput.disabled) ? promoInput.value.trim().toUpperCase() : null;
 
+        const seatIds = seats.map(s => s.seat_id);
+        const { data: breakdown, error: bErr } = await supabase
+          .rpc('calculate_seated_breakdown', {
+            p_seat_ids: seatIds,
+            p_promo_code: promoCode,
+          });
+
+        if (bErr || !breakdown) {
+          // Fallback to legacy tier-based breakdown
+          const tierId = seats[0]?.tier_id;
+          if (tierId) {
+            const fallback = await getOrderBreakdown(tierId, seats.length, promoCode);
+            cachedSeatBreakdown = fallback;
+            renderPriceBreakdown(breakdownContainer, fallback, { compact: true });
+            if (fallback?.total != null) {
+              totalText.textContent = formatCurrency(Number(fallback.total), fallback.currency || eventCurrency);
+            }
+          } else {
+            cachedSeatBreakdown = null;
+            breakdownContainer.innerHTML = '';
+          }
+          return;
+        }
+
+        cachedSeatBreakdown = breakdown;
         renderPriceBreakdown(breakdownContainer, breakdown, { compact: true });
 
         // Update the header total to match server total (includes tax + fees)
@@ -271,6 +313,55 @@ function renderLegendCounts(chart) {
     const el = document.querySelector(`.seating-legend-item[data-tier-id="${t.tier_id}"] .seating-legend-avail`);
     if (el) el.textContent = `${t.available}/${t.total} left`;
   }
+}
+
+/**
+ * Render category-based filter pills in the seating chart.
+ * Unlocks or highlights selected categories (VIP, accessible, etc.).
+ */
+function renderCategoryFilters(chart) {
+  const container = document.getElementById('category-filters-container');
+  if (!container) return;
+
+  const categories = new Set();
+  for (const d of chart.seatData.values()) {
+    if (d.seat_category && d.seat_category !== 'standard') {
+      categories.add(d.seat_category);
+    }
+  }
+
+  if (categories.size === 0) {
+    container.style.display = 'none';
+    return;
+  }
+
+  container.style.display = 'flex';
+
+  const CATEGORY_LABELS = {
+    vip: { label: 'VIP', icon: '⭐' },
+    premium: { label: 'Premium', icon: '✨' },
+    accessible: { label: 'Accessible', icon: '♿' },
+    restricted_view: { label: 'Obstructed View', icon: '⚠️' },
+    companion: { label: 'Companion', icon: '👥' }
+  };
+
+  setSafeHTML(container, `
+    <span style="font-size:0.75rem;font-weight:600;color:var(--text-muted);margin-right:4px;">Filter seats:</span>
+    <button class="btn btn-outline btn-xs active" data-category="all" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 4px;">All</button>
+    ` + [...categories].map(cat => {
+      const meta = CATEGORY_LABELS[cat] || { label: cat, icon: '🏷️' };
+      return `<button class="btn btn-outline btn-xs" data-category="${cat}" style="padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">${meta.icon} ${meta.label}</button>`;
+    }).join('')
+  );
+
+  container.querySelectorAll('button[data-category]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.category;
+      container.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      chart.setActiveCategory(cat === 'all' ? null : cat);
+    });
+  });
 }
 
 

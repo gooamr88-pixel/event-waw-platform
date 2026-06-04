@@ -30,7 +30,7 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
 
     // ── 1. Fetch existing seats with full booking state ──
     const { data: oldSeats, error: fetchErr } = await supabase.from('seats')
-      .select('id, section_key, row_label, seat_number, ticket_tier_id, status, reservation_id, ticket_id, locked_until')
+      .select('id, section_key, row_label, seat_number, ticket_tier_id, status, reservation_id, ticket_id, locked_until, price_override, seat_category, row_tier_id, promo_code_lock, notes, custom_row_name')
       .eq('venue_map_id', mapId);
 
     if (fetchErr) throw new Error(`Failed to fetch existing seats: ${fetchErr.message}`);
@@ -46,35 +46,64 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
     const newSeatKeys = new Set();
     const toInsert = [];
     const tierUpdates = new Map(); // tierId → [seatId, ...]
+    const overrideUpdates = []; // { id, props }
 
     for (const section of layoutJson.sections) {
       let tierId = sectionTiers[section.key] || section.tier_id || null;
       if (tierId && !validTierIds.has(tierId)) tierId = null;
+      const overrides = section.seatOverrides || {};
+      const rowNames = section.customRowNames || {};
 
       for (const row of section.rows) {
+        const customRowName = rowNames[row.label] || row.customName || null;
         for (const seat of row.seats) {
           const key = `${section.key}::${row.label}::${seat.number}`;
+          const seatKey = `${row.label}::${seat.number}`;
+          const ovr = overrides[seatKey] || {};
           newSeatKeys.add(key);
+
+          // Resolve effective tier: seat override > row override > section tier
+          const rowTierId = ovr.tier_id || null;
+          const effectiveStatus = ovr.status || 'available';
 
           const existing = oldMap.get(key);
           if (existing) {
-            // Seat exists — only update tier on available/blocked seats
-            // (never change tier on sold/reserved — financial integrity)
-            if (existing.ticket_tier_id !== tierId &&
-                (existing.status === 'available' || existing.status === 'blocked')) {
-              const groupKey = tierId || '__null__';
-              if (!tierUpdates.has(groupKey)) tierUpdates.set(groupKey, []);
-              tierUpdates.get(groupKey).push(existing.id);
+            // Only update non-booked seats (financial integrity)
+            if (existing.status === 'available' || existing.status === 'blocked') {
+              // Tier update
+              if (existing.ticket_tier_id !== tierId) {
+                const groupKey = tierId || '__null__';
+                if (!tierUpdates.has(groupKey)) tierUpdates.set(groupKey, []);
+                tierUpdates.get(groupKey).push(existing.id);
+              }
+              // Override updates — diff each property
+              const props = {};
+              if (existing.price_override != ovr.price_override) props.price_override = ovr.price_override ?? null;
+              if (existing.seat_category !== (ovr.category || 'standard')) props.seat_category = ovr.category || 'standard';
+              if (existing.row_tier_id !== (rowTierId || null)) props.row_tier_id = rowTierId || null;
+              if (existing.promo_code_lock !== (ovr.promo_lock || null)) props.promo_code_lock = ovr.promo_lock || null;
+              if (existing.notes !== (ovr.notes || null)) props.notes = ovr.notes || null;
+              if (existing.custom_row_name !== customRowName) props.custom_row_name = customRowName;
+              if (existing.status !== effectiveStatus) props.status = effectiveStatus;
+              if (Object.keys(props).length > 0) {
+                overrideUpdates.push({ id: existing.id, props });
+              }
             }
           } else {
-            // New seat — will be inserted as available
+            // New seat — include override properties on insert
             toInsert.push({
               venue_map_id: mapId,
               section_key: section.key,
               row_label: row.label,
               seat_number: seat.number,
               ticket_tier_id: tierId,
-              status: 'available',
+              status: effectiveStatus,
+              price_override: ovr.price_override ?? null,
+              seat_category: ovr.category || 'standard',
+              row_tier_id: rowTierId || null,
+              promo_code_lock: ovr.promo_lock || null,
+              notes: ovr.notes || null,
+              custom_row_name: customRowName,
             });
           }
         }
@@ -135,6 +164,15 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
       }
     }
 
+    // ── 8b. Apply per-seat override updates ──
+    if (overrideUpdates.length > 0) {
+      for (const upd of overrideUpdates) {
+        const { error: ovrErr } = await supabase.from('seats')
+          .update(upd.props).eq('id', upd.id);
+        if (ovrErr) console.error('Seat override update failed:', ovrErr.message);
+      }
+    }
+
     // ── 9. Insert new seats ──
     let inserted = 0;
     if (toInsert.length > 0) {
@@ -163,12 +201,24 @@ export async function saveVenueMapV2(eventId, engine, sectionTiers = {}) {
     for (const section of layoutJson.sections) {
       let tierId = sectionTiers[section.key] || section.tier_id || null;
       if (tierId && !validTierIds.has(tierId)) tierId = null;
+      const overrides = section.seatOverrides || {};
+      const rowNames = section.customRowNames || {};
+
       for (const row of section.rows) {
+        const customRowName = rowNames[row.label] || row.customName || null;
         for (const seat of row.seats) {
+          const seatKey = `${row.label}::${seat.number}`;
+          const ovr = overrides[seatKey] || {};
           seatRows.push({
             venue_map_id: mapId, section_key: section.key,
             row_label: row.label, seat_number: seat.number,
-            ticket_tier_id: tierId, status: 'available',
+            ticket_tier_id: tierId, status: ovr.status || 'available',
+            price_override: ovr.price_override ?? null,
+            seat_category: ovr.category || 'standard',
+            row_tier_id: ovr.tier_id || null,
+            promo_code_lock: ovr.promo_lock || null,
+            notes: ovr.notes || null,
+            custom_row_name: customRowName,
           });
         }
       }

@@ -53,6 +53,9 @@ export class SeatingChart {
     this.panzoomInstance = null;
     this.pollInterval = null;
     this.activeTierId = null;    // filter: only show/select seats for this tier
+    this.activeCategory = null;  // v63 filter: category filter
+    this.appliedPromoCode = null; // v63 filter: unlocks promo-locked seats
+    this.currency = this.container.dataset.currency || 'USD';
   }
 
   /**
@@ -135,6 +138,12 @@ export class SeatingChart {
         tier_id: s.tier_id,
         tier_name: s.tier_name || '',
         tier_price: s.tier_price || 0,
+        // v62: Per-seat effective price (COALESCE: seat override > row tier > section tier)
+        effective_price: s.effective_price ?? s.tier_price ?? 0,
+        seat_category: s.seat_category || 'standard',
+        promo_code_lock: s.promo_code_lock || null,
+        notes: s.notes || null,
+        custom_row_name: s.custom_row_name || null,
       });
       if (s.tier_id) tierIds.add(s.tier_id);
     }
@@ -165,6 +174,8 @@ export class SeatingChart {
           tier_id: d.tier_id,
           tier_name: d.tier_name,
           tier_price: d.tier_price,
+          // v62: Per-seat effective price for checkout
+          effective_price: d.effective_price ?? d.tier_price,
         });
       }
     }
@@ -195,6 +206,33 @@ export class SeatingChart {
       }
     }
     // Dim non-matching seats
+    this._updateAllVisuals();
+    this.onSelectionChange(this.getSelectedSeats());
+  }
+
+  /**
+   * Set an active category filter. Only seats from this category are selectable.
+   * Pass null to clear the filter.
+   */
+  setActiveCategory(category) {
+    this.activeCategory = category || null;
+    this._updateAllVisuals();
+  }
+
+  /**
+   * Set the active promo code. Unlocks matching promo-locked seats.
+   */
+  setPromoCode(code) {
+    this.appliedPromoCode = code ? String(code).trim().toUpperCase() : null;
+
+    // Deselect any selected seats that are now locked
+    for (const seatId of [...this.selectedSeats]) {
+      const d = this.seatData.get(seatId);
+      if (d && d.promo_code_lock && String(d.promo_code_lock).trim().toUpperCase() !== this.appliedPromoCode) {
+        this.selectedSeats.delete(seatId);
+      }
+    }
+
     this._updateAllVisuals();
     this.onSelectionChange(this.getSelectedSeats());
   }
@@ -360,9 +398,9 @@ export class SeatingChart {
           const tierColor = this.tierColorMap.get(seatInfo.tier_id) || '#666';
           circle.setAttribute('data-tier-color', tierColor);
 
-          // Accessible tooltip
+          // Accessible tooltip — v62: use effective_price
           circle.setAttribute('aria-label',
-            `${section.label || section.key} Row ${row.label} Seat ${seat.number} - ${seatInfo.tier_name} $${seatInfo.tier_price} - ${seatInfo.status}`
+            `${section.label || section.key} Row ${row.label} Seat ${seat.number} - ${seatInfo.tier_name} $${seatInfo.effective_price ?? seatInfo.tier_price} - ${seatInfo.status}`
           );
 
           this._applySeatStyle(circle, seatInfo.status, tierColor);
@@ -538,6 +576,15 @@ export class SeatingChart {
     const effectiveStatus = isSelected ? 'selected' : status;
     const style = STATUS_STYLES[effectiveStatus] || STATUS_STYLES.available;
 
+    // v63 Promo code lock check
+    const promoLock = d && d.promo_code_lock;
+    if (promoLock && String(promoLock).trim().toUpperCase() !== this.appliedPromoCode) {
+      circle.style.display = 'none';
+      return;
+    } else {
+      circle.style.display = '';
+    }
+
     if (!hasTier) {
       circle.style.fill = 'var(--seat-blocked)';
       circle.style.opacity = '0.15';
@@ -545,18 +592,34 @@ export class SeatingChart {
       circle.style.stroke = 'none';
     } else if (effectiveStatus === 'available') {
       circle.style.fill = tierColor;
-      circle.style.opacity = this.activeTierId && d && d.tier_id !== this.activeTierId ? '0.15' : '1';
+      
+      // Determine opacity: dim if doesn't match active tier or active category
+      let opacity = '1';
+      let cursor = style.cursor;
+
+      if (this.activeTierId && d.tier_id !== this.activeTierId) {
+        opacity = '0.15';
+        cursor = 'not-allowed';
+      }
+      if (this.activeCategory && d.seat_category !== this.activeCategory) {
+        opacity = '0.15';
+        cursor = 'not-allowed';
+      }
+
+      circle.style.opacity = opacity;
+      circle.style.cursor = cursor;
     } else if (effectiveStatus === 'selected') {
       circle.style.fill = '#ffffff';
       circle.style.opacity = '1';
       circle.style.stroke = tierColor;
       circle.style.strokeWidth = '2.5';
+      circle.style.cursor = style.cursor;
     } else {
       circle.style.fill = style.fill;
       circle.style.opacity = style.opacity;
       circle.style.stroke = 'none';
+      circle.style.cursor = style.cursor;
     }
-    circle.style.cursor = !hasTier ? 'not-allowed' : style.cursor;
   }
 
   // ====================================
@@ -659,13 +722,8 @@ export class SeatingChart {
         if (this.selectedSeats.size >= this.maxSelectable) {
           return; // silent limit
         }
-        // All selected seats must be from the same tier
-        if (this.selectedSeats.size > 0) {
-          const existingTier = this.seatData.get([...this.selectedSeats][0])?.tier_id;
-          if (existingTier && existingTier !== seatInfo.tier_id) {
-            this.clearSelection();
-          }
-        }
+        // v62: Mixed-tier selection allowed — no longer clear selection on tier mismatch
+        // (Per-seat pricing means different tiers can coexist in one cart)
 
         // ── SELECTION: check if adding creates an orphan ──
         this.selectedSeats.add(seatId);
@@ -754,14 +812,7 @@ export class SeatingChart {
       const d = this.seatData.get(seatId);
       if (!d) continue;
       const tierColor = this.tierColorMap.get(d.tier_id) || '#666';
-
-      // Dim seats not matching active tier
-      if (this.activeTierId && d.tier_id !== this.activeTierId && d.status === 'available') {
-        c.style.opacity = '0.15';
-        c.style.cursor = 'not-allowed';
-      } else {
-        this._applySeatStyle(c, d.status, tierColor);
-      }
+      this._applySeatStyle(c, d.status, tierColor);
     }
   }
 
@@ -779,11 +830,29 @@ export class SeatingChart {
                         data.status === 'sold' ? 'Sold' :
                         data.status === 'reserved' ? 'Reserved' : 'Unavailable';
 
+    // v62/v63: Show effective per-seat price, custom row labels, category, notes
+    const displayPrice = data.effective_price ?? data.tier_price;
+    const eventCurrency = this.currency || 'USD';
+
+    const CATEGORY_META = {
+      vip: { label: 'VIP', icon: '⭐', class: 'category-vip' },
+      premium: { label: 'Premium', icon: '✨', class: 'category-premium' },
+      accessible: { label: 'Accessible', icon: '♿', class: 'category-accessible' },
+      restricted_view: { label: 'Obstructed View', icon: '⚠️', class: 'category-restricted' },
+      companion: { label: 'Companion Seat', icon: '👥', class: 'category-companion' }
+    };
+    const cat = CATEGORY_META[data.seat_category];
+    const catHTML = cat ? `<div class="seat-tooltip-category ${cat.class}" style="font-size:0.75rem;font-weight:600;margin-top:2px;">${cat.icon} ${cat.label}</div>` : '';
+    const notesHTML = data.notes ? `<div class="seat-tooltip-notes" style="font-size:0.7rem;color:var(--text-muted);margin-top:4px;border-top:1px solid rgba(255,255,255,.1);padding-top:4px;">📝 ${data.notes}</div>` : '';
+    const rowLabel = data.custom_row_name || data.row_label;
+
     setSafeHTML(tooltip, `
       <div class="seat-tooltip-title">${data.tier_name || 'General'}</div>
-      <div class="seat-tooltip-info">Row ${data.row_label}  Seat ${data.seat_number}</div>
-      <div class="seat-tooltip-price">$${Number(data.tier_price).toLocaleString()}</div>
+      ${catHTML}
+      <div class="seat-tooltip-info">Row ${rowLabel}  Seat ${data.seat_number}</div>
+      <div class="seat-tooltip-price">${Number(displayPrice).toLocaleString(undefined, {style: 'currency', currency: eventCurrency})}</div>
       <div class="seat-tooltip-status seat-tooltip-${data.status}">${statusLabel}</div>
+      ${notesHTML}
     `);
 
     // Position relative to container

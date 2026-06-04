@@ -201,19 +201,19 @@
             </div>
           </div>
 
-          <!-- Short Description (blurb) -->
-          <div class="event-detail-section" id="ed-short-desc-section" style="display:none;">
-            <p id="event-short-description" style="font-size:1.05rem;line-height:1.7;color:var(--text-primary);font-weight:500;padding:20px 24px;background:rgba(5,150,105,.04);border-left:4px solid rgba(5,150,105,.4);border-radius:0 12px 12px 0;"></p>
-          </div>
-
-          <!-- Full Description with See More -->
-          <div class="event-detail-section" id="ed-full-desc-section">
-            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📝 About This Event</h2>
-            <div id="event-description-wrap" class="ed-desc-wrap">
-              <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
-            </div>
-            <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
-          </div>
+          <!-- Short Description (blurb) -->
+          <div class="event-detail-section" id="ed-short-desc-section" style="display:none;">
+            <p id="event-short-description" style="font-size:1.05rem;line-height:1.7;color:var(--text-primary);font-weight:500;padding:20px 24px;background:rgba(5,150,105,.04);border-left:4px solid rgba(5,150,105,.4);border-radius:0 12px 12px 0;"></p>
+          </div>
+
+          <!-- Full Description with See More -->
+          <div class="event-detail-section" id="ed-full-desc-section">
+            <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">📝 About This Event</h2>
+            <div id="event-description-wrap" class="ed-desc-wrap">
+              <p id="event-description" style="color:var(--text-secondary);line-height:1.8;font-size:0.95rem;">Loading event details…</p>
+            </div>
+            <button id="desc-toggle" class="ed-see-more" style="display:none;">See more</button>
+          </div>
 
           <!-- Event Logo -->
           <div class="event-detail-section" id="ed-logo-section" style="display:none;">
@@ -1666,6 +1666,11 @@
         btn.style.color = '#22c55e';
 
         updateTotal();
+
+        const chart = document.getElementById('seating-chart-panel')?._seatingChart;
+        if (chart) {
+          chart.setPromoCode(appliedPromo?.code || null);
+        }
       } catch (err) {
         status.style.display = 'block'; status.style.color = '#ef4444';
         status.textContent = '❌ Error validating code';
@@ -1689,6 +1694,11 @@
         document.getElementById('discount-row').style.display = 'none';
         document.getElementById('subtotal-row').style.display = 'none';
         updateTotal();
+
+        const chart = document.getElementById('seating-chart-panel')?._seatingChart;
+        if (chart) {
+          chart.setPromoCode(null);
+        }
       }
     });
 
@@ -2452,7 +2462,7 @@
             try {
               injectBreakdownStyles();
               csBreakdownEl.innerHTML = '<div class="ev-breakdown ev-breakdown--loading">Calculating fees…</div>';
-              const bd = await getOrderBreakdown(tierId, seats.length, null);
+              const bd = await getOrderBreakdown(tierId, seats.length, appliedPromo?.code || null);
               renderPriceBreakdown(csBreakdownEl, bd, { compact: true });
               if (bd.total != null && csFinalTotal) {
                 csFinalTotal.textContent = formatCurrency(Number(bd.total), eventData?.currency || 'USD');
@@ -2485,7 +2495,12 @@
             phone: phone || null,
           }).eq('id', user.id);
 
-          const result = await createSeatedCheckout({ tierId, seatIds, attendees });
+          const result = await createSeatedCheckout({ 
+            tierId, 
+            seatIds, 
+            attendees, 
+            promoCode: appliedPromo?.code || null 
+          });
           if (result.checkout_url) {
             modal.remove();
             startReservationTimer();
@@ -2617,7 +2632,7 @@
             try {
               injectBreakdownStyles();
               gsBreakdownEl.innerHTML = '<div class="ev-breakdown ev-breakdown--loading">Calculating fees…</div>';
-              const bd = await getOrderBreakdown(tierId, seats.length, null);
+              const bd = await getOrderBreakdown(tierId, seats.length, appliedPromo?.code || null);
               renderPriceBreakdown(gsBreakdownEl, bd, { compact: true });
               if (bd.total != null && gsFinalTotal) {
                 gsFinalTotal.textContent = formatCurrency(Number(bd.total), eventData?.currency || 'USD');
@@ -2655,6 +2670,7 @@
             guestEmail: email,
             guestPhone: phone,
             attendees,
+            promoCode: appliedPromo?.code || null,
           });
 
           if (result.checkout_url) {

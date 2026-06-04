@@ -123,6 +123,7 @@
     import { ELEMENT_TYPES, VenueDesignerEngine, saveVenueMapV2 } from './src/lib/venue-designer-v2.js?v=3';
     import { loadVenueMap, deleteVenueMap } from './src/lib/venue-designer.js';
     import { showSaveTemplateModal, showTemplateChooser, populateToolboxTemplates } from './src/lib/vd-template-ui.js';
+    import { openSeatEditor } from './src/lib/vd-seat-editor.js';
 
     let engine, eventId, tiers = [];
 
@@ -215,6 +216,11 @@
           h += `<div class="vd-fg"><label>Tier</label><select class="vd-fi" data-p="tier_id">${tiers.map(t=>`<option value="${t.id}" ${t.id===el.tier_id?'selected':''}>${escapeHTML(t.name)} — $${Number(t.price).toLocaleString()}</option>`).join('')}</select></div>`;
         }
         h += `<div class="vd-seats-info">${el.rows * el.seatsPerRow} seats</div>`;
+        // v62: Edit Seats button for per-seat control
+        const overrideCount = Object.keys(el.seatOverrides || {}).length;
+        h += `<button class="vd-se-btn-apply" id="pa-edit-seats" style="margin-top:8px;font-size:.75rem;padding:8px;">
+          💺 Edit Individual Seats${overrideCount > 0 ? ` <span style="opacity:.6">(${overrideCount} customized)</span>` : ''}
+        </button>`;
       }
       if (el.type === 'table') {
         h += '<div class="vd-divider"></div>';
@@ -250,6 +256,17 @@
       document.getElementById('pa-dn')?.addEventListener('click', () => engine.sendToBack());
       document.getElementById('pa-lk')?.addEventListener('click', () => { engine.toggleLock(); updateProps(); });
       document.getElementById('pa-rm')?.addEventListener('click', () => { engine.removeSelected(); updateProps(); });
+      // v62: Edit Seats button handler
+      document.getElementById('pa-edit-seats')?.addEventListener('click', () => {
+        const sel = engine.getSelected();
+        if (sel && sel.type === 'section') {
+          openSeatEditor(engine, sel, tiers, () => {
+            document.getElementById('btn-save').disabled = false;
+            updateProps();
+            updateStats();
+          });
+        }
+      });
     }
 
     function field(label, type, val, prop) {
