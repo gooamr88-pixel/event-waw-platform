@@ -167,6 +167,19 @@ serve(async (req) => {
       }
     }
 
+    // ── Pre-fetch per-ticket attendee data from reservation ──
+    let attendeeData: Array<{name?: string; email?: string; phone?: string}> = [];
+    if (reservation_id) {
+      const { data: resData } = await supabase
+        .from('reservations')
+        .select('attendee_data')
+        .eq('id', reservation_id)
+        .maybeSingle();
+      if (resData?.attendee_data && Array.isArray(resData.attendee_data)) {
+        attendeeData = resData.attendee_data;
+      }
+    }
+
     // ── Pre-import HMAC key once (PERF-01: was re-imported per ticket) ──
     const hmacKey = await crypto.subtle.importKey(
       'raw',
@@ -225,6 +238,9 @@ serve(async (req) => {
           id: ticketId,
           qr_hash: qrData,
           ...(seatLabel ? { seat_label: seatLabel } : {}),
+          attendee_name: attendeeData[i]?.name || (isGuest ? (guest_name || '') : ''),
+          attendee_email: attendeeData[i]?.email || (isGuest ? (guest_email || '') : ''),
+          attendee_phone: attendeeData[i]?.phone || (isGuest ? (guest_phone || '') : ''),
         };
       })
     );

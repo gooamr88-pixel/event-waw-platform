@@ -33,7 +33,7 @@ serve(async (req) => {
       return errorResponse(400, 'Invalid JSON body', {}, req);
     }
 
-    const { tier_id, quantity = 1, is_guest = false, seat_ids, promo_code } = body;
+    const { tier_id, quantity = 1, is_guest = false, seat_ids, promo_code, attendees } = body;
 
     // Detect assigned-seating mode: seat_ids is an optional array of UUIDs
     const isSeatedCheckout = Array.isArray(seat_ids) && seat_ids.length > 0;
@@ -55,6 +55,34 @@ serve(async (req) => {
           return errorResponse(400, 'Each seat_id must be a valid UUID', {}, req);
         }
       }
+    }
+
+    // ── Validate per-ticket attendee details (optional) ──
+    // If provided, must be an array with length === qty, each entry needs at least a name.
+    // If not provided, a default array will be created downstream.
+    let validatedAttendees: Array<{ name: string; email?: string; phone?: string }> | null = null;
+    if (attendees !== undefined && attendees !== null) {
+      if (!Array.isArray(attendees)) {
+        return errorResponse(400, 'attendees must be an array', {}, req);
+      }
+      if (attendees.length !== qty) {
+        return errorResponse(400, `attendees array length (${attendees.length}) must match quantity (${qty})`, {}, req);
+      }
+      for (let i = 0; i < attendees.length; i++) {
+        const a = attendees[i];
+        if (!a || typeof a !== 'object') {
+          return errorResponse(400, `attendees[${i}] must be an object`, {}, req);
+        }
+        if (!a.name || typeof a.name !== 'string' || a.name.trim().length < 1) {
+          return errorResponse(400, `attendees[${i}].name is required`, {}, req);
+        }
+      }
+      // Sanitize: keep only name, email, phone
+      validatedAttendees = attendees.map((a: any) => ({
+        name: a.name.trim(),
+        ...(a.email ? { email: String(a.email).trim() } : {}),
+        ...(a.phone ? { phone: String(a.phone).trim() } : {}),
+      }));
     }
 
     const adminClient = createAdminClient();
@@ -252,6 +280,11 @@ serve(async (req) => {
         res = reservation;
       }
 
+      // ── Store per-ticket attendee data on reservation ──
+      if (validatedAttendees && validatedAttendees.length > 0) {
+        await adminClient.from('reservations').update({ attendee_data: validatedAttendees }).eq('id', res.reservation_id);
+      }
+
       // ── Create Stripe Checkout Session for Guest ──
       // H1 FIX: Validate origin against CORS allowlist to prevent open-redirect attacks
       const originUrl = getSafeRedirectOrigin(req);
@@ -367,6 +400,11 @@ serve(async (req) => {
         return errorResponse(400, 'Failed to create reservation', {}, req);
       }
       res = reservation[0];
+    }
+
+    // ── Store per-ticket attendee data on reservation ──
+    if (validatedAttendees && validatedAttendees.length > 0) {
+      await adminClient.from('reservations').update({ attendee_data: validatedAttendees }).eq('id', res.reservation_id);
     }
 
     // ── Create Stripe Checkout Session ──

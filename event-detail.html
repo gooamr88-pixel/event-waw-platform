@@ -1876,6 +1876,83 @@
       });
     });
 
+    // ══════════════════════════════════════════
+    // PER-TICKET ATTENDEE FORM BUILDER (v60)
+    // ══════════════════════════════════════════
+    function buildAttendeeFormHTML(qty, buyerInfo, prefix, seatLabels) {
+      if (qty <= 0) return '';
+      buyerInfo = buyerInfo || {}; seatLabels = seatLabels || [];
+      let html = '<div class="confirm-section" id="' + prefix + '-attendee-section" style="margin-top:16px;padding:16px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:14px;">';
+      html += '<div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--accent-primary);font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;"><span>🎟️ Ticket Holders</span>';
+      if (qty > 1) html += '<button type="button" id="' + prefix + '-copy-all" style="font-size:0.7rem;padding:4px 12px;border-radius:8px;font-weight:600;background:rgba(212,175,55,.08);border:1px solid rgba(212,175,55,.2);color:var(--accent-primary);cursor:pointer;">📋 Copy to all</button>';
+      html += '</div>';
+      for (var i = 0; i < qty; i++) {
+        var isFirst = i === 0;
+        var seatLabel = seatLabels[i] || '';
+        var ticketLabel = seatLabel ? 'Ticket ' + (i+1) + ' — ' + seatLabel : 'Ticket ' + (i+1);
+        var nameVal = isFirst ? (buyerInfo.name || '').replace(/"/g, '&quot;') : '';
+        var emailVal = isFirst ? (buyerInfo.email || '').replace(/"/g, '&quot;') : '';
+        var phoneVal = isFirst ? (buyerInfo.phone || '').replace(/"/g, '&quot;') : '';
+        var emailRO = isFirst && buyerInfo.emailReadonly;
+        var reqStar = '<span style="color:#ef4444;">*</span>';
+        var optLabel = '<span style="color:var(--text-muted);font-size:0.7rem;">(optional)</span>';
+        html += '<div style="margin-top:' + (i > 0 ? '14' : '6') + 'px;padding:14px;background:rgba(255,255,255,.02);border:1px solid var(--border-color);border-radius:12px;">';
+        html += '<div style="font-size:0.78rem;font-weight:700;color:var(--text-primary);margin-bottom:10px;display:flex;align-items:center;gap:6px;"><span style="width:22px;height:22px;border-radius:50%;background:var(--accent-gradient);display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;color:#000;font-weight:800;">' + (i+1) + '</span>' + ticketLabel + '</div>';
+        var inputStyle = 'width:100%;padding:10px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border-color);border-radius:10px;color:var(--text-primary);font-size:0.88rem;font-family:var(--font-sans);';
+        html += '<div style="margin-bottom:10px;"><label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">Name ' + reqStar + '</label><input type="text" id="' + prefix + '-name-' + i + '" value="' + nameVal + '" placeholder="Full name" style="' + inputStyle + '" /></div>';
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">';
+        html += '<div><label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">Email ' + (isFirst ? reqStar : optLabel) + '</label><input type="email" id="' + prefix + '-email-' + i + '" value="' + emailVal + '" placeholder="email@example.com" ' + (emailRO ? 'readonly style="' + inputStyle + 'opacity:0.6;cursor:not-allowed;"' : 'style="' + inputStyle + '"') + ' /></div>';
+        html += '<div><label style="display:block;font-size:0.78rem;color:var(--text-muted);margin-bottom:4px;font-weight:500;">Phone ' + (isFirst ? reqStar : optLabel) + '</label><input type="tel" id="' + prefix + '-phone-' + i + '" value="' + phoneVal + '" placeholder="+XX XXX XXX" style="' + inputStyle + '" /></div>';
+        html += '</div></div>';
+      }
+      html += '</div>';
+      return html;
+    }
+
+    function injectAttendeeForm(targetEl, qty, buyerInfo, prefix, seatLabels) {
+      if (!targetEl) return;
+      var wrapper = document.createElement('div');
+      wrapper.innerHTML = buildAttendeeFormHTML(qty, buyerInfo, prefix, seatLabels);
+      targetEl.replaceWith(wrapper.firstElementChild);
+      var copyBtn = document.getElementById(prefix + '-copy-all');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          var src = { name: document.getElementById(prefix + '-name-0')?.value || '', email: document.getElementById(prefix + '-email-0')?.value || '', phone: document.getElementById(prefix + '-phone-0')?.value || '' };
+          for (var j = 1; j < qty; j++) {
+            var n = document.getElementById(prefix + '-name-' + j); if (n && !n.value) n.value = src.name;
+            var e = document.getElementById(prefix + '-email-' + j); if (e && !e.value) e.value = src.email;
+            var p = document.getElementById(prefix + '-phone-' + j); if (p && !p.value) p.value = src.phone;
+          }
+          copyBtn.textContent = '✓ Copied';
+          copyBtn.style.borderColor = 'var(--accent-primary)';
+          setTimeout(function() { copyBtn.textContent = '📋 Copy to all'; copyBtn.style.borderColor = ''; }, 1500);
+        });
+      }
+    }
+
+    function collectAttendees(qty, prefix) {
+      var attendees = [];
+      for (var i = 0; i < qty; i++) {
+        attendees.push({
+          name: (document.getElementById(prefix + '-name-' + i)?.value || '').trim(),
+          email: (document.getElementById(prefix + '-email-' + i)?.value || '').trim(),
+          phone: (document.getElementById(prefix + '-phone-' + i)?.value || '').trim(),
+        });
+      }
+      return attendees;
+    }
+
+    function validateAttendees(attendees) {
+      for (var i = 0; i < attendees.length; i++) {
+        if (!attendees[i].name) return { valid: false, message: 'Please enter a name for Ticket ' + (i + 1) + '.' };
+      }
+      if (attendees.length > 0) {
+        if (!attendees[0].email) return { valid: false, message: 'Please enter an email for Ticket 1.' };
+        if (!attendees[0].phone) return { valid: false, message: 'Please enter a phone number for Ticket 1.' };
+      }
+      return { valid: true };
+    }
+
     function showConfirmModal({ event, items, totalPrice, totalQty, profile, user }) {
       // Remove existing modal
       document.getElementById('confirm-modal')?.remove();
@@ -2027,16 +2104,32 @@
 
       document.body.appendChild(modal);
 
+      // v60: Inject per-ticket attendee form (replaces the old single-attendee section)
+      (function() {
+        var sections = modal.querySelectorAll('.confirm-section');
+        var attendeeSection = sections.length >= 2 ? sections[1] : null;
+        if (attendeeSection) {
+          injectAttendeeForm(attendeeSection, totalQty, {
+            name: profile.full_name || user.user_metadata?.full_name || '',
+            email: user.email || '',
+            phone: profile.phone || user.user_metadata?.phone || '',
+            emailReadonly: true,
+          }, 'ca', null);
+        }
+      })();
+
       // Close
       document.getElementById('confirm-cancel').addEventListener('click', () => modal.remove());
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
       // Confirm & Pay
       document.getElementById('confirm-pay').addEventListener('click', async () => {
-        const name = document.getElementById('confirm-name').value.trim();
-        const phone = document.getElementById('confirm-phone').value.trim();
-
-        if (!name) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
+        // v60: Collect per-ticket attendee data
+        const attendees = collectAttendees(totalQty, 'ca');
+        const validation = validateAttendees(attendees);
+        if (!validation.valid) { showAlertModal({ title: 'Required Field', message: validation.message }); return; }
+        const name = attendees[0].name;
+        const phone = attendees[0].phone;
 
         const payBtn = document.getElementById('confirm-pay');
         payBtn.disabled = true;
@@ -2059,7 +2152,7 @@
           }
 
           const firstItem = items[0];
-          const result = await createCheckout({ tierId: firstItem.tierId, quantity: firstItem.qty, promoCode: appliedPromo?.code || null });
+          const result = await createCheckout({ tierId: firstItem.tierId, quantity: firstItem.qty, promoCode: appliedPromo?.code || null, attendees });
 
           if (result.checkout_url) {
             // Show reservation timer before redirect
@@ -2177,19 +2270,30 @@
 
       document.body.appendChild(modal);
 
+      // v60: Inject per-ticket attendee form (replaces the old single-attendee section)
+      (function() {
+        var sections = modal.querySelectorAll('.confirm-section');
+        var attendeeSection = sections.length >= 2 ? sections[1] : null;
+        if (attendeeSection) {
+          injectAttendeeForm(attendeeSection, totalQty, {}, 'ga', null);
+        }
+      })();
+
       // Close
       document.getElementById('guest-cancel').addEventListener('click', () => modal.remove());
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
       // Pay
       document.getElementById('guest-pay').addEventListener('click', async () => {
-        const name = document.getElementById('guest-name').value.trim();
-        const email = document.getElementById('guest-email').value.trim();
-        const phone = document.getElementById('guest-phone').value.trim();
-
-        if (!name || name.length < 2) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email address.' }); return; }
-        if (!phone || phone.length < 7) { showAlertModal({ title: 'Invalid Phone', message: 'Please enter a valid phone number.' }); return; }
+        // v60: Collect per-ticket attendee data
+        const attendees = collectAttendees(totalQty, 'ga');
+        const validation = validateAttendees(attendees);
+        if (!validation.valid) { showAlertModal({ title: 'Required Field', message: validation.message }); return; }
+        const name = attendees[0].name;
+        const email = attendees[0].email;
+        const phone = attendees[0].phone;
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email for Ticket 1.' }); return; }
+        if (!phone || phone.length < 7) { showAlertModal({ title: 'Invalid Phone', message: 'Please enter a valid phone for Ticket 1.' }); return; }
 
         if (items.length > 1) {
           showAlertModal({ title: 'Single Tier Only', message: 'Please select tickets from one tier at a time for guest checkout.' });
@@ -2209,6 +2313,7 @@
             guestEmail: email,
             guestPhone: phone,
             promoCode: appliedPromo?.code || null,
+            attendees,
           });
 
           if (result.checkout_url) {
@@ -2317,6 +2422,20 @@
 
       document.body.appendChild(modal);
 
+      // v60: Inject per-ticket attendee form (replaces the old single-attendee section)
+      (function() {
+        var sections = modal.querySelectorAll('.confirm-section');
+        var attendeeSection = sections.length >= 2 ? sections[1] : null;
+        if (attendeeSection) {
+          injectAttendeeForm(attendeeSection, seats.length, {
+            name: profile.full_name || user.user_metadata?.full_name || '',
+            email: user.email || '',
+            phone: profile.phone || user.user_metadata?.phone || '',
+            emailReadonly: true,
+          }, 'cs', seats.map(function(s) { return 'Row ' + s.row_label + ' Seat ' + s.seat_number; }));
+        }
+      })();
+
       // Populate pricing
       const csBreakdownEl = document.getElementById('cs-breakdown-container');
       const csFinalTotal = document.getElementById('cs-final-total');
@@ -2349,10 +2468,12 @@
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
       document.getElementById('cs-pay').addEventListener('click', async () => {
-        const name = document.getElementById('cs-name').value.trim();
-        const phone = document.getElementById('cs-phone').value.trim();
-
-        if (!name) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
+        // v60: Collect per-ticket attendee data
+        const attendees = collectAttendees(seats.length, 'cs');
+        const validation = validateAttendees(attendees);
+        if (!validation.valid) { showAlertModal({ title: 'Required Field', message: validation.message }); return; }
+        const name = attendees[0].name;
+        const phone = attendees[0].phone;
 
         const payBtn = document.getElementById('cs-pay');
         payBtn.disabled = true;
@@ -2364,7 +2485,7 @@
             phone: phone || null,
           }).eq('id', user.id);
 
-          const result = await createSeatedCheckout({ tierId, seatIds });
+          const result = await createSeatedCheckout({ tierId, seatIds, attendees });
           if (result.checkout_url) {
             modal.remove();
             startReservationTimer();
@@ -2470,6 +2591,15 @@
 
       document.body.appendChild(modal);
 
+      // v60: Inject per-ticket attendee form (replaces the old single-attendee section)
+      (function() {
+        var sections = modal.querySelectorAll('.confirm-section');
+        var attendeeSection = sections.length >= 2 ? sections[1] : null;
+        if (attendeeSection) {
+          injectAttendeeForm(attendeeSection, seats.length, {}, 'gs', seats.map(function(s) { return 'Row ' + s.row_label + ' Seat ' + s.seat_number; }));
+        }
+      })();
+
       // BRD: Populate price breakdown with tax + fees
       const gsBreakdownEl = document.getElementById('gs-breakdown-container');
       const gsFinalTotal = document.getElementById('gs-final-total');
@@ -2503,13 +2633,15 @@
       modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
 
       document.getElementById('gs-pay').addEventListener('click', async () => {
-        const name = document.getElementById('gs-name').value.trim();
-        const email = document.getElementById('gs-email').value.trim();
-        const phone = document.getElementById('gs-phone').value.trim();
-
-        if (!name || name.length < 2) { showAlertModal({ title: 'Required Field', message: 'Please enter your full name.' }); return; }
-        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email address.' }); return; }
-        if (!phone || phone.length < 7) { showAlertModal({ title: 'Invalid Phone', message: 'Please enter a valid phone number.' }); return; }
+        // v60: Collect per-ticket attendee data
+        const attendees = collectAttendees(seats.length, 'gs');
+        const validation = validateAttendees(attendees);
+        if (!validation.valid) { showAlertModal({ title: 'Required Field', message: validation.message }); return; }
+        const name = attendees[0].name;
+        const email = attendees[0].email;
+        const phone = attendees[0].phone;
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showAlertModal({ title: 'Invalid Email', message: 'Please enter a valid email for Ticket 1.' }); return; }
+        if (!phone || phone.length < 7) { showAlertModal({ title: 'Invalid Phone', message: 'Please enter a valid phone for Ticket 1.' }); return; }
 
         const payBtn = document.getElementById('gs-pay');
         payBtn.disabled = true;
@@ -2522,6 +2654,7 @@
             guestName: name,
             guestEmail: email,
             guestPhone: phone,
+            attendees,
           });
 
           if (result.checkout_url) {

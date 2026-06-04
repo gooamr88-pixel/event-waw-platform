@@ -76,7 +76,7 @@ export async function getTierAvailability(tierId) {
  * 2. Creates a Stripe Checkout Session
  * 3. Returns the checkout URL
  */
-export async function createCheckout({ tierId, quantity, promoCode }) {
+export async function createCheckout({ tierId, quantity, promoCode, attendees }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
     throw new Error('Your session has expired. Please sign in again.');
@@ -90,7 +90,12 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.access_token}`,
       },
-      body: JSON.stringify({ tier_id: tierId, quantity, promo_code: promoCode || undefined }),
+      body: JSON.stringify({
+        tier_id: tierId,
+        quantity,
+        promo_code: promoCode || undefined,
+        attendees: attendees || undefined,
+      }),
     }
   );
 
@@ -115,7 +120,7 @@ export async function createCheckout({ tierId, quantity, promoCode }) {
  * Sends guest info + tier selection to the Edge Function.
  * Returns { checkout_url, reservation_id }.
  */
-export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, promoCode }) {
+export async function createGuestCheckout({ tierId, quantity, guestName, guestEmail, guestPhone, promoCode, attendees }) {
   const response = await fetch(
     `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
@@ -131,8 +136,8 @@ export async function createGuestCheckout({ tierId, quantity, guestName, guestEm
         guest_name: guestName,
         guest_email: guestEmail,
         guest_phone: guestPhone,
-
         promo_code: promoCode || undefined,
+        attendees: attendees || undefined,
       }),
     }
   );
@@ -211,7 +216,7 @@ export async function updateEvent(eventId, updates) {
  * Create a seated checkout (auth user with specific seat selections).
  * Sends seat_ids[] to the Edge Function which calls reserve_seats().
  */
-export async function createSeatedCheckout({ tierId, seatIds }) {
+export async function createSeatedCheckout({ tierId, seatIds, attendees }) {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session?.access_token) {
     throw new Error('Your session has expired. Please sign in again.');
@@ -229,6 +234,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
         tier_id: tierId,
         quantity: seatIds.length,
         seat_ids: seatIds,
+        attendees: attendees || undefined,
       }),
     }
   );
@@ -251,7 +257,7 @@ export async function createSeatedCheckout({ tierId, seatIds }) {
 /**
  * Create a seated guest checkout (no auth, with specific seat selections).
  */
-export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone }) {
+export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, guestEmail, guestPhone, attendees }) {
   const response = await fetch(
     `${SUPABASE_FUNCTIONS_URL}/create-checkout`,
     {
@@ -268,7 +274,7 @@ export async function createGuestSeatedCheckout({ tierId, seatIds, guestName, gu
         guest_name: guestName,
         guest_email: guestEmail,
         guest_phone: guestPhone,
-
+        attendees: attendees || undefined,
       }),
     }
   );
