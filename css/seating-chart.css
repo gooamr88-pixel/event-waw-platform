@@ -44,7 +44,7 @@
 
 /* ══════ FULL-WIDTH LAYOUT WRAPPER ══════ */
 .seating-chart-fullwidth {
-  max-width: 820px;
+  max-width: 860px;
   margin: 0 auto 36px;
 }
 .seating-chart-fullwidth:empty {
