@@ -235,7 +235,7 @@
           <!-- Performers -->
           <div class="event-detail-section" id="ed-performers-section" style="display:none;">
             <h2 style="font-family:var(--font-serif);font-size:1.1rem;font-weight:700;margin-bottom:16px;">🎤 Artists & Performers</h2>
-            <div id="ed-performers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:16px;"></div>
+            <div id="ed-performers-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;"></div>
           </div>
 
           <!-- Sponsors -->
@@ -428,7 +428,25 @@
     .event-detail-grid.seated-mode #ticket-column {
       display: none;
     }
-    .event-detail-section { margin-bottom: clamp(20px, 3vw, 32px); }
+    .event-detail-section {
+      margin-bottom: clamp(16px, 2.5vw, 24px);
+      background: var(--bg-card, rgba(255,255,255,.03));
+      border: 1px solid var(--border-color, rgba(255,255,255,.08));
+      border-radius: 16px;
+      padding: clamp(18px, 3vw, 28px);
+      transition: box-shadow .3s, border-color .3s;
+    }
+    .event-detail-section:hover {
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+      border-color: rgba(5,150,105,.15);
+    }
+    [data-theme="light"] .event-detail-section {
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.04);
+    }
+    [data-theme="light"] .event-detail-section:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,.07);
+    }
 
     /* Info Grid (replaces side-by-side hero row) */
     .ed-info-grid {
@@ -450,6 +468,37 @@
 
     /* Description expand */
     .ed-desc-wrap { max-height: 140px; overflow: hidden; position: relative; transition: max-height .4s ease; }
+    .ed-desc-wrap.expanded { max-height: none; }
+    .ed-desc-wrap:not(.expanded)::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(to bottom, transparent, var(--bg-card, #09090b));
+      pointer-events: none;
+    }
+    [data-theme="light"] .ed-desc-wrap:not(.expanded)::after {
+      background: linear-gradient(to bottom, transparent, #fff);
+    }
+    .ed-see-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      padding: 6px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--accent-primary, #059669);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .2s, border-color .2s;
+    }
+    .ed-see-more:hover {
+      background: rgba(5,150,105,.06);
+      border-color: rgba(5,150,105,.25);
+    }
 
     /* Terms accordion */
     .ed-terms-toggle {
@@ -964,8 +1013,8 @@
           imgWrap.style.margin = '0 auto 8px';
           imgWrap.style.borderRadius = '50%';
           imgWrap.style.overflow = 'hidden';
-          imgWrap.style.background = 'var(--ev-card)';
-          imgWrap.style.border = '1px solid var(--ev-border)';
+          imgWrap.style.background = 'var(--bg-card, rgba(255,255,255,.05))';
+          imgWrap.style.border = '1px solid var(--border-color, rgba(255,255,255,.1))';
           imgWrap.style.display = 'flex';
           imgWrap.style.alignItems = 'center';
           imgWrap.style.justifyContent = 'center';
