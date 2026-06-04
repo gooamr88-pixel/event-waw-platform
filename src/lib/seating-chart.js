@@ -292,6 +292,9 @@ export class SeatingChart {
       svg.appendChild(stageGroup);
     }
 
+    // Decorative elements (bars, VIP, tables, barriers, etc.)
+    this._renderDecorativeElements(svg);
+
     // Sections
     for (const section of (layout.sections || [])) {
       const sectionGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -384,6 +387,137 @@ export class SeatingChart {
     this.container.appendChild(svg);
     this.svgEl = svg;
     this.sceneEl = sceneGroup;
+  }
+
+  /**
+   * Render non-interactive decorative elements (bars, VIP, tables, etc.)
+   * so the attendee sees the same venue layout the organizer designed.
+   */
+  _renderDecorativeElements(svg) {
+    const elements = this.layout.elements || [];
+    const skipTypes = new Set(['stage', 'section']);
+
+    const DECO_ICONS = {
+      bar: '🍸', vip: '👑', table: '🍽️', barrier: '🚧',
+      restroom: '🚻', exit: '🚪', food: '🍕', dj: '🎧',
+      merch: '🛍️', screen: '📺', entrance: '🚶', photo: '📸',
+    };
+
+    const ns = 'http://www.w3.org/2000/svg';
+
+    for (const el of elements) {
+      if (skipTypes.has(el.type)) continue;
+
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'deco-element');
+      g.setAttribute('transform',
+        `translate(${el.x},${el.y})${el.rotation ? ` rotate(${el.rotation},${(el.w||80)/2},${(el.h||80)/2})` : ''}`);
+      g.style.pointerEvents = 'none';
+      g.setAttribute('opacity', '0.55');
+
+      const w = el.w || 80, h = el.h || 80;
+      const color = el.color || '#666';
+
+      // Text-only label element
+      if (el.type === 'label') {
+        const lbl = document.createElementNS(ns, 'text');
+        lbl.setAttribute('x', String(w / 2));
+        lbl.setAttribute('y', String(h / 2));
+        lbl.setAttribute('text-anchor', 'middle');
+        lbl.setAttribute('dominant-baseline', 'middle');
+        lbl.setAttribute('fill', color);
+        lbl.setAttribute('font-size', '10');
+        lbl.setAttribute('font-weight', '600');
+        lbl.setAttribute('font-family', 'Inter, sans-serif');
+        lbl.textContent = el.label || '';
+        g.appendChild(lbl);
+        svg.appendChild(g);
+        continue;
+      }
+
+      // Shape rendering by type
+      if (el.type === 'table') {
+        const cx = w / 2, cy = h / 2;
+        const tr = Math.min(cx, cy) * 0.45;
+        const circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', String(cx));
+        circle.setAttribute('cy', String(cy));
+        circle.setAttribute('r', String(tr));
+        circle.setAttribute('fill', color + '20');
+        circle.setAttribute('stroke', color + '50');
+        circle.setAttribute('stroke-width', '1');
+        g.appendChild(circle);
+        // Chairs around the table
+        const n = el.seats || 6;
+        const chairR = tr + 8;
+        for (let i = 0; i < n; i++) {
+          const angle = (2 * Math.PI / n) * i - Math.PI / 2;
+          const px = cx + chairR * Math.cos(angle);
+          const py = cy + chairR * Math.sin(angle);
+          const chair = document.createElementNS(ns, 'rect');
+          const cw = 4, ch = 5;
+          chair.setAttribute('x', String(px - cw / 2));
+          chair.setAttribute('y', String(py - ch / 2));
+          chair.setAttribute('width', String(cw));
+          chair.setAttribute('height', String(ch));
+          chair.setAttribute('rx', '1.5');
+          chair.setAttribute('fill', color);
+          chair.setAttribute('opacity', '0.5');
+          chair.setAttribute('transform', `rotate(${(angle * 180 / Math.PI) + 90},${px},${py})`);
+          g.appendChild(chair);
+        }
+      } else if (el.type === 'barrier') {
+        const rect = document.createElementNS(ns, 'rect');
+        rect.setAttribute('width', String(w));
+        rect.setAttribute('height', String(h));
+        rect.setAttribute('rx', String(Math.min(h / 2, 4)));
+        rect.setAttribute('fill', color + '35');
+        rect.setAttribute('stroke', color + '60');
+        rect.setAttribute('stroke-width', '0.5');
+        g.appendChild(rect);
+      } else {
+        // Generic: rounded rect
+        const rect = document.createElementNS(ns, 'rect');
+        rect.setAttribute('width', String(w));
+        rect.setAttribute('height', String(h));
+        rect.setAttribute('rx', String(el.cornerRadius || 8));
+        rect.setAttribute('fill', color + '12');
+        rect.setAttribute('stroke', color + '30');
+        rect.setAttribute('stroke-width', '1');
+        g.appendChild(rect);
+      }
+
+      // Icon emoji
+      const icon = DECO_ICONS[el.type];
+      if (icon && el.type !== 'barrier') {
+        const txt = document.createElementNS(ns, 'text');
+        txt.setAttribute('x', String(w / 2));
+        txt.setAttribute('y', String(h / 2 - (h > 40 ? 4 : 0)));
+        txt.setAttribute('text-anchor', 'middle');
+        txt.setAttribute('dominant-baseline', 'middle');
+        txt.setAttribute('font-size', String(Math.min(h * 0.3, 18)));
+        txt.textContent = icon;
+        g.appendChild(txt);
+      }
+
+      // Label text
+      if (el.label && el.type !== 'barrier' && h > 25) {
+        const lbl = document.createElementNS(ns, 'text');
+        lbl.setAttribute('x', String(w / 2));
+        lbl.setAttribute('y', String(h / 2 + (icon ? 12 : 2)));
+        lbl.setAttribute('text-anchor', 'middle');
+        lbl.setAttribute('dominant-baseline', 'middle');
+        lbl.setAttribute('fill', color);
+        lbl.setAttribute('font-size', '7');
+        lbl.setAttribute('font-weight', '600');
+        lbl.setAttribute('font-family', 'Inter, sans-serif');
+        lbl.setAttribute('opacity', '0.9');
+        lbl.textContent = el.label;
+        g.appendChild(lbl);
+      }
+
+      svg.appendChild(g);
+    }
   }
 
   _findSeatRecord(sectionKey, rowLabel, seatNumber) {
