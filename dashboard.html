@@ -346,18 +346,162 @@
 
     <!-- ════ PANEL: ANALYTICS ════ -->
     <div class="ev-panel" id="panel-analytics">
-      <h2 style="font-size:1.15rem;font-weight:700;margin-bottom:18px">📊 Analytics Dashboard</h2>
-      <div class="ev-stat-grid" style="margin-bottom:24px">
-        <div class="ev-stat-card"><div class="ev-stat-icon orange">🎫</div><div><div class="ev-stat-value" id="ana-tickets">0</div><div class="ev-stat-label">Tickets Sold</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon green">💰</div><div><div class="ev-stat-value" id="ana-revenue">$0</div><div class="ev-stat-label">Total Revenue</div></div></div>
-        <div class="ev-stat-card"><div class="ev-stat-icon blue">📊</div><div><div class="ev-stat-value" id="ana-scanrate">—</div><div class="ev-stat-label">Scan Rate</div></div></div>
+      <style>
+        .ana-chart-grid-responsive {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+        }
+        @media (min-width: 1200px) {
+          .ana-chart-grid-responsive {
+            grid-template-columns: 2fr 1fr 1fr;
+          }
+        }
+        @media (max-width: 992px) {
+          .ana-lower-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        .insight-item {
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+          margin-bottom: 16px;
+          padding: 12px 14px;
+          border-radius: 10px;
+          background: var(--ev-bg-card-hover, rgba(0,0,0,0.02));
+          border: 1px solid var(--ev-border);
+        }
+        .insight-icon {
+          font-size: 1.2rem;
+          line-height: 1;
+        }
+        .insight-text {
+          font-size: 0.82rem;
+          line-height: 1.4;
+          color: var(--ev-text);
+        }
+        .insight-title {
+          font-weight: 700;
+          margin-bottom: 2px;
+          font-size: 0.85rem;
+        }
+      </style>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:16px">
+        <h2 style="font-size:1.15rem;font-weight:700;margin:0">📊 Analytics Dashboard</h2>
+        <div style="display:flex; gap:12px; align-items:center">
+          <select id="ana-filter-event" class="ev-form-input" aria-label="Filter by Event" style="max-width:240px; margin-bottom:0; height:38px; padding:6px 12px; border-radius:10px; background:var(--ev-bg-card); border-color:var(--ev-border)"></select>
+          <select id="ana-filter-timeframe" class="ev-form-input" aria-label="Filter by Timeframe" style="max-width:160px; margin-bottom:0; height:38px; padding:6px 12px; border-radius:10px; background:var(--ev-bg-card); border-color:var(--ev-border)">
+            <option value="7">Last 7 days</option>
+            <option value="30" selected>Last 30 days</option>
+            <option value="90">Last 90 days</option>
+            <option value="all">All time</option>
+          </select>
+        </div>
       </div>
-      <div class="ev-chart-grid">
-        <div class="ev-chart-card"><h3>📈 Revenue Trends</h3><div class="ev-chart-container"><canvas id="revenue-chart"></canvas></div></div>
-        <div class="ev-chart-card"><h3>🎯 Tickets by Tier</h3><div class="ev-chart-container"><canvas id="tier-chart"></canvas></div></div>
+
+      <!-- 6 Stats Cards Grid -->
+      <div class="ev-stat-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:24px">
+        <div class="ev-stat-card">
+          <div class="ev-stat-icon green">💰</div>
+          <div>
+            <div class="ev-stat-value" id="ana-gross-revenue">$0.00</div>
+            <div class="ev-stat-label">Gross Revenue</div>
+          </div>
+        </div>
+        <div class="ev-stat-card">
+          <div class="ev-stat-icon pink">💸</div>
+          <div>
+            <div class="ev-stat-value" id="ana-net-payout">$0.00</div>
+            <div class="ev-stat-label">Net Payout</div>
+          </div>
+        </div>
+        <div class="ev-stat-card">
+          <div class="ev-stat-icon orange">🎫</div>
+          <div>
+            <div class="ev-stat-value" id="ana-tickets-sold">0</div>
+            <div class="ev-stat-label">Tickets Sold</div>
+          </div>
+        </div>
+        <div class="ev-stat-card">
+          <div class="ev-stat-icon blue">📊</div>
+          <div>
+            <div class="ev-stat-value" id="ana-scan-rate">0%</div>
+            <div class="ev-stat-label">Scan Rate</div>
+          </div>
+        </div>
+        <div class="ev-stat-card">
+          <div class="ev-stat-icon purple">📈</div>
+          <div>
+            <div class="ev-stat-value" id="ana-aov">$0.00</div>
+            <div class="ev-stat-label">Avg Order Value</div>
+          </div>
+        </div>
+        <div class="ev-stat-card">
+          <div class="ev-stat-icon yellow">🏷️</div>
+          <div>
+            <div class="ev-stat-value" id="ana-promo-savings">$0.00</div>
+            <div class="ev-stat-label">Promo Discounts</div>
+          </div>
+        </div>
       </div>
+
+      <!-- Charts Section (Three interactive Chart.js widgets) -->
+      <div class="ana-chart-grid-responsive" style="margin-bottom:24px">
+        <div class="ev-chart-card" style="min-height:320px; display:flex; flex-direction:column">
+          <h3 style="font-size:.95rem; font-weight:700; margin-bottom:12px; margin-top:0">📈 Revenue & Sales Over Time</h3>
+          <div class="ev-chart-container" style="flex:1; position:relative; min-height:220px"><canvas id="revenue-chart"></canvas></div>
+        </div>
+        <div class="ev-chart-card" style="min-height:320px; display:flex; flex-direction:column">
+          <h3 style="font-size:.95rem; font-weight:700; margin-bottom:12px; margin-top:0">🎯 Tickets by Tier</h3>
+          <div class="ev-chart-container" style="flex:1; position:relative; min-height:220px"><canvas id="tier-chart"></canvas></div>
+        </div>
+        <div class="ev-chart-card" style="min-height:320px; display:flex; flex-direction:column">
+          <h3 style="font-size:.95rem; font-weight:700; margin-bottom:12px; margin-top:0">💳 Payment Methods Split</h3>
+          <div class="ev-chart-container" style="flex:1; position:relative; min-height:220px"><canvas id="payment-methods-chart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Recent Transactions & Smart Insights Grid -->
+      <div style="display:grid; grid-template-columns:3fr 2fr; gap:20px; margin-bottom:24px" class="ana-lower-grid">
+        <!-- Recent Transactions -->
+        <div class="ev-card" style="margin-bottom:0">
+          <div class="ev-card-header" style="display:flex; justify-content:space-between; align-items:center; padding:16px 20px">
+            <span class="ev-card-title">🛒 Recent Transactions</span>
+            <span style="font-size:0.75rem; color:var(--ev-text-sec)" id="ana-tx-count">0 orders total</span>
+          </div>
+          <div class="ev-table-wrap">
+            <table class="ev-table">
+              <thead>
+                <tr>
+                  <th>Customer</th>
+                  <th>Event</th>
+                  <th>Amount</th>
+                  <th>Method</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="ana-transactions-tbody">
+                <tr><td colspan="6" class="ev-table-empty">No transactions found</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Smart Insights Block -->
+        <div class="ev-card" style="margin-bottom:0; display:flex; flex-direction:column">
+          <div class="ev-card-header" style="padding:16px 20px"><span class="ev-card-title">💡 Sales Insights</span></div>
+          <div style="padding:20px; flex:1; overflow-y:auto" id="ana-insights-container">
+            <div class="ev-loading" style="padding:40px 0"><div class="ev-spinner"></div>Analyzing sales patterns…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-Event Detailed Revenue Table -->
       <div class="ev-card">
-        <div class="ev-card-header"><span class="ev-card-title">💰 Revenue <span class="ev-pink">Breakdown</span></span></div>
+        <div class="ev-card-header" style="padding:16px 20px"><span class="ev-card-title">💰 Revenue <span class="ev-pink">Breakdown</span></span></div>
         <div id="revenue-breakdown">
           <p style="text-align:center;padding:24px;color:var(--ev-text-muted)">Revenue data loads after first sale</p>
         </div>

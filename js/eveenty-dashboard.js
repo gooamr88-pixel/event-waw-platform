@@ -9,7 +9,7 @@ import { setupSearch } from '../src/lib/dashboard-search.js';
 import { renderCalendar, setupCalendar, setCalendarEvents } from '../src/lib/dashboard-calendar.js';
 import { setupEmailAttendees } from '../src/lib/dashboard-attendees.js';
 import { setupProfilePanel, setupUserDropdown } from '../src/lib/dashboard-profile.js';
-import { renderRevenueBreakdown, initCharts } from '../src/lib/dashboard-analytics.js';
+import { renderRevenueBreakdown, initCharts, initAnalyticsPanel } from '../src/lib/dashboard-analytics.js';
 import { setupPromoPanel } from '../src/lib/dashboard-vendors.js';
 import { loadPromoCodes, setupFinancialPanel, setupPromoForm } from '../src/lib/dashboard-promos.js';
 import { loadPayoutData, setupDarkMode, setupPayoutPanel } from '../src/lib/dashboard-payout.js';
@@ -279,11 +279,6 @@ export async function loadDashboard() {
 
     if (getSwitchId() !== mySwitch) return; // final stale check before DOM writes
 
-    const scanRate = totalTickets > 0 ? Math.round((totalScanned / totalTickets) * 100) : 0;
-    document.getElementById('ana-tickets').textContent = totalTickets.toLocaleString();
-    document.getElementById('ana-revenue').textContent = formatCurrency(totalRevenue);
-    document.getElementById('ana-scanrate').textContent = totalTickets > 0 ? scanRate + '%' : '-';
-
     renderEventsTable(events);
     populateEventSelects(events);
     // H-5: Only attach ticket panel listeners once (AFTER selects are populated)
@@ -291,8 +286,8 @@ export async function loadDashboard() {
       _ticketsPanelInitialized = true;
       setupTicketsPanel(events);
     }
-    initCharts(revenueData, events);
-    if (revenueData?.length) renderRevenueBreakdown(revenueData);
+    // Initialize premium analytics panel with interactive filters
+    initAnalyticsPanel(events);
 
     // Feed calendar
     setCalendarEvents(events);
