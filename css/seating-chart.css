@@ -115,7 +115,7 @@
   background:
     radial-gradient(ellipse 80% 60% at 50% 30%, rgba(212,175,55,.02) 0%, transparent 100%),
     var(--chart-bg);
-  cursor: grab;
+  cursor: default;
   touch-action: none; /* Enable custom touch handling */
 }
 .seating-chart-container:active {
@@ -127,7 +127,6 @@
   display: block;
   width: 100%;
   height: 100%;
-  transition: transform .1s ease-out;
   will-change: transform;
 }
 
@@ -175,8 +174,7 @@
   filter: drop-shadow(0 1px 2px rgba(0,0,0,.15));
 }
 .seat:hover {
-  filter: drop-shadow(0 0 8px var(--seat-hover-glow));
-  transform: scale(1.3);
+  filter: drop-shadow(0 0 6px var(--seat-hover-glow));
 }
 .seat-available {
   cursor: pointer;

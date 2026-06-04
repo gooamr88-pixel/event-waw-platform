@@ -3,7 +3,7 @@
    Bridges SeatingChart engine with event-detail page
    =================================== */
 
-import { SeatingChart } from './seating-chart.js?v=3';
+import { SeatingChart } from './seating-chart.js?v=4';
 import { createSeatedCheckout, createGuestSeatedCheckout } from './events.js';
 import { getOrderBreakdown, renderPriceBreakdown, injectBreakdownStyles } from './price-breakdown.js';
 import { setSafeHTML } from './dom.js';

@@ -580,8 +580,9 @@ export class SeatingChart {
         minScale: 0.3,
         step: 0.15,
         contain: 'outside',
-        cursor: 'grab',
-        canvas: true,
+        cursor: 'default',
+        canvas: false,
+        excludeClass: 'seat-available',
       });
 
       // Register wheel-to-zoom on the SVG's parent container
