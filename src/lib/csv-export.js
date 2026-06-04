@@ -82,7 +82,7 @@ export async function exportAttendeeReport(eventId, eventTitle, supabase) {
   // Fetch tickets
   const { data: tickets, error: tickErr } = await supabase
     .from('tickets')
-    .select('id, ticket_tier_id, order_id, user_id, status, scanned_at, seat_section, seat_row, seat_number, created_at, attendee_name, attendee_email')
+    .select('*')
     .in('ticket_tier_id', tiers.map(t => t.id))
     .order('created_at', { ascending: false });
 

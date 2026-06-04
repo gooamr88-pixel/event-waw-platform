@@ -51,7 +51,7 @@ export function setupTicketsPanel(events) {
       tiers.forEach(t => { _cachedTierMap[t.id] = t; });
 
       const { data: tickets, error: tickErr } = await safeQuery(
-        supabase.from('tickets').select('id, ticket_tier_id, order_id, user_id, status, qr_hash, created_at, scanned_at, attendee_name, attendee_email, seat_label').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
+        supabase.from('tickets').select('*').in('ticket_tier_id', tiers.map(t => t.id)).order('created_at', { ascending: false })
       );
       if (isStale()) return;
       console.log('[Tickets] Tickets response:', { count: tickets?.length, tickErr });
