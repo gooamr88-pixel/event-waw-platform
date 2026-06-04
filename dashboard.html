@@ -358,7 +358,7 @@
           }
         }
         @media (max-width: 992px) {
-          .ana-lower-grid {
+          .ana-lower-grid, .ana-bottom-grid {
             grid-template-columns: 1fr !important;
           }
         }
@@ -499,11 +499,22 @@
         </div>
       </div>
 
-      <!-- Per-Event Detailed Revenue Table -->
-      <div class="ev-card">
-        <div class="ev-card-header" style="padding:16px 20px"><span class="ev-card-title">💰 Revenue <span class="ev-pink">Breakdown</span></span></div>
-        <div id="revenue-breakdown">
-          <p style="text-align:center;padding:24px;color:var(--ev-text-muted)">Revenue data loads after first sale</p>
+      <!-- Bottom Breakdown Tables Grid -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; margin-bottom:0" class="ana-bottom-grid">
+        <!-- Per-Event Detailed Revenue Table -->
+        <div class="ev-card" style="margin-bottom:0">
+          <div class="ev-card-header" style="padding:16px 20px"><span class="ev-card-title">💰 Event <span class="ev-pink">Revenue Breakdown</span></span></div>
+          <div id="revenue-breakdown">
+            <p style="text-align:center;padding:24px;color:var(--ev-text-muted)">Revenue data loads after first sale</p>
+          </div>
+        </div>
+
+        <!-- Monthly Sales Summary Table -->
+        <div class="ev-card" style="margin-bottom:0">
+          <div class="ev-card-header" style="padding:16px 20px"><span class="ev-card-title">📅 Monthly <span class="ev-pink">Sales Summary</span></span></div>
+          <div id="monthly-revenue-breakdown">
+            <p style="text-align:center;padding:24px;color:var(--ev-text-muted)">No monthly collections data found</p>
+          </div>
         </div>
       </div>
     </div>

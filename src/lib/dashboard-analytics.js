@@ -153,6 +153,7 @@ function renderAnalytics(selectedEventId, timeframeDays) {
   renderRecentTransactions(filteredPayments, filteredOrders);
   renderSmartInsights(filteredPayments, filteredTickets, tierMap, scanRate);
   renderRevenueBreakdownTable(filteredPayments, filteredTickets, tierToEventMap);
+  renderMonthlyRevenueBreakdownTable(filteredPayments);
 }
 
 /* ==================================
@@ -586,6 +587,53 @@ function renderRevenueBreakdownTable(payments, tickets, tierToEventMap) {
   } else {
     setSafeHTML(breakdownEl, `<div class="ev-table-wrap"><table class="ev-table">
       <thead><tr><th>Event</th><th style="text-align:right">Gross</th><th style="text-align:right">Fee</th><th style="text-align:right">Net Payout</th><th style="text-align:center">Scan %</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`);
+  }
+}
+
+/* ==================================
+   MONTHLY REVENUE BREAKDOWN TABLE
+   ================================== */
+function renderMonthlyRevenueBreakdownTable(payments) {
+  const breakdownEl = document.getElementById('monthly-revenue-breakdown');
+  if (!breakdownEl) return;
+
+  const monthlyData = {};
+  payments.forEach(p => {
+    const date = new Date(p.created_at || p.paid_at);
+    if (isNaN(date)) return;
+    const year = date.getFullYear();
+    const monthIndex = date.getMonth(); // 0-11
+    const key = `${year}-${String(monthIndex + 1).padStart(2, '0')}`;
+    
+    if (!monthlyData[key]) {
+      monthlyData[key] = {
+        monthLabel: date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        orderCount: 0,
+        grossRevenue: 0,
+        currency: p.currency || 'USD'
+      };
+    }
+    
+    monthlyData[key].orderCount++;
+    monthlyData[key].grossRevenue += Number(p.total_amount || 0);
+  });
+
+  const sortedKeys = Object.keys(monthlyData).sort().reverse();
+  const rows = sortedKeys.map(key => {
+    const item = monthlyData[key];
+    return `<tr>
+      <td style="font-weight:600">${escapeHTML(item.monthLabel)}</td>
+      <td style="text-align:right">${item.orderCount} orders</td>
+      <td style="text-align:right; font-weight:700; color:var(--ev-pink)">${formatCurrency(item.grossRevenue, item.currency)}</td>
+    </tr>`;
+  }).join('');
+
+  if (rows.length === 0) {
+    setSafeHTML(breakdownEl, `<p style="text-align:center;padding:24px;color:var(--ev-text-muted)">No monthly collections data found for the selected filters</p>`);
+  } else {
+    setSafeHTML(breakdownEl, `<div class="ev-table-wrap"><table class="ev-table">
+      <thead><tr><th>Month</th><th style="text-align:right">Orders</th><th style="text-align:right">Total Revenue</th></tr></thead>
       <tbody>${rows}</tbody></table></div>`);
   }
 }
