@@ -8,25 +8,76 @@ import { showToast } from './dashboard-ui.js';
 let _cachedTickets = [];
 let _cachedTierMap = {};
 let _cachedOrderMap = {};
+let _visibleCount = 50;
+let _filteredTickets = [];
+let _searchTimeout = null;
 
 export function setupTicketsPanel(events) {
   const select = document.getElementById('ticket-event-select');
   const searchInput = document.getElementById('ticket-search-input');
+  const tbody = document.getElementById('tickets-tbody');
   console.log('[Tickets] setupTicketsPanel called, select element:', !!select);
 
   // ── Search handler: client-side filter of loaded tickets ──
   searchInput?.addEventListener('input', () => {
-    const query = (searchInput.value || '').trim().toLowerCase();
-    if (!_cachedTickets.length) return;
-    renderTicketRows(filterTickets(_cachedTickets, query));
+    if (_searchTimeout) clearTimeout(_searchTimeout);
+    _searchTimeout = setTimeout(() => {
+      const query = (searchInput.value || '').trim().toLowerCase();
+      _visibleCount = 50; // Reset pagination
+      _filteredTickets = filterTickets(_cachedTickets, query);
+      renderTicketRows(_filteredTickets.slice(0, _visibleCount));
+      renderLoadMoreButton();
+    }, 250); // 250ms debounce window
+  });
+
+  // Attach event delegation listener once
+  tbody?.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.ev-btn-resend');
+    if (!btn || btn.disabled) return;
+
+    const ticketId = btn.dataset.ticketId;
+    btn.disabled = true;
+    btn.style.opacity = '0.4';
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ ticket_id: ticketId }),
+      });
+
+      if (!res.ok) throw new Error('Failed to generate PDF');
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ticket-${ticketId.slice(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Ticket PDF downloaded', 'success');
+    } catch (err) {
+      showToast('Resend failed: ' + err.message, 'error');
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
   });
 
   const loadTicketsForEvent = async () => {
-    const tbody = document.getElementById('tickets-tbody');
     const eventId = select.value;
     console.log('[Tickets] loadTicketsForEvent fired, eventId:', eventId);
     if (searchInput) searchInput.value = '';
     _cachedTickets = [];
+    _filteredTickets = [];
+    _visibleCount = 50;
+    renderLoadMoreButton();
 
     if (!eventId) {
       setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Select an event to view tickets</td></tr>');
@@ -45,8 +96,19 @@ export function setupTicketsPanel(events) {
       const { data: tiers, error: tierErr } = await supabase.from('ticket_tiers').select('id, name, price, currency').eq('event_id', eventId);
       if (isStale()) return;
       console.log('[Tickets] Tiers response:', { tiers: tiers?.length, tierErr });
-      if (tierErr) { console.error('Tier query error:', tierErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tiers</td></tr>'); return; }
-      if (!tiers?.length) { setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No tiers found</td></tr>'); return; }
+      if (tierErr) {
+        console.error('Tier query error:', tierErr);
+        setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tiers</td></tr>');
+        _filteredTickets = [];
+        renderLoadMoreButton();
+        return;
+      }
+      if (!tiers?.length) {
+        setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No tiers found</td></tr>');
+        _filteredTickets = [];
+        renderLoadMoreButton();
+        return;
+      }
       _cachedTierMap = {};
       tiers.forEach(t => { _cachedTierMap[t.id] = t; });
 
@@ -56,13 +118,21 @@ export function setupTicketsPanel(events) {
       if (isStale()) return;
       console.log('[Tickets] Tickets response:', { count: tickets?.length, tickErr });
 
-      if (tickErr) { console.error('Ticket query error:', tickErr); setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tickets</td></tr>'); return; }
+      if (tickErr) {
+        console.error('Ticket query error:', tickErr);
+        setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">Error loading tickets</td></tr>');
+        _filteredTickets = [];
+        renderLoadMoreButton();
+        return;
+      }
 
       if (!tickets?.length) {
         setSafeHTML(tbody, '<tr><td colspan="8" class="ev-table-empty">No tickets sold yet</td></tr>');
         document.getElementById('tkt-stat-sold').textContent = '0';
         document.getElementById('tkt-stat-scanned').textContent = '0';
         document.getElementById('tkt-stat-revenue').textContent = '$0';
+        _filteredTickets = [];
+        renderLoadMoreButton();
         return;
       }
 
@@ -85,7 +155,10 @@ export function setupTicketsPanel(events) {
       document.getElementById('tkt-stat-revenue').textContent = formatCurrency(totalRev, tierCurrency);
       
       _cachedTickets = tickets;
-      renderTicketRows(tickets);
+      _filteredTickets = tickets;
+      _visibleCount = 50;
+      renderTicketRows(_filteredTickets.slice(0, _visibleCount));
+      renderLoadMoreButton();
 
       const csvBtn = document.getElementById('ticket-csv-btn');
       if (csvBtn) csvBtn.onclick = async () => {
@@ -145,6 +218,8 @@ export function setupTicketsPanel(events) {
     } catch (err) {
       console.error('[Tickets] Unexpected error:', err);
       setSafeHTML(tbody, `<tr><td colspan="8" class="ev-table-empty" style="color:var(--ev-danger)">${escapeHTML(err.message)}</td></tr>`);
+      _filteredTickets = [];
+      renderLoadMoreButton();
     }
   };
 
@@ -170,6 +245,23 @@ function filterTickets(tickets, query) {
     const orderId = (t.order_id || '').toLowerCase();
     return name.includes(query) || email.includes(query) || tierName.includes(query) ||
            seat.includes(query) || ticketId.includes(query) || orderId.includes(query);
+  });
+}
+
+function renderLoadMoreButton() {
+  const container = document.getElementById('tickets-load-more-container');
+  if (!container) return;
+  
+  if (_visibleCount >= _filteredTickets.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = `<button class="ev-btn ev-btn-outline" id="tkt-load-more-btn" style="margin: 20px auto; display: block;">Load More</button>`;
+  document.getElementById('tkt-load-more-btn')?.addEventListener('click', () => {
+    _visibleCount += 50;
+    renderTicketRows(_filteredTickets.slice(0, _visibleCount));
+    renderLoadMoreButton();
   });
 }
 
@@ -205,43 +297,4 @@ function renderTicketRows(tickets) {
   }).join('');
 
   setSafeHTML(tbody, htmlString);
-
-  // Wire up resend buttons
-  tbody.querySelectorAll('.ev-btn-resend').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const ticketId = btn.dataset.ticketId;
-      btn.disabled = true;
-      btn.style.opacity = '0.4';
-
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const res = await fetch(`${SUPABASE_FUNCTIONS_URL}/generate-ticket-pdf`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ ticket_id: ticketId }),
-        });
-
-        if (!res.ok) throw new Error('Failed to generate PDF');
-
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `ticket-${ticketId.slice(0, 8)}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-        showToast('Ticket PDF downloaded', 'success');
-      } catch (err) {
-        showToast('Resend failed: ' + err.message, 'error');
-      } finally {
-        btn.disabled = false;
-        btn.style.opacity = '1';
-      }
-    });
-  });
 }

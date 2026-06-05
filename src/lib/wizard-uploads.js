@@ -50,20 +50,14 @@ export function handleCeFileUpload(e, area) {
  */
 export async function uploadCoverImage(eventId) {
   if (!pendingCoverFile) return null;
-  try {
-    const ext = pendingCoverFile.name.split('.').pop();
-    const path = `events/${eventId}/cover.${ext}`;
-    const { error } = await supabase.storage.from('event-covers').upload(path, pendingCoverFile, { upsert: true });
-    if (error) { console.warn('Cover upload failed:', error.message); return null; }
-    // Store the STABLE public URL (not a resolved/signed URL) so it can be
-    // re-resolved correctly each time via resolveImageUrl()
-    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
-    pendingCoverFile = null;
-    return urlData?.publicUrl || null;
-  } catch (err) {
-    console.warn('Cover upload error:', err);
-    return null;
-  }
+  const ext = pendingCoverFile.name.split('.').pop();
+  const path = `events/${eventId}/cover.${ext}`;
+  const { error } = await supabase.storage.from('event-covers').upload(path, pendingCoverFile, { upsert: true });
+  if (error) throw new Error(`Cover image upload failed: ${error.message}`);
+  
+  const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+  pendingCoverFile = null;
+  return urlData?.publicUrl || null;
 }
 
 /**
@@ -73,17 +67,13 @@ export async function uploadCoverImage(eventId) {
 export async function uploadEventFile(eventId, file, label) {
   if (!file) return null;
   // M-fe-1 FIX: Enforce 5MB file size limit for gallery/sponsor uploads
-  if (file.size > 5 * 1024 * 1024) { showToast('File must be under 5MB', 'error'); return null; }
-  try {
-    const ext = file.name.split('.').pop();
-    const path = `events/${eventId}/${label}.${ext}`;
-    const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
-    if (error) { console.warn(`Upload ${label} failed:`, error.message); return null; }
-    // Store the STABLE public URL (not a resolved/signed URL)
-    const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
-    return urlData?.publicUrl || null;
-  } catch (err) {
-    console.warn(`Upload ${label} error:`, err);
-    return null;
-  }
+  if (file.size > 5 * 1024 * 1024) { throw new Error('File must be under 5MB'); }
+  
+  const ext = file.name.split('.').pop();
+  const path = `events/${eventId}/${label}.${ext}`;
+  const { error } = await supabase.storage.from('event-covers').upload(path, file, { upsert: true });
+  if (error) throw new Error(`Upload ${label} failed: ${error.message}`);
+  
+  const { data: urlData } = supabase.storage.from('event-covers').getPublicUrl(path);
+  return urlData?.publicUrl || null;
 }

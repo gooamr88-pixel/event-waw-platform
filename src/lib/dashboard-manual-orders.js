@@ -177,8 +177,13 @@ async function handleApprove(orderId, container) {
 async function handleReject(orderId, container) {
   const reason = prompt('Rejection reason (shown to buyer):');
   if (reason === null) return;
+  // P1-11 FIX: Prevent double-click
+  const rejectBtn = container.querySelector(`.mto-reject-btn[data-order-id="${orderId}"]`);
+  const approveBtn = container.querySelector(`.mto-approve-btn[data-order-id="${orderId}"]`);
+  if (rejectBtn) { rejectBtn.disabled = true; rejectBtn.textContent = 'Rejecting…'; }
+  if (approveBtn) approveBtn.disabled = true;
   // H-15 FIX: Capture card state before RPC so we can rollback on failure
-  const card = container.querySelector(`.mto-reject-btn[data-order-id="${orderId}"]`)?.closest('.mto-card');
+  const card = rejectBtn?.closest('.mto-card');
   const cardHTML = card?.outerHTML;
   const cardParent = card?.parentNode;
   const cardNextSibling = card?.nextSibling;
@@ -192,6 +197,8 @@ async function handleReject(orderId, container) {
     renderManualOrdersPanel(container);
   } catch (err) {
     showToast('❌ Rejection failed: ' + err.message, 'error');
+    if (rejectBtn) { rejectBtn.disabled = false; rejectBtn.textContent = '❌ Reject'; }
+    if (approveBtn) approveBtn.disabled = false;
     // H-15 FIX: Restore the card if it was removed during optimistic update
     if (cardHTML && cardParent && !container.querySelector(`.mto-reject-btn[data-order-id="${orderId}"]`)) {
       const temp = document.createElement('div');

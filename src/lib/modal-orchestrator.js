@@ -20,13 +20,68 @@ let ceEditingEventId = null;
 let ceListingTypeGetter = null;
 let ceListingType = null;
 
+export function toTZLocalString(dateInput, timeZone) {
+  if (!dateInput) return '';
+  const date = new Date(dateInput);
+  if (isNaN(date.getTime())) return '';
+  const tz = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  try {
+    const formatter = new Intl.DateTimeFormat('sv-SE', {
+      timeZone: tz,
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false
+    });
+    const parts = formatter.formatToParts(date);
+    const getPart = type => parts.find(p => p.type === type)?.value;
+    return `${getPart('year')}-${getPart('month')}-${getPart('day')}T${getPart('hour')}:${getPart('minute')}`;
+  } catch (e) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  }
+}
+
+export function parseTZLocalToISO(localStr, timeZone) {
+  if (!localStr) return null;
+  const tz = timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  try {
+    const [dateStr, timeStr] = localStr.split('T');
+    const [year, month, day] = dateStr.split('-');
+    const [hour, min] = timeStr.split(':');
+    
+    const date = new Date(Date.UTC(year, month - 1, day, hour, min));
+    const localTime = date.getTime();
+    
+    const tzFormatter = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'longOffset' });
+    const parts = tzFormatter.formatToParts(date);
+    const offsetStr = parts.find(p => p.type === 'timeZoneName')?.value || 'GMT+00:00';
+    
+    const match = offsetStr.match(/GMT([+-])(\d+):?(\d+)?/);
+    let offsetMinutes = 0;
+    if (match) {
+      const sign = match[1] === '+' ? 1 : -1;
+      const hours = parseInt(match[2], 10);
+      const mins = match[3] ? parseInt(match[3], 10) : 0;
+      offsetMinutes = sign * (hours * 60 + mins);
+    }
+    
+    return new Date(localTime - (offsetMinutes * 60 * 1000)).toISOString();
+  } catch (e) {
+    return new Date(localStr).toISOString();
+  }
+}
+
 function getOrchestratorState() {
   return {
     ceKeywords,
     ceEditingEventId,
+    getEditingEventId: () => ceEditingEventId,
+    setEditingEventId: (id) => { ceEditingEventId = id; },
     getListingType: () => (ceListingTypeGetter ? ceListingTypeGetter() : ceListingType),
     clearEditState: () => { ceEditingEventId = null; },
-    resetForm: resetCreateEventForm
+    resetForm: resetCreateEventForm,
+    toTZLocalString,
+    parseTZLocalToISO
   };
 }
 
@@ -274,10 +329,7 @@ export async function loadEventForEditing(eventId) {
     if (editor && ev.description) setSafeHTML(editor, ev.description);
 
     const toLocalDatetime = (iso) => {
-      if (!iso) return '';
-      const d = new Date(iso);
-      const pad = n => String(n).padStart(2, '0');
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      return toTZLocalString(iso, ev.timezone);
     };
     setVal('ce-start-date', toLocalDatetime(ev.date));
     setVal('ce-end-date', toLocalDatetime(ev.end_date));

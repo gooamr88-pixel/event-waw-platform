@@ -192,7 +192,10 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
     const isDraft = e.currentTarget.id === 'ce-draft-btn';
     const btn = e.currentTarget;
     if (btn) btn.disabled = true; // Q-1 FIX: Disable immediately to prevent double-click race
-    const { ceEditingEventId, ceKeywords, getListingType } = getOrchestratorState();
+    
+    const state = getOrchestratorState();
+    let currentEditingEventId = state.getEditingEventId ? state.getEditingEventId() : state.ceEditingEventId;
+    const { ceKeywords, getListingType, parseTZLocalToISO } = state;
 
     // ── VALIDATION ──
     document.querySelectorAll('.ce-field-error').forEach(el => el.remove());
@@ -247,12 +250,15 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       
       if (listingType !== 'display_only' && !currency) markError('ce-currency', 'Currency is required');
 
+      const startISO = parseTZLocalToISO ? parseTZLocalToISO(startDate, timezone) : (startDate ? new Date(startDate).toISOString() : null);
+      const endISO = parseTZLocalToISO ? parseTZLocalToISO(endDate, timezone) : (endDate ? new Date(endDate).toISOString() : null);
+
       // P2-13 FIX: End date must be after start date
-      if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+      if (startDate && endDate && startISO && endISO && new Date(endISO) <= new Date(startISO)) {
         markError('ce-end-date', 'End date must be after start date');
       }
       // P2-14 FIX: Start date must be in the future (for publishing only)
-      if (startDate && new Date(startDate) < new Date()) {
+      if (startDate && startISO && new Date(startISO) < new Date()) {
         markError('ce-start-date', 'Start date must be in the future');
       }
 
@@ -285,12 +291,12 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       isPublishing = false;
       // Q-1 FIX: Re-enable button on validation failure
       // (was left disabled, forcing page reload)
-      if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : 'Publish Event'; }
+      if (btn) { btn.disabled = false; btn.textContent = currentEditingEventId ? 'Update Event' : 'Publish Event'; }
       return;
     }
 
-    if (btn) { btn.disabled = true; btn.textContent = ceEditingEventId ? 'Updating…' : 'Publishing…'; }
-    const wasEditingForReset = !!ceEditingEventId;
+    if (btn) { btn.disabled = true; btn.textContent = currentEditingEventId ? 'Updating…' : 'Publishing…'; }
+    const wasEditingForReset = !!currentEditingEventId;
 
     try {
       const user = await getCurrentUser();
@@ -370,7 +376,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             const accepted = await showTermsAcceptanceModal(requiredVersion);
             if (!accepted) {
               // User cancelled — stop publishing
-              if (btn) { btn.disabled = false; btn.textContent = ceEditingEventId ? 'Update Event' : '🚀 Publish Event'; }
+              if (btn) { btn.disabled = false; btn.textContent = currentEditingEventId ? 'Update Event' : '🚀 Publish Event'; }
               isPublishing = false;
               return;
             }
@@ -410,7 +416,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         venue: place || null,
         venue_address: document.getElementById('ce-address')?.value.trim() || null,
         city: city || null,
-        date: startDate ? new Date(startDate).toISOString() : null,
+        date: parseTZLocalToISO ? parseTZLocalToISO(startDate, timezone) : (startDate ? new Date(startDate).toISOString() : null),
         category: category || 'general',
         age_policy: document.getElementById('ce-age-policy')?.value || null,
         language: document.getElementById('ce-language')?.value || null,
@@ -424,8 +430,8 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
         pixel_code: document.getElementById('ce-pixel')?.value.trim() || null,
         currency: currency || 'USD',
         timezone: timezone || null,
-        doors_open: document.getElementById('ce-doors')?.value ? new Date(document.getElementById('ce-doors').value).toISOString() : null,
-        end_date: endDate ? new Date(endDate).toISOString() : null,
+        doors_open: parseTZLocalToISO ? parseTZLocalToISO(document.getElementById('ce-doors')?.value, timezone) : (document.getElementById('ce-doors')?.value ? new Date(document.getElementById('ce-doors').value).toISOString() : null),
+        end_date: parseTZLocalToISO ? parseTZLocalToISO(endDate, timezone) : (endDate ? new Date(endDate).toISOString() : null),
         show_end_time: showEndTime,
         website: document.getElementById('ce-website')?.value.trim() || null,
         social_links: socialLinks.length ? socialLinks : null,
@@ -453,13 +459,24 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       };
 
       let event;
-      if (ceEditingEventId) {
+      if (currentEditingEventId) {
         const allUpdates = { ...eventData };
         delete allUpdates.organizer_id;
         allUpdates.admin_approved = false; // Send back to approval queue
-        event = await updateEvent(ceEditingEventId, allUpdates);
+        event = await updateEvent(currentEditingEventId, allUpdates);
       } else {
         event = await createEvent(eventData);
+        // Set state immediately to prevent duplicate creations if subsequent steps fail
+        currentEditingEventId = event.id;
+        if (state.setEditingEventId) {
+          state.setEditingEventId(event.id);
+        } else {
+          state.ceEditingEventId = event.id;
+        }
+        const breadcrumb = document.querySelector('#panel-create-event .ev-breadcrumb strong');
+        if (breadcrumb) breadcrumb.textContent = 'Edit Event';
+        const publishBtn = document.getElementById('ce-publish-btn');
+        if (publishBtn) publishBtn.innerHTML = 'Update Event';
       }
 
       // ── Image Uploads ──
@@ -536,7 +553,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       // ── Tickets ──
       const ticketType = document.querySelector('.ce-ticket-card.selected input')?.value || 'normal';
       if (listingType !== 'display_only' && getTicketsList().length > 0) {
-        if (ceEditingEventId) {
+        if (currentEditingEventId) {
           const { data: existingTiers } = await supabase.from('ticket_tiers').select('id, sold_count').eq('event_id', event.id);
           const tiersToDelete = (existingTiers || []).filter(tier => (tier.sold_count || 0) === 0).map(t => t.id);
           if (tiersToDelete.length > 0) {
@@ -548,14 +565,14 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
             ticket_type: ticketType, category: t.category || null,
             early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-            early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+            early_bird_end: t.earlyEnd ? (parseTZLocalToISO ? parseTZLocalToISO(t.earlyEnd, timezone) : new Date(t.earlyEnd).toISOString()) : null,
             max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
             currency: currency || t.currency || 'USD',
             description: t.desc || null,
             min_purchase: t.minPurchase || 1,
             max_purchase: t.maxPurchase || 10,
-            sales_start: t.salesStart ? new Date(t.salesStart).toISOString() : null,
-            sales_end: t.salesEnd ? new Date(t.salesEnd).toISOString() : null,
+            sales_start: t.salesStart ? (parseTZLocalToISO ? parseTZLocalToISO(t.salesStart, timezone) : new Date(t.salesStart).toISOString()) : null,
+            sales_end: t.salesEnd ? (parseTZLocalToISO ? parseTZLocalToISO(t.salesEnd, timezone) : new Date(t.salesEnd).toISOString()) : null,
             is_hidden: t.isHidden || false,
             seating_type: t.seatingType || 'general'
           }));
@@ -565,14 +582,14 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
             event_id: event.id, name: t.name, price: t.price, capacity: t.qty,
             ticket_type: ticketType, category: t.category || null,
             early_bird_price: t.earlyPrice ? parseFloat(t.earlyPrice) : null,
-            early_bird_end: t.earlyEnd ? new Date(t.earlyEnd).toISOString() : null,
+            early_bird_end: t.earlyEnd ? (parseTZLocalToISO ? parseTZLocalToISO(t.earlyEnd, timezone) : new Date(t.earlyEnd).toISOString()) : null,
             max_scans: parseInt(document.getElementById('ce-max-scans')?.value) || 1,
             currency: currency || t.currency || 'USD',
             description: t.desc || null,
             min_purchase: t.minPurchase || 1,
             max_purchase: t.maxPurchase || 10,
-            sales_start: t.salesStart ? new Date(t.salesStart).toISOString() : null,
-            sales_end: t.salesEnd ? new Date(t.salesEnd).toISOString() : null,
+            sales_start: t.salesStart ? (parseTZLocalToISO ? parseTZLocalToISO(t.salesStart, timezone) : new Date(t.salesStart).toISOString()) : null,
+            sales_end: t.salesEnd ? (parseTZLocalToISO ? parseTZLocalToISO(t.salesEnd, timezone) : new Date(t.salesEnd).toISOString()) : null,
             is_hidden: t.isHidden || false,
             seating_type: t.seatingType || 'general'
           }));
@@ -583,7 +600,7 @@ export function setupPublishing(getOrchestratorState, switchToPanel) {
       // ── Promo Codes ──
       const promoCodes = getPromoCodesList();
       if (promoCodes.length > 0) {
-        if (ceEditingEventId) {
+        if (currentEditingEventId) {
           // FIX: Upsert by code instead of delete-all to preserve used_count and usage history
           const { data: existingPromos } = await supabase
             .from('promo_codes')

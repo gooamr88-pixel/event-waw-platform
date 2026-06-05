@@ -182,7 +182,12 @@ function renderRevenueTrendsChart(payments, timeframeDays) {
 
   // Populate with data
   payments.forEach(p => {
-    const dateStr = new Date(p.created_at || p.paid_at).toISOString().split('T')[0];
+    const dateVal = p.created_at || p.paid_at;
+    if (!dateVal) return;
+    const dateObj = new Date(dateVal);
+    if (isNaN(dateObj.getTime())) return; // Safe guard: Skip malformed dates
+
+    const dateStr = dateObj.toISOString().split('T')[0];
     if (dateMap[dateStr] !== undefined) {
       dateMap[dateStr] += Number(p.total_amount || 0);
     } else if (timeframeDays === 'all') {
