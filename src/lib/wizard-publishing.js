@@ -27,10 +27,11 @@ export function sanitizeDescriptionHTML(html) {
       'p', 'br', 'b', 'i', 'u', 'strong', 'em', 'a', 'ul', 'ol', 'li',
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'pre', 'code',
       'span', 'div', 'hr', 'img', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'font',
     ],
     ALLOWED_ATTR: [
       'href', 'target', 'rel', 'src', 'alt', 'title', 'class', 'style',
-      'width', 'height', 'colspan', 'rowspan',
+      'width', 'height', 'colspan', 'rowspan', 'face', 'size', 'color',
     ],
     ALLOW_DATA_ATTR: false,
     ADD_ATTR: ['target'],

@@ -30,7 +30,7 @@ export function setupBasicTab(getOrchestratorState) {
       const optionsHTML = '<option value="">Select Time Zone</option>' +
         timezones.map(tz => `<option value="${tz}">${tz.replace(/_/g, ' ')}</option>`).join('');
       setSafeHTML(timezoneSelect, optionsHTML);
-    } catch (e) {
+    } catch {
       console.warn('Intl.supportedValuesOf not supported, timezone select fallback to default.');
     }
   }
@@ -60,6 +60,20 @@ export function setupBasicTab(getOrchestratorState) {
         }
       } else {
         document.execCommand(cmd, false, null);
+      }
+    });
+  });
+
+  // Rich Text Editor Dropdowns
+  document.querySelectorAll('.ce-editor-select').forEach(select => {
+    select.addEventListener('change', () => {
+      const cmd = select.dataset.cmd;
+      const value = select.value;
+      if (cmd && value) {
+        // Focus the editor first to preserve/restore selection in contenteditable
+        const editor = select.closest('.ev-form-group')?.querySelector('.ce-editor-area');
+        if (editor) editor.focus();
+        document.execCommand(cmd, false, value);
       }
     });
   });

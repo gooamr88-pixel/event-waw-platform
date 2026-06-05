@@ -1608,9 +1608,21 @@
             <div class="ev-form-group">
               <label>Full Description</label>
               <div class="ce-editor-toolbar">
-                <select class="ce-editor-select"><option>Normal</option><option>Heading 1</option><option>Heading 2</option></select>
-                <select class="ce-editor-select"><option>Sans Serif</option><option>Serif</option><option>Monospace</option></select>
-                <select class="ce-editor-select"><option>Normal</option><option>Small</option><option>Large</option></select>
+                <select class="ce-editor-select" data-cmd="formatBlock">
+                  <option value="p">Normal</option>
+                  <option value="h1">Heading 1</option>
+                  <option value="h2">Heading 2</option>
+                </select>
+                <select class="ce-editor-select" data-cmd="fontName">
+                  <option value="var(--font-sans), sans-serif">Sans Serif</option>
+                  <option value="var(--font-serif), serif">Serif</option>
+                  <option value="monospace">Monospace</option>
+                </select>
+                <select class="ce-editor-select" data-cmd="fontSize">
+                  <option value="3">Normal</option>
+                  <option value="2">Small</option>
+                  <option value="5">Large</option>
+                </select>
                 <button type="button" class="ce-editor-btn" data-cmd="bold"><b>B</b></button>
                 <button type="button" class="ce-editor-btn" data-cmd="italic"><i>I</i></button>
                 <button type="button" class="ce-editor-btn" data-cmd="underline"><u>U</u></button>
